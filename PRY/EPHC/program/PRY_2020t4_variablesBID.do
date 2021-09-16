@@ -1,3 +1,4 @@
+* Las modificaciones sugeridad están entre las líneas 680 y 740
 * (Versión Stata 12)
 clear
 set more off
@@ -676,11 +677,17 @@ replace spublico_ci=1 if cate_pea==1 & emp_ci==1
 /*replace spublico_ci=0 if cate_pea!=1 & cate_pea!=9
 replace spublico_ci=. if emp_ci~=1*/
 
+**************************************************************************************
+**************************************************************************************
+
+* Aqui comienzan las modificaciones
+
 ***ocupa_ci***
 **************
 /*no habra categoria 5 porque servicios y comerciantes estan en la misma codificacion
 OCUP: 5112 a 5230: Trabajadores de los servicios y vendedores de comercios y mercados
 Ultima actualización Alvaro AM, con inclusión de CIUO a 4 dígitos provista por instituto de estadística*/
+/* Esto no genera nada 
 gen ocupa_ci=.
 replace ocupa_ci=1 if (b01rec>=2113 & b01rec<=3480)  & emp_ci==1
 replace ocupa_ci=2 if (b01rec>=1110 & b01rec<=1236) & emp_ci==1
@@ -691,10 +698,16 @@ replace ocupa_ci=6 if ((b01rec>=6111 & b01rec<=6153) | (b01rec>=9211 & b01rec<=9
 replace ocupa_ci=7 if ((b01rec>=7111 & b01rec<=8340) | (b01rec>=9311 & b01rec<=9339))& emp_ci==1
 replace ocupa_ci=8 if b01rec==110 & emp_ci==1
 replace ocupa_ci=9 if (b01rec>9339 & b01rec<=9999) & emp_ci==1
+*/
+
+* La codificación de esta variable me parece que no es compatible con la codificación que se utiliza en los manuales de armonización del BID, sin embargo me parece importante mantener la variable b01rec, para que esté disponible para la persona que necesite usarla.
+
 
 *************
 ***rama_ci***
 *************
+
+/*
 g rama_ci=.
 replace rama_ci=1 if (b02rec>=111 & b02rec<=500) & emp_ci==1
 replace rama_ci=2 if (b02rec>=1010 & b02rec<=1429) & emp_ci==1
@@ -705,6 +718,26 @@ replace rama_ci=6 if (b02rec>=5010 & b02rec<=5520) & emp_ci==1
 replace rama_ci=7 if (b02rec>=6010 & b02rec<=6420) & emp_ci==1
 replace rama_ci=8 if (b02rec>=6511 & b02rec<=7020) & emp_ci==1
 replace rama_ci=9 if (b02rec>=7111 & b02rec<=9999) & emp_ci==1
+*/
+
+g rama_ci=.
+replace rama_ci=1 if (b02rec==1) & emp_ci==1
+replace rama_ci=3 if (b02rec==2) & emp_ci==1
+replace rama_ci=4 if (b02rec==3) & emp_ci==1
+replace rama_ci=5 if (b02rec==4) & emp_ci==1
+replace rama_ci=6 if (b02rec==5) & emp_ci==1
+replace rama_ci=7 if (b02rec==6) & emp_ci==1
+replace rama_ci=8 if (b02rec==7) & emp_ci==1
+replace rama_ci=9 if (b02rec==8) & emp_ci==1
+
+label variable rama_ci "Rama de actividad laboral de la ocupacion principal-Grandes Divisiones (ISIC Rev"
+label define rama_ci 1 "Agricultura,_caza,_silvicultura_y_pesca" 2 "Explotación_de_minas_y_canteras" 3 "Industrias_manufactureras" 4 "Electricidad,_gas_y_agua" 5 "Construcción" 6 "Comercio,_restaurantes_y_hoteles" 7 "Transporte_y_almacenamiento" 8 "Establecimientos_financieros,_seguros_e" 9 "Servicios_sociales_y_comunales"
+label value rama_ci rama_ci
+
+* Aqui finalizan las modificaciones las modificaciones
+
+**************************************************************************************
+**************************************************************************************
 
 
 ****************
@@ -1770,38 +1803,6 @@ gen dis_ch=.
 	replace migrantelac_ci= (migrante_ci==1 & inlist(p10a,20,21,22,23,24,28,31,32)) if migrante_ci!=.
 	label var migrantelac_ci "=1 si es migrante proveniente de un pais LAC"
 
-******************************
-* Variables SPH - PMTC y PNC *
-******************************
-
-* PTMC:  Ingresos del estado monetario tekoporã deflactados 
-* PNC: 	 Ingresos del estado monetario adulto mayor deflactados
-
-* Ingreso del hogar
-egen ingreso_total = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci), missing
-bys idh_ch: egen y_hog = sum(ingreso_total)
-
-* Personas que reciben transferencias monetarias condicionadas
-gen transf = e01ide
-bys idh_ch: egen ing_ptmc=sum(transf)
-gen ptmc_ci  = (ing_ptmc>0 & ing_ptmc!=.)
-bys idh_ch: egen ptmc_ch=max(ptmc_ci)
-
-* Adultos mayores 
-gen mayor64_ci=(edad>64 & edad!=.)
-bys idh_ch: egen ing_pension  = sum(e01kde)
-gen pnc_ci  = (ing_pension>0 & ing_pension!=.)
-
-*ingreso neto del hogar
-gen y_pc     = y_hog / nmiembros_ch 
-gen y_pc_net = (y_hog - ing_ptmc -ing_pension) / nmiembros_ch
-
-lab def ptmc_ch 1 "Beneficiario PTMC" 0 "No beneficiario PTMC"
-lab val ptmc_ch ptmc_ch
-
-lab def pnc_ci 1 "Beneficiario PNC" 0 "No beneficiario PNC"
-lab val pnc_ci pnc_ci
-
 /*_____________________________________________________________________________________________________*/
 * Asignación de etiquetas e inserción de variables externas: tipo de cambio, Indice de Precios al 
 * Consumidor (2011=100), líneas de pobreza
@@ -1809,35 +1810,6 @@ lab val pnc_ci pnc_ci
 
 
 do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&ExternalVars_Harmonized_DataBank.do"
-
-*_____________________________________________________________________________________________________*
-
-*  Pobres extremos, pobres moderados, vulnerables y no pobres 
-* con base en ingreso neto (Sin transferencias)
-* y líneas de pobreza internacionales
-gen     grupo_int = 1 if (y_pc_net<lp31_ci)
-replace grupo_int = 2 if (y_pc_net>=lp31_ci & y_pc_net<(lp31_ci*1.6))
-replace grupo_int = 3 if (y_pc_net>=(lp31_ci*1.6) & y_pc_net<(lp31_ci*4))
-replace grupo_int = 4 if (y_pc_net>=(lp31_ci*4) & y_pc_net<.)
-
-tab grupo_int, gen(gpo_ingneto)
-
-* Crear interacción entre recibirla la PTMC y el gpo de ingreso
-gen ptmc_ingneto1 = 0
-replace ptmc_ingneto1 = 1 if ptmc_ch == 1 & gpo_ingneto1 == 1
-
-gen ptmc_ingneto2 = 0
-replace ptmc_ingneto2 = 1 if ptmc_ch == 1 & gpo_ingneto2 == 1
-
-gen ptmc_ingneto3 = 0
-replace ptmc_ingneto3 = 1 if ptmc_ch == 1 & gpo_ingneto3 == 1
-
-gen ptmc_ingneto4 = 0
-replace ptmc_ingneto4 = 1 if ptmc_ch == 1 & gpo_ingneto4 == 1
-
-lab def grupo_int 1 "Pobre extremo" 2 "Pobre moderado" 3 "Vulnerable" 4 "No pobre"
-lab val grupo_int grupo_int
-
 
 /*_____________________________________________________________________________________________________*/
 * Verificación de que se encuentren todas las variables armonizadas 
