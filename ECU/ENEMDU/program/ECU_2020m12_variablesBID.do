@@ -671,7 +671,7 @@ gen dis_ch=.
 	replace rama_ci = 7 if ((p40>=4911 & p40<=5320) | (p40>=6110 & p40<=6190)) & emp_ci==1
 	replace rama_ci = 8 if (p40>=6411 & p40<=8299) & emp_ci==1
 	replace rama_ci = 9 if ((p40>=5811 & p40<=6020) | (p40>=6201 & p40<=6399) | (p40>=8410 & p40<=9900)) & emp_ci==1
-	label var rama_ci "Rama de actividad"
+	label var rama_ci "Rama de actividad de la ocupación principal"
 	label def rama_ci 1"Agricultura, caza, silvicultura y pesca" 2"Explotación de minas y canteras" 3"Industrias manufactureras"
 	label def rama_ci 4"Electricidad, gas y agua" 5"Construcción" 6"Comercio, restaurantes y hoteles" 7"Transporte y almacenamiento", add
 	label def rama_ci 8"Establecimientos financieros, seguros e inmuebles" 9"Servicios sociales y comunales", add

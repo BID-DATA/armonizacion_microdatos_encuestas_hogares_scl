@@ -11,24 +11,24 @@ global ruta = "${surveysFolder}"
  
 local PAIS ECU
 local ENCUESTA ENEMDU
-local ANIO 2020
+local ANIO 2021
 local RONDA m12
 
-*local log_file = "$ruta\harmonized\\`PAIS'\\`ENCUESTA'\log\\`PAIS'_`ANIO'`ronda'_variablesBID.log"
-*local base_in  = "$ruta\survey\\`PAIS'\\`ENCUESTA'\\`ANIO'\\`RONDA'\data_orig\\" 
-*local base_out = "$ruta\survey\\`PAIS'\\`ENCUESTA'\\`ANIO'\\`RONDA'\\data_merge\\`PAIS'_`ANIO'`RONDA'.dta"
+local log_file = "$ruta\harmonized\\`PAIS'\\`ENCUESTA'\log\\`PAIS'_`ANIO'`ronda'_variablesBID.log"
+local base_in  = "$ruta\survey\\`PAIS'\\`ENCUESTA'\\`ANIO'\\`RONDA'\data_orig\\" 
+local base_out = "$ruta\survey\\`PAIS'\\`ENCUESTA'\\`ANIO'\\`RONDA'\\data_merge\\`PAIS'_`ANIO'`RONDA'.dta"
 
 capture log close
 log using "`log_file'", replace 
 
 * Sort de base
-import delimited "`base_in'\enemdu_persona_2020_12.csv", clear
+import delimited "`base_in'\enemdu_persona_2021_12.csv", clear
 duplicates report area estrato upm  vivienda hogar p01
 sort area estrato upm vivienda hogar p01
 saveold "`base_in'\miembros.dta", version(12) replace
 
 * Merge de base de hogar con base individual
-import delimited "`base_in'\enemdu_vivienda_hogar_2020_12.csv", clear
+import delimited "`base_in'\enemdu_vivienda_hogar_2021_12.csv", clear
 duplicates report area estrato upm  vivienda hogar
 sort area estrato upm vivienda hogar 
 saveold "`base_in'\hogares.dta", version(12) replace
