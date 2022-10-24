@@ -82,6 +82,42 @@ label var region_BID_c "Regiones BID"
 label define region_BID_c 1 "Centroamérica_(CID)" 2 "Caribe_(CCB)" 3 "Andinos_(CAN)" 4 "Cono_Sur_(CSC)"
 label value region_BID_c region_BID_c
 
+
+***************
+*****ine01*****
+***************
+
+gen ine01 = real(substr(ubigeo, 1, 2))
+label define ine01    ///
+1"Amazonas"	          ///
+2"Ancash"	          ///
+3"Apurimac"	          ///
+4"Arequipa"	          ///
+5"Ayacucho"	          ///
+6"Cajamarca"	      ///
+7"Callao"	          ///
+8"Cusco"	          ///
+9"Huancavelica"	      ///
+10"Huanuco"	          ///
+11"Ica"	              ///
+12"Junin"	          ///
+13"La libertad"	      ///
+14"Lambayeque"	      ///
+15"Lima"	          ///
+16"Loreto"	          ///
+17"Madre de Dios"	  ///
+18"Moquegua"	      ///
+19"Pasco"	          ///
+20"Piura"	          ///
+21"Puno"	          ///
+22"San Martín"	      ///
+23"Tacna"	          ///
+24"Tumbes"	          ///
+25"Ucayali"	
+label value ine01 ine01
+label var ine01 "division politico-administrativa, departamento"
+
+
 ***************
 ***factor_ch***
 ***************
@@ -128,8 +164,8 @@ Area Rural:
 8. Areas de Empadronamiento Rural con menos de 140 viviendas (AER simples)
 */
 
-gen byte zona_c=0 if estrato>=6
-replace zona_c=1 if estrato<6
+gen byte zona_c = 0 if estrato >= 6
+replace zona_c = 1 if estrato < 6
 
 label variable zona_c "Zona del pais"
 label define zona_c 1 "Urbana" 0 "Rural"
@@ -175,6 +211,7 @@ label define relacion_ci 6 "Empleado/a domestico/a", add
 
 label value relacion_ci relacion_ci
 
+
 ****************************
 ***VARIABLES DEMOGRAFICAS***
 ****************************
@@ -185,6 +222,19 @@ label value relacion_ci relacion_ci
 
 gen factor_ci=factor
 label variable factor_ci "Factor de expansion del individuo"
+
+***************
+***upm_ci***
+***************
+
+gen upm_ci = conglome
+
+***************
+***estrato_ci***
+***************
+
+gen estrato_ci = estrato
+
 
 **********
 ***sexo***
@@ -335,37 +385,39 @@ gen miembros_ci=(relacion_ci<5)
 label variable miembros_ci "Miembro del hogar"
 
 
-		  ******************************
-          *** VARIABLES DE DIVERSIDAD **
-          ******************************
-*Nathalia Maya & Antonella Pereira
-*Julio 2021	
+******************************
+*** VARIABLES DE DIVERSIDAD **
+******************************
 
-	
 	
 	***************
 	***afroind_ci***
 	***************
+	
 gen afroind_ci=. 
 
 	***************
 	***afroind_ch***
 	***************
+	
 gen afroind_ch=. 
 
 	*******************
 	***afroind_ano_c***
 	*******************
-gen afroind_ano_c=.		
+	
+gen afroind_ano_ci=.		
 
 	*******************
 	***dis_ci***
 	*******************
+	
 gen dis_ci=. 
 
 	*******************
 	***dis_ch***
 	*******************
+	
 gen dis_ch=. 
 
 
@@ -1411,107 +1463,101 @@ replace aedu_ci=. if p212==.
 ***eduno_ci***
 **************
 
-gen byte eduno_ci=(p301a==1 | p301a==2) 
-replace eduno_ci=. if p301a==99
-replace eduno_ci=. if p212==. | aedu_ci==.
+gen byte eduno_ci = (aedu_ci == 0) 
+replace eduno_ci=. if aedu_ci==.
 label variable eduno_ci "Cero anios de educacion"
+
 
 **************
 ***edupi_ci***
 **************
 
-gen byte edupi_ci=(p301a==3)
-replace edupi_ci=. if p301a==99
-replace edupi_ci=. if p212==. | aedu_ci==.
+gen byte edupi_ci = (aedu_ci > 0 & aedu_ci < 6)
+replace edupi_ci=. if aedu_ci==.
 label variable edupi_ci "Primaria incompleta"
 
 **************
 ***edupc_ci***
 **************
 
-gen byte edupc_ci=(p301a==4)
-replace edupc_ci=. if p301a==99
-replace edupc_ci=. if p212==. | aedu_ci==.
+gen byte edupc_ci = (aedu_ci==6)
+replace edupc_ci=. if aedu_ci==.
 label variable edupc_ci "Primaria completa"
+
 
 **************
 ***edusi_ci***
 **************
 
-gen byte edusi_ci=(p301a==5)
-replace edusi_ci=. if p301a==99
-replace edusi_ci=. if p212==. | aedu_ci==.
+gen byte edusi_ci = (aedu_ci > 6 & aedu_ci < 11)
+replace edusi_ci=. if aedu_ci == .
 label variable edusi_ci "Secundaria incompleta"
+
 
 **************
 ***edusc_ci***
 **************
 
-gen byte edusc_ci=(p301a==6)
-replace edusc_ci=. if p301a==99
-replace edusc_ci=. if p212==. | aedu_ci==.
+gen byte edusc_ci = (aedu_ci == 11)
+replace edusc_ci=. if aedu_ci==.
 label variable edusc_ci "Secundaria completa"
 
 ***************
 ***edus1i_ci***
 ***************
 
-gen byte edus1i_ci=(p301a==5 & aedu_ci<=8)
-replace edus1i_ci=. if p301a==99
-replace edus1i_ci=. if p212==. | aedu_ci==.
+gen byte edus1i_ci=(aedu_ci>6 & aedu_ci<9)
+replace edus1i_ci=. if aedu_ci==.
 label variable edus1i_ci "1er ciclo de la secundaria incompleto"
+
 
 ***************
 ***edus1c_ci***
 ***************
 
-gen byte edus1c_ci=(p301a==5 & aedu_ci==9)
-replace edus1c_ci=. if p301a==99
-replace edus1c_ci=. if p212==. | aedu_ci==.
+gen byte edus1c_ci =(aedu_ci==9)
+replace edus1c_ci=. if aedu_ci==.
 label variable edus1c_ci "1er ciclo de la secundaria completo"
 
 ***************
 ***edus2i_ci***
 ***************
 
-gen byte edus2i_ci=(p301a==5 & aedu_ci==10)
-replace edus2i_ci=. if p301a==99
-replace edus2i_ci=. if p212==. | aedu_ci==.
+gen byte edus2i_ci =(aedu_ci==10)
+replace edus2i_ci=. if aedu_ci==.
 label variable edus2i_ci "2do ciclo de la secundaria incompleto"
+
 
 ***************
 ***edus2c_ci***
 ***************
 
-gen byte edus2c_ci=(p301a==6)
-replace edus2c_ci=. if p301a==99
-replace edus2c_ci=. if p212==. | aedu_ci==.
+gen byte edus2c_ci =(aedu_ci==11)
+replace edus2c_ci=. if aedu_ci==.
 label variable edus2c_ci "2do ciclo de la secundaria completo"
 
 **************
 ***eduui_ci***
 **************
 
-gen byte eduui_ci=(p301a==7 | p301a==9)
-replace eduui_ci=. if p301a==99
-replace eduui_ci=. if p212==. | aedu_ci==.
+gen byte eduui_ci =aedu_ci>=12 & (p301a==7 | p301a==9)
+replace eduui_ci=. if aedu_ci==.
 label variable eduui_ci "Universitaria incompleta"
 
 ***************
 ***eduuc_ci***
 ***************
 
-gen byte eduuc_ci=(p301a==8 | p301a==10 | p301a==11)
-replace eduuc_ci=. if p301a==99
-replace eduuc_ci=. if p212==. | aedu_ci==.
-label variable eduuc_ci "Universitaria incompleta o mas"
+gen byte eduuc_ci =(aedu_ci>=12) & (p301a==8 | p301a==10 | p301a==11)
+replace eduuc_ci=. if aedu_ci==.
+label variable eduuc_ci "Universitaria completa o mas"
 
 
 ***************
 ***edupre_ci***
 ***************
 
-gen byte edupre_ci=(p301a==2)
+gen byte edupre_ci = (p301a==2)
 replace edupre_ci=. if p301a==99
 replace edupre_ci=. if p212==. | aedu_ci==.
 label variable edupre_ci "Educacion preescolar"
@@ -1520,24 +1566,35 @@ label variable edupre_ci "Educacion preescolar"
 **************
 ***eduac_ci***
 **************
-gen byte eduac_ci=.
-replace eduac_ci=1 if (p301a==9 | p301a==10)
-replace eduac_ci=0 if (p301a==7 | p301a==8)
+
+gen byte eduac_ci =.
+replace eduac_ci = 1 if (p301a==9 | p301a==10 | p301a==11)
+replace eduac_ci = 0 if (p301a==7 | p301a==8)
 label variable eduac_ci "Superior universitario vs superior no universitario"
+
 
 ***************
 ***asiste_ci***
 ***************
 
-gen asiste_ci=(p307==1)
-replace asiste_ci=. if p212==.
+/*Se considera la variable de matricula y de asistencia, codificando como 1 a los que estan matriculados y no asisten por vacaciones*/
+g asiste_ci = p306 == 1 // matriculados 
+replace asiste_ci = 0 if p307 == 2 & p313 != 6
 label variable asiste_ci "Asiste actualmente a la escuela"
+
+****************
+***asispre_ci***
+****************
+g asispre_ci= p308a == 1  // matriculado en nivel inicial (sin edad)
+replace asispre_ci=0 if p307==2 & p313!=6 // matriculado pero no asiste (y no por vacaciones)
+la var asispre_ci "Asiste a educacion prescolar"
+
 
 **************
 ***pqnoasis***
 **************
 
-gen pqnoasis_ci=p313
+gen pqnoasis_ci = p313
 label variable pqnoasis_ci "Razones para no asistir a la escuela"
 label define pqnoasis_ci 1 "SS militar" 2 "Trabajando"
 label define pqnoasis_ci 3 "No centro ens.adult." 4 "No centro ens.pob", add 
@@ -1570,6 +1627,12 @@ label value  pqnoasis1_ci pqnoasis1_ci
 ***************
 
 gen repite_ci=.
+
+
+***************
+***repiteult_ci***
+***************
+
 gen repiteult_ci=.
 
 
@@ -1577,9 +1640,8 @@ gen repiteult_ci=.
 ***edupub_ci***
 ***************
 
-gen edupub_ci=(p301d==1)
+gen edupub_ci = (p301d==1)
 replace edupub_ci=. if p212==.
-
 
 
 **********************************
@@ -1629,9 +1691,9 @@ gen pared_ch=0 if p102==3 | p102==4 | p102==7
 replace pared_ch=1 if p102==1 | p102==2 | p102==5 | p102==6
 replace pared_ch=2 if p102==8
 
-gen techo_ch=0 if p103a>=5 & p103a<=7
-replace techo_ch=1 if p103a>=1 & p103a<=4
-replace techo_ch=2 if p103a==8
+gen techo_ch = 0 if p103a >= 5 & p103a <= 7
+replace techo_ch = 1 if p103a >= 1 & p103a <= 4
+replace techo_ch = 2 if p103a == 8
 
 gen resid_ch=.
 /*NA*/
@@ -2283,8 +2345,9 @@ replace DISCONN=1 if (edad>=15 & edad<=24) & (peaa==. | peaa==3) & p307!=1 & ((p
 	*******************
 	
 	destring p208a2, replace
-	gen migrante_ci=(p208a2<10000) if p208a2!=. & p208a2!=999999
+	gen migrante_ci = (p208a2<10000) if p208a2!=. & p208a2!=999999
 	label var migrante_ci "=1 si es migrante"
+
 	
 	**********************
 	*** migantiguo5_ci ***
