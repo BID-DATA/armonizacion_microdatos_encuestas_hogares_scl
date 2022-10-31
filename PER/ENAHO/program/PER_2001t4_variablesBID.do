@@ -82,6 +82,41 @@ label var region_BID_c "Regiones BID"
 label define region_BID_c 1 "Centroamérica_(CID)" 2 "Caribe_(CCB)" 3 "Andinos_(CAN)" 4 "Cono_Sur_(CSC)"
 label value region_BID_c region_BID_c
 
+
+***************
+*****ine01*****
+***************
+
+gen ine01 = real(substr(ubigeo, 1, 2))
+label define ine01    ///
+1"Amazonas"	          ///
+2"Ancash"	          ///
+3"Apurimac"	          ///
+4"Arequipa"	          ///
+5"Ayacucho"	          ///
+6"Cajamarca"	      ///
+7"Callao"	          ///
+8"Cusco"	          ///
+9"Huancavelica"	      ///
+10"Huanuco"	          ///
+11"Ica"	              ///
+12"Junin"	          ///
+13"La libertad"	      ///
+14"Lambayeque"	      ///
+15"Lima"	          ///
+16"Loreto"	          ///
+17"Madre de Dios"	  ///
+18"Moquegua"	      ///
+19"Pasco"	          ///
+20"Piura"	          ///
+21"Puno"	          ///
+22"San Martín"	      ///
+23"Tacna"	          ///
+24"Tumbes"	          ///
+25"Ucayali"	
+label value ine01 ine01
+label var ine01 "division politico-administrativa, departamento"
+
 ***************
 ***factor_ch***
 ***************
@@ -189,6 +224,19 @@ label value relacion_ci relacion_ci
 gen factor_ci=factor
 label variable factor_ci "Factor de expansion del individuo"
 
+
+***************
+***upm_ci***
+***************
+
+gen upm_ci = conglome
+
+***************
+***estrato_ci***
+***************
+
+gen estrato_ci = estrato
+
 **********
 ***sexo***
 **********
@@ -271,22 +319,30 @@ label variable nempdom_ch "Numero de empleados domesticos"
 ***clasehog_ch***
 *****************
 
+
+**** REVISAR --> seems to be right, run tests ****
+
+
 gen byte clasehog_ch=0
 **** unipersonal
 replace clasehog_ch=1 if nhijos_ch==0 & nconyuges_ch==0 & notropari_ch==0 & notronopari_ch==0
+
 **** nuclear   (child with or without spouse but without other relatives)
 replace clasehog_ch=2 if (nhijos_ch>0| nconyuges_ch>0) & (notropari_ch==0 & notronopari_ch==0)
+
 **** ampliado
 replace clasehog_ch=3 if ((clasehog_ch ==2 & notropari_ch>0) & notronopari_ch==0) |(notropari_ch>0 & notronopari_ch==0) 
+
 **** compuesto  (some relatives plus non relative)
 replace clasehog_ch=4 if ((nconyuges_ch>0 | nhijos_ch>0 | notropari_ch>0) & (notronopari_ch>0))
+
 **** corresidente
 replace clasehog_ch=5 if nhijos_ch==0 & nconyuges_ch==0 & notropari_ch==0 & notronopari_ch>0
 
 label variable clasehog_ch "Tipo de hogar"
-label define clasehog_ch 1 " Unipersonal" 2 "Nuclear" 3 "Ampliado" 
-label define clasehog_ch 4 "Compuesto" 5 " Corresidente", add
+label define clasehog_ch 1 " Unipersonal" 2 "Nuclear" 3 "Ampliado" 4 "Compuesto" 5 " Corresidente"
 label value clasehog_ch clasehog_ch
+
 
 ******************
 ***nmiembros_ch***
@@ -338,17 +394,17 @@ gen miembros_ci=(relacion_ci<5)
 label variable miembros_ci "Miembro del hogar"
 
 
-		  ******************************
-          *** VARIABLES DE DIVERSIDAD **
-          ******************************
-*Nathalia Maya & Antonella Pereira
-*Julio 2021	
+******************************
+*** VARIABLES DE DIVERSIDAD **
+******************************
 
 	***************
 	***afroind_ci***
 	***************
 	
-**Pregunta (solo al jefe y cónyugue) por sus antepasados y de acuerdo a sus costumbres, �ud. se considera:(p46) (1 quechua; 2 aymara; 3 nativo o indígena de la amazonía; 4 negro/ mulato/zambo; 5 blanco; 6 mestizo; 7 otro; 8 no sabe)
+**Pregunta (solo al jefe y cónyugue) por sus antepasados y de acuerdo a sus costumbres, �ud. se considera:(p46) (1 Indígena de la Amazona; 2 Quechua; 3 Aymara; 4 Negro / Mulato / Zambo; 5 Mestizo; 6 Caucsico o Blanco; 7 Otro
+
+
 gen afroind_ci=.
 replace afroind_ci=1 if (p46 == 1 | p46 == 2 | p46 ==3) & relacion_ci==1
 replace afroind_ci=1 if (p47 == 1 | p47 == 2 | p47 ==3) & relacion_ci==2 
@@ -360,10 +416,13 @@ replace afroind_ci=. if p46==8 & relacion_ci==1
 replace afroind_ci=. if p47==8 & relacion_ci==2
 replace afroind_ci=9 if relacion_ci!=1 & relacion_ci!=2
 
+
+
 	***************
 	***afroind_ch***
 	***************
-gen afroind_jefe= afroind_ci if relacion_ci==1
+	
+gen afroind_jefe = afroind_ci if relacion_ci==1
 egen afroind_ch  = min(afroind_jefe), by(idh_ch) 
 drop afroind_jefe
 
@@ -1417,128 +1476,137 @@ replace aedu_ci=. if p212==.
 ***eduno_ci***
 **************
 
-gen byte eduno_ci=(p301a==1 | p301a==2) 
-replace eduno_ci=. if p301a==.
-replace eduno_ci=. if p212==. | p212==0
+gen byte eduno_ci = (aedu_ci == 0) 
+replace eduno_ci=. if aedu_ci==.
 label variable eduno_ci "Cero anios de educacion"
 
 **************
 ***edupi_ci***
 **************
 
-gen byte edupi_ci=(p301a==3)
-replace edupi_ci=. if p301a==.
-replace edupi_ci=. if p212==. | p212==0
+gen byte edupi_ci = (aedu_ci > 0 & aedu_ci < 6)
+replace edupi_ci=. if aedu_ci==.
 label variable edupi_ci "Primaria incompleta"
+
 
 **************
 ***edupc_ci***
 **************
 
-gen byte edupc_ci=(p301a==4)
-replace edupc_ci=. if p301a==.
-replace edupc_ci=. if p212==. | p212==0
+gen byte edupc_ci = (aedu_ci==6)
+replace edupc_ci=. if aedu_ci==.
 label variable edupc_ci "Primaria completa"
+
 
 **************
 ***edusi_ci***
 **************
 
-gen byte edusi_ci=(p301a==5)
-replace edusi_ci=. if p301a==.
-replace edusi_ci=. if p212==. | p212==0
+gen byte edusi_ci = (aedu_ci > 6 & aedu_ci < 11)
+replace edusi_ci=. if aedu_ci == .
 label variable edusi_ci "Secundaria incompleta"
+
 
 **************
 ***edusc_ci***
 **************
 
-gen byte edusc_ci=(p301a==6)
-replace edusc_ci=. if p301a==.
-replace edusc_ci=. if p212==. | p212==0
+gen byte edusc_ci = (aedu_ci == 11)
+replace edusc_ci=. if aedu_ci==.
 label variable edusc_ci "Secundaria completa"
+
 
 ***************
 ***edus1i_ci***
 ***************
 
-gen byte edus1i_ci=(p301a==5 & aedu_ci<=8)
-replace edus1i_ci=. if p301a==.
-replace edus1i_ci=. if p212==. | p212==0
+gen byte edus1i_ci=(aedu_ci>6 & aedu_ci<9)
+replace edus1i_ci=. if aedu_ci==.
 label variable edus1i_ci "1er ciclo de la secundaria incompleto"
+
 
 ***************
 ***edus1c_ci***
 ***************
 
-gen byte edus1c_ci=(p301a==5 & aedu_ci==9)
-replace edus1c_ci=. if p301a==.
-replace edus1c_ci=. if p212==. | p212==0
-label variable edus1c_ci "1er ciclo de la eecundaria completo"
+gen byte edus1c_ci =(aedu_ci==9)
+replace edus1c_ci=. if aedu_ci==.
+label variable edus1c_ci "1er ciclo de la secundaria completo"
+
 
 ***************
 ***edus2i_ci***
 ***************
 
-gen byte edus2i_ci=(p301a==5 & aedu_ci==10)
-replace edus2i_ci=. if p301a==.
-replace edus2i_ci=. if p212==. | p212==0
+gen byte edus2i_ci =(aedu_ci==10)
+replace edus2i_ci=. if aedu_ci==.
 label variable edus2i_ci "2do ciclo de la secundaria incompleto"
+
 
 ***************
 ***edus2c_ci***
 ***************
 
-gen byte edus2c_ci=(p301a==6)
-replace edus2c_ci=. if p301a==.
-replace edus2c_ci=. if p212==. | p212==0
+gen byte edus2c_ci =(aedu_ci==11)
+replace edus2c_ci=. if aedu_ci==.
 label variable edus2c_ci "2do ciclo de la secundaria completo"
+
 
 **************
 ***eduui_ci***
 **************
 
-gen byte eduui_ci=(p301a==7 | p301a==9)
-replace eduui_ci=. if p301a==.
-replace eduui_ci=. if p212==. | p212==0
+gen byte eduui_ci =aedu_ci>=12 & (p301a==7 | p301a==9)
+replace eduui_ci=. if aedu_ci==.
 label variable eduui_ci "Universitaria incompleta"
+
 
 ***************
 ***eduuc_ci***
 ***************
 
-gen byte eduuc_ci=(p301a==8 | p301a==10 | p301a==11)
-replace eduuc_ci=. if p301a==.
-replace eduuc_ci=. if p212==. | p212==0
-label variable eduuc_ci "Universitaria incompleta o mas"
+gen byte eduuc_ci =(aedu_ci>=12) & (p301a==8 | p301a==10 | p301a==11)
+replace eduuc_ci=. if aedu_ci==.
+label variable eduuc_ci "Universitaria completa o mas"
 
 
 ***************
 ***edupre_ci***
 ***************
 
-gen byte edupre_ci=(p301a==2)
-replace edupre_ci=. if p301a==.
-replace edupre_ci=. if p212==. | p212==0
+gen byte edupre_ci = (p301a==2)
+replace edupre_ci=. if p301a==99
+replace edupre_ci=. if p212==. | aedu_ci==.
 label variable edupre_ci "Educacion preescolar"
 
 
 **************
 ***eduac_ci***
 **************
-gen byte eduac_ci=.
-replace eduac_ci=1 if (p301a==9 | p301a==10)
-replace eduac_ci=0 if (p301a==7 | p301a==8)
+
+gen byte eduac_ci =.
+replace eduac_ci = 1 if (p301a==9 | p301a==10 | p301a==11)
+replace eduac_ci = 0 if (p301a==7 | p301a==8)
 label variable eduac_ci "Superior universitario vs superior no universitario"
+
 
 ***************
 ***asiste_ci***
 ***************
 
-gen asiste_ci=(p303==1)
-replace asiste_ci=. if p303==9
-replace asiste_ci=. if p212==. | p212==0
+/*Se considera la variable de matricula y de asistencia, codificando como 1 a los que estan matriculados y no asisten por vacaciones*/
+g asiste_ci = (p303 == 1) // matriculados 
+replace asiste_ci = 0 if p303 == 2 & p310 != 6
 label variable asiste_ci "Asiste actualmente a la escuela"
+
+
+****************
+***asispre_ci***
+****************
+g asispre_ci= p304a == 1  // matriculado en nivel inicial (sin edad)
+replace asispre_ci=0 if p303 == 2 & p310 != 6 // matriculado pero no asiste (y no por vacaciones)
+la var asispre_ci "Asiste a educacion prescolar"
+
 
 *****************
 ***pqnoasis_ci***
@@ -1554,6 +1622,7 @@ label define pqnoasis_ci 9 "Prob familiares" 10 "Bajas notas", add
 label define pqnoasis_ci 11 "Quehaceres domesticos" 12 "Acad. pre-universitaria", add
 label define pqnoasis_ci 13 "Otros" 99 "Missing", add
 label value pqnoasis_ci pqnoasis_ci
+
 
 **************
 *pqnoasis1_ci*
@@ -1572,12 +1641,18 @@ replace pqnoasis1_ci = 9 if p310==1 | p310==10 | p310==12 | p310==13
 label define pqnoasis1_ci 1 "Problemas económicos" 2 "Por trabajo" 3 "Problemas familiares o de salud" 4 "Falta de interés" 5	"Quehaceres domésticos/embarazo/cuidado de niños/as" 6 "Terminó sus estudios" 7	"Edad" 8 "Problemas de acceso"  9 "Otros"
 label value  pqnoasis1_ci pqnoasis1_ci
 
+
 ***************
 ***repite_ci***
 ***************
 
 gen repite_ci=.
+
+
+*** repiteult_ci
+
 gen repiteult_ci=.
+
 
 ***************
 ***edupub_ci***
@@ -1585,6 +1660,7 @@ gen repiteult_ci=.
 
 gen edupub_ci=(p301d==1)
 replace edupub_ci=. if p212==. | p212==0
+
 
 **********************************
 **** VARIABLES DE LA VIVIENDA ****
@@ -1698,6 +1774,87 @@ replace vivialqimp_ch=. if p106==99999*/
 gen vivialqimp_ch= vivialqimp
 
 
+
+*******************
+*** SALUD  ***
+*******************
+
+*******************
+*** cobsalud_ci ***
+*******************
+
+gen cobsalud_ci=.
+replace cobsalud_ci=0 if (p4121==2 & p4122==2 & p4123==2 & p4124==2 & p4125==2 & p4126==2 & p4127==2) | (p4128==1)
+replace cobsalud_ci=1 if p4121==1 | p4122==1 | p4123==1 | p4124==1 | p4125==1 | p4126==1 | p4127==1
+
+
+label var cobsalud_ci "Tiene cobertura de salud"
+label define cobsalud_ci 0 "No" 1 "Si" 
+label value cobsalud_ci cobsalud_ci
+
+
+************************
+*** tipocobsalud_ci  ***
+************************
+
+gen tipocobsalud_ci=.
+replace tipocobsalud_ci=0 if cobsalud_ci==0
+replace tipocobsalud_ci=1 if p4121==1
+replace tipocobsalud_ci=2 if p4122==1
+* replace tipocobsalud_ci=3 if p4193==1 /// No se preguntaba
+replace tipocobsalud_ci=4 if p4123==1
+* replace tipocobsalud_ci=5 if p4195==1 /// No se preguntaba
+replace tipocobsalud_ci=6 if p4124==1
+replace tipocobsalud_ci=7 if p4126==1
+replace tipocobsalud_ci=8 if (p4127==1 | p4125==1)
+
+label var tipocobsalud_ci "Tipo cobertura de salud"
+lab def tipocobsalud_ci 0"Sin cobertura" 1"essalud" 2"Privado" 3"entidad prestadora" 4"policiales" 5"sis" 6"universitario" 7"escolar privado" 8"otro" 
+lab val tipocobsalud_ci tipocobsalud_ci
+
+
+*********************
+*** probsalud_ci  ***
+*********************
+* Nota: se pregunta si tuvieron problemas de salud en últimas 4 semanas. 
+** En 2001 se preguntó por los últimos 3 meses, entonces no se consideró
+
+gen probsalud_ci=.
+label var probsalud_ci "Tuvo algún problema de salud en los ultimos días"
+lab def probsalud_ci 0 "No" 1 "Si"
+lab val probsalud_ci probsalud_ci
+
+
+*********************
+*** distancia_ci  ***
+*********************
+gen distancia_ci=.
+
+label var distancia_ci "Dificultad de acceso a salud por distancia"
+lab def distancia_ci 0 "No" 1 "Si"
+lab val distancia_ci distancia_ci
+
+
+*****************
+*** costo_ci  ***
+*****************
+gen costo_ci=.
+
+label var costo_ci "Dificultad de acceso a salud por costo"
+lab def costo_ci 0 "No" 1 "Si"
+lab val costo_ci costo_ci
+
+
+********************
+*** atencion_ci  ***
+********************
+gen atencion_ci=.
+
+label var atencion_ci "Dificultad de acceso a salud por problemas de atencion"
+lab def atencion_ci 0 "No" 1 "Si"
+lab val atencion_ci atencion_ci
+
+
 ******************************
 *** VARIABLES DE MIGRACION ***
 ******************************
@@ -1711,6 +1868,7 @@ gen vivialqimp_ch= vivialqimp
 	destring p208a2, replace
 	gen migrante_ci=(p208a2<10000) if p208a2!=. & p208a2!=999999
 	label var migrante_ci "=1 si es migrante"
+	
 	
 	**********************
 	*** migantiguo5_ci ***

@@ -2007,7 +2007,7 @@ label var ybenefdes_ci "Monto de seguro de desempleo"
 
 gen cobsalud_ci=.
 replace cobsalud_ci=0 if p4191==2 & p4192==2 & p4193==2 & p4194==2 & p4195==2 & p4196==2 &  p4197==2 & p4198==2
-replace cobsalud_ci=1 if p4191==1 | p4192==1 |  p4193==1 | p4194==1 | p4195==1 |  p4196==1 | p4197==1 | 4198==1
+replace cobsalud_ci=1 if p4191==1 | p4192==1 |  p4193==1 | p4194==1 | p4195==1 |  p4196==1 | p4197==1 | p4198==1
 
 label var cobsalud_ci "Tiene cobertura de salud"
 label define cobsalud_ci 0 "No" 1 "Si" 
