@@ -89,6 +89,42 @@ label var region_BID_c "Regiones BID"
 label define region_BID_c 1 "Centroamérica_(CID)" 2 "Caribe_(CCB)" 3 "Andinos_(CAN)" 4 "Cono_Sur_(CSC)"
 label value region_BID_c region_BID_c
 
+
+***************
+*****ine01*****
+***************
+
+gen ine01 = real(substr(ubigeo, 1, 2))
+label define ine01    ///
+1"Amazonas"	          ///
+2"Ancash"	          ///
+3"Apurimac"	          ///
+4"Arequipa"	          ///
+5"Ayacucho"	          ///
+6"Cajamarca"	      ///
+7"Callao"	          ///
+8"Cusco"	          ///
+9"Huancavelica"	      ///
+10"Huanuco"	          ///
+11"Ica"	              ///
+12"Junin"	          ///
+13"La libertad"	      ///
+14"Lambayeque"	      ///
+15"Lima"	          ///
+16"Loreto"	          ///
+17"Madre de Dios"	  ///
+18"Moquegua"	      ///
+19"Pasco"	          ///
+20"Piura"	          ///
+21"Puno"	          ///
+22"San Martín"	      ///
+23"Tacna"	          ///
+24"Tumbes"	          ///
+25"Ucayali"	
+label value ine01 ine01
+label var ine01 "division politico-administrativa, departamento"
+
+
 ***************
 ***factor_ch***
 ***************
@@ -179,6 +215,21 @@ label value relacion_ci relacion_ci
 
 gen factor_ci=factor
 label variable factor_ci "Factor de expansion del individuo"
+
+
+***************
+***upm_ci***
+***************
+
+gen upm_ci = conglome
+
+
+***************
+***estrato_ci***
+***************
+
+gen estrato_ci = estrato
+
 
 **********
 ***sexo***
@@ -340,6 +391,7 @@ label variable miembros_ci "Miembro del hogar"
 	***************
 	
 **Pregunta (solo al jefe y cónyugue) por sus antepasados y de acuerdo a sus costumbres, �ud. se considera:(p46) (1 quechua; 2 aymara; 3 nativo o indígena de la amazonía; 4 negro/ mulato/zambo; 5 blanco; 6 mestizo; 7 otro; 8 no sabe)
+
 gen afroind_ci=.
 replace afroind_ci=1 if (p46 == 1 | p46 == 2 | p46 ==3) & relacion_ci==1
 replace afroind_ci=1 if (p47 == 1 | p47 == 2 | p47 ==3) & relacion_ci==2 
@@ -351,9 +403,11 @@ replace afroind_ci=. if p46==8 & relacion_ci==1
 replace afroind_ci=. if p47==8 & relacion_ci==2
 replace afroind_ci=9 if relacion_ci!=1 & relacion_ci!=2
 
+
 	***************
 	***afroind_ch***
 	***************
+	
 gen afroind_jefe= afroind_ci if relacion_ci==1
 egen afroind_ch  = min(afroind_jefe), by(idh_ch) 
 drop afroind_jefe
@@ -734,7 +788,6 @@ replace rama_ci=6 if (p506>=5000 & p506<=5520) & emp_ci==1
 replace rama_ci=7 if (p506>=6000 & p506<=6420) & emp_ci==1
 replace rama_ci=8 if (p506>=6500 & p506<=7020) & emp_ci==1
 replace rama_ci=9 if (p506>=7111 & p506<=9900) & emp_ci==1
-
 
 
 ****************
@@ -1414,134 +1467,144 @@ replace aedu_ci=. if p212==.
 ***eduno_ci***
 **************
 
-gen byte eduno_ci=(p301a==1 | p301a==2) 
-replace eduno_ci=. if p301a==.
-replace eduno_ci=. if p212==. | p212==0
+gen byte eduno_ci = (aedu_ci == 0) 
+replace eduno_ci=. if aedu_ci==.
 label variable eduno_ci "Cero anios de educacion"
+
 
 **************
 ***edupi_ci***
 **************
 
-gen byte edupi_ci=(p301a==3)
-replace edupi_ci=. if p301a==.
-replace edupi_ci=. if p212==. | p212==0
+gen byte edupi_ci = (aedu_ci > 0 & aedu_ci < 6)
+replace edupi_ci=. if aedu_ci==.
 label variable edupi_ci "Primaria incompleta"
+
 
 **************
 ***edupc_ci***
 **************
 
-gen byte edupc_ci=(p301a==4)
-replace edupc_ci=. if p301a==.
-replace edupc_ci=. if p212==. | p212==0
+gen byte edupc_ci = (aedu_ci==6)
+replace edupc_ci=. if aedu_ci==.
 label variable edupc_ci "Primaria completa"
+
 
 **************
 ***edusi_ci***
 **************
 
-gen byte edusi_ci=(p301a==5)
-replace edusi_ci=. if p301a==.
-replace edusi_ci=. if p212==. | p212==0
+gen byte edusi_ci = (aedu_ci > 6 & aedu_ci < 11)
+replace edusi_ci=. if aedu_ci == .
 label variable edusi_ci "Secundaria incompleta"
+
 
 **************
 ***edusc_ci***
 **************
 
-gen byte edusc_ci=(p301a==6)
-replace edusc_ci=. if p301a==.
-replace edusc_ci=. if p212==. | p212==0
+gen byte edusc_ci = (aedu_ci == 11)
+replace edusc_ci=. if aedu_ci==.
 label variable edusc_ci "Secundaria completa"
+
 
 ***************
 ***edus1i_ci***
 ***************
 
-gen byte edus1i_ci=(p301a==5 & aedu_ci<=8)
-replace edus1i_ci=. if p301a==.
-replace edus1i_ci=. if p212==. | p212==0
+gen byte edus1i_ci=(aedu_ci > 6 & aedu_ci < 9)
+replace edus1i_ci=. if aedu_ci==.
 label variable edus1i_ci "1er ciclo de la secundaria incompleto"
+
 
 ***************
 ***edus1c_ci***
 ***************
 
-gen byte edus1c_ci=(p301a==5 & aedu_ci==9)
-replace edus1c_ci=. if p301a==.
-replace edus1c_ci=. if p212==. | p212==0
-label variable edus1c_ci "1er ciclo de la eecundaria completo"
+gen byte edus1c_ci =(aedu_ci == 9)
+replace edus1c_ci=. if aedu_ci==.
+label variable edus1c_ci "1er ciclo de la secundaria completo"
+
 
 ***************
 ***edus2i_ci***
 ***************
 
-gen byte edus2i_ci=(p301a==5 & aedu_ci==10)
-replace edus2i_ci=. if p301a==.
-replace edus2i_ci=. if p212==. | p212==0
+gen byte edus2i_ci =(aedu_ci == 10)
+replace edus2i_ci=. if aedu_ci==.
 label variable edus2i_ci "2do ciclo de la secundaria incompleto"
+
 
 ***************
 ***edus2c_ci***
 ***************
 
-gen byte edus2c_ci=(p301a==6)
-replace edus2c_ci=. if p301a==.
-replace edus2c_ci=. if p212==. | p212==0
+gen byte edus2c_ci = (aedu_ci == 11)
+replace edus2c_ci=. if aedu_ci==.
 label variable edus2c_ci "2do ciclo de la secundaria completo"
+
 
 **************
 ***eduui_ci***
 **************
 
-gen byte eduui_ci=(p301a==8 | p301a==10)
-replace eduui_ci=. if p301a==.
-replace eduui_ci=. if p212==. | p212==0
+gen byte eduui_ci = (aedu_ci >= 12) & (p301a==7 | p301a==9)
+replace eduui_ci=. if aedu_ci==.
 label variable eduui_ci "Universitaria incompleta"
+
 
 ***************
 ***eduuc_ci***
 ***************
 
-gen byte eduuc_ci=(p301a==7 | p301a==9 | p301a==11 | p301a==12)
-replace eduuc_ci=. if p301a==.
-replace eduuc_ci=. if p212==. | p212==0
-label variable eduuc_ci "Universitaria incompleta o mas"
+gen byte eduuc_ci = (aedu_ci >= 12) & (p301a == 7 | p301a == 9 | p301a == 11 | p301a == 12)
+replace eduuc_ci=. if aedu_ci==.
+label variable eduuc_ci "Universitaria completa o mas"
 
 
 ***************
 ***edupre_ci***
 ***************
 
-gen byte edupre_ci=(p301a==2)
-replace edupre_ci=. if p301a==.
-replace edupre_ci=. if p212==. | p212==0
+gen byte edupre_ci = (p301a==2)
+replace edupre_ci=. if (p301a ==. | p301a == 99)
+replace edupre_ci=. if (p212 ==. | p212 == 0 | aedu_ci ==.)
 label variable edupre_ci "Educacion preescolar"
 
 
 **************
 ***eduac_ci***
 **************
-gen byte eduac_ci=.
-replace eduac_ci=1 if (p301a==10 | p301a==11)
-replace eduac_ci=0 if (p301a==7 | p301a==8 | p301a==9)
+
+gen byte eduac_ci =.
+replace eduac_ci = 1 if (p301a == 7 | p301a == 10 | p301a == 11 | p301a == 12)
+replace eduac_ci = 0 if (p301a == 8 | p301a == 9)
 label variable eduac_ci "Superior universitario vs superior no universitario"
+
 
 ***************
 ***asiste_ci***
 ***************
 
-gen asiste_ci=(p303==1)
-replace asiste_ci=. if p303==9
-replace asiste_ci=. if p212==. | p212==0
+/*Se considera la variable de matricula y de asistencia, codificando como 1 a los que estan matriculados y no asisten por vacaciones*/
+g asiste_ci = (p303 == 1) // matriculados 
+replace asiste_ci = 0 if p303 == 2 & p310 != 6
 label variable asiste_ci "Asiste actualmente a la escuela"
+
+
+****************
+***asispre_ci***
+****************
+g asispre_ci= p304a == 1  // matriculado en nivel inicial (sin edad)
+replace asispre_ci = 0 if p303 == 2 & p310 != 6 // matriculado pero no asiste (y no por vacaciones)
+la var asispre_ci "Asiste a educacion prescolar"
+
 
 *****************
 ***pqnoasis_ci***
 *****************
 
-gen pqnoasis_ci=p310
+gen pqnoasis_ci = p310
 label variable pqnoasis_ci "Razones para no asistir a la escuela"
 label define pqnoasis_ci 1 "SS militar" 2 "Trabajando"
 label define pqnoasis_ci 3 "No centro ens.adult." 4 "No centro ens.pob", add 
@@ -1552,12 +1615,13 @@ label define pqnoasis_ci 11 "Quehaceres domesticos" 12 "Acad. pre-universitaria"
 label define pqnoasis_ci 13 "Otros" 99 "Missing", add
 label value pqnoasis_ci pqnoasis_ci
 
+
 **************
 *pqnoasis1_ci*
 **************
 **Daniela Zuluaga- Enero 2018: Se agrega la variable pqnoasis1_ci cuya sintaxis fue elaborada por Mayra Saenz**
 
-g       pqnoasis1_ci = 1 if p310==8
+g       pqnoasis1_ci = 1 if p310 == 8
 replace pqnoasis1_ci = 2 if p310==2
 replace pqnoasis1_ci = 3 if p310==7 | p310==9
 replace pqnoasis1_ci = 4 if p310==5
@@ -1569,6 +1633,7 @@ replace pqnoasis1_ci = 9 if p310==1 | p310==10 | p310==12 | p310==13
 label define pqnoasis1_ci 1 "Problemas económicos" 2 "Por trabajo" 3 "Problemas familiares o de salud" 4 "Falta de interés" 5	"Quehaceres domésticos/embarazo/cuidado de niños/as" 6 "Terminó sus estudios" 7	"Edad" 8 "Problemas de acceso"  9 "Otros"
 label value  pqnoasis1_ci pqnoasis1_ci
 
+
 ***************
 ***repite_ci***
 ***************
@@ -1576,12 +1641,12 @@ label value  pqnoasis1_ci pqnoasis1_ci
 gen repite_ci=.
 gen repiteult_ci=.
 
+
 ***************
 ***edupub_ci***
 ***************
 
-gen edupub_ci=(p301d==1)
-replace edupub_ci=. if p301d==9
+gen edupub_ci = (p301d == 1)
 replace edupub_ci=. if p212==. | p212==0
 
 
@@ -2208,6 +2273,137 @@ no le permiten
 
 gen DISCONN=0 if     (edad>=15 & edad<=24)
 replace DISCONN=1 if (edad>=15 & edad<=24) & (peaa==. | peaa==3) & p303!=1 & ((p549>=1 & p549<=4) | p549==9)
+
+
+
+**************
+*** SALUD  ***
+**************
+
+*******************
+*** cobsalud_ci ***
+*******************
+
+gen cobsalud_ci=.
+replace cobsalud_ci=0 if (p4121==2 & p4122==2 & p4123==2 & p4124==2 & p4125==2 & p4126==2 & p4127==2) | (p4128==1)
+replace cobsalud_ci=1 if p4121==1 | p4122==1 | p4123==1 | p4124==1 | p4125==1 | p4126==1 | p4127==1
+
+
+label var cobsalud_ci "Tiene cobertura de salud"
+label define cobsalud_ci 0 "No" 1 "Si" 
+label value cobsalud_ci cobsalud_ci
+
+
+************************
+*** tipocobsalud_ci  ***
+************************
+
+gen tipocobsalud_ci=.
+replace tipocobsalud_ci=0 if cobsalud_ci==0
+replace tipocobsalud_ci=1 if p4121==1
+replace tipocobsalud_ci=2 if p4122==1
+* replace tipocobsalud_ci=3 if p4193==1 /// No se preguntaba
+replace tipocobsalud_ci=4 if p4123==1
+* replace tipocobsalud_ci=5 if p4195==1 /// No se preguntaba
+replace tipocobsalud_ci=6 if p4124==1
+replace tipocobsalud_ci=7 if p4126==1
+replace tipocobsalud_ci=8 if (p4127==1 | p4125==1)
+
+label var tipocobsalud_ci "Tipo cobertura de salud"
+lab def tipocobsalud_ci 0"Sin cobertura" 1"essalud" 2"Privado" 3"entidad prestadora" 4"policiales" 5"sis" 6"universitario" 7"escolar privado" 8"otro" 
+lab val tipocobsalud_ci tipocobsalud_ci
+
+
+*********************
+*** probsalud_ci  ***
+*********************
+* Nota: se pregunta si tuvieron problemas de salud en últimas 4 semanas. 
+** En 2000 no sé preguntó
+
+gen probsalud_ci=.
+label var probsalud_ci "Tuvo algún problema de salud en los ultimos días"
+lab def probsalud_ci 0 "No" 1 "Si"
+lab val probsalud_ci probsalud_ci
+
+
+*********************
+*** distancia_ci  ***
+*********************
+gen distancia_ci=.
+
+label var distancia_ci "Dificultad de acceso a salud por distancia"
+lab def distancia_ci 0 "No" 1 "Si"
+lab val distancia_ci distancia_ci
+
+
+*****************
+*** costo_ci  ***
+*****************
+gen costo_ci=.
+
+label var costo_ci "Dificultad de acceso a salud por costo"
+lab def costo_ci 0 "No" 1 "Si"
+lab val costo_ci costo_ci
+
+
+********************
+*** atencion_ci  ***
+********************
+gen atencion_ci=.
+
+label var atencion_ci "Dificultad de acceso a salud por problemas de atencion"
+lab def atencion_ci 0 "No" 1 "Si"
+lab val atencion_ci atencion_ci
+
+
+******************************
+*** VARIABLES DE MIGRACION ***
+******************************
+
+* Variables incluidas por SCL/MIG Fernando Morales
+
+	*******************
+	*** migrante_ci ***
+	*******************
+	
+	gen migrante_ci =.
+	label var migrante_ci "=1 si es migrante"
+	
+	
+	**********************
+	*** migantiguo5_ci ***
+	**********************
+	
+	gen migantiguo5_ci=.
+	label var migantiguo5_ci "=1 si es migrante antiguo (5 anos o mas)"
+		
+	**********************
+	*** migrantelac_ci ***
+	**********************
+	
+	gen migrantelac_ci=.
+	label var migrantelac_ci "=1 si es migrante proveniente de un pais LAC"
+	** Fuente: Los codigos de paises se obtiene del censo de peru (redatam)
+	
+	**********************
+	*** migrantiguo5_ci ***
+	**********************
+	
+	gen migrantiguo5_ci=.
+	label var migrantiguo5_ci "=1 si es migrante antiguo (5 anos o mas)"
+		
+	**********************
+	*** miglac_ci ***
+	**********************
+	
+	gen miglac_ci=.
+	replace miglac_ci = 0 if migrantelac_ci != 1  & migrante_ci == 1
+	replace miglac_ci = . if migrante_ci == 0
+	label var miglac_ci "=1 si es migrante proveniente de un pais LAC"
+	** Fuente: Los codigos de paises se obtiene del censo de peru (redatam)
+
+
+
 
 /*_____________________________________________________________________________________________________*/
 * Asignación de etiquetas e inserción de variables externas: tipo de cambio, Indice de Precios al 
