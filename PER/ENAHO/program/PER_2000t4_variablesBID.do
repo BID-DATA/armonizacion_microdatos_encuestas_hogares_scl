@@ -156,8 +156,8 @@ label variable idp_ci "ID de la persona en el hogar"
 ***zona***
 **********
 
-gen byte zona_c=0 if estrato>=4
-replace zona_c=1 if estrato<4
+gen byte zona_c=0 if estrato >= 4
+replace zona_c=1 if estrato < 4
 
 label variable zona_c "Zona del pais"
 label define zona_c 1 "Urbana" 0 "Rural"
