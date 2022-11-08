@@ -339,7 +339,7 @@ label value clasehog_ch clasehog_ch
 ***nmiembros_ch***
 ******************
 
-by idh_ch, sort: egen nmiembros_ch=sum(relacion_ci>=1 & relacion_ci<=4)
+by idh_ch, sort: egen nmiembros_ch = sum(relacion_ci >= 1 & relacion_ci <= 4)
 label variable nmiembros_ch "Numero de familiares en el hogar"
 
 *****************
@@ -385,10 +385,9 @@ gen miembros_ci=(relacion_ci<5)
 label variable miembros_ci "Miembro del hogar"
 
 
- ******************************
-          *** VARIABLES DE DIVERSIDAD **
-          ******************************
-
+******************************
+*** VARIABLES DE DIVERSIDAD **
+******************************
 
 	***************
 	***afroind_ci***
@@ -676,7 +675,7 @@ replace subemp_ci=. if emp_ci==.
 
 * Modificacion con subempleo visible: quiere trabajar mas horas y esta disponible a trabajar mas horas. MGD 06/19/2014
 gen subemp_ci=0
-replace subemp_ci=1 if horaspri_ci<=30 & P521==1 & emp_ci==1 
+replace subemp_ci=1 if ((horaspri_ci<=30) & (P521==1) & (emp_ci==1))
 
 *******************
 ***tiempoparc_ci***
@@ -1597,7 +1596,7 @@ label variable eduac_ci "Superior universitario vs superior no universitario"
 
 gen asiste_ci=(P303==1)
 replace asiste_ci=. if P303==9
-replace asiste_ci=. if P212==0
+replace asiste_ci=. if P212==.
 label variable asiste_ci "Asiste actualmente a la escuela"
 
 
