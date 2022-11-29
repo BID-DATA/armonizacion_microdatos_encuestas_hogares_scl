@@ -381,7 +381,7 @@ label variable nmenor1_ch "Numero de familiares menores a 1 anio"
 ***miembros_ci***
 ****************
 
-gen miembros_ci=(relacion_ci<5)
+gen miembros_ci=(relacion_ci < 5)
 label variable miembros_ci "Miembro del hogar"
 
 

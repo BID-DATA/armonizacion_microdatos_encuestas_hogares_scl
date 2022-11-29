@@ -90,6 +90,41 @@ label define region_BID_c 1 "Centroamérica_(CID)" 2 "Caribe_(CCB)" 3 "Andinos_(
 label value region_BID_c region_BID_c
 
 ***************
+*****ine01*****
+***************
+
+gen ine01 = real(substr(ubi,1,2))
+label define ine01 ///
+1"Amazonas"	          ///
+2"Ancash"	          ///
+3"Apurimac"	          ///
+4"Arequipa"	          ///
+5"Ayacucho"	          ///
+6"Cajamarca"	      ///
+7"Callao"	          ///
+8"Cusco"	          ///
+9"Huancavelica"	      ///
+10"Huanuco"	          ///
+11"Ica"	              ///
+12"Junin"	          ///
+13"La libertad"	      ///
+14"Lambayeque"	      ///
+15"Lima"	          ///
+16"Loreto"	          ///
+17"Madre de Dios"	  ///
+18"Moquegua"	      ///
+19"Pasco"	          ///
+20"Piura"	          ///
+21"Puno"	          ///
+22"San Martín"	      ///
+23"Tacna"	          ///
+24"Tumbes"	          ///
+25"Ucayali"	
+label value ine01 ine01
+label var ine01 "division politico-administrativa, departamento"
+
+
+***************
 ***factor_ch***
 ***************
 
@@ -180,6 +215,21 @@ label value relacion_ci relacion_ci
 
 gen factor_ci=factorxx
 label variable factor_ci "Factor de expansion del individuo"
+
+***************
+***upm_ci***
+***************
+
+gen upm_ci = conglom1
+
+
+***************
+***estrato_ci***
+***************
+
+gen estrato_ci = estrato
+
+
 
 **********
 ***sexo***
@@ -330,20 +380,40 @@ label variable nmenor1_ch "Numero de familiares menores a 1 anio"
 gen miembros_ci=(relacion_ci<5)
 label variable miembros_ci "Miembro del hogar"
 
-*************
-***raza_ci***
-*************
-gen raza_ci=.
-label define raza_ci 1 "Indígena" 2 "Afro-descendiente" 3 "Otros"
-label value raza_ci raza_ci 
-label value raza_ci raza_ci
-label var raza_ci "Raza o etnia del individuo" 
-notes raza_ci: En el cuestionario no consta una pregunta relacionada con raza.
+******************************
+*** VARIABLES DE DIVERSIDAD **
+******************************
 
-gen raza_idioma_ci = .
-gen id_ind_ci      = .
-gen id_afro_ci     = .
+***************
+***afroind_ci***
+***************
+	
+**Pregunta (solo al jefe y cónyugue) por sus antepasados y de acuerdo a sus costumbres, �ud. se considera:(p46) (1 quechua; 2 aymara; 3 nativo o indígena de la amazonía; 4 negro/ mulato/zambo; 5 blanco; 6 mestizo; 7 otro; 8 no sabe)
 
+gen afroind_ci=.
+
+	***************
+	***afroind_ch***
+	***************
+	
+gen afroind_jefe= afroind_ci if relacion_ci==1
+egen afroind_ch  = min(afroind_jefe), by(idh_ch) 
+drop afroind_jefe
+
+	*******************
+	***afroind_ano_c***
+	*******************
+gen afroind_ano_c=2000
+
+	*******************
+	***dis_ci***
+	*******************
+gen dis_ci=. 
+
+	*******************
+	***dis_ch***
+	*******************
+gen dis_ch=. 
 
 
 ************************************
@@ -1216,9 +1286,7 @@ mayores a los 3 años de edad*/
 destring anoaprob, replace
 
 gen byte aedu_ci=.
-
 replace aedu_ci=0 if niveduca==1 | niveduca==2
-
 replace aedu_ci=1 if niveduca==3 & anoaprob==0
 replace aedu_ci=2 if niveduca==3 & anoaprob==1
 replace aedu_ci=3 if niveduca==3 & anoaprob==2
@@ -1244,104 +1312,103 @@ replace aedu_ci=18 if (niveduca>=5 & niveduca<=8) & anoaprob==7
 replace aedu_ci=. if perseduc==0
 
 
-
 **************
 ***eduno_ci***
 **************
 
-gen byte eduno_ci=(niveduca==1 | niveduca==2) 
-replace eduno_ci=. if niveduca==. | niveduca==99
-replace eduno_ci=. if perseduc==0 | aedu_ci==.
+gen byte eduno_ci = (aedu_ci == 0) 
+replace eduno_ci=. if aedu_ci==.
 label variable eduno_ci "Cero anios de educacion"
+
 
 **************
 ***edupi_ci***
 **************
 
-gen byte edupi_ci=(niveduca==3 & aedu_ci<=5)
-replace edupi_ci=. if niveduca==. | niveduca==99
-replace edupi_ci=. if perseduc==0 | aedu_ci==.
+gen byte edupi_ci = (aedu_ci > 0 & aedu_ci < 6)
+replace edupi_ci =. if aedu_ci ==.
+replace edupi_ci = 1 if (niveduca == 3 & anoaprob ==.)
 label variable edupi_ci "Primaria incompleta"
+
 
 **************
 ***edupc_ci***
 **************
 
-gen byte edupc_ci=(niveduca==3 & aedu_ci==6)
-replace edupc_ci=. if niveduca==. | niveduca==99
-replace edupc_ci=. if perseduc==0 | aedu_ci==.
+gen byte edupc_ci = (aedu_ci==6)
+replace edupc_ci=. if aedu_ci==.
 label variable edupc_ci "Primaria completa"
+
 
 **************
 ***edusi_ci***
 **************
 
-gen byte edusi_ci=(niveduca==4 & aedu_ci<=10)
-replace edusi_ci=. if niveduca==. | niveduca==99
-replace edusi_ci=. if perseduc==0 | aedu_ci==.
+gen byte edusi_ci = (aedu_ci > 6 & aedu_ci < 11)
+replace edusi_ci =. if aedu_ci == .
 label variable edusi_ci "Secundaria incompleta"
+
 
 **************
 ***edusc_ci***
 **************
 
-gen byte edusc_ci=(niveduca==4 & aedu_ci==11)
-replace edusc_ci=. if niveduca==. | niveduca==99
-replace edusc_ci=. if perseduc==0 | aedu_ci==.
+gen byte edusc_ci = (aedu_ci == 11)
+replace edusc_ci =. if aedu_ci==.
 label variable edusc_ci "Secundaria completa"
+
 
 ***************
 ***edus1i_ci***
 ***************
 
-gen byte edus1i_ci=(niveduca==4 & aedu_ci<=8)
-replace edus1i_ci=. if niveduca==. | niveduca==99
-replace edus1i_ci=. if perseduc==0 | aedu_ci==.
+gen byte edus1i_ci = (aedu_ci > 6 & aedu_ci < 9)
+replace edus1i_ci=. if aedu_ci ==.
 label variable edus1i_ci "1er ciclo de la secundaria incompleto"
+
 
 ***************
 ***edus1c_ci***
 ***************
 
-gen byte edus1c_ci=(niveduca==4 & aedu_ci==9)
-replace edus1c_ci=. if niveduca==. | niveduca==99
-replace edus1c_ci=. if perseduc==0 | aedu_ci==.
-label variable edus1c_ci "1er ciclo de la eecundaria completo"
+gen byte edus1c_ci = (aedu_ci == 9)
+replace edus1c_ci=. if aedu_ci==.
+label variable edus1c_ci "1er ciclo de la secundaria completo"
+
 
 ***************
 ***edus2i_ci***
 ***************
 
-gen byte edus2i_ci=(niveduca==4 & aedu_ci==10)
-replace edus2i_ci=. if niveduca==. | niveduca==99
-replace edus2i_ci=. if perseduc==0 | aedu_ci==.
+gen byte edus2i_ci = (aedu_ci == 10)
+replace edus2i_ci=. if aedu_ci==.
 label variable edus2i_ci "2do ciclo de la secundaria incompleto"
+
 
 ***************
 ***edus2c_ci***
 ***************
 
-gen byte edus2c_ci=(niveduca==4 & aedu_ci>=11)
-replace edus2c_ci=. if niveduca==. | niveduca==99
-replace edus2c_ci=. if perseduc==0 | aedu_ci==.
+gen byte edus2c_ci = (aedu_ci == 11)
+replace edus2c_ci =. if aedu_ci==.
 label variable edus2c_ci "2do ciclo de la secundaria completo"
+
 
 **************
 ***eduui_ci***
 **************
 
-gen byte eduui_ci=(niveduca==5 | niveduca==7)
-replace eduui_ci=. if niveduca==. | niveduca==99
-replace eduui_ci=. if perseduc==0 | aedu_ci==.
+gen byte eduui_ci = (aedu_ci >= 12) & (niveduca==5 | niveduca==7)
+replace eduui_ci=. if aedu_ci==.
 label variable eduui_ci "Universitaria incompleta"
+
 
 ***************
 ***eduuc_ci***
 ***************
 
-gen byte eduuc_ci=(niveduca==6 | niveduca==8)
-replace eduuc_ci=. if niveduca==. | niveduca==99
-replace eduuc_ci=. if perseduc==0 | aedu_ci==.
+gen byte eduuc_ci = (aedu_ci >= 12) & (niveduca == 6 | niveduca == 8)
+replace eduuc_ci =. if aedu_ci==.
 label variable eduuc_ci "Universitaria incompleta o mas"
 
 
@@ -1350,7 +1417,7 @@ label variable eduuc_ci "Universitaria incompleta o mas"
 ***************
 
 gen byte edupre_ci=(niveduca==2)
-replace edupre_ci=. if niveduca==. | niveduca==99
+replace edupre_ci=. if niveduca==. | niveduca==9
 replace edupre_ci=. if perseduc==0 | aedu_ci==.
 label variable edupre_ci "Educacion preescolar"
 
@@ -1363,6 +1430,7 @@ replace eduac_ci=1 if (niveduca==7 | niveduca==8)
 replace eduac_ci=0 if (niveduca==5 | niveduca==6)
 label variable eduac_ci "Superior universitario vs superior no universitario"
 
+
 ***************
 ***asiste_ci***
 ***************
@@ -1371,6 +1439,7 @@ gen asiste_ci=(asisccee==1)
 replace asiste_ci=. if asisccee==9
 replace asiste_ci=. if perseduc==0
 label variable asiste_ci "Asiste actualmente a la escuela"
+
 
 *****************
 ***pqnoasis_ci***
@@ -1389,6 +1458,7 @@ label define pqnoasis_ci 7 "Termino", add
 label define pqnoasis_ci 8 "Otra razón", add
 label define pqnoasis_ci 99 "Missing", add
 label value pqnoasis_ci pqnoasis_ci
+
 
 **************
 *pqnoasis1_ci*
@@ -1420,7 +1490,6 @@ gen repiteult_ci=.
 gen edupub_ci=(ceneduca==1)
 replace edupub_ci=. if ceneduca==9
 replace edupub_ci=. if perseduc==0
-
 
 
 **********************************
@@ -1534,6 +1603,124 @@ replace vivialqimp_ch=. if alqmens2==9999*/
 *Modificación Mayra Sáenz - Julio 2015
 gen vivialqimp_ch= vivialqimp
 
+
+
+
+**************
+*** SALUD  ***
+**************
+
+*******************
+*** cobsalud_ci ***
+*******************
+
+gen cobsalud_ci=.
+
+label var cobsalud_ci "Tiene cobertura de salud"
+label define cobsalud_ci 0 "No" 1 "Si" 
+label value cobsalud_ci cobsalud_ci
+
+
+************************
+*** tipocobsalud_ci  ***
+************************
+
+gen tipocobsalud_ci=.
+label var tipocobsalud_ci "Tipo cobertura de salud"
+lab def tipocobsalud_ci 0"Sin cobertura" 1"essalud" 2"Privado" 3"entidad prestadora" 4"policiales" 5"sis" 6"universitario" 7"escolar privado" 8"otro" 
+lab val tipocobsalud_ci tipocobsalud_ci
+
+
+
+*********************
+*** probsalud_ci  ***
+*********************
+* Nota: se pregunta si tuvieron problemas de salud en últimas 4 semanas. 
+** En 1998 no sé preguntó
+
+gen probsalud_ci=.
+label var probsalud_ci "Tuvo algún problema de salud en los ultimos días"
+lab def probsalud_ci 0 "No" 1 "Si"
+lab val probsalud_ci probsalud_ci
+
+
+*********************
+*** distancia_ci  ***
+*********************
+gen distancia_ci=.
+
+label var distancia_ci "Dificultad de acceso a salud por distancia"
+lab def distancia_ci 0 "No" 1 "Si"
+lab val distancia_ci distancia_ci
+
+
+*****************
+*** costo_ci  ***
+*****************
+gen costo_ci=.
+
+label var costo_ci "Dificultad de acceso a salud por costo"
+lab def costo_ci 0 "No" 1 "Si"
+lab val costo_ci costo_ci
+
+
+********************
+*** atencion_ci  ***
+********************
+gen atencion_ci=.
+
+label var atencion_ci "Dificultad de acceso a salud por problemas de atencion"
+lab def atencion_ci 0 "No" 1 "Si"
+lab val atencion_ci atencion_ci
+
+
+******************************
+*** VARIABLES DE MIGRACION ***
+******************************
+
+* Variables incluidas por SCL/MIG Fernando Morales
+
+	*******************
+	*** migrante_ci ***
+	*******************
+	
+	gen migrante_ci =.
+	label var migrante_ci "=1 si es migrante"
+	
+	
+	**********************
+	*** migantiguo5_ci ***
+	**********************
+	
+	gen migantiguo5_ci=.
+	label var migantiguo5_ci "=1 si es migrante antiguo (5 anos o mas)"
+		
+	**********************
+	*** migrantelac_ci ***
+	**********************
+	
+	gen migrantelac_ci=.
+	label var migrantelac_ci "=1 si es migrante proveniente de un pais LAC"
+	** Fuente: Los codigos de paises se obtiene del censo de peru (redatam)
+	
+	**********************
+	*** migrantiguo5_ci ***
+	**********************
+	
+	gen migrantiguo5_ci=.
+	label var migrantiguo5_ci "=1 si es migrante antiguo (5 anos o mas)"
+		
+	**********************
+	*** miglac_ci ***
+	**********************
+	
+	gen miglac_ci=.
+	replace miglac_ci = 0 if migrantelac_ci != 1  & migrante_ci == 1
+	replace miglac_ci = . if migrante_ci == 0
+	label var miglac_ci "=1 si es migrante proveniente de un pais LAC"
+	** Fuente: Los codigos de paises se obtiene del censo de peru (redatam)
+
+
 /*_____________________________________________________________________________________________________*/
 * Asignación de etiquetas e inserción de variables externas: tipo de cambio, Indice de Precios al 
 * Consumidor (2011=100), líneas de pobreza
@@ -1547,7 +1734,7 @@ do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&Exter
 /*_____________________________________________________________________________________________________*/
 
 order region_BID_c region_c pais_c anio_c mes_c zona_c factor_ch	idh_ch	idp_ci	factor_ci sexo_ci edad_ci ///
-raza_idioma_ci  id_ind_ci id_afro_ci raza_ci  relacion_ci civil_ci jefe_ci nconyuges_ch nhijos_ch notropari_ch notronopari_ch nempdom_ch ///
+relacion_ci civil_ci jefe_ci nconyuges_ch nhijos_ch notropari_ch notronopari_ch nempdom_ch ///
 clasehog_ch nmiembros_ch miembros_ci nmayor21_ch nmenor21_ch nmayor65_ch nmenor6_ch	nmenor1_ch	condocup_ci ///
 categoinac_ci nempleos_ci emp_ci antiguedad_ci	desemp_ci cesante_ci durades_ci	pea_ci desalent_ci subemp_ci ///
 tiempoparc_ci categopri_ci categosec_ci rama_ci spublico_ci tamemp_ci cotizando_ci instcot_ci	afiliado_ci ///

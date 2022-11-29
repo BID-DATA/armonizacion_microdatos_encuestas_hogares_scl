@@ -334,7 +334,7 @@ label value clasehog_ch clasehog_ch
 ***nmiembros_ch***
 ******************
 
-by idh_ch, sort: egen nmiembros_ch=sum(relacion_ci>=1 & relacion_ci<=4)
+by idh_ch, sort: egen nmiembros_ch = sum(relacion_ci >= 1 & relacion_ci <= 4)
 label variable nmiembros_ch "Numero de familiares en el hogar"
 
 *****************
@@ -1544,7 +1544,7 @@ label variable edus2i_ci "2do ciclo de la secundaria incompleto"
 ***************
 
 gen byte edus2c_ci = (aedu_ci == 11)
-replace edus2c_c=. if aedu_ci==.
+replace edus2c_ci=. if aedu_ci==.
 label variable edus2c_ci "2do ciclo de la secundaria completo"
 
 
