@@ -410,14 +410,17 @@ gen afroind_ano_c=2017
 	*******************
 	***dis_ci***
 	*******************
-gen dis_ci=. 
+
+gen dis_ci = 0
+replace dis_ci = 1 if (p401h1 == 1 | p401h2 == 1 | p401h3 == 1 | p401h4 == 1 | p401h5 == 1)
+replace dis_ci =. if (p401h1 ==. & p401h2 ==. & p401h3 ==. & p401h4 ==. & p401h5 ==.)
+	
 
 	*******************
 	***dis_ch***
 	*******************
-gen dis_ch=. 
 
-
+egen dis_ch = sum(dis_ci), by(idh_ch) 
 
 
 ************************************
