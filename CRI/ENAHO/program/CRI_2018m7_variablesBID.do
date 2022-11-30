@@ -338,10 +338,14 @@ gen afroind_ano_c=.
 	*************
 	***dis_ci***
 	**************
-gen dis_ci=1 if a8a!=0
-replace dis_ci=0 if a8a==0
-replace dis_ci=. if a8a==. //En caso de que la variable tenga mv
+gen dis_ci = 0
+foreach i in a b {
+forvalues j = 1/5 {
+recode dis_ci 0=1 if a8`i'==`j'
+}
+}
 
+replace dis_ci=. if a8a==.
 
 	*************
 	***dis_ch***
