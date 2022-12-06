@@ -315,15 +315,33 @@ label variable nmenor1_ch "Miembros menores a 1 año dentro del Hogar"
 * Maria Antonella Pereira & Nathalia Maya - Marzo 2021	
 
 			
+***********
+*  RAZA   *
+***********
+
+*Modificación Marcela Rubio 12/20/2015: modificaciones realizadas en base a metodología enviada por SCL/GDI Maria Olga Peña
+
+gen raza_ci=.
+replace raza_ci= 1 if  (ethnic1 == 4)
+replace raza_ci= 2 if  (ethnic1 == 1 | ethnic1 == 3)
+replace raza_ci= 3 if (ethnic1 == 2 | ethnic1 == 5 | ethnic1 == 6 | ethnic1 == 7 | ethnic1 == 8 | ethnic1 == 9 | ethnic1 == 99)
+label define raza_ci 1 "Indígena" 2 "Afro-descendiente" 3 "Otros" 
+label value raza_ci raza_ci 
+label var raza_ci "Raza o etnia del individuo" 
+
+
 	***************
 	*** afroind_ci ***
 	***************
-gen afroind_ci=. 
-
+gen byte afroind_ci = (raza_ci == 1 | raza_ci == 2)
+replace afroind_ci =. if (raza_ci ==.)
+ 
 	***************
 	*** afroind_ch ***
 	***************
-gen afroind_ch=. 
+gen afroind_jefe =. 
+replace afroind_jefe = afroind_ci if (relacion_ci == 1)
+egen afroind_ch  = min(afroind_jefe), by(idh_ch) 
 
 	*******************
 	*** afroind_ano_c ***
@@ -656,8 +674,8 @@ replace ocupa_ci=7 if ((occmain>=7000 & occmain<=8999) | (occmain>=9300 & occmai
 replace ocupa_ci=8 if (occmain>=0 & occmain<=999)  & emp_ci==1
 replace ocupa_ci=9 if ((occmain>=9221 & occmain<=9250) | (occmain>=9353 & occmain<=9999)) & emp_ci==1
 label var ocupa_ci "Tipo de ocupacion laboral"
-label define ocupa 1"Profesional o técnico" 2"Director o funcionario superior" 3"Personal administrativo o nivel intermedio" 4"Comerciante o vendedor" 5"Trabajador en servicios" 6"Trabajador agrícola o afines" 7"Obrero no agrícola, conductores de máquinas y vehículos de transporte y similares" 8"Fuerzas armadas" 9"Otras ocupaciones no clasificadas"
-label values ocupa_ci ocupa
+label define ocupa_ci 1"Profesional o técnico" 2"Director o funcionario superior" 3"Personal administrativo o nivel intermedio" 4"Comerciante o vendedor" 5"Trabajador en servicios" 6"Trabajador agrícola o afines" 7"Obrero no agrícola, conductores de máquinas y vehículos de transporte y similares" 8"Fuerzas armadas" 9"Otras ocupaciones no clasificadas"
+label values ocupa_ci ocupa_ci
 
 **********************************************
 * HORAS TRABAJADAS EN LA ACTIVIDAD PRINCIPAL *

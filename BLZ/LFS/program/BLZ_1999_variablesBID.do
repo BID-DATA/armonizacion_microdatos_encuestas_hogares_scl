@@ -1,4 +1,3 @@
-
 clear
 set more off
 *________________________________________________________________________________________________________________*
@@ -76,6 +75,9 @@ label values region_BID_c region_BID
 * REGION PAIS *
 ***************
 g region_c=.
+gen ine01= q01
+label define ine01 1"corozal" 2"orange walk" 3"belize" 4"cayo" 5"stann creek" 6"toledo"
+
 
 ***************
 *    ZONA     *
@@ -146,63 +148,26 @@ label var sexo_ci "sexo del individuo"
 label define sexo 1"Masculino" 2"Femenino" 
 label values sexo_ci sexo
 
+
+***************
+***upm_ci***
+***************
+
+gen upm_ci =.
+
+***************
+***estrato_ci***
+***************
+
+gen estrato_ci =.
+
+
 ***********
 *  EDAD   *
 ***********
 gen edad_ci=p03
 label var edad_ci "edad del individuo"
 
-***********
-*  RAZA   *
-***********
-
-*Modificación Marcela Rubio 12/20/2015: modificaciones realizadas en base a metodología enviada por SCL/GDI Maria Olga Peña
-
-gen raza_ci=.
-replace raza_ci= 1 if  (p04 ==4)
-replace raza_ci= 2 if  (p04 ==1 | p04==3)
-replace raza_ci= 3 if (p04==2 | p04==5 | p04==6 | p04==7 | p04==8 | p04==9 | p04==99)& raza_ci==.
-label define raza_ci 1 "Indígena" 2 "Afro-descendiente" 3 "Otros" 
-label value raza_ci raza_ci 
-label value raza_ci raza_ci
-label var raza_ci "Raza o etnia del individuo" 
-
-gen raza_ci_aux=.
-replace raza_ci_aux= 1 if  (p04 ==4)
-replace raza_ci_aux= 2 if  (p04 ==1)
-replace raza_ci_aux= 3 if (p04==2 | p04==5 | p04==6 | p04==7 | p04==8 | p04==9 | p04==99)& raza_ci_aux==.
-replace raza_ci_aux= 4 if p04==3
-label define raza_ci_aux 1 "Indígena" 2 "Afro-descendiente" 3 "Otros" 4 "Afroindigena"
-label value raza_ci_aux raza_ci_aux 
-label var raza_ci_aux "Raza o etnia del individuo auxiliar" 
-
-gen raza_idioma_ci=.
-
-gen id_ind_ci = 0
-replace id_ind_ci=1 if raza_ci==1
-label define id_ind_ci 1 "Indígena" 0 "Otros" 
-label value id_ind_ci id_ind_ci 
-label var id_ind_ci  "Indigena" 
-
-gen id_afro_ci = 0
-replace id_afro_ci=1 if raza_ci_aux==2 | raza_ci_aux==4
-label define id_afro_ci 1 "Afro-descendiente" 0 "Otros" 
-label value id_afro_ci id_afro_ci 
-label var id_afro_ci "Afro-descendiente" 
-tab raza_ci
-tab raza_ci [iw=fac_exp]
-
-*la variable p04 tiene una clasificación
-*1= Creole
-*2= East Indian
-*3= Garifuna
-*4= Maya
-*5= Mennonite
-*6= Mestizo
-*7= Chinese
-*8= Caucasian/White
-*9= Other
-*99= DK/NS
 
 *******************
 *  ESTADO CIVIL   *
@@ -321,6 +286,54 @@ label variable nmenor1_ch "Miembros menores a 1 año dentro del Hogar"
 
 
 
+*******************************************************
+***           VARIABLES DE DIVERSIDAD               ***
+*******************************************************				
+* Maria Antonella Pereira & Nathalia Maya - Marzo 2021	
+
+
+***********
+*  RAZA   *
+***********
+
+*Modificación Marcela Rubio 12/20/2015: modificaciones realizadas en base a metodología enviada por SCL/GDI Maria Olga Peña
+
+gen raza_ci=.
+replace raza_ci= 1 if  (p04 == 4)
+replace raza_ci= 2 if  (p04 == 1 | p04 == 3)
+replace raza_ci= 3 if (p04 == 2 | p04 == 5 | p04 == 6 | p04 == 7 | p04 == 8 | p04 == 9 | p04 == 99)
+label define raza_ci 1 "Indígena" 2 "Afro-descendiente" 3 "Otros" 
+label value raza_ci raza_ci 
+label var raza_ci "Raza o etnia del individuo" 
+
+
+	***************
+	*** afroind_ci ***
+	***************
+gen byte afroind_ci = (raza_ci == 1 | raza_ci == 2)
+replace afroind_ci =. if (raza_ci ==.)
+ 
+	***************
+	*** afroind_ch ***
+	***************
+gen afroind_jefe =. 
+replace afroind_jefe = afroind_ci if (relacion_ci == 1)
+egen afroind_ch  = min(afroind_jefe), by(idh_ch) 
+
+	*******************
+	*** afroind_ano_c ***
+	*******************
+gen afroind_ano_c=.		
+
+	*******************
+	*** dis_ci ***
+	*******************
+gen dis_ci=. 
+
+	*******************
+	*** dis_ch ***
+	*******************
+gen dis_ch=. 
 
 
 *******************************
@@ -615,8 +628,8 @@ replace ocupa_ci=7 if ((p28a>=7000 & p28a<=8999) | (p28a>=9300 & p28a<=9339))& e
 replace ocupa_ci=8 if (p28a>=0 & p28a<=999)  & emp_ci==1
 replace ocupa_ci=9 if ((p28a>=9221 & p28a<=9250) | (p28a>=9353 & p28a<=9999)) & emp_ci==1
 label var ocupa_ci "Tipo de ocupacion laboral"
-label define ocupa 1"Profesional o técnico" 2"Director o funcionario superior" 3"Personal administrativo o nivel intermedio" 4"Comerciante o vendedor" 5"Trabajador en servicios" 6"Trabajador agrícola o afines" 7"Obrero no agrícola, conductores de máquinas y vehículos de transporte y similares" 8"Fuerzas armadas" 9"Otras ocupaciones no clasificadas"
-label values ocupa_ci ocupa
+label define ocupa_ci 1"Profesional o técnico" 2"Director o funcionario superior" 3"Personal administrativo o nivel intermedio" 4"Comerciante o vendedor" 5"Trabajador en servicios" 6"Trabajador agrícola o afines" 7"Obrero no agrícola, conductores de máquinas y vehículos de transporte y similares" 8"Fuerzas armadas" 9"Otras ocupaciones no clasificadas"
+label values ocupa_ci ocupa_ci
 
 **********************************************
 * HORAS TRABAJADAS EN LA ACTIVIDAD PRINCIPAL *
@@ -881,7 +894,6 @@ label var lpe_ci "Línea de pobreza extrema oficial en moneda local"
 
 
 
-
 *******************************
 *******************************
 *******************************
@@ -890,6 +902,12 @@ label var lpe_ci "Línea de pobreza extrema oficial en moneda local"
 *******************************
 *******************************
 
+label define p07 1"None" 2"Primary" 3"High school" 4"bttc/bca/bns" 5"sixth form" 6"university" 9"dk/ns"  
+label values p07 p07
+
+
+
+label define p06 0"yes-fulltime" 1"yes-parttime" 2"no" 9"dk/ns" 
 
 
 ******************************************
@@ -1296,9 +1314,116 @@ label var vivialqimp_ch "Monto ud cree le pagarían por su vivienda"
 g tcylmpri_ci=.
 g tcylmpri_ch=.
 g instcot_ci=.
-g edus1i_ci=.
-g edus1c_ci=.
 g mes_c=.
+
+
+**************
+*** SALUD  ***
+**************
+
+*******************
+*** cobsalud_ci ***
+*******************
+
+gen cobsalud_ci=.
+label var cobsalud_ci "Tiene cobertura de salud"
+label define cobsalud_ci 0 "No" 1 "Si" 
+label value cobsalud_ci cobsalud_ci
+
+
+************************
+*** tipocobsalud_ci  ***
+************************
+
+gen tipocobsalud_ci=.
+label var tipocobsalud_ci "Tipo cobertura de salud"
+lab def tipocobsalud_ci 0"Sin cobertura" 1"essalud" 2"Privado" 3"entidad prestadora" 4"policiales" 5"sis" 6"universitario" 7"escolar privado" 8"otro" 
+lab val tipocobsalud_ci tipocobsalud_ci
+
+
+*********************
+*** probsalud_ci  ***
+*********************
+* Nota: se pregunta si tuvieron problemas de salud en últimas 4 semanas. 
+** En 2000 no sé preguntó
+
+gen probsalud_ci=.
+label var probsalud_ci "Tuvo algún problema de salud en los ultimos días"
+lab def probsalud_ci 0 "No" 1 "Si"
+lab val probsalud_ci probsalud_ci
+
+
+*********************
+*** distancia_ci  ***
+*********************
+gen distancia_ci=.
+label var distancia_ci "Dificultad de acceso a salud por distancia"
+lab def distancia_ci 0 "No" 1 "Si"
+lab val distancia_ci distancia_ci
+
+
+*****************
+*** costo_ci  ***
+*****************
+gen costo_ci=.
+label var costo_ci "Dificultad de acceso a salud por costo"
+lab def costo_ci 0 "No" 1 "Si"
+lab val costo_ci costo_ci
+
+
+********************
+*** atencion_ci  ***
+********************
+gen atencion_ci=.
+label var atencion_ci "Dificultad de acceso a salud por problemas de atencion"
+lab def atencion_ci 0 "No" 1 "Si"
+lab val atencion_ci atencion_ci
+
+
+******************************
+*** VARIABLES DE MIGRACION ***
+******************************
+
+* Variables incluidas por SCL/MIG Fernando Morales
+
+	*******************
+	*** migrante_ci ***
+	*******************
+	
+gen migrante_ci = (p05 != 4)
+label var migrante_ci "=1 si es migrante"
+	
+	
+	**********************
+	*** migantiguo5_ci ***
+	**********************
+
+gen migantiguo5_ci=.
+label var migantiguo5_ci "=1 si es migrante antiguo (5 anos o mas) proveniente de un pais LAC"
+	
+
+	**********************
+	*** migrantelac_ci ***
+	**********************
+	
+gen migrantelac_ci=.
+label var migrantelac_ci "=1 si es migrante proveniente de un pais LAC"
+	
+	**********************
+	*** migrantiguo5_ci ***
+	**********************
+	
+gen migrantiguo5_ci = .
+label var migrantiguo5_ci "=1 si es migrante antiguo (5 anos o mas)"
+	
+	**********************
+	*** miglac_ci ***
+	**********************
+	
+gen miglac_ci=.
+label var miglac_ci "=1 si es migrante proveniente de un pais LAC"
+
+
 
 /*_____________________________________________________________________________________________________*/
 * Asignación de etiquetas e inserción de variables externas: tipo de cambio, Indice de Precios al 
