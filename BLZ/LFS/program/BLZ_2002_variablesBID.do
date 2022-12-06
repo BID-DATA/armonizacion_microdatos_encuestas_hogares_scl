@@ -980,56 +980,36 @@ label variable eduno_ci "Cero anios de educacion"
 ******************************************
 * NO HA COMPLETADO LA EDUCACION PRIMARIA *
 ******************************************
-/*gen edupi_ci=.
-replace edupi_ci=1 if yrscompl==1
-replace edupi_ci=0 if yrscompl>1 & yrscompl!=9
-label var edupi_ci "No ha completado la educación primaria"*/
 
-gen edupi_ci=.
-replace edupi_ci=1 if yrcomple<8
-replace edupi_ci=0 if yrcomple>=8 & yrcomple!=99 
+gen byte edupi_ci = (aedu_ci > 1 & aedu_ci < 6)
+replace edupi_ci =. if aedu_ci ==. 
 label variable edupi_ci "Primaria incompleta"
 
 
 ******************************************
 *  HA COMPLETADO LA EDUCACION PRIMARIA   *
 ******************************************
-/*gen edupc_ci=.
-replace edupc_ci=1 if yrscompl>=2 & yrscompl<=6
-replace edupc_ci=0 if yrscompl==1 
-label var edupc_ci "Ha completado la educación primaria"*/
 
-gen edupc_ci=.
-replace edupc_ci=1 if yrcomple>=8 & yrcomple!=99  
-replace edupc_ci=0 if yrcomple<8 
+gen byte edupc_ci = (aedu_ci == 6)  
+replace edupi_ci =. if aedu_ci ==.
 label variable edupc_ci "Primaria completa"
 
 
 ******************************************
 *NO HA COMPLETADO LA EDUCACION SECUNDARIA*
 ******************************************
-/*gen edusi_ci=.
-replace edusi_ci=1 if yrscompl<3
-replace edusi_ci=0 if yrscompl>=3 & yrscompl<=6
-label var edusi_ci "No ha completado la educación secundaria"*/
 
-gen edusi_ci=.
-replace edusi_ci=1 if yrcomple<12
-replace edusi_ci=0 if yrcomple>=12 & yrcomple!=99
+gen byte edusi_ci = (aedu_ci > 6 & aedu_ci < 12)
+replace edusi_ci =. if aedu_ci ==. 
 label variable edusi_ci "Secundaria incompleta"
 
 
 ******************************************
 * HA COMPLETADO LA EDUCACION SECUNDARIA  *
 ******************************************
-/*gen edusc_ci =. 
-replace edusc_ci=1 if yrscompl=>3 & yrscompl<=6
-replace edusc_ci=0 if yrscompl<3
-label var edusc_ci "Ha completado la educación secundaria"*/
 
-gen edusc_ci =. 
-replace edusc_ci=1 if yrcomple>=12 & yrcomple!=99
-replace edusc_ci=0 if yrcomple<12
+gen byte edusc_ci = (aedu_ci == 12)
+replace edusc_ci =. if aedu_ci ==. 
 label variable edusc_ci "Secundaria completa"
 
 
@@ -1037,14 +1017,16 @@ label variable edusc_ci "Secundaria completa"
 ***edus1i_ci***
 ***************
 
-gen byte edus1i_ci=.
+gen byte edus1i_ci = (aedu_ci > 6 & aedu_ci < 10)
+replace edus1i_ci =. if aedu_ci ==. 
 label variable edus1i_ci "1er ciclo de la secundaria incompleto"
+
 
 ***************
 ***edus1c_ci***
 ***************
 
-gen byte edus1c_ci=(aedu_ci==8)
+gen byte edus1c_ci = (aedu_ci == 10)
 replace edus1c_ci=. if aedu_ci==.
 label variable edus1c_ci "1er ciclo de la secundaria completo"
 
@@ -1053,28 +1035,33 @@ label variable edus1c_ci "1er ciclo de la secundaria completo"
 ***edus2i_ci***
 ***************
 
-gen byte edus2i_ci=.
+gen byte edus2i_ci= (aedu_ci > 10 & aedu_ci < 12)
+replace edus2i_ci=. if aedu_ci==.
 label variable edus2i_ci "2do ciclo de la secundaria incompleto"
 
 ***************
 ***edus2c_ci***
 ***************
 
-gen byte edus2c_ci=.
+gen byte edus2c_ci = (aedu_ci == 12)
+replace edus2c_ci=. if aedu_ci==.
 label variable edus2c_ci "2do ciclo de la secundaria completo"
 
 **************
 ***eduui_ci***
 **************
 
-gen byte eduui_ci=.
+gen byte eduui_ci = (aedu_ci > 12 & aedu_ci < 16)
+replace eduui_ci =. if aedu_ci==.
 label variable eduui_ci "Universitaria incompleta"
+
 
 ***************
 ***eduuc_ci***
 ***************
 
-gen byte eduuc_ci=.
+gen byte eduuc_ci = (aedu_ci >= 16)
+replace eduuc_ci =. if aedu_ci==.
 label variable eduuc_ci "Universitaria completa"
 
 ***************
@@ -1082,8 +1069,6 @@ label variable eduuc_ci "Universitaria completa"
 ***************
 
 gen byte edupre_ci=.
-replace edupre_ci = 1 if yrcomple >= 1
-replace edupre_ci = 0 if yrcomple == 0 
 label variable edupre_ci "Educacion preescolar"
 
 
@@ -1411,8 +1396,6 @@ g tcylmpri_ci=.
 g tcylmpri_ch=.
 g instcot_ci=.
 g mes_c=.
-
-
 
 
 **************
