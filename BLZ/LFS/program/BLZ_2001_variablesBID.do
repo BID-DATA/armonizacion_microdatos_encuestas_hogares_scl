@@ -10,7 +10,6 @@ set more off
  *________________________________________________________________________________________________________________*
  
 
-
 global ruta = "${surveysFolder}"
 
 local PAIS BLZ
@@ -22,8 +21,6 @@ local log_file = "$ruta\harmonized\\`PAIS'\\`ENCUESTA'\log\\`PAIS'_`ANO'`ronda'_
 local base_in  = "$ruta\survey\\`PAIS'\\`ENCUESTA'\\`ANO'\\`ronda'\data_merge\\`PAIS'_`ANO'`ronda'.dta"
 local base_out = "$ruta\harmonized\\`PAIS'\\`ENCUESTA'\data_arm\\`PAIS'_`ANO'`ronda'_BID.dta"
    
-
-
 
 capture log close
 log using "`log_file'", replace 
@@ -128,8 +125,6 @@ label values relacion_ci relacion
 gen miembros_ci=0
 replace miembros_ci=1 if (relacion_ci>=1 & relacion_ci<=4)
 label variable miembros_ci "Variable dummy que indica las personas que son miembros del Hogar"
-
-
 
 
 *******************************
@@ -946,7 +941,25 @@ label var lpe_ci "Línea de pobreza extrema oficial en moneda local"
 ******************************************
 * NUMERO DE AÑOS DE EDUCACION CULMINADOS *
 ******************************************
-gen aedu_ci = 0 if (p07 == 1 & p08 == 0)
+
+
+
+/*
+p07
+
+1 NONE
+2 PRIMARY
+3 HIGH-SCHOOL
+4 BTTC-BCA-BNS // post-secondary
+5 SIXTH-FORM // post-secondary
+6 UNIVERSITY // post-secondary
+9 DK-NS
+/ Not Applicable
+
+*/
+
+gen aedu_ci =.
+replace aedu_ci = 0 if (p07 == 1 & p08 == 0)
 replace aedu_ci = 1 if (p07 == 1 & p08 == 1)
 replace aedu_ci = 2 if (p07 == 1 & p08 == 2)
 replace aedu_ci = 3 if (p07 == 1 & p08 == 3)
@@ -962,191 +975,174 @@ replace aedu_ci = 12 if (p07 == 3 & p08 == 0)
 replace aedu_ci = 13 if (p07 == 3 & p08 == 1)
 replace aedu_ci = 14 if (p07 == 5 & p08 == 0)
 replace aedu_ci = 15 if (p07 == 5 & p08 == 1)
-replace aedu_ci = 16 if ((p07 == 5 & p08 == 2) | (p07 == 4 & p08 == 0) | (p07 == 6 & p08 == 0))
+replace aedu_ci = 16 if (p07 == 5 & p08 == 2)
 replace aedu_ci = 17 if (p07 == 5 & p08 == 3)
-replace aedu_ci=. if (p07 ==. | p07 == 9)
+replace aedu_ci = 18 if ((p07 == 4 & p08 == 0)| (p07 == 6 & p08 == 0))
+replace aedu_ci = 19 if ((p07 == 4 & p08 == 1) | (p07 == 6 & p08 == 1)) 
+replace aedu_ci = 20 if ((p07 == 4 & p08 == 2) | (p07 == 6 & p08 == 2)) 
+replace aedu_ci = 21 if ((p07 == 4 & p08 == 3) | (p07 == 6 & p08 == 3)) 
 label var aedu_ci "número de años de educación culminados"
 
 
-******************************************
-*  NO TIENE NINGUN NIVEL DE INSTRUCCION  *
-******************************************
-gen eduno_ci=0
-replace eduno_ci=1 if (p07 == 1 & p08 == 0)
-replace eduno_ci=. if (p07 == 7)
-label var eduno_ci "No tiene ningún nivel de instrucción"
+******************************
+*	eduno_ci
+******************************
+gen byte eduno_ci = (aedu_ci == 0)
+replace eduno_ci=. if aedu_ci ==.
+label var eduno_ci "Personas sin educacion"
 
+******************************
+*	edupi_ci
+******************************
+gen byte edupi_ci = (aedu_ci >= 1 & aedu_ci < 6)
+replace edupi_ci =. if aedu_ci ==.
+label var edupi_ci "Personas que no han completado Primaria"
 
-******************************************
-* NO HA COMPLETADO LA EDUCACION PRIMARIA *
-******************************************
-/*gen edupi_ci=.
-replace edupi_ci=1 if ultcurso==1 & ultgrado>0 & ultgrado<7
-replace edupi_ci=0 if (ultcurso>1 & ultcurso<=6) | (ultcurso==1 & ultgrado==7)
-label var edupi_ci "No ha completado la educación primaria"*/
+******************************
+*	edupc_ci
+******************************
+gen byte edupc_ci = (aedu_ci == 6)
+replace edupc_ci =. if aedu_ci ==.
+label var edupc_ci "Primaria Completa"
 
-gen edupi_ci=.
-replace edupi_ci=1 if aedu_ci<8
-replace edupi_ci=0 if aedu_ci>=8 & aedu_ci!=99 
-label var edupi_ci "No ha completado la educación primaria"
-
-******************************************
-*  HA COMPLETADO LA EDUCACION PRIMARIA   *
-******************************************
-/*gen edupc_ci=.
-replace edupc_ci=1 if ultcurso==2 
-replace edupc_ci=0 if (ultcurso==1 & ultgrado>0 & ultgrado<7) | (ultcurso>1 & ultcurso<=6)
-label var edupc_ci "Ha completado la educación primaria"*/
-
-gen edupc_ci=.
-replace edupc_ci=1 if aedu_ci>=8 & aedu_ci!=99  
-replace edupc_ci=0 if aedu_ci<8 
-label var edupc_ci "Ha completado la educación primaria"
-
-******************************************
-*NO HA COMPLETADO LA EDUCACION SECUNDARIA*
-******************************************
-
+******************************
+*	edusi_ci
+******************************
 gen byte edusi_ci = (aedu_ci > 6 & aedu_ci < 12)
-replace edusi_ci =. if aedu_ci ==. 
-label var edusi_ci "Secundaria incompleta"
+replace edusi_ci =. if aedu_ci ==.
+label var edusi_ci "Secundaria Incompleta"
 
-
-******************************************
-* HA COMPLETADO LA EDUCACION SECUNDARIA  *
-******************************************
-
+******************************
+*	edusc_ci
+******************************
 gen byte edusc_ci = (aedu_ci == 12)
-replace edusc_ci =. if aedu_ci ==. 
-label variable edusc_ci "Secundaria completa"
+replace edusc_ci =. if aedu_ci ==.
+label var edusc_ci "Secundaria Completa"
 
+******************************
+*	edus1i_ci
+******************************
+gen byte edus1i_ci = (aedu_ci >6  & aedu_ci < 10)
+replace edus1i_ci =. if aedu_ci ==.
+label var edus1i_ci "1er ciclo de Educacion Secundaria Incompleto"
 
-***************
-***edus1i_ci***
-***************
-
-gen byte edus1i_ci = (aedu_ci > 6 & aedu_ci < 10)
-replace edus1i_ci =. if aedu_ci ==. 
-label variable edus1i_ci "1er ciclo de la secundaria incompleto"
-
-
-***************
-***edus1c_ci***
-***************
-
+******************************
+*	edus1c_ci
+******************************
 gen byte edus1c_ci = (aedu_ci == 10)
-replace edus1c_ci=. if aedu_ci==.
-label variable edus1c_ci "1er ciclo de la secundaria completo"
+replace edus1c_ci =. if aedu_ci ==.
+label var edus1c_ci "1er ciclo de Educacion Secundaria Completo"
 
+******************************
+*	edus2i_ci
+******************************
+gen byte edus2i_ci = (aedu_ci > 10 & aedu_ci < 12)
+replace edus2i_ci =. if aedu_ci ==.
+label var edus2i_ci "2do ciclo de Educacion Secundaria Incompleto"
 
-***************
-***edus2i_ci***
-***************
-
-gen byte edus2i_ci= (aedu_ci > 10 & aedu_ci < 12)
-replace edus2i_ci=. if aedu_ci==.
-label variable edus2i_ci "2do ciclo de la secundaria incompleto"
-
-***************
-***edus2c_ci***
-***************
-
+******************************
+*	edus2c_ci
+******************************
 gen byte edus2c_ci = (aedu_ci == 12)
-replace edus2c_ci=. if aedu_ci==.
-label variable edus2c_ci "2do ciclo de la secundaria completo"
+replace edus2c_ci =. if aedu_ci ==.
+label var edus2c_ci "2do ciclo de Educacion Secundaria Completo"
 
+******************************
+*	eduui_ci
+******************************
+gen byte eduui_ci = (aedu_ci > 12 & aedu_ci < 18 & p07 != 5)
+replace eduui_ci =. if aedu_ci ==.
+label var eduui_ci "Universitaria o Terciaria Incompleta"
 
-*******************************************
-* NO HA COMPLETADO LA EDUCACION TERCIARIA *
-*******************************************
+******************************
+*	eduuc_ci
+******************************
+gen byte eduuc_ci = (p07 >= 4 & p07 <= 6)
+replace eduuc_ci =. if aedu_ci ==.
+label var eduuc_ci "Universitaria o Terciaria Completa"
 
-gen byte eduui_ci = (aedu_ci > 12 & aedu_ci < 16)
-replace eduui_ci =. if aedu_ci==.
-label variable eduui_ci "Universitaria incompleta"
+******************************
+*	edupre_ci
+******************************
+gen edupre_ci =.
+label var edupre_ci "Educacion preescolar"
 
+******************************
+*	asispre_ci
+******************************
+gen asispre_ci =.
+label var asispre_ci "Asiste a educacion prescolar"	
 
-*******************************************
-*  HA COMPLETADO LA EDUCACION TERCIARIA   *
-*******************************************
+******************************
+*	eduac_ci
+******************************
+gen byte eduac_ci =.
+replace eduac_ci = 0 if (p07 == 5)
+replace eduac_ci = 1 if (p07 == 4 | p07 == 6)
+label var eduac_ci "Superior universitario vs. no universitario"
 
-gen byte eduuc_ci = (aedu_ci >= 16)
-replace eduuc_ci =. if aedu_ci==.
-label variable eduuc_ci "Universitaria completa"
+******************************
+*	asiste_ci
+******************************
+gen byte asiste_ci = (p06 == 0 | p06 == 1)
+replace asiste_ci =. if (p06 ==. | p06 == 9)
+label var asiste_ci "Personas que actualmente asisten a la escuela"
 
+******************************
+*	pqnoasis_ci
+******************************
 
-****************************************
-*  HA COMPLETADO EDUCACION PREESCOLAR  *
-****************************************
-gen byte edupre_ci=.
-label variable edupre_ci "Educacion preescolar"
+/*
 
+01 TOO YOUNG
+02 FINANCIAL
+03 WORKING FOR PAY
+04 WORKING AT HOME
+05 DISTANCE/TRANSP
+06 ILLNESS
+07 LACK OF SPACE
+08 OTHER
+99 DK/NS
+// NA
 
-**************
-***eduac_ci***
-**************
-gen byte eduac_ci=.
-label variable eduac_ci "Superior universitario vs superior no universitario"
-
-
-************************************
-*  ASISTE A UN CENTRO DE ENSEÑANZA *
-************************************
-gen asiste_ci = 1 if (p06 == 0 | p06 == 1)
-replace asiste_ci = 0 if p06 == 2
-replace asiste_ci =. if p06 == 3
-label var asiste_ci "Asiste a algún centro de enseñanza"
-
-
-*********************************************
-* PORQUE NO ASISTE A UN CENTRO DE ENSEÑANZA *
-*********************************************
+*/
 
 gen pqnoasis_ci = p08b
-label var pqnoasis_ci "Porque no asiste a algún centro de enseñanza"
-label define pqnoasis 1"Muy joven" 2"Razones financieras" 3"Esta trabajando para pagarlo" 4"Trabaja en casa o negocio familiar" 5"Distancia a la escuela/transporte" 6"Enfermedad/inhabilidad" 7"falta de especio en la escuela" 8"Otra" 99"NS/NR"  
-label values pqnoasis_ci pqnoasis
+replace pqnoasis_ci =. if (p08b == 99) 
+label var pqnoasis_ci "Razones para no asistir a la escuela"
 
-**Daniela Zuluaga- Enero 2018: Se agrega la variable pqnoasis1_ci**
+**************
+*pqnoasis1_ci*
+**************
 
-******************
-***pqnoasis1_ci***
-******************
-
-gen pqnoasis1_ci=.
+gen pqnoasis1_ci =.
 replace pqnoasis1_ci = 1 if (pqnoasis_ci == 2)
 replace pqnoasis1_ci = 2 if (pqnoasis_ci == 3 | pqnoasis_ci == 4)
 replace pqnoasis1_ci = 3 if (pqnoasis_ci == 6)
 replace pqnoasis1_ci = 7 if (pqnoasis_ci == 1)
 replace pqnoasis1_ci = 8 if (pqnoasis_ci == 5 | pqnoasis_ci == 7)
 replace pqnoasis1_ci = 9 if (pqnoasis_ci == 8)
-replace pqnoasis1_ci =. if (pqnoasis_ci == 99 | pqnoasis_ci ==.)
-label define pqnoasis1_ci 1"Problemas económicos" 2"Por trabajo" 3"Problemas familiares o de salud" 4"Falta de interés" 5"Quehaceres domésticos/embarazo/cuidado de niños/as" 6"Terminó sus estudios" 7"Edad" 8"Problemas de acceso"  9"Otros"
+
+label define pqnoasis1_ci 1 "Problemas económicos" 2 "Por trabajo" 3 "Problemas familiares o de salud" 4 "Falta de interés" 5"Quehaceres domésticos/embarazo/cuidado de niños/as" 6 "Terminó sus estudios" 7"Edad" 8 "Problemas de acceso"  9 "Otros"
 label value  pqnoasis1_ci pqnoasis1_ci
 
 
-************************************
-*  HA REPETIDO ALGUN AÑO O GRADO   *
-************************************
+******************************
+*	repite_ci
+******************************
 gen repite_ci=.
-*replace repite_ci=1 if
-label var repite_ci "Ha repetido algún año o grado"
-
 
 ******************************
-*  HA REPETIDO EL ULTIMO AÑO *
+*	repiteult_ci
 ******************************
-gen repiteult_ci=.
-*replace repiteult_ci=1 if
-label var repiteult_ci "Ha repetido el último grado"
+gen repiteult_ci =.
 
+******************************
+*	edupub_ci
+******************************
+gen edupub_ci =.
+label var edupub_ci "Personas que asisten a centros de ensenanza publicos"
 
-***************************************
-*ASISTE A CENTRO DE ENSEÑANZA PUBLICA *
-***************************************
-gen edupub_ci=.
-label var repiteult_ci "Asiste a centro de enseñanza pública"
-label define edupub 1"Pública" 0"Privada"  
-label values edupub_ci edupub
 
 
 *******************************
