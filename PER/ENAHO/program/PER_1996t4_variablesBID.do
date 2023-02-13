@@ -754,294 +754,10 @@ gen durades_ci=.
 
 gen antiguedad_ci=.
 
+
 *************************************************************************************
 *******************************INGRESOS**********************************************
 *************************************************************************************
-
-
-*Mayra Sáenz- Julio 2015: En este quietly se encuentra la generación de ingresos anterior.
-/*
-quietly {
-
-***************
-***ylmpri_ci***
-***************
-*Para los trabajadores dependientes
-
-gen ypridbd=.
-
-replace ypridbd=ingdliq*30 if indpago==1 
-replace ypridbd=ingdliq*4.3 if indpago==2 
-replace ypridbd=ingdliq*2 if indpago==3 
-replace ypridbd=ingdliq if indpago==4 
-replace ypridbd=. if ingdliq==99999
-
-replace ypridbd=0 if categopri_ci==4 
-/* A los trabajadores no remunerados que trabajan menos de 15 horas la encuesta no les
-pregunta acerca de sus ingresos y los manda a la sección de desempleo. Como este grupo en
-realidad está trabajando, reemplazo su ingreso missing por cero*/
-
-replace ypridbd=. if categopri_ci<=2
-
-*Para los trabajadores independientes
-/*En este caso la pregunta no permite distinguir entre ingreso monetario
-y en especie, vamos a asumir que es monetario*/
-
-gen yprijbi=.
-replace yprijbi=ingindep
-replace yprijbi=. if ingindep==99999
-replace yprijbi=. if categopri_ci>2
-
-*Ingreso laboral monetario para todos
-
-egen ylmpri_ci=rsum(yprijbi ypridbd)
-replace ylmpri_ci=. if ypridbd==. & yprijbi==.
-replace ylmpri_ci=. if emp~=1
-
-
-*******************
-*** nrylmpri_ci ***
-*******************
-
-gen nrylmpri_ci=(ylmpri_ci==. & emp_ci==1)
-
-
-******************
-*** ylnmpri_ci ***
-******************
-
-*Ingreso laboral no monetario de los dependientes
-
-local especie= "alime vesti trans vivie salud otro"
-
-foreach i of local especie { 
-
-gen especie`i'=.
-replace especie`i'=(est`i')*30  if fre`i'==1
-replace especie`i'=(est`i')*4.3 if fre`i'==2
-replace especie`i'=(est`i')*2   if fre`i'==3
-replace especie`i'=est`i'     if fre`i'==4
-replace especie`i'=(est`i')/2   if fre`i'==5
-replace especie`i'=(est`i')/3   if fre`i'==6
-replace especie`i'=(est`i')/6   if fre`i'==7
-replace especie`i'=(est`i')/12  if fre`i'==8
-replace especie`i'=. if est`i'==9999 
-}
-
-
-rename especiealime especie1
-rename especievesti especie2
-rename especietrans especie3
-rename especievivie especie4
-rename especiesalud especie5
-rename especieotro especie6
-
-
-egen ylnmprid=rsum(especie1 especie2 especie3 especie4 especie5 especie6)
-replace ylnmprid=. if especie1==. &  especie2==. & especie3==. & especie4==. & especie5==. & especie6==.
-replace ylnmprid=0 if categopri_ci==4
-replace ylnmprid=0 if pagespec==2
-replace ylnmprid=. if categopri_ci<=2 | categopri_ci==.
-
-*Ingreso laboral no monetario de los independientes (autoconsumo)
-
-gen ylnmprii=ingautoc
-replace ylnmprii=. if ingautoc==99999
-replace ylnmprii=. if categopri_ci>2
-
-*Ingreso laboral no monetario para todos
-
-egen ylnmpri_ci=rsum(ylnmprid ylnmprii)
-replace ylnmpri_ci=. if ylnmprid==. & ylnmprii==.
-replace ylnmpri_ci=. if emp_ci~=1
-
-
-***************
-***ylmsec_ci***
-***************
-
-*Ingreso laboral monetario para todos
-
-gen ylmsec_ci=ingsecun
-replace ylmsec_ci=. if ingsecun==99999
-replace ylmsec_ci=0 if ingsnore==0
-replace ylmsec_ci=. if emp~=1
-
-
-******************
-****ylnmsec_ci****
-******************
-
-gen ylnmsec_ci=.
-
-
-************
-***ylm_ci***
-************
-
-*Sumamos ingresos extraordinarios por trabajo dependiente
-egen ingext=rsum(ingsnavi ingspatr ingsvaca ingsesco ingspart ingsrela ingsotro)
-replace ingext=. if ingsnavi==. & ingspatr==. & ingsvaca==. & ingsesco==. & ingspart==. & ingsrela==. & ingsotro==.
-replace ingext=ingext/12
-
-egen ylm_ci=rsum(ylmpri_ci ylmsec_ci ingext)
-replace ylm_ci=. if ylmpri_ci==. & ylmsec_ci==. & ingext==.
-
-
-*************
-***ylnm_ci***
-*************
-
-egen ylnm_ci=rsum(ylnmpri_ci ylnmsec_ci)
-replace ylnm_ci=. if ylnmpri_ci==. & ylnmsec_ci==.
-
-
-*************
-***ynlm_ci***
-*************
-
-gen transco=ingtraco
-replace transco=. if ingtraco==99999
-
-gen rentas=ingrenta
-replace rentas=. if ingrenta==99999
-
-egen ynlm_ci=rsum(transco rentas)
-replace ynlm_ci=. if transco==. & rentas==. 
-
-**************
-***ynlnm_ci***
-**************
-
-gen ynlnm_ci=.
-
-
-****************
-***remesas_ci***
-****************
-
-gen remesas_ci=ingtraex
-replace remesas_ci=. if ingtraex==99999
-
-************************
-*** HOUSEHOLD INCOME ***
-************************
-
-*******************
-*** nrylmpri_ch ***
-*******************
-*Creating a Flag label for those households where someone has a ylmpri_ci as missing
-
-by idh_ch, sort: egen nrylmpri_ch=sum(nrylmpri_ci) if miembros_ci==1
-replace nrylmpri_ch=1 if nrylmpri_ch>0 & nrylmpri_ch<.
-replace nrylmpri_ch=. if nrylmpri_ch==.
-
-
-**************
-*** ylm_ch ***
-**************
-
-by idh_ch, sort: egen ylm_ch=sum(ylm_ci) if miembros_ci==1
-
-
-****************
-*** ylmnr_ch ***
-****************
-
-by idh_ch, sort: egen ylmnr_ch=sum(ylm_ci) if miembros_ci==1
-replace ylmnr_ch=. if nrylmpri_ch==1
-
-
-***************
-*** ylnm_ch ***
-***************
-
-by idh_ch, sort: egen ylnm_ch=sum(ylnm_ci) if miembros_ci==1
-
-**********************************************************************************************
-***TCYLMPRI_CH : Identificador de los hogares en donde alguno de los miembros reporta como
-*** top-code el ingreso de la actividad principal. .
-***********************************************************************************************
-gen tcylmpri_ch = .
-label var tcylmpri_ch "Id hogar donde algún miembro reporta como top-code el ingr de activ. principal"
-
-***********************************************************************************************
-***TCYLMPRI_CI : Identificador de top-code del ingreso de la actividad principal.
-***********************************************************************************************
-gen tcylmpri_ci = .
-label var tcylmpri_ci "Identificador de top-code del ingreso de la actividad principal"
-
-*****************
-***ylmotros_ci***
-*****************
-
-gen ylmotros_ci=.
-label var ylmotros_ci "Ingreso laboral monetario de otros trabajos" 
-
-gen ylnmotros_ci=.
-
-******************
-*** remesas_ch ***
-******************
-
-by idh_ch, sort: egen remesas_ch=sum(remesas_ci) if miembros_ci==1
-
-
-***************
-*** ynlm_ch ***
-***************
-
-by idh_ch, sort: egen ynlm_ch=sum(ynlm_ci) if miembros_ci==1
-
-****************
-*** ynlnm_ch ***
-****************
-
-gen ynlnm_ch=.
-
-*******************
-*** autocons_ci ***
-*******************
-
-gen autocons_ci=ingautoc
-replace autocons_ci=. if ingautoc==99999
-replace autocons_ci=. if emp_ci~=1
-
-
-*******************
-*** autocons_ch ***
-*******************
-
-by idh_ch, sort: egen autocons_ch=sum(autocons_ci) if miembros_ci==1
-
-*******************
-*** rentaimp_ch ***
-*******************
-
-gen rentaimp_ch=alqmens2
-replace rentaimp_ch=. if alqmens2==9999
-
-
-*****************
-***ylhopri_ci ***
-*****************
-
-gen ylmhopri_ci=ylmpri_ci/(horaspri_ci*4.3)
-
-
-***************
-***ylmho_ci ***
-***************
-
-gen ylmho_ci=ylm_ci/(horastot_ci*4.3)
-
-} /// Se cierra quietly
-
-
-*/
-*==================================================================================================================================================================*
-* Mayra Sáenz- Julio 2015: Se reemplazan los ingresos por los originales del instituto de estadística del país, de acuerdo a sintaxis elaborada por Marcos Robles.
-*==================================================================================================================================================================*
 
 **************
 ***ylmpri_ci***
@@ -1050,81 +766,58 @@ gen ylmho_ci=ylm_ci/(horastot_ci*4.3)
 
 gen ylmpri_ci = p73
 
-
-recode ingdlide ingindde ingsecde ingextde ingtrcde ingtexde totpagde ingautde (.=0) (999999=0)
-gen ypridbd = ingdlide /3
-gen yprijbi = ingindde /3 
-gen ysecbd  = ingsecde /3
-gen ysecjbi = 0
-gen ingext  = ingextde /3
-
-egen ylmpri_ci=rsum(ypridbd yprijbi ingext), missing
-
-
 *******************
 *** nrylmpri_ci ***
 *******************
 
 gen nrylmpri_ci=.
 
-
 ******************
 *** ylnmpri_ci ***
 ******************
 
-gen ylnmprid = totpagde /3
-gen ylnmprii = ingautde /3
-gen ylnmsecd = 0
-gen ylnmseci = 0
-
-
-egen ylnmpri_ci=rsum(ylnmprid ylnmprii), missing
-
+gen ylnmpri_ci =.
 
 
 ***************
 ***ylmsec_ci***
 ***************
-egen ylmsec_ci=rsum(ysecbd ysecjbi), missing
+
+gen ylmsec_ci =.
 
 
 ******************
 ****ylnmsec_ci****
 ******************
 
-egen ylnmsec_ci=rsum(ylnmsecd ylnmseci), missing
+gen ylnmsec_ci =.
 
 
 ************
 ***ylm_ci***
 ************
-egen ylm_ci = rowtotal(ypridbd yprijbi ysecbd ysecjbi ingext), missing
+
+gen ylm_ci =.
 
 *************
 ***ylnm_ci***
 *************
 
-egen ylnm_ci = rowtotal(ylnmprid ylnmprii ylnmsecd ylnmseci), missing
+gen ylnm_ci =.
 
 
 *************
 ***ynlm_ci***
 *************
 
-gen transltot = ingtrcde /3
-gen transetot = ingtexde /3
-
-gen remesas_ci= ingtexde /3 if tranco03==1
-
-recode remesas_ci (.=0)
-egen ynlm_ci  = rowtotal(transltot transetot ingrende), missing  // ingrende es la renta de la propiedad
+gen ynlm_ci =.
+gen remesas_ci =.
 
 **************
 ***ynlnm_ci***
 **************
 
-gen vivialqimp = ia01hd /3
-gen ynlnm_ci = (ig06hd+ig08hd+ig24hd+gru13hd+gru23hd+gru24hd+gru33hd+gru34hd+gru43hd+gru44hd+gru53hd+gru54hd+gru63hd+gru64hd+gru73hd+gru74hd+gru83hd+gru84hd) /(3 * nmiembros_ch)
+gen ynlnm_ci =.
 
 ********************
 ***Transferencias***
@@ -1132,8 +825,8 @@ gen ynlnm_ci = (ig06hd+ig08hd+ig24hd+gru13hd+gru23hd+gru24hd+gru33hd+gru34hd+gru
 
 *-Monetarias
 * 1997
-gen trac_pri = totpagde/3 if tranco02==1 | tranco04==1 | tranco05==1
-gen trac_pub = 0
+gen trac_pri =.
+gen trac_pub =.
 
 *-No Monetarias
 *Se generan a partir de 2001
@@ -1142,14 +835,15 @@ gen dona_pri =.
 
 * TOTAL (las privadas incluyen transferencias del exterior)
 
-egen trat_pri = rsum( trac_pri  dona_pri  transetot), missing
-egen trat_pub = rsum( trac_pub  dona_pub), missing
+gen trat_pri =.
+gen trat_pub =.
 
 ****************
 *Rentas y otros*
 ****************
-gen rtasot = .
+gen rtasot =.
 label var rtasot "Rentas y otros"
+
 
 ************************
 *** HOUSEHOLD INCOME ***
@@ -1160,43 +854,39 @@ label var rtasot "Rentas y otros"
 *******************
 *Creating a Flag label for those households where someone has a ylmpri_ci as missing
 
-by idh_ch, sort: egen nrylmpri_ch=sum(nrylmpri_ci) if miembros_ci==1
-replace nrylmpri_ch=1 if nrylmpri_ch>0 & nrylmpri_ch<.
-replace nrylmpri_ch=. if nrylmpri_ch==.
+gen nrylmpri_ch =.
 
 
 **************
 *** ylm_ch ***
 **************
 
-by idh_ch, sort: egen ylm_ch=sum(ylm_ci) if miembros_ci==1
-
+gen ylm_ch =.
 
 ****************
 *** ylmnr_ch ***
 ****************
 
-by idh_ch, sort: egen ylmnr_ch=sum(ylm_ci) if miembros_ci==1
-replace ylmnr_ch=. if nrylmpri_ch==1
-
+gen ylmnr_ch =.
 
 ***************
 *** ylnm_ch ***
 ***************
 
-by idh_ch, sort: egen ylnm_ch=sum(ylnm_ci) if miembros_ci==1
+gen ylnm_ch =.
+
 
 **********************************************************************************************
 ***TCYLMPRI_CH : Identificador de los hogares en donde alguno de los miembros reporta como
 *** top-code el ingreso de la actividad principal. .
 ***********************************************************************************************
-gen tcylmpri_ch = .
+gen tcylmpri_ch =.
 label var tcylmpri_ch "Id hogar donde alg򮠭iembro reporta como top-code el ingr de activ. principal"
 
 ***********************************************************************************************
 ***TCYLMPRI_CI : Identificador de top-code del ingreso de la actividad principal.
 ***********************************************************************************************
-gen tcylmpri_ci = .
+gen tcylmpri_ci =.
 label var tcylmpri_ci "Identificador de top-code del ingreso de la actividad principal"
 
 *****************
@@ -1212,28 +902,27 @@ gen ylnmotros_ci=.
 *** remesas_ch ***
 ******************
 
-by idh_ch, sort: egen remesas_ch=sum(remesas_ci) if miembros_ci==1
-
+gen remesas_ch =.
 
 ***************
 *** ynlm_ch ***
 ***************
 
-by idh_ch, sort: egen ynlm_ch=sum(ynlm_ci) if miembros_ci==1
+gen ynlm_ch =.
 
 ****************
 *** ynlnm_ch ***
 ****************
 
-by idh_ch, sort: egen ynlnm_ch=sum(ynlnm_ci) if miembros_ci==1
+gen ynlnm_ch =.
 
 *******************
 *** autocons_ci ***
 *******************
 
-gen autocons_ci=ingautoc
-replace autocons_ci=. if ingautoc==99999
-replace autocons_ci=. if emp_ci~=1
+gen autocons_ci = p72        
+replace autocons_ci=. if p72==99999
+replace autocons_ci=. if emp_ci ~= 1
 
 
 *******************
@@ -1250,26 +939,21 @@ by idh_ch, sort: egen autocons_ch=sum(autocons_ci) if miembros_ci==1
 *replace rentaimp_ch=. if alqmens2==9999
 
 *Modificación Mayra Sáenz - Julio 2015
-gen rentaimp_ch= vivialqimp
+gen rentaimp_ch =.
 
 *****************
 ***ylhopri_ci ***
 *****************
 
-gen ylmhopri_ci=ylmpri_ci/(horaspri_ci*4.3)
+gen ylmhopri_ci =.
 
 
 ***************
 ***ylmho_ci ***
 ***************
 
-gen ylmho_ci=ylm_ci/(horastot_ci*4.3)
+gen ylmho_ci =.
 
-
-
-
-
-** REVISAR HASTA AQUI**
 
 ****************************
 ***VARIABLES DE EDUCACION***
@@ -1451,19 +1135,19 @@ label variable asiste_ci "Asiste actualmente a la escuela"
 ***pqnoasis_ci***
 *****************
 
-gen pqnoasis =.
+gen pqnoasis_ci =.
 
-label variable pqnoasis "Razones para no asistir a la escuela"
-label define pqnoasis 1 "Estoy trabajando"
-label define pqnoasis 2 "No me interesa", add
-label define pqnoasis 3 "Por enfermedad", add
-label define pqnoasis 4 "Prob. econ", add
-label define pqnoasis 5 "Prob.fam", add
-label define pqnoasis 6 "Bajas notas", add
-label define pqnoasis 7 "Termino", add
-label define pqnoasis 8 "Otra razón", add
-label define pqnoasis 99 "Missing", add
-label value pqnoasis pqnoasis
+label variable pqnoasis_ci "Razones para no asistir a la escuela"
+label define pqnoasis_ci 1 "Estoy trabajando"
+label define pqnoasis_ci 2 "No me interesa", add
+label define pqnoasis_ci 3 "Por enfermedad", add
+label define pqnoasis_ci 4 "Prob. econ", add
+label define pqnoasis_ci 5 "Prob.fam", add
+label define pqnoasis_ci 6 "Bajas notas", add
+label define pqnoasis_ci 7 "Termino", add
+label define pqnoasis_ci 8 "Otra razón", add
+label define pqnoasis_ci 99 "Missing", add
+label value pqnoasis_ci pqnoasis_ci
 
 
 **************
@@ -1733,14 +1417,14 @@ lab val atencion_ci atencion_ci
 /*_____________________________________________________________________________________________________*/
 
 order region_BID_c region_c pais_c anio_c mes_c zona_c factor_ch	idh_ch	idp_ci	factor_ci sexo_ci edad_ci ///
-raza_idioma_ci  id_ind_ci id_afro_ci raza_ci  relacion_ci civil_ci jefe_ci nconyuges_ch nhijos_ch notropari_ch notronopari_ch nempdom_ch ///
+relacion_ci civil_ci jefe_ci nconyuges_ch nhijos_ch notropari_ch notronopari_ch nempdom_ch ///
 clasehog_ch nmiembros_ch miembros_ci nmayor21_ch nmenor21_ch nmayor65_ch nmenor6_ch	nmenor1_ch	condocup_ci ///
 categoinac_ci nempleos_ci emp_ci antiguedad_ci	desemp_ci cesante_ci durades_ci	pea_ci desalent_ci subemp_ci ///
 tiempoparc_ci categopri_ci categosec_ci rama_ci spublico_ci tamemp_ci cotizando_ci instcot_ci	afiliado_ci ///
 formal_ci tipocontrato_ci ocupa_ci horaspri_ci horastot_ci	pensionsub_ci pension_ci tipopen_ci instpen_ci	ylmpri_ci nrylmpri_ci ///
 tcylmpri_ci ylnmpri_ci ylmsec_ci ylnmsec_ci	ylmotros_ci	ylnmotros_ci ylm_ci	ylnm_ci	ynlm_ci	ynlnm_ci ylm_ch	ylnm_ch	ylmnr_ch  ///
 ynlm_ch	ynlnm_ch ylmhopri_ci ylmho_ci rentaimp_ch autocons_ci autocons_ch nrylmpri_ch tcylmpri_ch remesas_ci remesas_ch	ypen_ci	ypensub_ci ///
-salmm_ci tc_c ipc_c lp19_c lp31_c lp5_c lp_ci lpe_ci aedu_ci eduno_ci edupi_ci edupc_ci	edusi_ci edusc_ci eduui_ci eduuc_ci	edus1i_ci ///
+salmm_ci aedu_ci eduno_ci edupi_ci edupc_ci	edusi_ci edusc_ci eduui_ci eduuc_ci	edus1i_ci ///
 edus1c_ci edus2i_ci edus2c_ci edupre_ci eduac_ci asiste_ci pqnoasis_ci pqnoasis1_ci	repite_ci repiteult_ci edupub_ci tecnica_ci ///
 aguared_ch aguadist_ch aguamala_ch aguamide_ch luz_ch luzmide_ch combust_ch	bano_ch banoex_ch des1_ch des2_ch piso_ch aguamejorada_ch banomejorado_ch  ///
 pared_ch techo_ch resid_ch dorm_ch cuartos_ch cocina_ch telef_ch refrig_ch freez_ch auto_ch compu_ch internet_ch cel_ch ///
@@ -1749,9 +1433,6 @@ vivi1_ch vivi2_ch viviprop_ch vivitit_ch vivialq_ch	vivialqimp_ch , first
 
 
 compress
-
-
-do "$ruta\harmonized\\Labels_Harmonized_DataBank.do"
 
 saveold "`base_out'", replace
 log off
