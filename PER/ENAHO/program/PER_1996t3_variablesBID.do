@@ -1103,7 +1103,7 @@ label variable eduui_ci "Universitaria incompleta"
 
 gen byte eduuc_ci = (aedu_ci >= 12) & (nivel_educ == 6 | nivel_educ == 8)
 replace eduuc_ci =. if aedu_ci==.
-label variable eduuc_ci "Universitaria incompleta o mas"
+label variable eduuc_ci "Universitaria completa o mas"
 
 
 ***************
