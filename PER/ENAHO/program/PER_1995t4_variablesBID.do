@@ -428,14 +428,13 @@ gen dis_ch=.
 /* Esta sección es para los residentes habituales del hogar mayores a 14 años*/
 
 
-*/
 ****************
 ****condocup_ci*
 ****************
 gen condocup_ci =.
-replace condocup_ci = 1 if (g36 == 1 | g36 == 2)
-replace condocup_ci = 2 if (g36 == 3)
-replace condocup_ci = 3 if (g36 >= 4 & g36 <= 9)
+replace condocup_ci = 1 if (g63 == 1)
+replace condocup_ci = 2 if (g63 == 2 | g63 == 3)
+replace condocup_ci = 3 if (g63 >= 4 & g63 <= 9)
 replace condocup_ci = 4 if (edad_ci < 14)
 label define condocup_ci 1"ocupados" 2"desocupados" 3"inactivos" 4"menor de PET"
 label value condocup_ci condocup_ci
@@ -481,7 +480,12 @@ label var cotizapri_ci "Cotizante a la Seguridad Social por su trabajo principal
 *****************
 *tipocontrato_ci*
 *****************
+
 gen tipocontrato_ci =.
+replace tipocontrato_ci = 1 if (g73 == 1)
+replace tipocontrato_ci = 2 if (g73 == 2)
+replace tipocontrato_ci = 3 if (g73 == 3)
+
 label var tipocontrato_ci "Tipo de contrato segun su duracion en act principal"
 label define tipocontrato_ci 1 "Permanente/indefinido" 2 "Temporal" 3 "Sin contrato/verbal" 
 label value tipocontrato_ci tipocontrato_ci
@@ -496,6 +500,10 @@ gen tamemp_ci=ocprango
 label define  tamemp_ci 1"menos de 100" 2"de 100 a 499" 3"de 500 y más p"
 label var tamemp_ci "# empleados en la empresa de la actividad principal"
 */
+
+
+* REVISAR AQUI
+
 gen tamemp_ci =.
 label define tamaño 1"pequeña" 2"mediana" 3"grande"
 label values tamemp_ci tamaño
@@ -505,20 +513,22 @@ label values tamemp_ci tamaño
 **categoinac_ci*
 ****************
 
-
-
-
-* REVISAR AQUI
-
-
-
-
-
 gen categoinac_ci = 1 if (p76 == 2 & condocup_ci == 3)
 replace categoinac_ci = 2 if  (p76 == 4 & condocup_ci == 3)
 replace categoinac_ci = 3 if  (p76 == 3 & condocup_ci == 3)
 replace categoinac_ci = 4 if  (p76 == 5 & condocup_ci == 3)
 label var categoinac_ci "Categoría de inactividad"
+label define categoinac_ci 1 "jubilados o pensionados" 2 "Estudiantes" 3 "Quehaceres domésticos" 4 "Otros"
+label value categoinac_ci categoinac_ci
+
+
+gen categoinac_ci = 1 if (p63 == 2 & condocup_ci == 3)
+replace categoinac_ci = 2 if  (p63 == 4 & condocup_ci == 3)
+replace categoinac_ci = 3 if  (p63 == 3 & condocup_ci == 3)
+replace categoinac_ci = 4 if  (p63 == 5 & condocup_ci == 3)
+label var categoinac_ci "Categoría de inactividad"
+
+
 label define categoinac_ci 1 "jubilados o pensionados" 2 "Estudiantes" 3 "Quehaceres domésticos" 4 "Otros"
 label value categoinac_ci categoinac_ci
 
@@ -1321,6 +1331,8 @@ gen vivialqimp_ch = g26b if (viviprop_ch == 0 & g26b ~= 9999)
 *******************
 
 gen cobsalud_ci=.
+replace cobsalud_ci = 1 if (g74 >= 1 | g74 <= 3)
+replace cobsalud_ci = 0 if (g74 == 4)
 
 label var cobsalud_ci "Tiene cobertura de salud"
 label define cobsalud_ci 0 "No" 1 "Si" 
