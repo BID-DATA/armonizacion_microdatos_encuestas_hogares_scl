@@ -444,7 +444,7 @@ label var condocup_ci "Condicion de ocupacion utilizando definicion del pais"
 ****************
 *afiliado_ci****
 ****************
-gen byte afiliado_ci = (g75 >= 1 & g75 <= 3)	
+gen byte afiliado_ci =.	
 label var afiliado_ci "Afiliado a la Seguridad Social"
 *Nota: seguridad social comprende solo los que en el futuro me ofrecen una pension.
 
@@ -501,9 +501,6 @@ label define  tamemp_ci 1"menos de 100" 2"de 100 a 499" 3"de 500 y más p"
 label var tamemp_ci "# empleados en la empresa de la actividad principal"
 */
 
-
-* REVISAR AQUI
-
 gen tamemp_ci =.
 label define tamaño 1"pequeña" 2"mediana" 3"grande"
 label values tamemp_ci tamaño
@@ -513,22 +510,11 @@ label values tamemp_ci tamaño
 **categoinac_ci*
 ****************
 
-gen categoinac_ci = 1 if (p76 == 2 & condocup_ci == 3)
-replace categoinac_ci = 2 if  (p76 == 4 & condocup_ci == 3)
-replace categoinac_ci = 3 if  (p76 == 3 & condocup_ci == 3)
-replace categoinac_ci = 4 if  (p76 == 5 & condocup_ci == 3)
+gen categoinac_ci = 1 if (p63 == 6 & condocup_ci == 3)
+replace categoinac_ci = 2 if  (p63 == 5 & condocup_ci == 3)
+replace categoinac_ci = 3 if  (p63 == 4 & condocup_ci == 3)
+replace categoinac_ci = 4 if  ((p63 >= 7 &  p63 <= 9) & condocup_ci == 3)
 label var categoinac_ci "Categoría de inactividad"
-label define categoinac_ci 1 "jubilados o pensionados" 2 "Estudiantes" 3 "Quehaceres domésticos" 4 "Otros"
-label value categoinac_ci categoinac_ci
-
-
-gen categoinac_ci = 1 if (p63 == 2 & condocup_ci == 3)
-replace categoinac_ci = 2 if  (p63 == 4 & condocup_ci == 3)
-replace categoinac_ci = 3 if  (p63 == 3 & condocup_ci == 3)
-replace categoinac_ci = 4 if  (p63 == 5 & condocup_ci == 3)
-label var categoinac_ci "Categoría de inactividad"
-
-
 label define categoinac_ci 1 "jubilados o pensionados" 2 "Estudiantes" 3 "Quehaceres domésticos" 4 "Otros"
 label value categoinac_ci categoinac_ci
 
@@ -538,7 +524,11 @@ label value categoinac_ci categoinac_ci
 *******************
 
 capture gen formal = 1 if cotizando_ci == 1
-replace formal=1 if afiliado_ci==1 & (cotizando_ci!=1 | cotizando_ci!=0) & condocup_ci==1 & pais_c=="BOL"   /* si se usa afiliado, se restringiendo a ocupados solamente*/
+replace formal = 1 if (tipocontrato_ci >= 1 & tipocontrato_ci <= 2)
+replace formal = 0 if (tipocontrato_ci == 3)
+
+
+replace formal = 1 if afiliado_ci == 1 & (cotizando_ci!=1 | cotizando_ci!=0) & condocup_ci==1 & pais_c=="BOL"   /* si se usa afiliado, se restringiendo a ocupados solamente*/
 replace formal=1 if afiliado_ci==1 & (cotizando_ci!=1 | cotizando_ci!=0) & condocup_ci==1 & pais_c=="CRI"
 replace formal=1 if afiliado_ci==1 & (cotizando_ci!=1 | cotizando_ci!=0) & condocup_ci==1 & pais_c=="GTM" & anio_c > 1998
 replace formal=1 if afiliado_ci==1 & (cotizando_ci!=1 | cotizando_ci!=0) & condocup_ci==1 & pais_c=="PAN"
@@ -547,22 +537,26 @@ replace formal=1 if afiliado_ci==1 & (cotizando_ci!=1 | cotizando_ci!=0) & condo
 replace formal=1 if afiliado_ci==1 & (cotizando_ci!=1 | cotizando_ci!=0) & condocup_ci==1 & pais_c=="MEX" & anio_c >= 2008
 
 capture gen byte formal_ci=.
-replace formal_ci=1 if formal==1 & (condocup_ci==1 | condocup_ci==2)
-replace formal_ci=0 if formal_ci==. & (condocup_ci==1 | condocup_ci==2) 
+replace formal_ci=1 if formal==1 & (condocup_ci == 1 | condocup_ci == 2)
+replace formal_ci = 0 if (formal_ci ==. & (condocup_ci==1 | condocup_ci == 2)) | formal == 0
 label var formal_ci "1=afiliado o cotizante / PEA"
 
 
 *************
 **pension_ci*
 *************
-gen pension_ci = 0 
-replace pension_ci=1 if (p1023 == 1 | p1031 == 1 | p1035 == 1) /* A todas las per mayores de 13*/
-replace pension_ci=. if (p1023 ==. | p1031 ==. | p1035 ==.)
+
+gen pension_ci =.
+replace pension_ci = 1 if (g75 >= 1 & g75 <= 3) 
+replace pension_ci = 0 if (g75 == 4) 
 
 *************
 **  ypen_ci *
 *************
-gen ypen_ci=. 
+
+gen ypen_ci =.
+replace ypen_ci = g1031a if (g1031a >= 0)
+ 
 /*Nota: La pregunta resume el monto de todas las 
 transferencias no se puede distinguir cual es por pensiones*/
 label var ypen_ci "Valor de la pension contributiva"
@@ -576,13 +570,17 @@ label var instpen_ci "Institucion proveedora de la pension - variable original d
 ***************
 *pensionsub_ci*
 ***************
+
 gen pensionsub_ci=.
+replace ypen_ci = 1 if (g1031 == 1 | g1033 == 1 | g1034 == 1 | g1035 == 1)
 label var pensionsub_ci "1=recibe pension subsidiada / no contributiva"
 
 *****************
 **  ypensub_ci  *
 *****************
 gen ypensub_ci=.
+replace ypen_ci = (g1031a + g1033a + g1034a + g1035a) if (g1031a >= 0 | g1033a >= 0 | g1034a >= 0 | g1035a >= 0)
+
 label var ypensub_ci "Valor de la pension subsidiada / no contributiva"
 
 *************
@@ -590,7 +588,7 @@ label var ypensub_ci "Valor de la pension subsidiada / no contributiva"
 *************
 
 generat cesante_ci = 0 if (condocup_ci == 2)
-replace cesante_ci = 1 if (p82 == 1 & condocup_ci == 2)
+replace cesante_ci = 1 if (p90 == 1 & condocup_ci == 2)
 label var cesante_ci "Desocupado - definicion oficial del pais"
 
 
@@ -615,7 +613,7 @@ label var lpe_ci "Linea de indigencia oficial del pais"
 *************
 
 gen salmm_ci =.
-replace salmm_ci = 215
+replace salmm_ci = 132
 label var salmm_ci "Salario minimo legal"
 
 ***************
@@ -645,11 +643,15 @@ gen pea_ci = (emp_ci == 1 | desemp_ci == 1)
 ***desalent_ci***
 *****************
 
-gen desalent_ci = (emp_ci == 0 & (p79 == 2 | p79 == 3))
+gen desalent_ci = (emp_ci == 0 & (p87 == 2 | p87 == 3))
 
 *****************
 ***horaspri_ci***
 *****************
+
+
+* REVISAR AQUI
+
 
 gen horaspri_ci =.
 replace horaspri_ci = p51 if (p51 > 0)
