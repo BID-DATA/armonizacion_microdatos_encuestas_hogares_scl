@@ -510,10 +510,10 @@ label values tamemp_ci tamaño
 **categoinac_ci*
 ****************
 
-gen categoinac_ci = 1 if (p63 == 6 & condocup_ci == 3)
-replace categoinac_ci = 2 if  (p63 == 5 & condocup_ci == 3)
-replace categoinac_ci = 3 if  (p63 == 4 & condocup_ci == 3)
-replace categoinac_ci = 4 if  ((p63 >= 7 &  p63 <= 9) & condocup_ci == 3)
+gen categoinac_ci = 1 if (g63 == 6 & condocup_ci == 3)
+replace categoinac_ci = 2 if  (g63 == 5 & condocup_ci == 3)
+replace categoinac_ci = 3 if  (g63 == 4 & condocup_ci == 3)
+replace categoinac_ci = 4 if  ((g63 >= 7 &  g63 <= 9) & condocup_ci == 3)
 label var categoinac_ci "Categoría de inactividad"
 label define categoinac_ci 1 "jubilados o pensionados" 2 "Estudiantes" 3 "Quehaceres domésticos" 4 "Otros"
 label value categoinac_ci categoinac_ci
@@ -588,7 +588,7 @@ label var ypensub_ci "Valor de la pension subsidiada / no contributiva"
 *************
 
 generat cesante_ci = 0 if (condocup_ci == 2)
-replace cesante_ci = 1 if (p90 == 1 & condocup_ci == 2)
+replace cesante_ci = 1 if (g90 == 1 & condocup_ci == 2)
 label var cesante_ci "Desocupado - definicion oficial del pais"
 
 
@@ -643,32 +643,28 @@ gen pea_ci = (emp_ci == 1 | desemp_ci == 1)
 ***desalent_ci***
 *****************
 
-gen desalent_ci = (emp_ci == 0 & (p87 == 2 | p87 == 3))
+gen desalent_ci = (emp_ci == 0 & (g87 == 2 | g87 == 3))
 
 *****************
 ***horaspri_ci***
 *****************
 
-
-* REVISAR AQUI
-
-
 gen horaspri_ci =.
-replace horaspri_ci = p51 if (p51 > 0)
+replace horaspri_ci = g76 if (g76 > 0)
 replace horaspri_ci=. if emp_ci ~= 1
 
 *****************
 ***horastot_ci***
 *****************
 
-gen p518_alt = p61
-replace p518_alt =. if p61 ==.
+gen horassec_ci =.
+replace horassec_ci = g81 if (g81 > 0)
 
-egen horastot_ci = rsum(horaspri_ci p518_alt)
-replace horastot_ci =. if (horaspri_ci ==. & p518_alt ==.)
+egen horastot_ci = rsum(horaspri_ci horassec_ci)
+replace horastot_ci =. if (horaspri_ci ==. & horassec_ci ==.)
 replace horastot_ci =. if (emp_ci ~= 1)
 
-drop p518_alt
+drop horassec_ci
 
 ***************
 ***subemp_ci***
@@ -682,8 +678,10 @@ replace subemp_ci=. if emp_ci==.
 */
 
 * Modificacion con subempleo visible: quiere trabajar mas horas y esta disponible a trabajar mas horas. MGD 06/19/2014
+
+
 gen subemp_ci = 0
-replace subemp_ci = 1 if (horaspri_ci <= 30 & p66 == 1 & emp_ci == 1) 
+replace subemp_ci = 1 if (horaspri_ci <= 30 & g85 == 1 & emp_ci == 1) 
 
 *******************
 ***tiempoparc_ci***
@@ -696,7 +694,7 @@ replace tiempoparc_ci=1 if (thtrabaj==2 & thnormal<=30) & thdispon==2
 replace tiempoparc_ci=. if emp_ci==.*/
 * 10/20/2015 MGD: no se usa las horas totales trabajadas sino solo las de la actividad principal.
 
-replace tiempoparc_ci = 1 if ((horaspri_ci >= 1 & horaspri_ci < 30) & p66 == 2 & emp_ci == 1)
+replace tiempoparc_ci = 1 if ((horaspri_ci >= 1 & horaspri_ci < 30) & g85 == 2 & emp_ci == 1)
 replace tiempoparc_ci =. if (emp_ci == 0)
 
 
@@ -707,6 +705,11 @@ replace tiempoparc_ci =. if (emp_ci == 0)
 * Categorias no comparables a los demás años, variable no armonizada para no generar anomalias
 
 gen categopri_ci =.
+replace categopri_ci = 0 if (g72 == 9)
+replace categopri_ci = 1 if (g72 == 6)
+replace categopri_ci = 2 if (g72 == 5)
+replace categopri_ci = 3 if (g72 >= 1 & g72 <= 4)
+replace categopri_ci = 4 if (g72 >= 7 & g72 <= 9)
 
 label define categopri_ci 0 "Otra clasificación" 1"Patron" 2"Cuenta propia" 
 label define categopri_ci 3"Empleado" 4" No remunerado", add
@@ -718,6 +721,7 @@ label variable categopri_ci "Categoria ocupacional trabajo principal"
 ***categosec_ci***
 ******************
 * 10/20/2015 MGD: se añade la categoria otra clasificacion para sacarlos de los no remunerados
+
 
 gen categosec_ci=.
 
@@ -731,7 +735,10 @@ label variable categosec_ci "Categoria ocupacional trabajo secundario"
 ***nempleos_ci***
 *****************
 
-gen nempleos_ci =.
+gen nempleos_ci=.
+replace nempleos_ci = 2 if (emp_ci == 1 & g78 == 1)
+replace nempleos_ci = 1 if (emp_ci == 1 & g78 == 2)
+replace nempleos_ci = 0 if (emp_ci == 0)
 
 /*
 *****************
@@ -749,7 +756,7 @@ replace firmapeq_ci=. if emp_ci~=1
 ***spublico_ci***
 *****************
 
-gen spublico_ci = (p43 == 3 | p43 == 4 | p43 == 7)
+gen spublico_ci = (g72 >= 1 & g72 <= 2)
 replace spublico_ci =. if (emp_ci ~= 1)
 
 **************
@@ -772,6 +779,7 @@ gen rama_ci=.
 ***durades_ci***
 ****************
 
+
 gen durades_ci=.
 
 
@@ -791,13 +799,17 @@ gen antiguedad_ci=.
 ***************
 * Ingreso laboral monetario mensual proveniente de la actividad principal.
 
-gen ylmpri_ci = p73
+gen ylmpri_ci =.
+replace ylmpri_ci = (g95a + g95b)
+
 
 *******************
 *** nrylmpri_ci ***
 *******************
 
-gen nrylmpri_ci=.
+gen nrylmpri_ci = 0
+replace nrylmpri_ci = 1 if (emp_ci == 1 & nrylmpri_ci ==.)
+
 
 ******************
 *** ylnmpri_ci ***
@@ -811,6 +823,7 @@ gen ylnmpri_ci =.
 ***************
 
 gen ylmsec_ci =.
+replace ylmpri_ci = (g102)
 
 
 ******************
@@ -824,7 +837,7 @@ gen ylnmsec_ci =.
 ***ylm_ci***
 ************
 
-gen ylm_ci =.
+gen ylm_ci = (ylmpri_ci + ylmsec_ci)
 
 *************
 ***ylnm_ci***
@@ -947,9 +960,7 @@ gen ynlnm_ch =.
 *** autocons_ci ***
 *******************
 
-gen autocons_ci = p72        
-replace autocons_ci=. if p72==99999
-replace autocons_ci=. if emp_ci ~= 1
+gen autocons_ci = g101       
 
 
 *******************
@@ -980,14 +991,6 @@ gen ylmhopri_ci =.
 ***************
 
 gen ylmho_ci =.
-
-
-
-
-
-* REVISAR HASTA AQUI
-
-
 
 
 ****************************
@@ -1251,7 +1254,7 @@ replace des2_ch = 2 if (g32 == 3)
 
 gen piso_ch =.
 replace piso_ch = 0 if (g22 == 6)
-replace piso_ch = 1 if (g22 => 1 & g22 <= 5)
+replace piso_ch = 1 if (g22 >= 1 & g22 <= 5)
 replace piso_ch = 2 if (g22 == 7)
 
 
@@ -1333,8 +1336,8 @@ gen vivialqimp_ch = g26b if (viviprop_ch == 0 & g26b ~= 9999)
 *******************
 
 gen cobsalud_ci=.
-replace cobsalud_ci = 1 if (g74 >= 1 | g74 <= 3)
-replace cobsalud_ci = 0 if (g74 == 4)
+replace cobsalud_ci = 1 if (g741 == 1 | g742 == 1 | g743 == 1)
+replace cobsalud_ci = 0 if ((g744 == 1) | (g741 == 0 & g742 == 0 & g743 == 0))
 
 label var cobsalud_ci "Tiene cobertura de salud"
 label define cobsalud_ci 0 "No" 1 "Si" 
