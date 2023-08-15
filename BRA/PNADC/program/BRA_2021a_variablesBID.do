@@ -1089,18 +1089,30 @@ label variable edusc_ci "Secundaria completa"
 **************
 ***eduui_ci***
 **************
-gen byte eduui_ci= aedu_ci>=13 & aedu_ci<=14 // entre 13 y 14 anios
+gen byte eduui_ci= aedu_ci>=13 & v3009a==12 & v3014==2 // Cursaron superior pero no finalizaron
+
+/* FALTA CORREGIR (Agus, Ceci, Olga)
+replace 
+
+aedu_ci<=14 // entre 13 y 14 anios
 replace eduui_ci=1 if (aedu_ci>=15 & aedu_ci<16 & v3007!=1 & v3014!=1) // 15 anios de educacion, sin completar nivel
 replace eduui_ci=. if aedu_ci==.
 label variable eduui_ci "Terciaria/universitaria incompleta"
+*/
 
 **************
 ***eduuc_ci***
 **************
-gen byte eduuc_ci=(aedu>=15) // 15 anios o mas, que es la duracion de tecnica
+gen byte eduuc_ci= aedu_ci>=13 & v3009a==12 & v3014==1 // superior u terminado
+replace eduuc_ci= 1 if aedu_ci>=13 & v3009a>=13 // postgrado, maestria o doctorado (sin condicion de terminacion)
+replace eduuc_ci=. if aedu_ci==.
+
+/*
+(aedu>=15) // 15 anios o mas, que es la duracion de tecnica
 replace eduuc_ci=1 if (aedu_ci>=15 & aedu_ci<16 & (v3007==1 | v3014==1)) // entre 15 y 16 anios si completaron el curso
 replace eduuc_ci=. if aedu_ci==.
 label variable eduuc_ci "Terciaria/universitaria completa o mas"
+*/
 
 ***************
 ***edus1i_ci***
