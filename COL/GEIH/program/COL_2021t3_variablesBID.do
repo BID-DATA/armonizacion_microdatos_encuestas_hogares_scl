@@ -969,7 +969,8 @@ label var ypeoficial_ch "Ingreso per cápita generado por el país"
 	replace aedu_ci = 12 if p6210 == 5 & p6210s1 == 12
 	replace aedu_ci = 13 if p6210 == 5 & p6210s1 == 13
 *Superior
-	replace aedu_ci = 11+p6210s1 if p6210==6
+	gen grado_asist=round(p6210s1/2) if p6210==6 // E.superior: respuesta en semetres e convierten a anios
+	replace aedu_ci = 11+grado_asist if p6210==6
 *Missing
 	replace aedu_ci =. if p6210==.
 
@@ -1013,14 +1014,14 @@ label var ypeoficial_ch "Ingreso per cápita generado por el país"
 **************
 ***eduui_ci***
 **************
-	g byte eduui_ci = (aedu_ci>11 & p6220<3)
+	g byte eduui_ci = (aedu_ci>11 & p6210==6 & p6220<3)
 	replace eduui_ci=. if aedu_ci==.
 	la var eduui_ci "Superior incompleto"
 
 **************
 ***eduuc_ci***
 **************
-	g byte eduuc_ci = (aedu_ci > 11 & p6220>2)
+	g byte eduuc_ci = (aedu_ci>11 & p6210==6 & (p6220==3 | p6220==4 | p6220==5))
 	replace eduuc_ci=. if aedu_ci==.
 	la var eduuc_ci "Superior completo"
 

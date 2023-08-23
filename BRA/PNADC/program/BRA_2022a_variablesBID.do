@@ -1148,18 +1148,17 @@ label variable edusc_ci "Secundaria completa"
 **************
 ***eduui_ci***
 **************
-gen byte eduui_ci= aedu_ci>=13 & aedu_ci<=14 // entre 13 y 14 anios
-replace eduui_ci=1 if (aedu_ci>=15 & aedu_ci<16 & v3007!=1 & v3014!=1) // 15 anios de educacion, sin completar nivel
-replace eduui_ci=. if aedu_ci==.
-label variable eduui_ci "Terciaria/universitaria incompleta"
+gen byte eduui_ci2=(aedu_ci>=12 & (nivel_asist==8 | nivel_asist==9 | nivel_asist==10 | nivel_asist==11)) // personas que asisten a educacion sueperior
+replace eduui_ci2=1 if (aedu_ci>=12 & (nivel_no_asist==12 | nivel_no_asist==13 | nivel_no_asist==14 | nivel_no_asist==15) & v3014!=1) // personas que estudiaron educacion superior y no terminaron
+replace eduui_ci2=. if aedu_ci==.
+label variable eduui_ci "Educación superior incompleta"
  
 **************
 ***eduuc_ci***
 **************
-gen byte eduuc_ci=(aedu>=15) // 15 anios o mas, que es la duracion de tecnica
-replace eduuc_ci=1 if (aedu_ci>=15 & aedu_ci<16 & (v3007==1 | v3014==1)) // entre 15 y 16 anios si completaron el curso
-replace eduuc_ci=. if aedu_ci==.
-label variable eduuc_ci "Terciaria/universitaria completa o mas"
+gen byte eduuc_ci2=(aedu>=14 & nivel_no_asist>=12 & v3014==1) // 14 anios o mas, que es la duracion mínima de la tecnica (12+2) y haber finalizado cualquier nivel de educación superior incluyendo posgrado
+replace eduuc_ci2=. if aedu_ci==.
+label variable eduuc_ci "Educación superior completa" 
 
 ***************
 ***edus1i_ci***
@@ -1201,6 +1200,24 @@ label variable edupre_ci "Educacion preescolar"
 *Creación de la variable asistencia a preescolar por Iván Bornacelly - 01/12/17
 g asispre_ci=v3003a==2 & v2009>=4
 la var asispre_ci "Asiste a educacion prescolar"	
+
+****************
+***asisedsup_ci***
+****************
+*Creación de la variable asistencia a educacion superior por Olga Dulce- 21/08/23
+gen asisedsup_ci=(aedu>=12 & nivel_asist==8) // quienes cursan educacion superior
+replace asisedsup_ci=. if aedu_ci==.
+label variable eduui_ci "Asiste a educación Terciaria/universitaria"
+
+****************
+***aprobedsup_ci***
+****************
+*Creación de la variable de aprobación de nivel educación superior por Olga Dulce- 21/08/23
+gen aprobedsup_ci=(aedu>=14 & nivel_no_asist==12 & v3014==1) // quienes reportan haber terminado el ultimo curso que asistieron: edu superior
+replace asisedsup_ci=. if aedu_ci==.
+label variable eduui_ci "Aprobación nivel educación Terciaria/universitaria"
+
+
 
 **************
 ***eduac_ci***
