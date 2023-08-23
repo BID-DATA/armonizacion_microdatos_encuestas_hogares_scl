@@ -1005,7 +1005,7 @@ label var tcylmpri_ci "Identificador de top-code del ingreso de la actividad pri
 	**************
 	***eduui_ci***
 	**************
-	gen eduui_ci=(p12a==2 & nivinst==9) | (p12a==2 & nivinst==8)
+	gen eduui_ci=(p12a==2 & nivinst==9) | (p12a==2 & nivinst==8) |  (nivinst==10)	
 	replace eduui_ci=. if aedu_ci==. 
 	label variable eduui_ci "Superior incompleto"
 
@@ -1056,7 +1056,23 @@ label var tcylmpri_ci "Identificador de top-code del ingreso de la actividad pri
 	* No viene la preguntá pe01 en la base 2018, 2019, 2020
 	g asispre_ci=.
 	la var asispre_ci "Asiste a educacion prescolar"
-	
+
+	****************
+	***asisedsup_ci***
+	****************
+	*Creación de la variable asistencia a educacion superior por Olga Dulce- 21/08/23
+	gen asisedsup_ci=(p12a==2 & nivinst==9) | (p12a==2 & nivinst==8)  // quienes cursan educacion superior
+	replace asisedsup_ci=. if aedu_ci==.
+	label variable eduui_ci "Asiste a educación Terciaria/universitaria"
+
+	****************
+	***aprobedsup_ci***
+	****************
+	*Creación de la variable de aprobación de nivel educación superior por Olga Dulce- 21/08/23
+	gen aprobedsup_ci=(p12a==1 & nivinst==9) | (p12a==1 & nivinst==8) // quienes reportan haber terminado el ultimo curso que asistieron: no universitario o universitario
+	replace asisedsup_ci=. if aedu_ci==.
+	label variable eduui_ci "Aprobación nivel educación Terciaria/universitaria"
+
 	**************
 	***eduac_ci***
 	**************

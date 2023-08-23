@@ -1066,6 +1066,24 @@ label var ypeoficial_ch "Ingreso per cápita generado por el país"
 	g asispre_ci= (p6170==1 & p6210==2 & p6210s1 <2)
 	la var asispre_ci "Asiste a educación prescolar"
 	
+
+****************
+***asisedsup_ci***
+****************
+*Creación de la variable asistencia a educacion superior por Olga Dulce- 21/08/23
+	gen asisedsup_ci=(p6210==6 & p6220<3) // quienes cursan educacion superior
+	replace asisedsup_ci=. if aedu_ci==.
+	label variable eduui_ci "Asiste a educación Terciaria/universitaria"
+
+****************
+***aprobedsup_ci***
+****************
+*Creación de la variable de aprobación de nivel educación superior por Olga Dulce- 21/08/23
+	gen aprobedsup_ci=(p6210==6 & (p6220==3 | p6220==4 ) // quienes reportan haber terminado el ultimo curso que asistieron: tyt o universitario
+	replace asisedsup_ci=. if aedu_ci==.
+	label variable eduui_ci "Aprobación nivel educación Terciaria/universitaria"
+	
+	
 **************
 ***eduac_ci***
 **************
