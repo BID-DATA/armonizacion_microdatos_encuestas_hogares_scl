@@ -375,10 +375,10 @@ drop factorjefe
 *	zona_c
 ******************************
 
-encode area, gen(area_)
+encode areareco, gen(area_)
 
-gen zona_c=0 if area_==2
-replace zona_c=1 if area_==1
+gen zona_c=0 if area_==1
+replace zona_c=1 if area_==2
 label var zona_c "Zona del pais"
 label define zona_c 1 "Urban" 0 "Rural"
 label value zona_c zona_c
@@ -1512,12 +1512,9 @@ label values categoinac_ci inactivo
 *************
 **pension_ci*
 *************
-
-egen aux_p=rsum(p72a p72b), missing
-destring aux_p, replace
-gen pension_ci=1 if aux_p>0 & aux_p!=. & aux_p!=99999
-recode pension_ci .=0
-label var pension_ci "1=Recibe pension contributiva"
+gen pension_ci2=1 if p72a>0 & p72a!=. & p72a!=99999
+recode pension_ci2 .=0
+label var pension_ci2 "1=Recibe pension contributiva"
 
 *************
 *ypen_ci*
