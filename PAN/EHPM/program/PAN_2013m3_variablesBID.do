@@ -1330,10 +1330,7 @@ label values categoinac_ci inactivo
 *************
 
 replace p72a_jubi =. if p72a_jubi==.
-replace p72b_pensi =. if  p72b_pensi==.
-egen aux_p=rsum(p72a_jubi p72b_pensi), missing
-destring aux_p, replace
-gen pension_ci=1 if aux_p>0 & aux_p!=. & aux_p!=99999
+gen pension_ci=1 if p72a_jubi>0 & p72a_jubi!=. & p72a_jubi!=99999
 recode pension_ci .=0
 label var pension_ci "1=Recibe pension contributiva"
 

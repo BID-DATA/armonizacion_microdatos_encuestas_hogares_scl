@@ -1476,12 +1476,9 @@ label values categoinac_ci inactivo
 *************
 **pension_ci*
 *************
-
-egen aux_p=rsum(p72a p72b), missing
-destring aux_p, replace
-gen pension_ci=1 if aux_p>0 & aux_p!=. & aux_p!=99999
-recode pension_ci .=0
-label var pension_ci "1=Recibe pension contributiva"
+gen pension_ci2=1 if p72a>0 & p72a!=. & p72a!=99999
+recode pension_ci2 .=0
+label var pension_ci2 "1=Recibe pension contributiva"
 
 *************
 *ypen_ci*
