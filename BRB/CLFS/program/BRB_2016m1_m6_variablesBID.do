@@ -861,6 +861,24 @@ label var lpe_ci "Línea de pobreza extrema oficial en moneda local"
 *Modificado por Agustina Thailinger SCL/EDU 3/24/2020
 /*NO es posible saber cuantos años de educación tienen los individuos pero si definir cual es el nivel mas alto alcanzado*/
 	
+/* Qualification
+	
+Secondary School Qualification
+BSSC      		     - Barbados primaria School Leaving Certificate
+CXC Basic 		     - Caribbean Examination Council
+O Level/CXC General  - Secondary School Qualitification (no todos lo hacen)
+A Level/CXC			 - Carbibbean Advance Proficiency Certificate 18 años (examen de admision) - CAPE
+
+Post-Secondary Education Qualification
+Certificate 		 - 2 años
+Diploma				 - 2 años
+Degree				 - HEI 3años
+Professional		 -
+
+
+*/
+	
+	
 *************
 ***aedu_ci*** 
 *************
@@ -896,20 +914,21 @@ label var edusi_ci "No ha completado la educación secundaria"
 **************
 ***edusc_ci***
 **************
-gen edusc_ci=(educlev==2)
+gen edusc_ci=(educlev==2) & quallev==3 
 replace edusc_ci=. if educlev==9
 label var edusc_ci "Ha completado la educación secundaria"
 
 **************
 ***eduui_ci***
 **************
-gen eduui_ci=. 
+gen eduui_ci=((educlev==3 |educlev==4) & (quallev==4)
+replace eduuc_ci=. if educlev==9
 label var eduui_ci "No ha completado la educación terciaria/universitaria"
 
 **************
 ***eduuc_ci***
 **************
-gen eduuc_ci=(educlev==3 | educlev==4)
+gen eduuc_ci=(educlev==3 |educlev==4) & (quallev==5 | quallev==6 | quallev==7 | quallev==8)
 replace eduuc_ci=. if educlev==9
 label var eduuc_ci "Ha completado la educación terciaria/universitaria"
 

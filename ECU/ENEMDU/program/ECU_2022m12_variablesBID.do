@@ -1061,7 +1061,7 @@ label var tcylmpri_ci "Identificador de top-code del ingreso de la actividad pri
 	***eduac_ci***
 	**************
 	gen eduac_ci=.	
-	replace eduac_ci=1 if p10a==9 | p10a==10 
+	replace eduac_ci=1 if p10a==9 
 	replace eduac_ci=0 if p10a==8
 	label variable eduac_ci "Superior universitario vs superior no universitario"
 

@@ -1014,14 +1014,14 @@ label var ypeoficial_ch "Ingreso per cápita generado por el país"
 **************
 ***eduui_ci***
 **************
-	g byte eduui_ci = (p6210==6 & p6220<3)
+	g byte eduui_ci = (aedu_ci>=12 & p6210==6 & p6220==2) // 12y con grado de secundaria
 	replace eduui_ci=. if aedu_ci==.
 	la var eduui_ci "Superior incompleto"
-
+	
 **************
 ***eduuc_ci***
 **************
-	g byte eduuc_ci = (p6210==6 & (p6220==3 | p6220==4 | p6220==5))
+	g byte eduuc_ci = (aedu_ci>=12 & p6210==6 & (p6220==3 | p6220==4 | p6220==5))
 	replace eduuc_ci=. if aedu_ci==.
 	la var eduuc_ci "Superior completo"
 
@@ -1068,14 +1068,6 @@ label var ypeoficial_ch "Ingreso per cápita generado por el país"
 	
 
 ****************
-***asisedsup_ci***
-****************
-*Creación de la variable asistencia a educacion superior por Olga Dulce- 21/08/23
-	gen asisedsup_ci=(p6210==6 & p6220<3) // quienes cursan educacion superior
-	replace asisedsup_ci=. if aedu_ci==.
-	label variable eduui_ci "Asiste a educación Terciaria/universitaria"
-
-****************
 ***aprobedsup_ci***
 ****************
 *Creación de la variable de aprobación de nivel educación superior por Olga Dulce- 21/08/23
@@ -1088,7 +1080,8 @@ label var ypeoficial_ch "Ingreso per cápita generado por el país"
 ***eduac_ci***
 **************
 ** No se puede calcular ya que solo tenemos la diferenciacion para los que han culminado el nivel
-	g byte eduac_ci = .
+	g byte eduac_ci = (p6210==6 & p6220==4)
+	replace eduac_ci = 0 if (p6210==6 & (p6220==3)
 	la var eduac_ci "Superior universitario vs superior no universitario"
 
 ***************

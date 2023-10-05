@@ -1134,14 +1134,14 @@ label variable edupc_ci "Primaria completa"
 **************
 ***edusi_ci***
 **************
-gen byte edusi_ci=(aedu_ci>5 & aedu_ci<12) 
+gen byte edusi_ci=(aedu_ci>5 & aedu_ci<11) 
 replace edusi_ci=. if aedu_ci==.
 label variable edusi_ci "Secundaria incompleta"
 
 **************
 ***edusc_ci***
 **************
-gen byte edusc_ci=(aedu_ci==12) 
+gen byte edusc_ci=(aedu_ci==11) 
 replace edusc_ci=. if aedu_ci==.
 label variable edusc_ci "Secundaria completa"
 
@@ -1157,8 +1157,8 @@ label variable eduui_ci "Educación superior incompleta"
 ***eduuc_ci***
 **************
 gen byte eduuc_ci=(nivel_asist==9 | nivel_asist==10 | nivel_asist==11) // asisten posgrado y por tanto culminaron pregrado
-replace eduuc_ci=(nivel_no_asist=12 & v3014==1 // asistieron a pregrado y culminaron
-replace eduuc_ci=(nivel_no_asist=13|nivel_no_asist=14|nivel_no_asist=15) //asistieron posgrado sin importar si culminaron o no
+replace eduuc_ci=(nivel_no_asist==12 & v3014==1) // asistieron a pregrado y culminaron
+replace eduuc_ci=(nivel_no_asist==13|nivel_no_asist==14|nivel_no_asist==15) //asistieron posgrado sin importar si culminaron o no
 replace eduuc_ci=. if aedu_ci==.
 label variable eduuc_ci "Educación superior completa" 
 

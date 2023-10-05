@@ -1197,16 +1197,16 @@ label var edus2c_ci "2do ciclo de Educacion Secundaria Completo"
 ******************************
 *	eduui_ci
 ******************************
-gen eduui_ci=(aedu_ci>12 & aedu_ci<16) & nivel==5
-replace eduui_ci=1 if (aedu_ci>12 & aedu_ci<14) & nivel==4
+gen eduui_ci=(aedu_ci>12 & (p6==41 | p6==51 | p6==52 | p6==53 | p6==54 | p6==55) // esta cursando superior no univ
+replace eduui_ci=1 if (aedu_ci>12 
 replace eduui_ci=. if aedu_ci==.
 label var eduui_ci "Universitaria o Terciaria Incompleta"
 
 ******************************
 *	eduuc_ci
 ******************************
-gen eduuc_ci=(aedu_ci>=16) 
-replace eduuc_ci=1 if (aedu_ci>=14) & nivel==4 
+gen eduuc_ci=(aedu_ci>=12 & nivel==6 | nivel==7 | nivel==8) // aprobaron posgrado y por tanto culminaron pregrado 
+replace eduuc_ci=1 if (aedu_ci>=14) & (p6==42 | p6==56)) // aprobaron el último ano de ES universitaria o de superior no universitaria
 replace eduuc_ci=. if aedu_ci==.
 label var eduuc_ci "Universitaria o Terciaria Completa"
 
@@ -1236,6 +1236,15 @@ label var eduac_ci "Educ terciaria academica vs Educ terciaria no academica"
 gen asiste_ci=(p5==1)
 replace asiste_ci=. if p5==.
 label var asiste "Personas que actualmente asisten a centros de enseñanza"
+
+
+**************
+***eduac_ci***
+**************
+gen byte eduac_ci=(nivel==5)
+replace eduac_ci=0 if (nivel==4)
+label variable eduac_ci "Superior universitario vs superior no universitario"
+
 
 ******************************
 *	pqnoasis_ci
