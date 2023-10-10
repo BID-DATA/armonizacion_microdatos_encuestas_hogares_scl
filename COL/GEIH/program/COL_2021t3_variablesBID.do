@@ -70,7 +70,7 @@ label define region_c       ///
 	73 "Tolima"	            ///
 	76 "Valle"	
 label value region_c region_c
-label var region_c "division politico-administrativa, departamento"
+label var region_c "division politico-administrativa, departamento" /* prueba */
 
 
 ***************
