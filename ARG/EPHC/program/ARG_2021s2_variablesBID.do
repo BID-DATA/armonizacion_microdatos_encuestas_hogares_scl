@@ -947,7 +947,7 @@ la var asispre_ci "Asiste a educacion prescolar"
 *eduac_ci*
 **********
 gen byte eduac_ci=.
-replace eduac_ci=1 if ch12==7 | ch12==8 &
+replace eduac_ci=1 if ch12==7 | ch12==8
 replace eduac_ci=0 if ch12==6
 label variable eduac_ci "Superior universitario vs superior no universitario"	
 
