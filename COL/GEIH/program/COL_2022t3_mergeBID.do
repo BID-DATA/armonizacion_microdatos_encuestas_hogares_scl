@@ -49,6 +49,7 @@ append using "`m8'\Características generales, seguridad social en salud y educa
 append using "`m9'\Características generales, seguridad social en salud y educación.dta"
 egen id = concat(DIRECTORIO SECUENCIA_P ORDEN)
 sort id
+compress
 saveold "`t3'col_personas.dta", replace
 
 *Desocupados
@@ -57,6 +58,7 @@ append using "`m8'\No ocupados.dta"
 append using "`m9'\No ocupados.dta"
 egen id = concat(DIRECTORIO SECUENCIA_P ORDEN)
 sort id
+compress
 saveold "`t3'col_desocupados.dta", replace
 				
 *Fuerza Trabajo
@@ -65,6 +67,7 @@ append using "`m8'\Fuerza de trabajo.dta"
 append using "`m9'\Fuerza de trabajo.dta"
 egen id = concat(DIRECTORIO SECUENCIA_P ORDEN)
 sort id
+compress
 saveold "`t3'col_ft.dta", replace
 
 *ocupados
@@ -73,6 +76,7 @@ append using "`m8'\Ocupados.dta"
 append using "`m9'\Ocupados.dta"
 egen id = concat(DIRECTORIO SECUENCIA_P ORDEN)
 sort id
+compress
 saveold "`t3'col_ocupados.dta", replace
 
 *otrasactv
@@ -82,6 +86,7 @@ append using "`m9'\Otras formas de trabajo.dta"
 egen id = concat(DIRECTORIO SECUENCIA_P ORDEN)
 *rename clase CLASE
 sort id
+compress
 saveold "`t3'col_otrasactv.dta", replace
 
 *otros ingresos
@@ -91,6 +96,7 @@ append using "`m9'\Otros ingresos e impuestos.dta"
 egen id = concat(DIRECTORIO SECUENCIA_P ORDEN)
 *rename clase CLASE
 sort id
+compress
 saveold "`t3'col_otrosing.dta", replace
  
 *Vivienda y Hogares
@@ -100,6 +106,7 @@ append using "`m9'\Datos del hogar y la vivienda.dta"
 egen idh = concat(DIRECTORIO SECUENCIA_P)
 *rename clase CLASE
 sort idh
+compress
 saveold "`t3'col_viv.dta", replace
 
 *Tipo de investigación
@@ -108,6 +115,7 @@ append using "`m8'\Tipo de investigación.dta"
 append using "`m9'\Tipo de investigación.dta"
 egen id = concat(DIRECTORIO SECUENCIA_P ORDEN)
 sort id
+compress
 saveold "`t3'col_tipo.dta", replace
 
 
@@ -121,6 +129,7 @@ append using "`m9'\Migración.dta"
 egen id = concat(DIRECTORIO SECUENCIA_P ORDEN)
 sort id
 rename *, lower
+compress
 saveold "`out'\COL_`anio't3migracion.dta", replace
 
 
@@ -154,6 +163,7 @@ merge m:1 idh using "`t3'\col_viv.dta"
 drop _merge 
 sort id
 rename *, lower
+compress
 saveold "`out\'COL_`anio't3.dta", replace
 
 
@@ -168,6 +178,7 @@ merge 1:1 id using "`out'\COL_2022t3migracion.dta"
 sort id
 drop _merge
 merge 1:1 id using "`ruta'\`ronda1'\data_merge\pov_t3.dta"
+compress
 saveold "`ruta'\`ronda1'\data_merge\COL_2022t3.dta", replace
 
 
