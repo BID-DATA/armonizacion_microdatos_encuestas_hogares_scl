@@ -1071,9 +1071,9 @@ label var ypeoficial_ch "Ingreso per cápita generado por el país"
 ***aprobedsup_ci***
 ****************
 *Creación de la variable de aprobación de nivel educación superior por Olga Dulce- 21/08/23
-	gen aprobedsup_ci=(p6210==6 & (p6220==3 | p6220==4 ) // quienes reportan haber terminado el ultimo curso que asistieron: tyt o universitario
-	replace asisedsup_ci=. if aedu_ci==.
-	label variable eduui_ci "Aprobación nivel educación Terciaria/universitaria"
+	gen aprobedsup_ci= (p6210==6 & (p6220==3|p6220==4)) // quienes reportan haber terminado el ultimo curso que asistieron: tyt o universitario
+	replace aprobedsup_ci=. if aedu_ci==.
+	label variable aprobedsup_ci "Aprobación nivel educación Terciaria/universitaria"
 	
 	
 **************
@@ -1081,7 +1081,7 @@ label var ypeoficial_ch "Ingreso per cápita generado por el país"
 **************
 ** No se puede calcular ya que solo tenemos la diferenciacion para los que han culminado el nivel
 	g byte eduac_ci = (p6210==6 & p6220==4)
-	replace eduac_ci = 0 if (p6210==6 & (p6220==3)
+	replace eduac_ci = 0 if (p6210==6 & (p6220==3))
 	la var eduac_ci "Superior universitario vs superior no universitario"
 
 ***************
