@@ -921,8 +921,8 @@ label var edusc_ci "Ha completado la educación secundaria"
 **************
 ***eduui_ci***
 **************
-gen eduui_ci=((educlev==3 |educlev==4) & (quallev==4)
-replace eduuc_ci=. if educlev==9
+gen eduui_ci=(educlev==3 |educlev==4) & (quallev==4)
+replace eduui_ci=. if educlev==9
 label var eduui_ci "No ha completado la educación terciaria/universitaria"
 
 **************
