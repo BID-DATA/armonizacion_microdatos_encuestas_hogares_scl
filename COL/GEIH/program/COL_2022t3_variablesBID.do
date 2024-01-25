@@ -1582,7 +1582,7 @@ rename  oficio_c8 codocupa
 compress
 
 
-saveold "$ruta\harmonized\\COL\\GEIH\data_arm\COL_2021t3_BID.dta", replace
+saveold "`base_out'", replace
 
 log close
 
