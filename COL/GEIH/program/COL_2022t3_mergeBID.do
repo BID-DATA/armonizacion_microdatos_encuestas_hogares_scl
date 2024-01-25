@@ -179,7 +179,7 @@ sort id
 drop _merge
 merge 1:1 id using "`ruta'\`ronda1'\data_merge\pov_t3.dta"
 compress
-saveold "`ruta'\`ronda1'\data_merge\COL_2022t3.dta", replace
+saveold "`ruta'\`ronda2'\data_merge\COL_2022t3.dta", replace
 
 
 
