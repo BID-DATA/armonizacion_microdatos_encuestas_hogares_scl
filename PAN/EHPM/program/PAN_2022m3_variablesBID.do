@@ -314,7 +314,7 @@ label define ine01  ///
 12	"Ngäbe-Buglé"      ///
 13	"Panamá Oeste"			  
 label value ine01 ine01
-label var ine01 "División política administrativa, provincias y comarcas (incluye Panamá Oeste)"
+label var ine01 "División política administrativa, provincias y comarcas"
 
 
 ******************************
@@ -377,8 +377,8 @@ drop factorjefe
 
 encode area, gen(area_)
 
-gen zona_c=0 if area_==1
-replace zona_c=1 if area_==2
+gen zona_c=0 if areareco==1
+replace zona_c=1 if areareco==2
 label var zona_c "Zona del pais"
 label define zona_c 1 "Urban" 0 "Rural"
 label value zona_c zona_c
