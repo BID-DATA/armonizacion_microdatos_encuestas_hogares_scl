@@ -1134,33 +1134,32 @@ label variable edupc_ci "Primaria completa"
 **************
 ***edusi_ci***
 **************
-gen byte edusi_ci=(aedu_ci>5 & aedu_ci<11) 
+gen byte edusi_ci=(aedu_ci>5 & aedu_ci<12) 
 replace edusi_ci=. if aedu_ci==.
 label variable edusi_ci "Secundaria incompleta"
 
 **************
 ***edusc_ci***
 **************
-gen byte edusc_ci=(aedu_ci==11) 
+gen byte edusc_ci=(aedu_ci==12) 
 replace edusc_ci=. if aedu_ci==.
 label variable edusc_ci "Secundaria completa"
 
 **************
 ***eduui_ci***
 **************
-gen byte eduui_ci=nivel_asist==8 //   asisten a educacion sueperior
-replace eduui_ci=1 if (nivel_no_asist==12 & v3014!=1) // asistieron educacion superior y no culminaron
+gen byte eduui_ci= aedu_ci>=13 & aedu_ci<=14 // entre 13 y 14 anios
+replace eduui_ci=1 if (aedu_ci>=15 & aedu_ci<16 & v3007!=1 & v3014!=1) // 15 anios de educacion, sin completar nivel
 replace eduui_ci=. if aedu_ci==.
-label variable eduui_ci "Educación superior incompleta"
+label variable eduui_ci "Terciaria/universitaria incompleta"
  
 **************
 ***eduuc_ci***
 **************
-gen byte eduuc_ci=(nivel_asist==9 | nivel_asist==10 | nivel_asist==11) // asisten posgrado y por tanto culminaron pregrado
-replace eduuc_ci=(nivel_no_asist==12 & v3014==1) // asistieron a pregrado y culminaron
-replace eduuc_ci=(nivel_no_asist==13|nivel_no_asist==14|nivel_no_asist==15) //asistieron posgrado sin importar si culminaron o no
+gen byte eduuc_ci=(aedu>=15) // 15 anios o mas, que es la duracion de tecnica
+replace eduuc_ci=1 if (aedu_ci>=15 & aedu_ci<16 & (v3007==1 | v3014==1)) // entre 15 y 16 anios si completaron el curso
 replace eduuc_ci=. if aedu_ci==.
-label variable eduuc_ci "Educación superior completa" 
+label variable eduuc_ci "Terciaria/universitaria completa o mas"
 
 ***************
 ***edus1i_ci***
