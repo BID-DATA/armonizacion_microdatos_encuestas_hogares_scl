@@ -1237,15 +1237,6 @@ gen asiste_ci=(p5==1)
 replace asiste_ci=. if p5==.
 label var asiste "Personas que actualmente asisten a centros de enseñanza"
 
-
-**************
-***eduac_ci***
-**************
-gen byte eduac_ci=(nivel==5)
-replace eduac_ci=0 if (nivel==4)
-label variable eduac_ci "Superior universitario vs superior no universitario"
-
-
 ******************************
 *	pqnoasis_ci
 ******************************
