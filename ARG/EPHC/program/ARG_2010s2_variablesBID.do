@@ -1270,7 +1270,6 @@ gen aguafuente_ch =.
 replace aguafuente_ch = 1 if iv7==1 & iv6<3
 replace aguafuente_ch = 2 if iv7==1 & iv6==3
 replace aguafuente_ch = 10 if iv7>1
-replace aguafuente_ch = 10 if aguafuente_ch ==. & jefe_ci==1
 
 
 *************

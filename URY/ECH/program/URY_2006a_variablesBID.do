@@ -264,8 +264,7 @@ replace sinbano_ch = 0 if d15>0
 *************
 *aguatrat_ch*
 *************
-gen aguatrat_ch = 0
-replace aguatrat_ch =1 if d12==1
+gen aguatrat_ch = 9
 *label var aguatrat_ch "= 9 la encuesta no pregunta de si se trata el agua antes de consumirla"
 
 
@@ -1707,7 +1706,7 @@ lab var	e57	" Años aprobados en escuela publica "
 **************
 
 gen aedu_ci = . 
-replace aedu_ci = 0 if e50_1 > 0 // 0 Anios cursados en preescolar 
+replace aedu_ci = 0 if e50_1 > 0 // 0 Anios cursados en preescolar.
 
 * Nivel más alto alcanzado y aprobado.
 replace aedu_ci = e52_1_1 if e52_1_1 > 0 // Escuela primaria.
@@ -1732,8 +1731,8 @@ replace aedu_ci = e52_7_1 + 16 if e52_7_1 > 0 // Posgrado o doctorado.
 replace aedu_ci = e50_3 - 1 if e50_3 > 0 // Primaria Común.
 replace aedu_ci = 6 + e50_4 - 1 if e50_4 > 0 // Cliclo basico Liceo. 
 replace aedu_ci = 6 + e50_5 - 1 if e50_5 > 0 // Cliclo basico UTU.
-replace aedu_ci = 6 + e50_6 - 1 if e50_6 > 0 // Bachillerato Secundario.
-replace aedu_ci = 6 + e50_8 - 1 if e50_8 > 0 // Bachillerato Tecnológico.
+replace aedu_ci = 9 + e50_6 - 1 if e50_6 > 0 // Bachillerato Secundario.
+replace aedu_ci = 9 + e50_8 - 1 if e50_8 > 0 // Bachillerato Tecnológico.
 // Formación Profesional Básica (**).
 replace aedu_ci = 12 + e50_9 - 1  if e50_9 > 0 // Magisterio o profesorado.
 replace aedu_ci = 12 + e50_10 - 1 if e50_10 > 0 // Universidad o similar.

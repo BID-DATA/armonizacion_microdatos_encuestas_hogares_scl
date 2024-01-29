@@ -345,11 +345,10 @@ label variable miembros_ci "Miembro del hogar"
 **Pregunta: ¿Cree tener ascendencia...? ¿Cuál considera principal de las declaradas?:(e29_6) (1 - Afro o Negra; 2 - Asiatica o Amarilla; 3 - Blanca; 4 - Indigena; 5 - Otra) 
 **En Uruguay puedes reportar más de una identidad pero la pregunta e29_6 pregunta cuál es la identidad principal. 
 
-gen afroind_ci=. 
-replace afroind_ci=1 if e29_6 == 4 | (e29_4 == 1 & e29_6 == 0)
-replace afroind_ci=2 if e29_6 == 1 | (e29_1 == 1 & e29_6 == 0)
-replace afroind_ci=3 if inlist(e29_6, 2, 3, 5 )| (e29_6 == 0 & (e29_2==1 | e29_3==1 | e29_2==5))
-replace afroind_ci=. if e29_6 ==. 
+gen afroind_ci =. 
+replace afroind_ci = 1 if (e29_4 == 1)
+replace afroind_ci = 2 if (e29_1 == 1)
+replace afroind_ci = 3 if (e29_2 == 1 | e29_2 == 1 | e29_5 == 1)
 
 label variable afroind_ci "Identificación étnica o racial"
 label define afroind_ci 1"Indígena" 2"Afrodesendiente" 3"Otros"
@@ -906,9 +905,8 @@ gen g146_ = g146/12
 gen g147_ = g147/12
 
 destring g126_7, replace
-destring g142, replace
 
-egen ylmpri_ci = rsum(g126_1 g126_2  g126_3  g126_4  g126_5  g126_6  g126_7 g142 g143_ g145_ g146_ g147_ g133_2) if emp_ci == 1, missing
+egen ylmpri_ci = rsum(g126_1 g126_2  g126_3  g126_4  g126_5  g126_6  g126_7 g143_ g145_ g146_ g147_ g133_2) if emp_ci == 1, missing
 
 replace ylmpri_ci=. if (g126_1==. & g126_2==. & g126_3==. &  g126_4==. &  g126_5==. &  g126_6==. &  g126_7==. &  g143_==. & g145_==. & g146_==. & g147_==.)
 

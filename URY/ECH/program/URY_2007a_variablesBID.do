@@ -169,7 +169,7 @@ replace aguafconsumo_ch = 2 if (d11==1 & d14_1>2) | d11==2
 replace aguafconsumo_ch = 4 if d11==4
 replace aguafconsumo_ch = 8 if d11==6
 replace aguafconsumo_ch = 9 if d11==3 
-replace aguafconsumo_ch = 10 if d11==7 | d11==5 | d11==0 | d11==8
+replace aguafconsumo_ch = 10 if d11==7 | d11==5
 
 
 
@@ -182,7 +182,7 @@ replace aguafuente_ch = 2 if (d11==1 & d14_1>2) | d11==2
 replace aguafuente_ch = 4 if d11==4
 replace aguafuente_ch = 8 if d11==6
 replace aguafuente_ch = 9 if d11==3 
-replace aguafuente_ch = 10 if d11==7 | d11==5|d11==0|d11==8
+replace aguafuente_ch = 10 if d11==7 | d11==5
 
 
 
@@ -269,8 +269,7 @@ replace sinbano_ch = 0 if d16>0
 *************
 *aguatrat_ch*
 *************
-gen aguatrat_ch = 0
-replace aguatrat_ch =1 if d13==1
+gen aguatrat_ch = 9
 *label var aguatrat_ch "= 9 la encuesta no pregunta de si se trata el agua antes de consumirla"
 gen luz_ch=.
 
@@ -2102,7 +2101,7 @@ by idh_ch: egen remesas_ch=sum(remesas_ci)if relacion_ci!=6
 **************
 
 gen aedu_ci = . 
-replace aedu_ci = 0 if e52_1 > 0  // 0 Anios cursados en preescolar
+replace aedu_ci = 0 if e52_1 > 0 // 0 Anios cursados en preescolar.
 
 * Nivel más alto alcanzado y aprobado.
 replace aedu_ci = e54_1_1 if e54_1_1 > 0 // Escuela primaria.
@@ -2127,8 +2126,8 @@ replace aedu_ci = e54_7_1 + 16 if e54_7_1 > 0 // Posgrado o doctorado.
 replace aedu_ci = e52_3 - 1 if e52_3 > 0 // Primaria Común.
 replace aedu_ci = 6 + e52_4 - 1 if e52_4 > 0 // Cliclo basico Liceo. 
 replace aedu_ci = 6 + e52_5 - 1 if e52_5 > 0 // Cliclo basico UTU.
-replace aedu_ci = 6 + e52_6 - 1 if e52_6 > 0 // Bachillerato Secundario.
-replace aedu_ci = 6 + e52_8 - 1 if e52_8 > 0 // Bachillerato Tecnológico.
+replace aedu_ci = 9 + e52_6 - 1 if e52_6 > 0 // Bachillerato Secundario.
+replace aedu_ci = 9 + e52_8 - 1 if e52_8 > 0 // Bachillerato Tecnológico.
 // Formación Profesional Básica (**).
 replace aedu_ci = 12 + e52_9 - 1  if e52_9 > 0 // Magisterio o profesorado.
 replace aedu_ci = 12 + e52_10 - 1 if e52_10 > 0 // Universidad o similar.
