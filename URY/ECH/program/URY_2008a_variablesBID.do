@@ -259,7 +259,8 @@ replace sinbano_ch = 0 if d16>0
 *************
 *aguatrat_ch*
 *************
-gen aguatrat_ch = 9
+gen aguatrat_ch = 0
+replace aguatrat_ch =1 if d13==1
 *label var aguatrat_ch "= 9 la encuesta no pregunta de si se trata el agua antes de consumirla"
 
 *La principal fuente de iluminación es electricidad
@@ -1708,6 +1709,8 @@ qui foreach v of var años_prim años_cb años_bc años_sup años_post {
 replace aedu_ci =. if (años_prim==. & años_cb==. & años_bc==. & años_sup==. & años_post)
 replace aedu_ci =. if e52_2 == 9
 replace aedu_ci = floor(aedu_ci)
+
+replace aedu_ci = 0 if e52_2 == 9 // Se agrega aquellos que estan comenzando el primer anio de primaria común.
 
 ** eliminamos las variables temporales 
 drop años_prim años_post cb_añostc bach_años bach_añostc sup_años sup_añostc años_cb años_bc años_sup
