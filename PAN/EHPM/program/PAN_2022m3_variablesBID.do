@@ -377,8 +377,8 @@ drop factorjefe
 
 encode area, gen(area_)
 
-gen zona_c=0 if areareco==1
-replace zona_c=1 if areareco==2
+gen zona_c=0 if areareco=="R"
+replace zona_c=1 if areareco=="U"
 label var zona_c "Zona del pais"
 label define zona_c 1 "Urban" 0 "Rural"
 label value zona_c zona_c
