@@ -1005,16 +1005,16 @@ label var tcylmpri_ci "Identificador de top-code del ingreso de la actividad pri
 	**************
 	***eduui_ci***
 	**************
-	gen eduui_ci=(p12a==2 & nivinst==9) | (p12a==2 & nivinst==8)
+	gen eduui_ci=(p12a==2 & nivinst==8) | (p12a==2 & nivinst==9) | (p12a==2 & nivinst==10)
 	replace eduui_ci=. if aedu_ci==. 
-	label variable eduui_ci "Superior incompleto"
+	label variable eduui_ci "Educación Superior incompleta"
 
 	***************
 	***eduuc_ci***
 	***************
-	gen byte eduuc_ci= (p12a==1 & nivinst==9) | (p12a==1 & nivinst==8) | (nivinst==10)	
+	gen byte eduuc_ci= (p12a==1 & nivinst==8) | (p12a==1 & nivinst==9) | (p12a==1 & nivinst==10)	
 	replace eduuc_ci=. if aedu_ci==. 
-	label variable eduuc_ci "Superior completo"
+	label variable eduuc_ci "Educación Superior completa"
 
 	***************
 	***edus1i_ci***
@@ -1073,6 +1073,23 @@ label var tcylmpri_ci "Identificador de top-code del ingreso de la actividad pri
 	gen asiste_ci=(p07==1)
 	replace asiste_ci=. if p07==.
 	label variable asiste_ci "Asiste actualmente a la escuela"
+	
+	****************
+	***asisedsup_ci***
+	****************
+	*Creación de la variable asistencia a educacion superior por Olga Dulce- 21/08/23
+	gen asisedsup_ci=(p12a==2 & nivinst==8) | (p12a==2 & nivinst==9)
+	replace asisedsup_ci=. if aedu_ci==.
+	label variable eduui_ci "Asiste a educación Terciaria/universitaria"
+
+	****************
+	***aprobedsup_ci***
+	****************
+	*Creación de la variable de aprobación de nivel educación superior por Olga Dulce- 21/08/23
+	gen aprobedsup_ci=(p12a==1 & nivinst==8) | (p12a==1 & nivinst==9)
+	replace asisedsup_ci=. if aedu_ci==.
+	label variable eduui_ci "Aprobación nivel educación Terciaria/universitaria"
+
 
 	**************
 	***pqnoasis_ci***

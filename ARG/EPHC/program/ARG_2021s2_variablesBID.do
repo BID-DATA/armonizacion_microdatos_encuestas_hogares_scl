@@ -892,16 +892,16 @@ replace edusc_ci=. if aedu_ci==.
 **********
 *eduui_ci*
 **********
-gen eduui_ci=(aedu_ci>12 & nivel_ed==5) // nivel superior incompleto
-replace eduui_ci=1 if aedu_ci>12 & aedu_ci<=16 & nivel_ed!=5 & nivel_ed!=6
+gen eduui_ci=(ch12==6 | ch12==7 | ch12==8) & (ch13==2) // nivel superior incompleto
 replace eduui_ci=. if aedu_ci==.
+label variable eduui_ci "Superior incompleto"
 	
 **********
 *eduuc_ci*
 **********
-gen eduuc_ci=(aedu_ci>12 & nivel_ed==6)
-replace eduuc_ci=1 if aedu_ci>=17 & nivel_ed!=5 & nivel_ed!=6
+gen eduuc_ci=(ch12==6 | ch12==7 | ch12==8) & (ch13==1) 
 replace eduuc_ci=. if aedu_ci==.
+	label variable eduuc_ci "Superior completo"
 	
 ***********
 *edus1i_ci*
