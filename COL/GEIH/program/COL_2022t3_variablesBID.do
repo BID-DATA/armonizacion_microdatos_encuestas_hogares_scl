@@ -360,8 +360,8 @@ label var afroind_ano_c "Año Cambio de Metodología Medición Raza/Etnicidad"
 	***dis_ci***
 	*******************
 gen dis_ci=.
-cap noi replace dis_ci=1 if p1906s1<=3 | p1906s2<=3 | p1906s3<=3 | p1906s4<=3 | p1906s5<=3 | p1906s6<=3 | p1906s7<=3 | p1906s8<=3
-cap noi replace dis_ci=0 if p1906s1==4 | p1906s2==4 | p1906s3==4 | p1906s4==4 | p1906s5==4 | p1906s6==4 | p1906s7==4 | p1906s8==4
+replace dis_ci=1 if p1906s1<=3 | p1906s2<=3 | p1906s3<=3 | p1906s4<=3 | p1906s5<=3 | p1906s6<=3 | p1906s7<=3 
+replace dis_ci=0 if p1906s1==4 & p1906s2==4 & p1906s3==4 & p1906s4==4 & p1906s5==4 & p1906s6==4 & p1906s7==4 
 label var dis_ci "Personas con discapacidad"
 
 	*******************
