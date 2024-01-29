@@ -314,7 +314,7 @@ label define ine01  ///
 12	"Ngäbe-Buglé"      ///
 13	"Panamá Oeste"			  
 label value ine01 ine01
-label var ine01 "División política administrativa, provincias y comarcas"
+label var ine01 "División política administrativa, provincias y comarcas (incluye Panamá Oeste)"
 
 
 ******************************
@@ -377,10 +377,8 @@ drop factorjefe
 
 encode area, gen(area_)
 
-
-gen zona_c=0 if areareco=="R"
-replace zona_c=1 if areareco=="U"
-
+gen zona_c=0 if area_==2
+replace zona_c=1 if area_==1
 label var zona_c "Zona del pais"
 label define zona_c 1 "Urban" 0 "Rural"
 label value zona_c zona_c
@@ -1290,16 +1288,16 @@ label var edus2c_ci "2do ciclo de Educacion Secundaria Completo"
 ******************************
 *	eduui_ci
 ******************************
-gen eduui_ci=(aedu_ci>12 & (p6==41 | p6==51 | p6==52 | p6==53 | p6==54 | p6==55)) // esta cursando superior no univ
-replace eduui_ci=1 if (aedu_ci>12)
+gen eduui_ci=(aedu_ci>12 & aedu_ci<16) & nivel==5
+replace eduui_ci=1 if (aedu_ci>12 & aedu_ci<14) & nivel==4
 replace eduui_ci=. if aedu_ci==.
 label var eduui_ci "Universitaria o Terciaria Incompleta"
 
 ******************************
 *	eduuc_ci
 ******************************
-gen eduuc_ci=(aedu_ci>=12 & nivel==6 | nivel==7 | nivel==8) // aprobaron posgrado y por tanto culminaron pregrado 
-replace eduuc_ci=1 if (aedu_ci>=14) & (p6==42 | p6==56) // aprobaron el último ano de ES universitaria o de superior no universitaria
+gen eduuc_ci=(aedu_ci>=16) 
+replace eduuc_ci=1 if (aedu_ci>=14) & nivel==4 
 replace eduuc_ci=. if aedu_ci==.
 label var eduuc_ci "Universitaria o Terciaria Completa"
 
