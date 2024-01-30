@@ -352,11 +352,11 @@ gen afroind_ano_c = 2022
 	gen disab_3 = (q05_07c ==1) if q05_07c!=.
 	gen disab_4 = (q05_07d ==1) if q05_07d!=.
 	
-		label disab "Any disability"
-		label disab_1 "Disability: Speech"
-		label disab_2 "Disability: Sight"
-		label disab_3 "Disability: Hearing"
-		label disab_4 "Disability: Physical"
+		label variable disab "Any disability"
+		label variable disab_1 "Disability: Speech"
+		label variable disab_2 "Disability: Sight"
+		label variable disab_3 "Disability: Hearing"
+		label variable disab_4 "Disability: Physical"
 
 	*******************
 	*** dis_ch ***
