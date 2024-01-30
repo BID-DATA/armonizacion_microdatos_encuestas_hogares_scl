@@ -300,9 +300,22 @@ label value region_BID_c region_BID_c
 	***************
 gen afroind_ci=. 
 replace afroind_ci = 1 if (q01_07 == 4)
-replace afroind_ci = 2 if (q01_07 == 1 | q01_07 == 3 | q01_07 == 8)
-replace afroind_ci = 3 if (q01_07 == 2 | q01_07 == 5 | q01_07 == 6 | q01_07 == 7 | q01_07 == 9)
-
+replace afroind_ci = 2 if (q01_07 == 1 | q01_07 == 3)
+replace afroind_ci = 3 if (q01_07 == 2 | q01_07 == 5 | q01_07 == 6 | q01_07 == 7 | q01_07 == 9 | q01_07 == 8)
+	
+	*Variable Afrodescendientes desagregada
+	gen afrodes_desag     = 1 if (q01_07 == 4)
+	replace afrodes_desag = 2 if (q01_07 == 3)
+	replace afrodes_desag = 3 if (q01_07 == 1)
+	replace afrodes_desag = 4 if (q01_07 == 2)
+	replace afrodes_desag = 5 if (q01_07 == 5)
+	replace afrodes_desag = 6 if (q01_07 == 8)
+	replace afrodes_desag = 7 if (inlist(q01_07,6,7,9))
+	
+	label define afroind_desag 1 "Indigenous" 2 "Maroon" 3 "Creole" 4 "Hindustani" 5 "Javanese" 6 "Mixed Ethnicity" 7 "Other"
+	label value afrodes_desag afroind_desag
+	label variable afrodes_desag "Ethnicity disaggregated"
+	
 	***************
    *** afroind_ch ***
 	***************
