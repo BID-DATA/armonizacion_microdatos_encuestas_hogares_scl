@@ -342,6 +342,21 @@ gen afroind_ano_c = 2022
 	*/
 	
  gen dis_ci=.
+ 
+ *Variable de discapacidad prueba
+	gen disab = (q05_07a ==1 | q05_07b ==1 | q05_07c ==1 | q05_07d ==1 )
+	replace disab =. if  (q05_07a ==. | q05_07b ==. | q05_07c ==. | q05_07d ==. | q05_07e ==. )
+	
+	gen disab_1 = (q05_07a ==1) if q05_07a!=.
+	gen disab_2 = (q05_07b ==1) if q05_07b!=.
+	gen disab_3 = (q05_07c ==1) if q05_07c!=.
+	gen disab_4 = (q05_07d ==1) if q05_07d!=.
+	
+		label disab "Any disability"
+		label disab_1 "Disability: Speech"
+		label disab_2 "Disability: Sight"
+		label disab_3 "Disability: Hearing"
+		label disab_4 "Disability: Physical"
 
 	*******************
 	*** dis_ch ***
