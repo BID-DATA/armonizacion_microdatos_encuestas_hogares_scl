@@ -633,7 +633,7 @@ gen dis_ch=.
 	replace rama_ci = 6 if (q09_21==1 | q09_21==7) & emp_ci==1
 	replace rama_ci = 7 if q09_21==9  & emp_ci==1
 	replace rama_ci = 8 if q09_21==11 & emp_ci==1
-	replace rama_ci = 9 if q09_21==5 & emp_ci==1
+	replace rama_ci = 9 if inlist(q09_21,5,2,4,8,96) & emp_ci==1
 	label var rama_ci "Rama de actividad de la ocupación principal"
 	label def rama_ci 1"Agricultura, caza, silvicultura y pesca" 2"Explotación de minas y canteras" 3"Industrias manufactureras"
 	label def rama_ci 4"Electricidad, gas y agua" 5"Construcción" 6"Comercio, restaurantes y hoteles" 7"Transporte y almacenamiento", add
