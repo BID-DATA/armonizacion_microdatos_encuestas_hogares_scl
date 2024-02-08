@@ -1474,7 +1474,7 @@ replace eduac_ci = 1 if aedu_ci>12 & e51_9>0 & e51_9!=9
 
 
 *88. Personas que actualmente asisten a centros de ensenanza
-gen byte asiste_ci=(e197==1 | e201==1 | e212==1 | e215==1 | e218==1 | e221==1 | e224==1)
+gen byte asiste_ci=(e193 == 1 | e197==1 | e201==1 | e212==1 | e215==1 | e218==1 | e221==1 | e224==1)
 
 *89. Razones para no asistir a la escuela
 * Se genera como mising porque no hay para todas las preguntas. 
