@@ -62,7 +62,10 @@ label value region_BID_c region_BID_c
 	***************
 	clonevar region_c=domain
 	label var region_c "division politico-administrativa, provincia"
-
+	
+	*Para el corte de la region interior vs el resto
+	gen region_interior = (region_c==3)
+	
 	***************
 	***  ine01  ***
 	***************
