@@ -1107,29 +1107,28 @@ replace aedu_ci=7 if a14==21 | a14==31
 replace aedu_ci=8 if a14==22 | a14==32
 replace aedu_ci=9 if a14==23 | a14==33
 replace aedu_ci=10 if a14==24 | a14==34
-replace aedu_ci=11 if a14==25 | a14==26 | a14==35 
-replace aedu_ci=12 if a14==36 | a14==37
+replace aedu_ci=11 if a14==25 | a14==26 | a14==35| a14==36 | a14==37
 
 *Superior (universitario o para-universitario)
-replace aedu_ci=13 if a14==41 | a14==51
-replace aedu_ci=14 if a14==42 | a14==52
-replace aedu_ci=15 if a14==43 | a14==53
-replace aedu_ci=16 if a14==54 
-replace aedu_ci=17 if a14==55
-replace aedu_ci=18 if a14==56
+replace aedu_ci=12 if a14==41 | a14==51
+replace aedu_ci=13 if a14==42 | a14==52
+replace aedu_ci=14 if a14==43 | a14==53
+replace aedu_ci=15 if a14==54 
+replace aedu_ci=16 if a14==55
+replace aedu_ci=17 if a14==56
 
 *DZ Julio 2019-Cambio código de la variable
 *Postgrado
 
-replace aedu_ci=19 if a14==71 | a14==101 
-replace aedu_ci=20 if a14==72 | a14==102 
-replace aedu_ci=21 if a14==73 | a14==103 
-replace aedu_ci=22 if a14==74 | a14==104 
+replace aedu_ci=18 if a14==71 | a14==101 
+replace aedu_ci=19 if a14==72 | a14==102 
+replace aedu_ci=20 if a14==73 | a14==103 
+replace aedu_ci=21 if a14==74 | a14==104 
 
-replace aedu_ci=21 if a14==111
-replace aedu_ci=22 if a14==112
-replace aedu_ci=23 if a14==113
-replace aedu_ci=24 if a14==114
+replace aedu_ci=22 if a14==111
+replace aedu_ci=23 if a14==112
+replace aedu_ci=24 if a14==113
+replace aedu_ci=25 if a14==114
 
 *replace aedu_ci=. if (edad_ci>=0 & edad_ci<=1) & a14==0 // Para hacerle seguimiento a la cantidad de missing
 
@@ -1147,35 +1146,35 @@ replace aedu_ci=11+4+2 if a14==119 // maestria completa si doctorado ignorados
 ********************************************************************************************************************************
 ***EDUNO_CI: Personas sin educacion (se refiere a primaria, secundaria y universitaria(o terciaria); excluye preescolar)
 ********************************************************************************************************************************
-gen eduno_ci=(a14==0 | a14==1 | a14==19) //ninguno, preparatoria, anios de primaria ignorados
+gen eduno_ci= 1 if aedu_ci==0 //ninguno, preparatoria, anios de primaria ignorados
 replace eduno_ci=. if aedu_ci==. 
 label variable eduno_ci "Cero anios de educacion"
 
 ********************************************************************************************************************************
 ***EDUPI_CI: Peronas que no han completado la educacion primaria
 ********************************************************************************************************************************
-gen edupi_ci=(a14>=11 & a14<=15) 
+gen edupi_ci=1 if aedu_ci >=1 & aedu_ci <=5
 replace edupi_ci=. if aedu_ci==.  
 label variable edupi_ci "Primaria incompleta"
 
 ********************************************************************************************************************************
 ***EDUPC_CI: Personas que han completado la educacion primaria
 ********************************************************************************************************************************
-gen edupc_ci=a14>=16 
+gen edupc_ci= 1 if aedu_ci==6 
 replace edupc_ci=. if aedu_ci==. 
 label variable edupc_ci "Primaria completa"
 
 ********************************************************************************************************************************
 ***EDUSI_CI: Peronas que no han completado la educacion secundaria
 ********************************************************************************************************************************
-gen edusi_ci=(a14>=21 & a14<=24)  | (a14>=31 & a14<=35) 
+gen edusi_ci= 1 if aedu_ci >=7 & aedu_ci <=10
 replace edusi_ci=. if  aedu_ci==.
 label variable edusi_ci "Secundaria incompleta"
 
 ********************************************************************************************************************************
 ***EDUSC_CI: Personas que han completado la educacion secundaria
 ********************************************************************************************************************************
-gen edusc_ci=(a14>=25 & a14<=26)  | (a14>=36 & a14<=37) | (a14==49 | a14==59)  
+gen edusc_ci= if aedu_ci==11
 replace edusc_ci=. if aedu_ci==.
 label variable edusc_ci "Secundaria completa"
 
@@ -1183,28 +1182,28 @@ label variable edusc_ci "Secundaria completa"
 ***EDUS1I_CI: Personas que no han completado el primer ciclo de la educacion secundaria
 ********************************************************************************************************************************
 *usando a14 (ultimo anio aprobado) porque permite distinguir entre bachilleratos academicos y tecnicos
-gen edus1i_ci=(a14>=21 & a14<=22) | (a14>=31 & a14<=32)
+gen edus1i_ci= 1 if aedu_ci >=7 & aedu_ci <=8
 replace edus1i_ci=. if aedu_ci==.
 label variable edus1i_ci "1er ciclo de la secundaria incompleto"
 
 ********************************************************************************************************************************
 ***EDUS1C_CI: Personas que han completado el primer ciclo de la educacion secundaria
 ********************************************************************************************************************************
-gen edus1c_ci= a14==23 | a14==33
+gen edus1c_ci= 1 if aedu_ci==9
 replace edus1c_ci=. if aedu_ci==.
 label variable edus1c_ci "1er ciclo de la secundaria completo"
 
 ********************************************************************************************************************************
 ***EDUS2I_CI: Personas que no han completado el segundo ciclo de la educacion secundaria
 ********************************************************************************************************************************
-gen edus2i_ci=(a14==24 | a14 == 34| a14 == 35 )
+gen edus2i_ci=1 if aedu_ci==10
 replace edus2i_ci=. if aedu_ci==. 
 label variable edus2i_ci "2do ciclo de la secundaria incompleto"
 
 ********************************************************************************************************************************
 ***EDUS2C_CI: Personas que han completado el segundo ciclo de la educacion secundaria
 ********************************************************************************************************************************
-gen edus2c_ci=a14==25 | a14==26 | a14==36 | a14==37 | a14==49 | a14==59 //incluye superior anios ignorado
+gen edus2c_ci=1 if aedu_ci==11
 replace edus2c_ci=. if aedu_ci==.
 label variable edus2c_ci "2do ciclo de la secundaria completo"
 
