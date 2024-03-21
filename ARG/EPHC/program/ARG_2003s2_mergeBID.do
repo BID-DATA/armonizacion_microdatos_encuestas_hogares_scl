@@ -91,3 +91,5 @@ compress
 save "`base_out'", replace
 
 log close
+
+*Prueba 1
