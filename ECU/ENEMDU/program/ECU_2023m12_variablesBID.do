@@ -247,6 +247,37 @@ label value region_BID_c region_BID_c
 	label var jefe_ci "Jefe de hogar"
 	label def jefe_ci 1"Si" 0"No"
 	label val jefe_ci jefe_ci
+	
+	
+	
+	*****************************
+	/*
+	Check for missing values and tabs in loop 
+	*/
+	*****************************
+	
+local varlist "jefe_ci civil_ci edad_ci sexo_ci factor_ci relacion_ci mes_c anio_c pais_c zona_c ine01 region_BID_c region_c nconyuges_ch"
+
+* Start a loop to iterate through each variable in the list
+foreach var of local varlist {
+    * Check if the variable has missing values
+    count if missing(`var')
+    local missing_count = r(N)
+
+    * Print a message indicating the variable and the number of missing values
+    if `missing_count' > 0 {
+        di "Variable `var' has `missing_count' missing value(s)."
+    }
+    else {
+        di "Variable `var' has no missing values."
+    }
+}
+
+local varlist "jefe_ci civil_ci edad_ci sexo_ci relacion_ci mes_c anio_c pais_c zona_c ine01 region_BID_c region_c"
+foreach var of local varlist {
+	tab `var',m
+}
+
 
 	******************
 	***nconyuges_ch***
