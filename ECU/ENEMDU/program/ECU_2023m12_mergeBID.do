@@ -26,7 +26,6 @@ log using "`log_file'", replace
 import spss "`base_in'\enemdu_vivienda_hogar_2023_12.sav", clear
 duplicates report area estrato upm  vivienda hogar
 sort area estrato upm vivienda hogar 
-drop vi03a
 saveold "`base_in'\hogares.dta",  version(12) replace
 
 * Sort de base
