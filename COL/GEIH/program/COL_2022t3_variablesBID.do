@@ -955,13 +955,7 @@ label var ypeoficial_ch "Ingreso per cápita generado por el país"
 			****************************
     **************
 ***aedu_ci***
-**************
-			
-* Para las variables de maximo nivel educativo alcanzado y año aprobado, se reemplaza missing  
-	replace p3042=. if p3042==99
-	replace p3042s1=.   if p3042s1==9
-*   replace p6220=. if p6220==9
-	
+**************	
 	g aedu_ci = . 
 * 0 años de educacion 
 	replace aedu_ci = 0 if p3042 == 1 | p3042 == 2 
@@ -974,20 +968,22 @@ label var ypeoficial_ch "Ingreso per cápita generado por el país"
 	replace aedu_ci = 5 if p3042 == 3 & p3042s1 == 5
 	replace aedu_ci = 5 if p3042 == 4 & p3042s1 == 0
 *Secundaria
-	replace aedu_ci = 6  if p3042 == 4 & p3042s1 == 6
-	replace aedu_ci = 7  if p3042 == 4 & p3042s1 == 7
-	replace aedu_ci = 8  if p3042 == 4 & p3042s1 == 8
-	replace aedu_ci = 9  if p3042 == 4 & p3042s1 == 9	
+	replace aedu_ci = 6  if p3042 == 4 & p3042s1 == 1
+	replace aedu_ci = 7  if p3042 == 4 & p3042s1 == 2
+	replace aedu_ci = 8  if p3042 == 4 & p3042s1 == 3
+	replace aedu_ci = 9  if p3042 == 4 & p3042s1 == 4	
+	replace aedu_ci = 9  if p3042 == 5 & p3042s1 == 0	
+	replace aedu_ci = 9  if p3042 == 6 & p3042s1 == 0	
 	
-	replace aedu_ci = 10 if p3042 == 5 & p3042s1 == 10
-	replace aedu_ci = 10 if p3042 == 6 & p3042s1 == 10
-	replace aedu_ci = 11 if p3042 == 5 & p3042s1 == 11
-	replace aedu_ci = 11 if p3042 == 6 & p3042s1 == 11
+	replace aedu_ci = 10 if p3042 == 5 & p3042s1 == 1
+	replace aedu_ci = 10 if p3042 == 6 & p3042s1 == 1
+	replace aedu_ci = 11 if p3042 == 5 & p3042s1 == 2
+	replace aedu_ci = 11 if p3042 == 6 & p3042s1 == 2
 *Superior
 	replace aedu_ci = 11+p3042s1 if p3042>=7 & p3042<=13
 *Missing
-	replace aedu_ci =. if p3042==.
-
+	replace aedu_ci =. if p3042==99
+	replace aedu_ci =. if p3042s1==99
 
 **************
 ***eduno_ci***
