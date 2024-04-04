@@ -1552,3 +1552,5 @@ local base_out = "$ruta\harmonized\\`PAIS'\\`ENCUESTA'\data_arm\\`PAIS'_`ANO'`ro
 saveold "`base_out'", version(12) replace
 
 cap log close
+
+hola 
