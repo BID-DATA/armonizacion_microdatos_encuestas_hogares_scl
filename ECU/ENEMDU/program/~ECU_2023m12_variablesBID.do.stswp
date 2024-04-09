@@ -392,7 +392,7 @@ replace afroind_ci=1  if p15 == 1
 replace afroind_ci=2 if p15 == 2 | p15 == 3 | p15 == 4
 replace afroind_ci=3 if p15 == 5 | p15 == 6| p15 ==7 | p15 == 8
 replace afroind_ci=. if p15==. 
-replace afroind_ci=9 if (p15==. & edad_ci<5)
+replace afroind_ci=. if (p15==. & edad_ci<5)
 
 	***************
 	***afroind_ch***
@@ -797,8 +797,8 @@ label var formal_ci "1=afiliado o cotizante / PEA"
 
 	foreach var of varlist p63 p64b p65 p66 p67 ///
 	p68b p69 p70b p71b p72b p73b p74b p76 p78{
-	replace `var'=. if `var'==999999
-	replace `var'=. if `var'==999998
+	replace `var'=. if (`var'==999999 | `var'==99999 | `var'==9999 | `var'==999 | `var'==99)
+	replace `var'=. if (`var'==999999 | `var'==99999 | `var'==9999 | `var'==999 | `var'==99)
 	}
 
     ***************
@@ -1515,6 +1515,9 @@ gen aguatrat_ch =9
 	******************************
 
 	* Variables incluidas por SCL/MIG Fernando Morales
+	
+	* Se eliminan variables migrantelac_ci y migrantiguo5_ci de acuerdo con propuesta en 
+	* Documentación de armonización de microdatos de encuestas de Hogares ** Pablo Cortés
 
 	*******************
 	*** migrante_ci ***
@@ -1526,24 +1529,13 @@ gen aguatrat_ch =9
 	**********************
 	*** migantiguo5_ci ***
 	**********************
+	
+	*No es posible calcular la variable
 	 
 	gen migantiguo5_ci=.
 	label var migantiguo5_ci "=1 si es migrante antiguo (5 anos o mas)"
 		
-	**********************
-	*** migrantelac_ci ***
-	**********************
-	
-	gen migrantelac_ci=(inlist(p15ab,32,44,52,68,76,84,152,170,188,214,222,320,328,332,340,388,484,558,591,600,604,740,780,858,862) & migrante_ci==1) if migrante_ci!=.
-	label var migrantelac_ci "=1 si es migrante proveniente de un pais LAC"
-	
-	**********************
-	*** migrantiguo5_ci ***
-	**********************
-	 
-	gen migrantiguo5_ci=.
-	label var migrantiguo5_ci "=1 si es migrante antiguo (5 anos o mas)"
-		
+
 	**********************
 	*** miglac_ci ***
 	**********************
