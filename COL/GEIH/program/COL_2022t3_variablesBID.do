@@ -980,7 +980,8 @@ label var ypeoficial_ch "Ingreso per cápita generado por el país"
 	replace aedu_ci = 11 if p3042 == 5 & p3042s1 == 2
 	replace aedu_ci = 11 if p3042 == 6 & p3042s1 == 2
 *Superior
-	replace aedu_ci = 11+p3042s1 if p3042>=7 & p3042<=13
+	replace aedu_ci = 11+ trunc(p3042s1/2) if p3042>=7 & p3042<=13
+	
 *Missing
 	replace aedu_ci =. if p3042==99
 	replace aedu_ci =. if p3042s1==99
