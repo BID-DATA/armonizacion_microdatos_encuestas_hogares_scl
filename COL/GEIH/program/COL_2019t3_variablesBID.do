@@ -968,16 +968,29 @@ la var subemp_ci "Personas en subempleo por horas"
 **************
 ***eduui_ci***
 **************
-	g byte eduui_ci = (aedu_ci>11 & p6220<3)
-	replace eduui_ci=. if aedu_ci==.
-	la var eduui_ci "Superior incompleto"
+
+g byte eduui_ci = (p6210 == 6 & inlist(p6220, 2, 6)) 
+replace eduui_ci = . if aedu_ci == .
+label variable eduui_ci "Superior incompleto"
+
+
+***************
+***eduuc_ci***
+***************
+
+g byte eduuc_ci = (p6210 == 6 & inlist(p6220, 3, 4, 5))
+replace eduuc_ci = . if aedu_ci == .
+label variable eduuc_ci "Superior completo"
 
 **************
-***eduuc_ci***
+***eduac_ci***
 **************
-	g byte eduuc_ci = (aedu_ci > 11 & p6220>2)
-	replace eduuc_ci=. if aedu_ci==.
-	la var eduuc_ci "Superior completo"
+
+gen byte eduac_ci = .
+replace eduac_ci = 1 if (p6210 == 6 & inlist(p6220, 4, 5))
+replace eduac_ci = 0 if p6210 == 6 & p6220 == 3
+label variable eduac_ci "Superior universitario vs superior no universitario"
+
 
 ***************
 ***edus1i_ci***
@@ -1020,12 +1033,6 @@ la var subemp_ci "Personas en subempleo por horas"
 	g asispre_ci= (p6170==1 & p6210==2 & p6210s1 <2)
 	la var asispre_ci "Asiste a educación prescolar"
 	
-**************
-***eduac_ci***
-**************
-** No se puede calcular ya que solo tenemos la diferenciacion para los que han culminado el nivel
-	g byte eduac_ci = .
-	la var eduac_ci "Superior universitario vs superior no universitario"
 
 ***************
 ***asiste_ci***

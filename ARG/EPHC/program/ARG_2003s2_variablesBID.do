@@ -1269,20 +1269,28 @@ nivel_ed:
 	gen edusc_ci=(nivel_ed==4)
 	label variable edusc_ci "Secundaria completa"	
 
+
 	**********
 	*eduui_ci*
 	**********
-	
-	gen eduui_ci=(nivel_ed==5)
-	label variable eduui_ci "Superior incompleto"	
-
+	gen byte eduui_ci = (ch12 == 6 | ch12 == 7) & ch13 == 2
+	replace eduui_ci = . if aedu_ci == . 
+	label variable eduui_ci "Superior incompleto"
 
 	**********
 	*eduuc_ci*
 	**********
-	
-	gen eduuc_ci=(nivel_ed==6)
-	label variable eduuc_ci "Superior completo"
+	gen byte eduuc_ci = ((ch12 == 6 | ch12 == 7) & ch13 == 1)| ch12 == 8
+	replace eduuc_ci = . if aedu_ci == .
+	label variable eduui_ci "Superior completo"
+
+	**********
+	*eduac_ci*
+	**********
+	gen eduac_ci = 1 if ch12 == 7 | ch12 == 8
+	replace eduac_ci = 0 if ch12 == 6
+	replace eduac_ci = . if aedu_ci == .
+	label variable eduac_ci "Superior universitario vs superior no universitario"
 
 
 	***********
@@ -1321,12 +1329,6 @@ nivel_ed:
 	gen byte edupre_ci=.
 	label variable edupre_ci "Educacion preescolar"
 
-
-	**********
-	*eduac_ci*
-	**********
-	gen byte eduac_ci=.
-	label variable eduac_ci "Superior universitario vs superior no universitario"
 
 
 /** Mod. 8/2015 Ivan Bonacelli EDU/SLC

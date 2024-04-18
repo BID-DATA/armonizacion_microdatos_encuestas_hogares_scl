@@ -1203,20 +1203,24 @@ replace rama_ci = 9 if (pp04b_cod>=75 & pp04b_cod<=95) |(pp04b_cod>=7501 &  pp04
 	**********
 	*eduui_ci*
 	**********
-	
-	gen eduui_ci=(aedu_ci>12 & nivel_ed==5) // Nivel superior incompleto
-	replace eduui_ci=1 if aedu_ci>12 & aedu_ci<=16 & nivel_ed!=5 & nivel_ed!=6 // Terciario incompleto (*)
-	replace eduui_ci=. if aedu_ci==.
-
+	gen byte eduui_ci = (ch12 == 6 | ch12 == 7) & ch13 == 2
+	replace eduui_ci = . if aedu_ci == . 
+	label variable eduui_ci "Superior incompleto"
 
 	**********
 	*eduuc_ci*
 	**********
-	
-	gen eduuc_ci=(aedu_ci>12 & nivel_ed==6)
-	replace eduuc_ci=1 if aedu_ci>=17 & nivel_ed!= 5 & nivel_ed!=6 
-	replace eduuc_ci=. if aedu_ci==.
+	gen byte eduuc_ci = ((ch12 == 6 | ch12 == 7) & ch13 == 1)| ch12 == 8
+	replace eduuc_ci = . if aedu_ci == .
+	label variable eduui_ci "Superior completo"
 
+	**********
+	*eduac_ci*
+	**********
+	gen eduac_ci = 1 if ch12 == 7 | ch12 == 8
+	replace eduac_ci = 0 if ch12 == 6
+	replace eduac_ci = . if aedu_ci == .
+	label variable eduac_ci "Superior universitario vs superior no universitario"
 
 	***********
 	*edus1i_ci*
@@ -1265,17 +1269,7 @@ replace rama_ci = 9 if (pp04b_cod>=75 & pp04b_cod<=95) |(pp04b_cod>=7501 &  pp04
 	gen asispre_ci=(ch10==1 & ch12==1)
 	la var asispre_ci "Asiste a educacion prescolar"
 	
-	**********
-	*eduac_ci*
-	**********
-
-	gen byte eduac_ci=.
- 	replace eduac_ci=1 if ch12==7
- 	replace eduac_ci=0 if ch12==6
- 	label variable eduac_ci "Superior universitario vs superior no universitario"
-
 	
-
 	***********
 	*asiste_ci*
 	***********

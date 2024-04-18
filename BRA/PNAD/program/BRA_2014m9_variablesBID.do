@@ -1128,17 +1128,14 @@ label variable edusc_ci "Secundaria completa"
 **************
 ***eduui_ci***
 **************
-* Entre 13 y 14 anios o 15 que no declaran nivel finalizado.
-gen byte eduui_ci = (aedu_ci >= 13 & aedu_ci <= 14) | (aedu_ci == 15 & finalizo != 1) 
-replace eduui_ci=. if aedu_ci==.
-label variable eduui_ci "Universitaria incompleta"
+gen byte eduui_ci = (v6003 == 5 | (v6007 == 8 & v0611 == 3)) 
+replace eduui_ci = . if aedu_ci == .
+label variable eduui_ci "Superior incompleto"
 
 **************
 ***eduuc_ci***
 **************
-/* Aquellos con 15 anios que completaron nivel 
-o cualqueira con mas de 15 anios de educ.*/
-gen byte eduuc_ci = (aedu_ci == 15 & finalizo == 1 | aedu_ci > 15) 
+gen byte eduuc_ci = ((v6007 == 8 & v0611 == 1 ) | v6003 == 11 | v6007 == 9)
 replace eduuc_ci = . if aedu_ci == .
 label variable eduuc_ci "Universitaria completa o mas"
 

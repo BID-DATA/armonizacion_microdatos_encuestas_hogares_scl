@@ -937,19 +937,25 @@ label val rama_ci rama_ci
 	**********
 	*eduui_ci*
 	**********
-	
-	gen eduui_ci=(aedu_ci>12 & nivel_ed==5) // nivel superior incompleto
-	replace eduui_ci=1 if aedu_ci>12 & aedu_ci<=16 & nivel_ed!=5 & nivel_ed!=6
-	replace eduui_ci=. if aedu_ci==.
-	
+	gen byte eduui_ci = (ch12 == 6 | ch12 == 7) & ch13 == 2
+	replace eduui_ci = . if aedu_ci == . 
+	label variable eduui_ci "Superior incompleto"
+
 	**********
 	*eduuc_ci*
 	**********
-	
-	gen eduuc_ci=(aedu_ci>12 & nivel_ed==6)
-	replace eduuc_ci=1 if aedu_ci>=17 & nivel_ed!=5 & nivel_ed!=6
-	replace eduuc_ci=. if aedu_ci==.
-	
+	gen byte eduuc_ci = ((ch12 == 6 | ch12 == 7) & ch13 == 1)| ch12 == 8
+	replace eduuc_ci = . if aedu_ci == .
+	label variable eduui_ci "Superior completo"
+
+	**********
+	*eduac_ci*
+	**********
+	gen eduac_ci = 1 if ch12 == 7 | ch12 == 8
+	replace eduac_ci = 0 if ch12 == 6
+	replace eduac_ci = . if aedu_ci == .
+	label variable eduac_ci "Superior universitario vs superior no universitario"
+
 	***********
 	*edus1i_ci*
 	***********
@@ -995,14 +1001,6 @@ label val rama_ci rama_ci
 	g asispre_ci=(ch10==1 & ch12==1)
 	la var asispre_ci "Asiste a educacion prescolar"
 	
-	**********
-	*eduac_ci*
-	**********
-	gen byte eduac_ci=.
-	replace eduac_ci=1 if ch12==7 | ch12==8
-	replace eduac_ci=0 if ch12==6
-	label variable eduac_ci "Superior universitario vs superior no universitario"	
-
 	***********
 	*asiste_ci*
 	***********
