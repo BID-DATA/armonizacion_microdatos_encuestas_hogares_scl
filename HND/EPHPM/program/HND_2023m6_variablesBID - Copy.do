@@ -31,9 +31,9 @@ log using "`log_file'", replace
 País: Honduras
 Encuesta: EPHPM
 Round: m6
-Autores: Daniela Zuluaga
-Última versión: Daniela Zuluaga - Email: danielazu@iadb.org, da.zuluaga@hotmail.com
-Fecha última modificación: Marzo de 2019
+Autores: Mayte Ysique
+Última versión: Mayte Ysique - Email: maytes@iadb.org, mysique@pucp.pe
+Fecha última modificación: Abril de 2023
 
 			  
 							SCL/LMK - IADB
@@ -54,7 +54,7 @@ use "`base_in'", clear
 	********
 	*anio_c*
 	********
-	gen anio_c=2019
+	gen anio_c=2023
 
 	*******
 	*mes_c*
@@ -325,8 +325,8 @@ use "`base_in'", clear
 	***noafroind_ci***
 	******************
 	gen byte noafroind_ci = . 
-	replace noafroind_ci = 1 if afro_ci==0 & ind==0 
-	replace noafroind_ci = 0 if afro_ci==1 | ind==1 
+	replace noafroind_ci = 1 if afro_ci==0 & ind_ci==0 
+	replace noafroind_ci = 0 if afro_ci==1 | ind_ci==1 
 
 	******************
 	***noafroind_ch***
@@ -406,9 +406,6 @@ gen desemp_ci=(condocup_ci==2)
 *************
 gen pea_ci=(emp_ci==1 | desemp_ci==1)
 
-	/**************************
-					  COPIAR DESDE AQUI
-					  ***********************************/ 
 	*******************
 	***categoinac_ci***
 	*******************
@@ -449,47 +446,133 @@ gen pea_ci=(emp_ci==1 | desemp_ci==1)
 	label var durades "Duracion del Desempleo (en meses)"
 
 
-**************
-*categopri_ci*
-**************
-gen categopri_ci=.
-replace categopri_ci=1 if ca514
-replace categopri_ci=2 if cp526==5 | cp526==4 
-replace categopri_ci=3 if cp526==1  | cp526==2  | cp526==3 | cp526==10
-replace categopri_ci=4 if cp526==8 | cp526==9 | cp526==11
-label var categopri_ci "Categoria ocupacional actividad principal"
-label define categopri_ci 1 "Patron" 2 "Cuenta Propia" 3 "Empleado" 4 "Trabajador no remunerado"
-label value categopri_ci categopri_ci
+	/**************************
+					  COPIAR DESDE AQUI
+					  ***********************************/ 
+				
+	*************
+	*horaspri_ci*
+	*************
+	egen horas_trabpri=rowtotal(oc_605_lunes oc_605_martes oc_605_miercoles oc_605_jueves oc_605_viernes oc_605_sabado oc_605_domingo) if condocup_ci==1, m
+	
+	gen horaspri_ci=horas_trabpri if oc606==3
+	replace horaspri_ci=horas_trabpri+oc607 if oc606==1
+	replace horaspri_ci=horas_trabpri-oc607 if oc606==2
+	replace horaspri_ci=0 if oc606==4
+	replace horaspri_ci=0 if horaspri_ci<0 //Reemplazamos algunos valores 
+	replace horaspri_ci = . if horaspri_ci>168
+	
+	************
+	*horastot_ci
+	************
+	egen horas_trabsec=rowtotal(oc_605_lunes1 oc_605_martes1 oc_605_miercoles1 oc_605_jueves1 oc_605_viernes1 oc_605_sabado1 oc_605_domingo1) if condocup_ci==1 & nempleos_ci>1, m
+	
+	gen horassec_ci=horas_trabsec if oc6061==3
+	replace horassec_ci=horas_trabsec+oc6071 if oc6061==1
+	replace horassec_ci=horas_trabsec-oc6071 if oc6061==2
+	replace horassec_ci=0 if oc6061==4
+	replace horassec_ci=0 if horassec_ci<0	
+	
+	egen horastot_ci = rsum(horaspri_ci horassec_ci), missing
+	replace horastot_ci = . if horastot_ci>168
+	
+	***********
+	*subemp_ci*
+	***********
+	gen subemp_ci=.
+	replace subemp_ci=(horaspri_ci<=30 & ca522==1 & ca523==1) if condocup_ci==1
+	label var subemp_ci "Trabajadores subempleados"
 
-*************
-*horaspri_ci*
-*************
-egen horaspri_ci=rowtotal( cp522_dom cp522_lun cp522_mar cp522_mie cp522_jue cp522_vie cp522_sab), m
-replace horaspri_ci=. if horaspri_ci>168
+	***************
+	*tiempoparc_ci*
+	***************
+	gen tiempoparc_ci=.
+	replace tiempoparc_ci=(horaspri_ci<=30 & ca522==2) if condocup_ci==1
+	label var tiempoparc_ci "Trabajadores a medio tiempo"
 
-************
-*horastot_ci
-************
-egen horassec_ci=rowtotal( cp539dom cp539lun cp539mar cp539mie cp539jue cp539vie cp539sab ), m
-replace horassec_ci=. if horassec_ci>168
-egen horastot_ci = rsum(horaspri_ci horassec_ci), missing
-replace horastot_ci = thoras if horastot_ci <thoras
-replace horastot_ci = thoras if horastot_ci ==. & thoras >=0
-replace horastot_ci = . if horastot_ci>168
+	**************
+	*categopri_ci*
+	**************
+	gen categopri_ci=.
+	replace categopri_ci=1 if inlist(oc609,6) & condocup_ci==1
+	replace categopri_ci=2 if inlist(oc609,7) & condocup_ci==1
+	replace categopri_ci=3 if inlist(oc609,1,2,3,4,5,9,10,11) & condocup_ci==1
+	replace categopri_ci=4 if inlist(oc609,8) & condocup_ci==1
+	label var categopri_ci "Categoria ocupacional actividad principal"
+	label define categopri_ci 1 "Patron" 2 "Cuenta Propia" 3 "Empleado" 4 "Trabajador no remunerado"
+	label value categopri_ci categopri_ci
 
-****************
-* categosec_ci *
-****************
-gen categosec_ci=.
-replace categosec_ci=1 if cp542==7
-replace categosec_ci=2 if cp542==5 | cp542==6 
-replace categosec_ci=3 if cp542==1  | cp542==2  | cp542==3 | cp542==4 | cp542==10
-replace categosec_ci=4 if cp542==8 | cp542==9 | cp542==11
-label var categosec_ci "Categoria ocupacional actividad secundaria"
-label define categosec_ci 1 "Patron" 2 "Cuenta Propia" 3 "Empleado" 4 "Trabajador no remunerado"
-label value categosec_ci categosec_ci
+	****************
+	* categosec_ci *
+	****************
+	gen categosec_ci=.
+	replace categosec_ci=1 if inlist(oc6091,6) & condocup_ci==1
+	replace categosec_ci=2 if inlist(oc6091,7) & condocup_ci==1
+	replace categosec_ci=3 if inlist(oc6091,1,2,3,4,5,9,10,11) & condocup_ci==1
+	replace categosec_ci=4 if inlist(oc6091,8) & condocup_ci==1
+	label var categosec_ci "Categoria ocupacional actividad secundaria"
+	label define categosec_ci 1 "Patron" 2 "Cuenta Propia" 3 "Empleado" 4 "Trabajador no remunerado"
+	label value categosec_ci categosec_ci
 
+	*********
+	*rama_ci*
+	*********
+	*Se toma como referencia: https://ine.gob.hn/v4/wp-content/uploads/2023/04/Clasificador-de-Actividades-Economicas-Honduras-2018_PDF-1.pdf
+	gen rama_ci=.
+	replace  rama_ci=1 if ramaop==1 & emp_ci==1
+	replace  rama_ci=2 if ramaop==2 & emp_ci==1
+	replace  rama_ci=3 if ramaop==3 & emp_ci==1
+	replace  rama_ci=4 if ramaop==4 | ramaop==5  & emp_ci==1
+	replace  rama_ci=5 if ramaop==6 & emp_ci==1
+	replace  rama_ci=6 if ramaop==7 | ramaop==9  & emp_ci==1
+	replace  rama_ci=7 if ramaop==8 | ramaop==10 & emp_ci==1
+	replace  rama_ci=8 if inrange(ramaop,11,14)  & emp_ci==1
+	replace  rama_ci=9 if inrange(ramaop,15,21)  & emp_ci==1
+	label var rama_ci "Rama de actividad"
+	label def rama_ci 1"Agricultura, caza, silvicultura y pesca" 2"Explotación de minas y canteras" 3"Industrias manufactureras" 4"Electricidad, gas y agua" 5"Construcción" 6"Comercio, restaurantes y hoteles" 7"Transporte y almacenamiento" 8"Establecimientos financieros, seguros e inmuebles" 9"Servicios sociales y comunales", add
+	label val rama_ci rama_ci
 
+	*************
+	*spublico_ci*
+	*************
+	gen spublico_ci=1 if inlist(oc609,1,4,9) & emp_ci==1
+	replace spublico_ci=0 if inlist(oc609,2,3,5,6,7,8,10,11) & emp_ci==1
+
+	*************
+	*tamemp_ci
+	*************
+	* Honduras. Pequeña 1-5, Mediana 6-50, Grande Más de 50.
+	gen tamemp_ci = 1 if (oc_608_cuantas>=1 & oc_608_cuantas<=5) & emp_ci==1
+	replace tamemp_ci = 2 if (oc_608_cuantas>=6 & oc_608_cuantas<=50) & emp_ci==1
+	replace tamemp_ci = 3 if (oc_608_cuantas>50) & oc_608_cuantas!=. & emp_ci==1
+	replace tamemp_ci=. if  oc_608_cuantas>=99999
+	label define tamemp_ci 1 "Pequeña" 2 "Mediana" 3 "Grande"
+	label value tamemp_ci tamemp_ci
+	label var tamemp_ci "Tamaño de empresa"
+
+	****************
+	*cotizando_ci***
+	****************
+	gen cotizando_ci=.
+	label var cotizando_ci "Cotizante a la Seguridad Social"
+	label define cotizando_ci 0"No cotiza" 1"Cotiza a la SS" 
+	label value cotizando_ci cotizando_ci
+
+	****************
+	*instcot_ci*****
+	****************
+	gen instcot_ci=.
+
+	****************
+	*afiliado_ci****
+	****************
+	gen afiliado_ci=.
+	label var afiliado_ci "Afiliado a la Seguridad Social"
+
+	*******************
+	**** formal_ci ****
+	*******************
+	gen byte formal_ci=.
 
 *************
 *desalent_ci*
@@ -498,27 +581,7 @@ gen desalent_ci=.
 replace desalent_ci=1 if cp511==6
 replace desalent_ci=0 if cp511!=6 & cp511!=.
 
-***********
-*subemp_ci*
-***********
-/*
-gen subemp_ci=.
-replace subemp_ci=0 if emp==0 | emp==1
-replace subemp_ci=1 if horastot<30 & ce120==1
-label var subemp_ci "Trabajadores subempleados"
-*/
-* MGD 06/20/2014: solo horas del trabajo principal.
-gen subemp_ci=0
-replace subemp_ci=1 if horaspri_ci<=30 & cp551==1 & emp_ci==1
-label var subemp_ci "Trabajadores subempleados"
 
-***************
-*tiempoparc_ci*
-***************
-gen tiempoparc_ci=.
-replace tiempoparc_ci=0 if emp==0 | emp==1
-replace tiempoparc_ci=1 if horastot<30 
-label var tiempoparc_ci "Trabajadores a medio tiempo"
 
 
 /*
@@ -529,11 +592,7 @@ gen firmapeq_ci=0 if (ce32_cantidad>5 & ce32_cantidad<99999)
 replace firmapeq_ci=1 if (ce32_cantidad<=5 & ce32_cantidad!=0)
 */
 
-*************
-*spublico_ci*
-*************
-gen spublico_ci=1 if cp526==1 
-replace spublico_ci=0 if cp526!=1 
+
 
 **********
 *ocupa_ci*
@@ -563,25 +622,7 @@ label define ocupa_ci  7 "obreros no agricolas, conductores de maq y ss de trans
 label define ocupa_ci  8 "FFAA" 9 "Otras ", add
 label value ocupa_ci ocupa_ci
 
-*********
-*rama_ci*
-*********
-*DZ Agosto 2019: Se pasa directamente de la clasificación CIIU Rev2.0 a CIIU Rev 4.0. No existe una tabla de equivalencia como tal en el INE.
-gen rama_ci=.
-replace  rama_ci=1 if ramaop==1 & emp_ci==1
-replace  rama_ci=2 if ramaop==2 & emp_ci==1
-replace  rama_ci=3 if ramaop==3 & emp_ci==1
-replace  rama_ci=4 if ramaop==4 | ramaop==5 & emp_ci==1
-replace  rama_ci=5 if ramaop==6 & emp_ci==1
-replace  rama_ci=6 if ramaop==7 | ramaop==9 & emp_ci==1
-replace  rama_ci=7 if ramaop==8 | ramaop==10 & emp_ci==1
-replace  rama_ci=8 if ((ramaop>=11 & ramaop<=14) & (emp_ci==1))
-replace  rama_ci=9 if ((ramaop>=15 & ramaop<=21) & (emp_ci==1))
-label var rama_ci "Rama de actividad"
-label def rama_ci 1"Agricultura, caza, silvicultura y pesca" 2"Explotación de minas y canteras" 3"Industrias manufactureras"
-label def rama_ci 4"Electricidad, gas y agua" 5"Construcción" 6"Comercio, restaurantes y hoteles" 7"Transporte y almacenamiento", add
-label def rama_ci 8"Establecimientos financieros, seguros e inmuebles" 9"Servicios sociales y comunales", add
-label val rama_ci rama_ci
+
 
 
 * rama secundaria
@@ -608,34 +649,7 @@ label val ramasec_ci ramasec_ci
 gen salmm_ci= 9443.24
 label var salmm_ci "Salario minimo legal"
 
-****************
-*afiliado_ci****
-****************
-gen afiliado_ci=.
-label var afiliado_ci "Afiliado a la Seguridad Social"
 
-****************
-*cotizando_ci***
-****************
-gen cotizando_ci=.
-replace cotizando_ci=1 if (cp517_1>=1 & cp517_1<=5) 
-replace cotizando_ci=1 if (cp517_2>=1 & cp517_2<=5) & cotizando_ci==.
-replace cotizando_ci=1 if (cp517_3>=1 & cp517_3<=5) & cotizando_ci==.
-replace cotizando_ci=1 if (cp517_4>=1 & cp517_4<=5) & cotizando_ci==.
-recode cotizando_ci .=0 if condact>=1 & condact<=2
-/*independiente que no cotiza en primera/segunda ocupacion*/ 
-/* desocupados no cotizan*/
-label var cotizando_ci "Cotizante a la Seguridad Social"
-label define cotizando_ci 0"No cotiza" 1"Cotiza a la SS" 
-label value cotizando_ci cotizando_ci
-
-* Formalidad sin restringir a PEA
-gen cotizando_ci1=.
-replace cotizando_ci1=1 if (cp517_1>=1 & cp517_1<=5) 
-replace cotizando_ci1=1 if (cp517_2>=1 & cp517_2<=5) & cotizando_ci==.
-replace cotizando_ci1=1 if (cp517_3>=1 & cp517_3<=5) & cotizando_ci==.
-replace cotizando_ci1=1 if (cp517_4>=1 & cp517_4<=5) & cotizando_ci==.
-recode cotizando_ci1 .=0 if condact>=1 & condact<=3
 
 
 *****************
@@ -672,22 +686,6 @@ label value tipocontrato_ci tipocontrato_ci
 gen tipocontrato_ci=.
 
 
-*************
-*tamemp_ci
-*************
-* Honduras. Pequeña 1-5, Mediana 6-50, Grande Más de 50.
-gen tamemp_ci = 1 if (cp525cuantos>=1 & cp525cuantos<=5)
-replace tamemp_ci = 2 if (cp525cuantos>=6 & cp525cuantos<=50)
-replace tamemp_ci = 3 if (cp525cuantos>50) & cp525cuantos!=.
-replace tamemp_ci=. if  cp525cuantos>=9999
-label define tamemp_ci 1 "Pequeña" 2 "Mediana" 3 "Grande"
-label value tamemp_ci tamemp_ci
-label var tamemp_ci "Tamaño de empresa"
-
-gen tamemp = 1 if (cp525cuantos>=1 & cp525cuantos<=4)
-replace tamemp = 2 if (cp525cuantos>=5 & cp525cuantos<=14)
-replace tamemp = 3 if (cp525cuantos>=15) & cp525cuantos<=40
-replace tamemp=. if  cp525cuantos>=41 & cp525cuantos!=.
 
 ****************
 *tipopen_ci*****
@@ -695,28 +693,7 @@ replace tamemp=. if  cp525cuantos>=41 & cp525cuantos!=.
 gen tipopen_ci=.
 label var tipopen_ci "Tipo de pension - variable original de cada pais" 
 
-****************
-*instcot_ci*****
-****************
-*DZ Marzo 2019: Se genera la variable como missing value ya que (cp517) tiene múltiple respuesta, y no se puede decidir arbitrariamente a cual de las instituciones se asocia*
-gen instcot_ci=.
-/*
-replace instcot_ci=1 if ce433_1==1
-replace instcot_ci=2 if ce433_2==1
-replace instcot_ci=3 if ce433_3==1
-replace instcot_ci=4 if ce433_4==1
-replace instcot_ci=5 if ce433_5==1
-replace instcot_ci=6 if ce433_6==1
-replace instcot_ci=7 if ce433_7==1
-replace instcot_ci=8 if ce433_8==1
-replace instcot_ci=9 if ce433_9==1
-replace instcot_ci=10 if ce433_10==1
 
-
-label define instcot_ci 1 "rap" 2 "injupemp" 3 "inprema" 4"ipm" 5 "ihss" 6 "Fondo privado de pensiones" 7 "Seguro medico privado" 8 "Gremio o asociacion de trabajadores" 9 "Ninguna de las anteriores" 10 "Otro"
-label value instcot_ci instcot_ci  
-label var instcot_ci "Institucion proveedora de la pension - variable original de cada pais" 
-*/
 ****************
 *instpen_ci*****
 ****************
@@ -788,23 +765,7 @@ replace lpe_ci= 1355.49 if zona_c==0
 label var lpe_ci "Linea de indigencia oficial del pais"
 
 
-*******************
-***formal***
-*******************
-/*
-gen formal_ci=1 if afiliado_ci==1 & condocup_ci==1 
-label var formal_ci "Formal"
-*/
-*Modificación Mayra Sáenz- Febrero 2014
 
-capture gen formal=1 if cotizando_ci==1
-gen byte formal_ci=.
-replace formal_ci=1 if formal==1 & (condocup_ci==1 | condocup_ci==2)
-replace formal_ci=0 if formal_ci==. & (condocup_ci==1 | condocup_ci==2) 
-label var formal_ci "1=afiliado o cotizante / PEA"
-
-* Formalidad sin restringir a PEA
-g formal_1= cotizando_ci1
 
 
 ************************************************************************
