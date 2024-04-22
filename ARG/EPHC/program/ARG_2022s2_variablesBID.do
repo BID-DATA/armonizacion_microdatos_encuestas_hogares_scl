@@ -1455,7 +1455,7 @@ gen instcot_ci=.
 *************
 *migrante_ci*
 *************
-gen migrante_ci=(inlist(ch15,4,5)) if ch15!=. & ch15!=9		/* Categoria Ns./Nr. no se incluye en la variable*/
+gen migrante_ci=(inlist(ch15,4,5)) if ch15!=. & ch15!=9 		/* Categoria Ns./Nr. no se incluye en la variable*/
 label var migrante_ci "=1 si es migrante"
 	
 ****************
@@ -1483,8 +1483,8 @@ label var migrantelac_ci "=1 si es migrante proveniente de un pais LAC"
 *migrantiguo5_ci*
 *****************
 gen migrantiguo5_ci = 1 if inlist(ch16,1,2,3) & migrante_ci==1
-replace migrantiguo5_ci = 0 if inlist(ch16,4,5) & migrante_ci==1
-replace migrantiguo5_ci = . if inlist(ch16,6,9) | migrante_ci==0
+replace migrantiguo5_ci = 0 if inlist(ch16,6,4,5,0) & migrante_ci==1
+replace migrantiguo5_ci = . if inlist(ch16, 9) | migrante_ci==0
 label var migrantiguo5_ci "=1 si es migrante antiguo (5 anos o mas)"
 		
 ***********
