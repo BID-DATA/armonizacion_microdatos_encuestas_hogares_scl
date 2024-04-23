@@ -878,30 +878,35 @@ use "/Users/mysique/Library/CloudStorage/OneDrive-Inter-AmericanDevelopmentBankG
 	replace aedu_ci=9+2+4+ed08 if (ed05==9 | ed05==10 | ed05==11) & ed08<99 //11 (basica y media) + 4 (grado)
 
 	*Para quienes asisten actualmente:
-	replace aedu_ci=0 if (ed10>=1 & ed10<=3) & ed13<99
-	replace aedu_ci=ed13 if ed10==4  & ed13<99
-	replace aedu_ci=9+ed13 if ed10==5 & ed13<99 //9 años de basica
-	replace aedu_ci=9+2+ed13 if (ed10==6 | ed10==7 | ed10==8) & ed13<99 //9(basica) + 2(media)
-	replace aedu_ci=9+2+4+ed13 if (ed10==9 | ed10==10 | ed10==11) & ed13<99 //11 (basica y media) + 4 (grado)
+	replace aedu_ci=0 if (ed10>=1 & ed10<=3)
+	replace aedu_ci=ed13 if ed10==4
+	replace aedu_ci=9+ed13 if ed10==5 //9 años de basica
+	replace aedu_ci=9+2+ed13 if (ed10==6 | ed10==7 | ed10==8) //9(basica) + 2(media)
+	replace aedu_ci=9+2+4+ed13 if (ed10==9 | ed10==10) //11 (basica y media) + 4 (grado)
 	
+	*Para los que no fueron en el 2023, pero si en el 2022
+	replace aedu_ci=0 if (ed16>=1 & ed16<=3) & aedu_ci==.
+	replace aedu_ci=ed17 if ed16==4 & aedu_ci==.
+	replace aedu_ci=9+ed17 if ed16==5  & aedu_ci==. //9 años de basica
+	replace aedu_ci=9+2+ed17 if (ed16==6 | ed16==7 | ed16==8) & aedu_ci==. //9(basica) + 2(media)
+	replace aedu_ci=9+2+4+ed17 if (ed16==9 | ed16==10) & aedu_ci==. //11 (basica y media) + 4 (grado)
+
 	label var aedu_ci "Años de educacion aprobados"	
-			
-	// imputando los años perdidos
-	replace aedu_ci=0 if (cp407==1 | cp407==2 | cp407==3) & cp410==. // alfabetizacion 
-	replace aedu_ci=0 if (cp412==2 | cp412==3) & cp417==. // alfabetizacion
-	replace aedu_ci=0 if (cp407==4 & cp410==.) | (cp412==4 & cp417==.) // educacion basica
-	replace aedu_ci=6 if (cp407==5 & cp410==.) | (cp412==5 & cp417==.) // ciclo comun
-	replace aedu_ci=9 if (cp407==6 & cp410==.) | (cp412==6 & cp417==.) // diversificado
-	replace aedu_ci=11 if (inlist(cp407,7, 8,9) & cp410==.) | (inlist(cp412,7,8,9) & cp417==.) // terciaria
-	replace aedu_ci=15 if (cp407==10 & cp410==.) | (cp412==10 & cp417==.) // postgrado
-	 
+	
 	**************
 	***eduno_ci***
 	**************
-	g byte eduno_ci=(aedu_ci==0)
+	g byte eduno_ci=((aedu_ci==0) & (ed05!=3 | ed10!=3))
 	replace eduno_ci=. if aedu_ci==.
 	la var eduno_ci "Personas sin educacion. Excluye preescolar"
 
+	***************
+	***edupre_ci***
+	***************
+	g byte edupre_ci=((aedu_ci==0) & (ed05==3 | ed10==3))
+	replace eduno_ci=. if aedu_ci==.
+	la var edupre_ci "Tiene Educacion preescolar"
+	
 	**************
 	***edupi_ci*** 
 	**************
@@ -975,11 +980,20 @@ use "/Users/mysique/Library/CloudStorage/OneDrive-Inter-AmericanDevelopmentBankG
 	la var eduuc_ci "Universitaria o Terciaria Completa"
 
 	***************
-	***edupre_ci***
+	***asiste_ci***
 	***************
-	g byte edupre_ci=.
-	la var edupre_ci "Tiene Educacion preescolar"
-	
+	gen     asiste_ci=.
+	replace asiste_ci=1 if ed03==1
+	replace asiste_ci=0 if ed03==2
+	label var asiste "Personas que actualmente asisten a centros de enseñanza"
+
+	***************
+	***edupub_ci*** 
+	***************
+	gen edupub_ci=.
+	replace edupub_ci=1 if (cp418==1 | cp418==2 | cp418==3 | cp418==4 | cp418==8  | cp418==10) & cp405==1
+	replace edupub_ci=0 if (cp418==5 | cp418==6 | cp418==7 | cp418==9 | cp418==11 | cp418==12) & cp405==1
+	label var edupub_ci "1 = personas que asisten a centros de enseñanza publicos"
 	
 	
 	
@@ -1228,14 +1242,6 @@ label values quintil_ci quintil_ci
 
 *rename *, lower
 
-***************
-***asiste_ci***
-***************
-*DZ Mar 2019:Se agrega centro de educación temprana**
-generat asiste_ci=.
-replace asiste_ci=1 if cp405==1 | cp401==1
-replace asiste_ci=0 if cp405==2 | cp401==2
-label var asiste "Personas que actualmente asisten a centros de enseñanza"
 
 
 ***************
@@ -1264,13 +1270,6 @@ replace repiteult_ci=1 if cp415==1
 replace repiteult_ci=0 if cp415==2
 label var repiteult_ci "Personas que están repetiendo el ultimo grado"
 
-***************
-***edupub_ci*** 
-***************
-gen edupub_ci=.
-replace edupub_ci=1 if (cp418==1 | cp418==2 | cp418==3 | cp418==4 | cp418==8  | cp418==10) & cp405==1
-replace edupub_ci=0 if (cp418==5 | cp418==6 | cp418==7 | cp418==9 | cp418==11 | cp418==12) & cp405==1
-label var edupub_ci "1 = personas que asisten a centros de enseñanza publicos"
 
 **************
 ***eduac_ci***
