@@ -732,7 +732,7 @@ use "`base_in'", clear
 	gen remesad=(oih12_us*tc_c1)/3
 	*especies
 	gen remesp=oih12_lps_esp/3
-	gen remespd= (oih12_us_esp*tc_c1)/3
+	gen remespd= (oih12_us_esp*tc_c)/3
 	*13 Bono esperanza - discapacidad
 	gen bondis= oih13/3
 	*14 Bono oro
