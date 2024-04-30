@@ -32,7 +32,7 @@ label var factor_ch "Factor de expansion del hogar"
 label var idh_ch "ID del hogar"
 label var idp_ci "ID de la persona en el hogar"
 
-label var region_c "Regiones especifica de cada país"
+*label var region_c "Regiones especifica de cada país"
 
 label var zona_c "Zona del pais"
 	label define zona_c 1 "urbana" 0 "rural", add modify
@@ -172,7 +172,7 @@ label var durades_ci "Duracion del desempleo en meses"
 label var ylmpri_ci "Ingreso laboral monetario actividad principal" 
 label var nrylmpri_ci "ID de no respuesta ingreso de la actividad principal"  
 label var ylnmpri_ci "Ingreso laboral NO monetario actividad principal"  
-label var tcylmpri_ci "Identificador de top-code del ingreso de la actividad principal" 
+*label var tcylmpri_ci "Identificador de top-code del ingreso de la actividad principal" 
 	* Actividad secundaria
 label var ylmsec_ci "Ingreso laboral monetario segunda actividad" 
 label var ylnmsec_ci "Ingreso laboral NO monetario actividad secundaria"
@@ -180,7 +180,7 @@ label var ylnmsec_ci "Ingreso laboral NO monetario actividad secundaria"
 label var ylmotros_ci "Ingreso laboral monetario de otros trabajos"
 label var ylnmotros_ci "Ingreso laboral NO monetario de otros trabajos" 
 	* Ingresos no laborales
-label var autocons_ci "Autoconsumo reportado por el individuo"
+*label var autocons_ci "Autoconsumo reportado por el individuo"
 label var remesas_ci "Remesas mensuales reportadas por el individuo" 
 label var ylmhopri_ci "Salario monetario horario de la actividad principal" 
 label var ylmho_ci "Salario monetario horario de todas las actividades" 
@@ -198,9 +198,9 @@ label var ylnm_ch "Ingreso laboral no monetario del hogar"
 label var ylmnr_ch "Ingreso laboral monetario del hogar con missing en NR"
 label var ynlm_ch "Ingreso no laboral monetario del hogar"
 label var ynlnm_ch "Ingreso no laboral no monetario del hogar"
-label var rentaimp_ch "Rentas imputadas del hogar"
+*label var rentaimp_ch "Rentas imputadas del hogar"
 
-label var autocons_ch "Autoconsumo reportado por el hogar"
+*label var autocons_ch "Autoconsumo reportado por el hogar"
 label var remesas_ch "Remesas mensuales del hogar"	
 label var ypen_ci "Monto de ingreso por pension contributiva"
 label var ypensub_ci "Monto de ingreso por pension subsidiada / no contributiva"
@@ -212,8 +212,8 @@ capture label var lp5_ci "Línea de pobreza USD5 por día en moneda local a prec
 capture label var tc_c "Tasa de cambio LCU/USD Fuente: WB/WDI"
 capture label var ipc_c "Índice de precios al consumidor base 2011=100 Fuente: IMF/WEO"
 capture label var ppa_c "Factor de conversión Paridad de Poder Adquisitivo PPA LCU/USD 2011 Fuente: WB/WDI"
-label var lp_ci "Linea de pobreza oficial del pais en moneda local a precios corrientes"
-label var lpe_ci "Linea de indigencia oficial del pais en moneda local a precios corrientes"
+*label var lp_ci "Linea de pobreza oficial del pais en moneda local a precios corrientes"
+*label var lpe_ci "Linea de indigencia oficial del pais en moneda local a precios corrientes"
 label var salmm_ci "Salario minimo legal a precios corrientes"
 
 
@@ -277,14 +277,14 @@ label var luzmide_ch "Usan medidor para pagar consumo de electricidad"
 label var combust_ch "Principal combustible gas o electricidad" 
 label var bano_ch "El hogar tiene servicio sanitario"
 label var banoex_ch "El servicio sanitario es exclusivo del hogar"
-label var des1_ch "Tipo de desague según unimproved de MDG"
-	label def des1_ch 0"No_tiene_servicio_sanitario" 1"Conectado_a_red_general_o_cámara_séptica", add modify
-	label def des1_ch 2"Letrina_o_conectado_a_pozo_ciego" 3"Desemboca_en_río_o_calle", add modify
-	label val des1_ch des1_ch
-label var des2_ch "Tipo de desague sin incluir definición MDG"
-	label def des2_ch 0"No_tiene_servicio_sanitario" 1"Conectado_a_red_general,_cámara_séptica,_pozo_o_letrina", add modify
-	label def des2_ch 2"Cualquier_otro_caso", add modify
-	label val des2_ch des2_ch
+*label var des1_ch "Tipo de desague según unimproved de MDG"
+*	label def des1_ch 0"No_tiene_servicio_sanitario" 1"Conectado_a_red_general_o_cámara_séptica", add modify
+*	label def des1_ch 2"Letrina_o_conectado_a_pozo_ciego" 3"Desemboca_en_río_o_calle", add modify
+*	label val des1_ch des1_ch
+*label var des2_ch "Tipo de desague sin incluir definición MDG"
+*	label def des2_ch 0"No_tiene_servicio_sanitario" 1"Conectado_a_red_general,_cámara_séptica,_pozo_o_letrina", add modify
+*	label def des2_ch 2"Cualquier_otro_caso", add modify
+*	label val des2_ch des2_ch
 label var piso_ch "Materiales de construcción del piso"  
 	label def piso_ch 0"Piso_de_tierra" 1"Materiales_permanentes", add modify
 	label val piso_ch piso_ch
