@@ -769,7 +769,6 @@ qui capture recode `var' (99999=.) (999=.) (9999=.) (99998=.) (999998=.) (999999
 ******************************
 *	ylmpri_ci & ylmpri1_ci
 ******************************
-recode p361 (99999=.) (99998=.) (99997=.) (77777=.) (9999=.)
 generat ylmpri_ci=p361 if p361>0 & p361<999998 & categopri_ci==3
 replace ylmpri_ci=p363 if p363>0 & p363<999998 & (categopri_ci==1 | categopri_ci==2) 
 replace ylmpri_ci=0    if categopri==4
