@@ -591,6 +591,7 @@ label var desalent_ci "Trabajadores desalentados"
 Se agrupa variable en el 2022
 2022: P05E01A Horas trabajadas en la semana (trabajo principal)*/
 gen horaspri_ci=p05e01a if emp_ci==1
+replace horaspri_ci=0 if p05e01a==999
 replace horaspri_ci=. if emp_ci==0
 label var horaspri_ci "Horas trabajadas semanalmente en el trabajo principal"
 
@@ -606,8 +607,9 @@ P04D16 en este segundo trabajo cuántas horas trabaja habitualmente a la semana
 P05C27B	Cantidad de horas extras trabajadas
 P05E01B	Horas trabajadas en la semana (segundo trabajo)
 */
+gen horassec_ci=p05e01b if p05e01b!=999
 g hsext=p05c27b/4.3
-egen horastot_ci=rsum(horaspri_ci p05e01b) if emp_ci==1, missing /*adding secondary employment and extra time*/
+egen horastot_ci=rsum(horaspri_ci horassec_ci) if emp_ci==1, missing 
 label var horastot_ci "Horas trabajadas semanalmente en todos los empleos"
 
 ******************************
