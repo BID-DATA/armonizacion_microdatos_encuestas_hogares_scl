@@ -178,7 +178,7 @@ label value region_BID_c region_BID_c
 	***anio_c***
 	************
 
-	gen anio_c=2022
+	gen anio_c=2023
 	label variable anio_c "Anio de la encuesta" 
 		
 	***********
