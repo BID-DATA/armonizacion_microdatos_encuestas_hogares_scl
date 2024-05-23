@@ -277,14 +277,6 @@ label var luzmide_ch "Usan medidor para pagar consumo de electricidad"
 label var combust_ch "Principal combustible gas o electricidad" 
 label var bano_ch "El hogar tiene servicio sanitario"
 label var banoex_ch "El servicio sanitario es exclusivo del hogar"
-*label var des1_ch "Tipo de desague según unimproved de MDG"
-*	label def des1_ch 0"No_tiene_servicio_sanitario" 1"Conectado_a_red_general_o_cámara_séptica", add modify
-*	label def des1_ch 2"Letrina_o_conectado_a_pozo_ciego" 3"Desemboca_en_río_o_calle", add modify
-*	label val des1_ch des1_ch
-*label var des2_ch "Tipo de desague sin incluir definición MDG"
-*	label def des2_ch 0"No_tiene_servicio_sanitario" 1"Conectado_a_red_general,_cámara_séptica,_pozo_o_letrina", add modify
-*	label def des2_ch 2"Cualquier_otro_caso", add modify
-*	label val des2_ch des2_ch
 label var piso_ch "Materiales de construcción del piso"  
 	label def piso_ch 0"Piso_de_tierra" 1"Materiales_permanentes", add modify
 	label val piso_ch piso_ch

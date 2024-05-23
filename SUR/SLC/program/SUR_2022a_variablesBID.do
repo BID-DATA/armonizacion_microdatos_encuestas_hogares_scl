@@ -78,7 +78,7 @@ label value region_BID_c region_BID_c
 	*************
 	****idh_ch***
 	*************
-	gen idh_ch = hhid
+	clonevar idh_ch = hhid
 	label variable idh_ch "ID del hogar"
 	
 	*************
@@ -86,6 +86,8 @@ label value region_BID_c region_BID_c
 	*************
 	gen idp_ci=memberid
 	label variable idp_ci "ID de la persona en el hogar"
+	
+	duplicates re idh_ch idp_ci
 	
 	*************
 	****zona_c***

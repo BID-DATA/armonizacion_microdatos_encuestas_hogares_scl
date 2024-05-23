@@ -530,9 +530,9 @@ gen afroind_ano_c=2022
 	*******************
 	*** dis_ci ***
 	*******************
-destring p4q_discap, replace
-gen dis_ci= 0 if p4q_discap==2
-replace dis_ci= 1 if p4q_discap==1
+destring p4z1_cami p4z2_usarb p4z3_habl p4z4_enten p4z5_cuid p4z6_ver p4z7_oir, replace
+gen dis_ci= 0 if p4z1_cami==1 | p4z2_usarb==1 | p4z3_habl==1 | p4z4_enten==1 | p4z5_cuid==1 | p4z6_ver==1 | p4z7_oir==1
+replace dis_ci= 1 if ((p4z1_cami>1 & p4z1_cami!=.) | (p4z2_usarb>1 & p4z2_usarb!=.) | (p4z3_habl>1 & p4z3_habl!=.) | (p4z4_enten>1 & p4z4_enten!=.) | (p4z5_cuid>1 & p4z5_cuid!=.) | (p4z6_ver>1 & p4z6_ver!=.) | (p4z7_oir>1 & p4z7_oir!=.))
 
 
 	*******************
@@ -769,7 +769,6 @@ qui capture recode `var' (99999=.) (999=.) (9999=.) (99998=.) (999998=.) (999999
 ******************************
 *	ylmpri_ci & ylmpri1_ci
 ******************************
-recode p361 (99999=.) (99998=.) (99997=.) (77777=.) (9999=.)
 generat ylmpri_ci=p361 if p361>0 & p361<999998 & categopri_ci==3
 replace ylmpri_ci=p363 if p363>0 & p363<999998 & (categopri_ci==1 | categopri_ci==2) 
 replace ylmpri_ci=0    if categopri==4
