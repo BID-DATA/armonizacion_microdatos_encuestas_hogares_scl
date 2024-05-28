@@ -938,7 +938,7 @@ label var ypeoficial_ch "Ingreso per cápita generado por el país"
 			****************************
 			***VARIABLES DE EDUCACION***
 			****************************
-    **************
+ **************
 ***aedu_ci***
 **************
 			
@@ -1014,16 +1014,29 @@ label var ypeoficial_ch "Ingreso per cápita generado por el país"
 **************
 ***eduui_ci***
 **************
-	g byte eduui_ci = (aedu_ci>=12 & p6210==6 & p6220==2) // 12y con grado de secundaria
-	replace eduui_ci=. if aedu_ci==.
-	la var eduui_ci "Superior incompleto"
-	
-**************
+
+	g byte eduui_ci = (p6210 == 6 & inlist(p6220, 2, 6)) 
+	replace eduui_ci = . if aedu_ci == .
+	label variable eduui_ci "Superior incompleto"
+
+
+***************
 ***eduuc_ci***
+***************
+
+	g byte eduuc_ci = (p6210 == 6 & inlist(p6220, 3, 4, 5))
+	replace eduuc_ci = . if aedu_ci == .
+	label variable eduuc_ci "Superior completo"
+
 **************
-	g byte eduuc_ci = (aedu_ci>=12 & p6210==6 & (p6220==3 | p6220==4 | p6220==5))
-	replace eduuc_ci=. if aedu_ci==.
-	la var eduuc_ci "Superior completo"
+***eduac_ci***
+**************
+
+	gen byte eduac_ci = .
+	replace eduac_ci = 1 if (p6210 == 6 & inlist(p6220, 4, 5))
+	replace eduac_ci = 0 if p6210 == 6 & p6220 == 3
+	label variable eduac_ci "Superior universitario vs superior no universitario"
+
 
 ***************
 ***edus1i_ci***
@@ -1066,23 +1079,6 @@ label var ypeoficial_ch "Ingreso per cápita generado por el país"
 	g asispre_ci= (p6170==1 & p6210==2 & p6210s1 <2)
 	la var asispre_ci "Asiste a educación prescolar"
 	
-
-****************
-***aprobedsup_ci***
-****************
-*Creación de la variable de aprobación de nivel educación superior por Olga Dulce- 21/08/23
-	gen aprobedsup_ci= (p6210==6 & (p6220==3|p6220==4)) // quienes reportan haber terminado el ultimo curso que asistieron: tyt o universitario
-	replace aprobedsup_ci=. if aedu_ci==.
-	label variable aprobedsup_ci "Aprobación nivel educación Terciaria/universitaria"
-	
-	
-**************
-***eduac_ci***
-**************
-** No se puede calcular ya que solo tenemos la diferenciacion para los que han culminado el nivel
-	g byte eduac_ci = (p6210==6 & p6220==4)
-	replace eduac_ci = 0 if (p6210==6 & (p6220==3))
-	la var eduac_ci "Superior universitario vs superior no universitario"
 
 ***************
 ***asiste_ci***

@@ -1315,21 +1315,25 @@ label variable edusc_ci "Secundaria completa"
 **************
 ***eduui_ci***
 **************
-/*
-En esta encuesta puede discriminarse entre terciario y universitario completo
-o incompleto. 
-*/
-
-gen byte eduui_ci = (aedu_ci > 12 & inlist(e8t, 9, 11, 13)) //tecnica, profesional o universitaria incompleta.
+gen byte eduui_ci = inlist(e8t, 9, 11, 13)
 replace eduui_ci = . if aedu_ci == .
-label variable eduui_ci "Universitaria incompleta"
+label variable eduui_ci "Superior Incompleto"
 
 ***************
 ***eduuc_ci****
 ***************
-gen byte eduuc_ci = (aedu_ci > 12 & inlist(e8t, 10, 12, 14, 15)) //tecnica, profesional o universitaria completa o postgrado.
+gen byte eduuc_ci = inlist(e8t, 10, 12, 14, 15)
 replace eduuc_ci = . if aedu_ci == .
-label variable eduuc_ci "Universitaria completa o mas"
+label variable eduui_ci "Superior Completo"
+
+**************
+***eduac_ci***
+**************
+gen eduac_ci = . 
+replace eduac_ci = 1 if  inlist(e8t, 11, 12, 13, 14, 15)
+replace eduac_ci = 0 if  inlist(e8t, 9, 10)
+label variable eduac_ci "Superior universitario vs superior no universitario"
+
 
 ***************
 ***edus1i_ci***
@@ -1372,13 +1376,6 @@ label variable edupre_ci "Educacion preescolar"
 g asispre_ci=.
 replace asispre_ci = 1 if (e4 == 1 & e8t == 1)
 la var asispre_ci "Asiste a educacion prescolar"
-
-**************
-***eduac_ci***
-**************
-gen eduac_ci = (e8t >= 11 & e8t <= 15) // Superior universitario
-replace eduac_ci = 0 if inlist(e8t, 9, 10) // Formacion técnica
-label variable eduac_ci "Superior universitario vs superior no universitario"
 
 *****************
 ***pqnoasis_ci***

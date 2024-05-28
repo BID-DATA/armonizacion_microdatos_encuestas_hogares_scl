@@ -1487,23 +1487,26 @@ label variable edus2c_ci "2do ciclo de la secundaria completo"
 ********************************************************************************************************************************
 ***EDUUI_CI: Peronas que no han completado la educacion universitaria o terciaria
 ********************************************************************************************************************************
-gen eduui_ci=0
-replace eduui_ci=1 if (a15>=41 & a14<=42) // hasta dos anios de educacion parauniversitaria
-replace eduui_ci=1 if (a15>=51 & a15<=53) // hasta tres anios de universidad
-replace eduui_ci=1 if (a15==54 & a17b<=3) // cuatro anios pero sin titulo superior
-replace eduui_ci=. if aedu_ci==. 
-label variable eduui_ci "Superior incompleto"
+gen byte eduui_ci = (a15 >= 41 & a15 <= 59) & (a17b == 0)
+replace eduui_ci = . if aedu_ci == .
+label variable eduui_ci "Universitaria incompleta"
+
 
 ********************************************************************************************************************************
 ***EDUUC_CI: Personas que han completado la educacion universitaria o terciaria
 ********************************************************************************************************************************
-gen byte eduuc_ci=0
-replace eduuc_ci=1 if a15==43 // tres anios de parauniversitaria
-replace eduuc_ci=1 if (a15==54 & a17b>3) // cuatro anios de universitaria y titulo de licenciatura o superior
-replace eduuc_ci=1 if a15>=55 & a15<59 // cinco anios o mas de universitaria, o postgrados
-replace eduuc_ci=1 if a15>59 & a15<=89
-replace eduuc_ci=. if aedu_ci==.
-label variable eduuc_ci "Superior completo"
+gen byte eduuc_ci = ((a15 >= 41 & a15 <= 59) & inlist(a17b, 1, 2, 3, 4, 5 , 6)) | (a15 >= 71 & a15 <= 89)
+replace eduuc_ci = . if aedu_ci == .
+label variable eduuc_ci "Universitaria completa"
+
+********************************************************************************************************************************
+***EDUAC_CI: Educación terciaria académica versus educación terciaria no-académica
+********************************************************************************************************************************
+gen eduac_ci = . 
+replace eduac_ci = 1 if (a15 >= 51 & a15 <= 89)
+replace eduac_ci = 0 if (a15 >= 41 & a15 <= 43)
+label variable eduac_ci "Superior universitario vs superior no universitario"
+
 
 ********************************************************************************************************************************
 ***EDUPRE_CI: Educacion preescolar
@@ -1517,15 +1520,6 @@ label variable edupre_ci "Educacion preescolar"
 *Variable agregada por Iván Bornacelly - 01/16/2017
 g asispre_ci=(a14==1 | a14==2)
 la var asispre_ci "Asiste a educacion prescolar"
-
-********************************************************************************************************************************
-***EDUAC_CI: Educación terciaria académica versus educación terciaria no-académica
-********************************************************************************************************************************
-gen eduac_ci=.
-replace eduac_ci=1 if (a15>=51 & a15<=59) |( a15>=41 & a15<=49 & a17b==2)
-replace eduac_ci=0 if a15>=41 & a15<=49 & a17b!=2
-replace eduac_ci=1 if a15>=71 & a15<=89 // especialidad, maestria y doctorados.
-label variable eduac_ci "Superior universitario vs superior no universitario"
 
 ********************************************************************************************************************************
 ***ASISTE_CI: Personas que actualmente asisten a centros de enseñanza

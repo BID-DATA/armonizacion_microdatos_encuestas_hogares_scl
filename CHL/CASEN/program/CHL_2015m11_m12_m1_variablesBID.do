@@ -978,17 +978,24 @@ label variable edusc_ci "Secundaria completa"
 **************
 ***eduui_ci***
 **************
-gen byte eduui_ci=(aedu_ci>12 & e6a==12)  | (aedu_ci>12 & e6a==14) 
-replace eduui_ci=0 if aedu_ci==13 & e6a==11 // education TP con 13 anios
-replace eduui_ci=. if aedu_ci==.
-label variable eduui_ci "Universitaria incompleta"
+gen byte eduui_ci = (e6a == 12 |e6a == 14)
+replace eduui_ci = . if aedu_ci == .
+label variable eduui_ci "Superior Incompleto"
 
 ***************
 ***eduuc_ci****
 ***************
-gen byte eduuc_ci=(aedu_ci>12 & (e6a==13 | e6a==15 | e6a==16 | e6a==17))
-replace eduuc_ci=. if aedu_ci==.
-label variable eduuc_ci "Universitaria completa o mas"
+gen byte eduuc_ci = inlist(e6a, 13, 15, 16, 17)
+replace eduuc_ci = . if aedu_ci == .
+label variable eduui_ci "Superior Completo"
+
+**************
+***eduac_ci***
+**************
+gen eduac_ci = . 
+replace eduac_ci = 1 if  inlist(e6a, 14, 15, 16, 17)
+replace eduac_ci = 0 if  (e6a == 12 |e6a == 13)
+label variable eduac_ci "Superior universitario vs superior no universitario"
 
 ***************
 ***edus1i_ci***
@@ -1035,14 +1042,6 @@ label variable edupre_ci "Educacion preescolar"
 *Creación de la variable asistencia a preescolar por Iván Bornacelly - 01/12/17
 gen asispre_ci=(e3==1 & e6a==4) // Asiste Prekinder / Kinder
 la var asispre_ci "Asiste a educacion prescolar"
-
-**************
-***eduac_ci***
-**************
-gen eduac_ci=(e6a>=14 & e6a<=17)
-replace eduac_ci=0 if (e6a==12 | e6a==13)
-replace eduac_ci=. if e6a<=11 | e6a>17
-label variable eduac_ci "Superior universitario vs superior no universitario"
 
 ****************
 **pqnoasis_ci***

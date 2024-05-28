@@ -1045,18 +1045,16 @@ label variable edusc_ci "Secundaria completa"
 **************
 ***eduui_ci***
 **************
-gen byte eduui_ci= aedu_ci>=13 & aedu_ci<=14 // entre 13 y 14 anios
-replace eduui_ci=1 if aedu_ci == 15 & v3007 == 2 | aedu_ci == 15 & v3014 == 2 // 15 anios de educacion, sin completar nivel
-replace eduui_ci=. if aedu_ci==.
-label variable eduui_ci "Terciaria/universitaria incompleta"
+gen byte eduui_ci = (v3003a == 08 | (v3009a == 12 & v3014 == 2))
+replace eduui_ci = . if aedu_ci == .
+label variable eduui_ci "Superior incompleto"
 
 **************
 ***eduuc_ci***
 **************
-gen byte eduuc_ci=(aedu > 15) // Mas de 15 anios.
-replace eduuc_ci=1 if (aedu_ci == 15 & (v3007==1 | v3014==1)) // 15 anios si completaron el curso u otro curso
-replace eduuc_ci=. if aedu_ci==.
-label variable eduuc_ci "Terciaria/universitaria completa o mas"
+gen byte eduuc_ci = ((v3009a == 12 & v3014 == 1) | inlist(v3003a, 09, 10, 11, 13) | inlist(v3009a, 13, 14, 15)) 
+replace eduuc_ci = . if aedu_ci == .
+label variable eduuc_ci "Universitaria completa o mas"
 
 ***************
 ***edus1i_ci***

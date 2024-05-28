@@ -1024,16 +1024,29 @@ label var ypeoficial_ch "Ingreso per cápita generado por el país"
 **************
 ***eduui_ci***
 **************
-	g byte eduui_ci = (aedu_ci>11 & p3043<4)
-	replace eduui_ci=. if aedu_ci==.
-	la var eduui_ci "Superior incompleto"
+
+	g byte eduui_ci = (inlist(p3042, 8, 9, 10, 11, 12, 13) & inlist(p3043, 2, 3, 4)) 
+	replace eduui_ci = . if aedu_ci == .
+	label variable eduui_ci "Superior incompleto"
+
+
+***************
+***eduuc_ci***
+***************
+
+	g byte eduuc_ci = (inlist(p3042, 8, 9, 10, 11, 12, 13) & inlist(p3043, 5, 6, 7, 8, 9, 10))
+	replace eduuc_ci = . if aedu_ci == .
+	label variable eduuc_ci "Superior completo"
 
 **************
-***eduuc_ci***
+***eduac_ci***
 **************
-	g byte eduuc_ci = (aedu_ci > 11 & p3043>3)
-	replace eduuc_ci=. if aedu_ci==.
-	la var eduuc_ci "Superior completo"
+
+	gen byte eduac_ci = .
+	replace eduac_ci = 1 if (inlist(p3042, 10, 11, 12, 13) & inlist(p3043, 7, 8, 9, 10))
+	replace eduac_ci = 0 if (inlist(p3042, 8, 9 ) & inlist(p3043, 5, 6))
+	label variable eduac_ci "Superior universitario vs superior no universitario"
+
 
 ***************
 ***edus1i_ci***
@@ -1076,12 +1089,6 @@ label var ypeoficial_ch "Ingreso per cápita generado por el país"
 	g asispre_ci= (p6170==1 & p3042==2 & p3042s1 <2)
 	la var asispre_ci "Asiste a educación prescolar"
 	
-**************
-***eduac_ci***
-**************
-** No se puede calcular ya que solo tenemos la diferenciacion para los que han culminado el nivel
-	g byte eduac_ci = .
-	la var eduac_ci "Superior universitario vs superior no universitario"
 
 ***************
 ***asiste_ci***
