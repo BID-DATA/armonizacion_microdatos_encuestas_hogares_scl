@@ -1531,7 +1531,7 @@ do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&Exter
 **************************************
 
 
-* Beneficiarios y montos
+* BENEFICIARIOS Y MONTOS
 
 	*****************
 	**** ptmc_ch ****
@@ -1544,11 +1544,13 @@ do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&Exter
 	bys idh_ch: egen ing_ptmc_ch = sum(ing_ptmc_ci)
 	
 	gen 	ptmc_ci = p1661s1 == 1
-	replace ptmc_ci = ptmc_ci / 12
 	replace ptmc_ci = 1 if p1661s2 == 1
 	replace ptmc_ci = 1 if ing_ptmc_ci != .
-	replace ptmc_ci = 1 if ptmc_ci == 0 & ing_ptmc_ci != .
 	bys idh_ch: egen ptmc_ch = max(ptmc_ci)
+	
+	* Imptutacion
+	* 27 individuos beneficiarios sin montos
+	* TBD 
 	
 	*****************
 	**** pnc_ch *****
@@ -1567,9 +1569,12 @@ do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&Exter
 	
 	gen 	pnc_ci = p1661s3 == 1
 	replace pnc_ci = 1 if ing_pnc_ci != .
-	replace pnc_ci = 1 if pnc_ci == 0 & ing_pnc_ci != .
 	replace pnc_ci = . if pnc_elegible_ci == 0
 	bys idh_ch: egen pnc_ch = max(pnc_ci)
+	
+	* Imptutacion
+	* 2 individuos beneficiarios sin montos
+	replace ing_pnc_ci = 80000 if ing_pnc_ci == . & pnc_ci == 1
 	
 	*****************
 	*** potht_ch ****
@@ -1597,7 +1602,7 @@ do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&Exter
 	replace pcasht_ch = 1 if pcasht_ch > 0
 	
 
-* Cobertura y distribucion
+* COBERTURA Y DISTRIBUCION
 	
 	* Ingreso neto del hogar
 	egen 	y_hog_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci) , missing
