@@ -1524,8 +1524,115 @@ label var ybenefdes_ci "Monto de seguro de desempleo"
 * Consumidor (2011=100), Paridad de Poder Adquisitivo (PPA 2011),  líneas de pobreza
 /*_____________________________________________________________________________________________________*/
 
-
 do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&ExternalVars_Harmonized_DataBank.do"
+
+**************************************
+*** VARIABLES DE PROTECCION SOCIAL ***
+**************************************
+
+
+* Beneficiarios y montos
+
+	*****************
+	**** ptmc_ch ****
+	*****************
+	egen 	ing_ptmc_ci = rowtotal(p1661s1a1 p1661s2a1)
+	replace ing_ptmc_ci = ing_ptmc_ci / 12
+	replace ing_ptmc_ci = . if p1661s1a1 == . & p1661s2a1 == .
+	replace ing_ptmc_ci = . if p1661s1a1 == 98
+	replace ing_ptmc_ci = . if p1661s2a1 == 98
+	bys idh_ch: egen ing_ptmc_ch = sum(ing_ptmc_ci)
+	
+	gen 	ptmc_ci = p1661s1 == 1
+	replace ptmc_ci = ptmc_ci / 12
+	replace ptmc_ci = 1 if p1661s2 == 1
+	replace ptmc_ci = 1 if ing_ptmc_ci != .
+	replace ptmc_ci = 1 if ptmc_ci == 0 & ing_ptmc_ci != .
+	bys idh_ch: egen ptmc_ch = max(ptmc_ci)
+	
+	*****************
+	**** pnc_ch *****
+	*****************
+	
+	gen pnc_elegible_ci = 0
+	replace pnc_elegible_ci = 1 if edad_ci > 54 & sexo_ci == 2
+	replace pnc_elegible_ci = 1 if edad_ci > 57 & sexo_ci == 1
+	
+	gen 	ing_pnc_ci = p1661s3a1
+	replace ing_pnc_ci = ing_pnc_ci / 12
+	replace ing_pnc_ci = . if p1661s3a1 == .
+	replace ing_pnc_ci = . if p1661s3a1 == 98
+	replace ing_pnc_ci = . if pnc_elegible_ci == 0
+	bys idh_ch: egen ing_pnc_ch = sum(ing_pnc_ci)
+	
+	gen 	pnc_ci = p1661s3 == 1
+	replace pnc_ci = 1 if ing_pnc_ci != .
+	replace pnc_ci = 1 if pnc_ci == 0 & ing_pnc_ci != .
+	replace pnc_ci = . if pnc_elegible_ci == 0
+	bys idh_ch: egen pnc_ch = max(pnc_ci)
+	
+	*****************
+	*** potht_ch ****
+	*****************
+	gen 	ing_otrot_ci = p1661s4a2
+	replace ing_otrot_ci = ing_otrot_ci / 12
+	replace ing_otrot_ci = . if p1661s4a2 == .
+	replace ing_otrot_ci = . if p1661s4a2 == 98
+	replace ing_otrot_ci = . if !strpos(p1661s4a1,"SOLIDARIO") & !strpos(p1661s4a1,"IVA") & !strpos(p1661s4a1,"DESPLA")
+	bys idh_ch: egen ing_otrot_ch = sum(ing_otrot_ci)
+	
+	gen 	potrot_ci = 0
+	replace potrot_ci = 1 if strpos(p1661s4a1,"SOLIDARIO")
+	replace potrot_ci = 1 if strpos(p1661s4a1,"IVA")
+	replace potrot_ci = 1 if strpos(p1661s4a1,"DESPLA")
+	replace potrot_ci = 1 if ing_otrot_ci != .
+	replace potrot_ci = 1 if potrot_ci == 0 & ing_otrot_ci != .
+	bys idh_ch: egen potrot_ch = max(potrot_ci)
+	
+	*****************
+	*** pcasht_ch ***
+	*****************
+	egen    ing_pcasht_ch = rowtotal(ing_ptmc_ch ing_pnc_ch ing_otrot_ch)
+	egen 	pcasht_ch = rowtotal(ptmc_ch pnc_ch potrot_ch)
+	replace pcasht_ch = 1 if pcasht_ch > 0
+	
+
+* Cobertura y distribucion
+	
+	* Ingreso neto del hogar
+	egen 	y_hog_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci) , missing
+	replace y_hog_ci = . if miembros_ci != 1
+	replace y_hog_ci = 0 if y_hog_ci < 0
+	gen 	y_pc_ci = y_hog_ci / nmiembros_ch
+	
+	bys idh_ch: egen y_hog_ch = sum(y_hog_ci), missing
+	gen 	y_pc_net_ch = (y_hog_ch - ing_pcasht_ch) / nmiembros_ch
+	replace y_pc_net_ch = 0 if y_pc_net_ch < 0
+	
+	* Grupos
+	gen     grupo_int = 1 if (y_pc_net_ch <  lp31_ci         & y_pc_net_ch != .)
+	replace grupo_int = 2 if (y_pc_net_ch >= lp31_ci  	     & y_pc_net_ch < (lp31_ci * 1.6) & y_pc_net_ch != .)
+	replace grupo_int = 3 if (y_pc_net_ch >= (lp31_ci * 1.6) & y_pc_net_ch < (lp31_ci * 4)   & y_pc_net_ch != .)
+	replace grupo_int = 4 if (y_pc_net_ch >= (lp31_ci * 4)   & y_pc_net_ch < .               & y_pc_net_ch != .)
+
+	****************************
+	***** pcasht_coverage_ *****
+	****************************
+	forval i = 1/4 {
+		gen 	pcasht_coverage`i' = . 
+		replace pcasht_coverage`i' = 0 if grupo_int == `i'
+		replace pcasht_coverage`i' = 1 if grupo_int == `i' & pcasht_ch == 1
+	}
+		
+	********************
+	*** pcasht_dist_ ***
+	********************
+	forval i = 1/4 {
+		gen 	pcasht_dist`i' = . 
+		replace pcasht_dist`i' = 0 if pcasht_ch == 1
+		replace pcasht_dist`i' = 1 if grupo_int == `i' & pcasht_ch == 1
+	}
+
 
 /*_____________________________________________________________________________________________________*/
 * Verificación de que se encuentren todas las variables armonizadas 
