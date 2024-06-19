@@ -921,17 +921,24 @@ label var edusc_ci "Secundaria Completa"
 **************
 ***eduui_ci***
 **************
-gen eduui_ci=(aedu_ci>=12 & r217==2) // mayor o igual a 12 anios de estudio y titulo de bachiller general
-replace eduui_ci=1 if aedu_ci>=13 & (r217==3 | r217==.) // mas de 12 anios de estudio, bachiller tecnico o perdido
-replace eduui_ci=. if aedu_ci==.
-label var eduui_ci "Universitaria o Terciaria Incompleta"
+gen eduui_ci = (inlist(r204, 4, 5)) | (inlist(r214, 4, 5) & inlist(r217, 1, 2, 3))
+replace eduui_ci = . if aedu_ci == .
+lab var eduui_ci "Superior Incompleto"
 
 **************
 ***eduuc_ci***
 **************
-gen eduuc_ci=(aedu_ci>12 & r217>=4 & r217<=9) // mas de 12 anios de estudio pero con titulo terciario; incluye profesorado
-replace eduuc_ci=. if aedu_ci==.
-label var eduuc_ci "Universitaria o Terciaria Completa"
+gen eduuc_ci = inlist(r214, 4, 5) & (inrange(r217, 4, 9))
+replace eduuc_ci = . if aedu_ci == .
+lab var eduuc_ci "Superior Completo"
+
+**************
+***eduac_ci***
+**************
+gen eduac_ci = .
+replace eduac_ci = 1 if r204 == 4 | r214 == 4
+replace eduac_ci = 0 if r204 == 5 | r214 == 5
+label variable eduac_ci "Superior universitario vs superior no universitario"
 
 ***************
 ***edus1i_ci***
@@ -976,14 +983,6 @@ label var edupre_ci "Educacion preescolar"
 g asispre_ci=(r203==1 & r204==1) // no consideramos menores de 3 años (r201a)
 la var asispre_ci "Asiste a educacion prescolar"
 	
-**************
-***eduac_ci***
-**************
-gen eduac_ci=.
-replace eduac_ci=1 if r214==4
-replace eduac_ci=0 if r214==5
-label variable eduac_ci "Superior universitario vs superior no universitario"
-
 ***************
 ***asiste_ci***
 ***************
