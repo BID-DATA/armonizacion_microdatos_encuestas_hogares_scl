@@ -1718,46 +1718,7 @@ do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&Exter
 *** VARIABLES DE PROTECCION SOCIAL ***
 **************************************
 
-******************************
-******    PTMC y PNC     *****
-******************************
-
-* PTMC: Avancemos (a partir de 2019 se añadió "Crecemos")
-* PNC:  Pensionado del régimen no contributivomonto básico
-
-* Ingreso del hogar
-egen ingreso_total = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci), missing
-bys idh_ch: egen yhog = sum(ingreso_total)
-drop ingreso_total
-
-* Monto de PTMC
-gen tmc = a9b if (a9a==1 | a9a==5)
-bys idh_ch: egen ing_ptmc = sum(tmc)
-
-* Beneficiarios PTMC
-gen percibe_ptmc=(a9a==1 | a9a==5)
-bys idh_ch: egen ptmc_ch=max(percibe_ptmc)
-
-replace ing_ptmc=. if yhog==.
-replace ptmc_ch  = 1 if (ing_ptmc>0 & ing_ptmc!=.)
-
-* Beneficiarios PNC
-gen pnc_ci=(a11==6)
-gen ing_pnc = 0
-replace ing_pnc=. if yhog==.
-
-* Adultos mayores
-gen mayor64_ci=(edad_ci>64 & edad_ci!=.)
-
-* Ingreso neto del hogar
-gen y_pc_net = (yhog - ing_ptmc -ing_pnc) / nmiembros_ch
-
-* Etiquetas
-lab def ptmc_ch 1 "Beneficiario PTMC" 0 "No beneficiario PTMC"
-lab val ptmc_ch ptmc_ch
-
-lab def pnc_ci 1 "Beneficiario PNC" 0 "No beneficiario PNC"
-lab val pnc_ci pnc_ci
+* ADD LABELS? STANDARIZE
 
 
 * BENEFICIARIOS Y MONTOS
@@ -1768,32 +1729,28 @@ lab val pnc_ci pnc_ci
 		* CONFIRMAR BECAS PUBLICAS A19A
 	
 	gen 	ing_ptmc_ci = . 
-	replace ing_ptmc_ci = a9b   if a9a   == 1 & a9b   <= 300000 & a9c   != 9 & a9c != .
-	replace ing_ptmc_ci = a9b   if a9a   == 5 & a9b   <= 300000 & a9c   != 9 & a9c != .
-	replace ing_ptmc_ci = a19b1 if a19a1 == 1 & a19b1 <= 300000 & a19c1 == 1 
-	replace ing_ptmc_ci = a19b2 if a19a2 == 1 & a19b2 <= 300000 & a19c2 == 1 
-	replace ing_ptmc_ci = a19b3 if a19a3 == 1 & a19b3 <= 300000 & a19c3 == 1 
-	replace ing_ptmc_ci = a19b4 if a19a4 == 1 & a19b4 <= 300000 & a19c4 == 1 
-	replace ing_ptmc_ci = a19b6 if a19a6 == 1 & a19b6 <= 300000 & a19c6 == 1 
+	replace ing_ptmc_ci = a9b   if a9a == 1 & a9b <= 300000 & a9c != 9 & a9c != .
+	replace ing_ptmc_ci = a9b   if a9a == 5 & a9b <= 300000 & a9c != 9 & a9c != .
 	replace ing_ptmc_ci = ing_ptmc_ci / 3  if a9c == 3
-	replace ing_ptmc_ci = ing_ptmc_ci / 6  if a9c == 6
 	replace ing_ptmc_ci = ing_ptmc_ci / 12 if a9c == 8
+	
+		gen 	ing_becas_ci = a19b   if inlist(a19a,1,2,3,4,7) & a19b <= 300000 & a19c == 1
+		replace ing_becas_ci = a19b/2 if inlist(a19a,1,2,3,4,7) & a19b <= 300000 & a19c == 2
+		replace ing_becas_ci = a19b/3 if inlist(a19a,1,2,3,4,7) & a19b <= 300000 & a19c == 3
+		replace ing_becas_ci = a19b/4 if inlist(a19a,1,2,3,4,7) & a19b <= 300000 & a19c == 4
+	
+	replace ing_ptmc_ci = ing_ptmc_ci + ing_becas_ci
 	bys idh_ch: egen ing_ptmc_ch = sum(ing_ptmc_ci)
 	
 	gen 	ptmc_ci = a9a == 1
 	replace ptmc_ci = 1 if a9a == 5 
-	replace ptmc_ci = 1 if a19a1 == 1 
-	replace ptmc_ci = 1 if a19a2 == 1 
-	replace ptmc_ci = 1 if a19a3 == 1 
-	replace ptmc_ci = 1 if a19a4 == 1 
-	replace ptmc_ci = 1 if a19a6 == 1 
+	replace ptmc_ci = 1 if inlist(a19a,1,2,3,4,7) 
 	replace ptmc_ci = 1 if ing_ptmc_ci != .
 	bys idh_ch: egen ptmc_ch = max(ptmc_ci)
 	
 	*****************
 	**** pnc_ch *****
 	*****************
-	
 	gen pnc_elegible_ci = 0
 	replace pnc_elegible_ci = 1 if edad_ci > 65
 	
@@ -1808,7 +1765,7 @@ lab val pnc_ci pnc_ci
 	bys idh_ch: egen pnc_ch = max(pnc_ci)
 	
 	*****************
-	*** potht_ch ****
+	*** otrot_ch ****
 	*****************
 	gen 	ing_otrot_ci = .
 	replace ing_otrot_ci = a9b if a9a == 2 & a9b <= 300000 & a9c != 9 & a9c != .
@@ -1818,7 +1775,7 @@ lab val pnc_ci pnc_ci
 	bys idh_ch: egen ing_otrot_ch = sum(ing_otrot_ci)
 	
 	gen 	potrot_ci = a9a == 2
-	replace potrot_ci = 1 if h9e== 1 & pnc_ci != . 
+	replace potrot_ci = 1 if h9e == 1 & pnc_ci != . 
 	bys idh_ch: egen potrot_ch = max(potrot_ci)
 	
 	*****************
