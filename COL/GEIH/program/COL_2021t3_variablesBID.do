@@ -1548,14 +1548,13 @@ do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&Exter
 	replace ptmc_ci = 1 if ing_ptmc_ci != .
 	bys idh_ch: egen ptmc_ch = max(ptmc_ci)
 	
-	* Imptutacion
-	* 27 individuos beneficiarios sin montos
-	* TBD 
+	* Imputar beneficiarios sin montos
+	* Numero a imputar: 
+	* TBD
 	
 	*****************
 	**** pnc_ch *****
 	*****************
-	
 	gen pnc_elegible_ci = 0
 	replace pnc_elegible_ci = 1 if edad_ci > 54 & sexo_ci == 2
 	replace pnc_elegible_ci = 1 if edad_ci > 57 & sexo_ci == 1
@@ -1572,12 +1571,12 @@ do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&Exter
 	replace pnc_ci = . if pnc_elegible_ci == 0
 	bys idh_ch: egen pnc_ch = max(pnc_ci)
 	
-	* Imptutacion
-	* 2 individuos beneficiarios sin montos
+	* Imputar beneficiarios sin montos
+	* Numero a imputar: 5
 	replace ing_pnc_ci = 80000 if ing_pnc_ci == . & pnc_ci == 1
 	
 	*****************
-	*** potht_ch ****
+	*** otrot_ch ****
 	*****************
 	gen 	ing_otrot_ci = p1661s4a2
 	replace ing_otrot_ci = ing_otrot_ci / 12
