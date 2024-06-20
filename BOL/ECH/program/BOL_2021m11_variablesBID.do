@@ -2366,46 +2366,86 @@ label var miglac_ci "=1 si es migrante proveniente de un pais LAC"
 ******************************
 
 * PTMC: s03a_08 ¿Recibió el Bono Juancito Pinto el año pasado (2019)?
+*		s02b_24a1 En los últimos 12 meses, cobró usted el Bono Juana Azurduy por: A.Controles prenatales realizados?
+*		s02b_24b "En los últimos 12 meses, cobró usted el Bono Juana Azurduy por: B. El parto y primer control postparto?
+*		s02c_30 En los últimos 12 meses, cobró usted el Bono Juana Azurduy por los controles integrales de salud de (…)?
+
 * PNC: 	s05a_01e Recibe usted ingresos (rentas) mensuales por: E. ¿Renta Dignidad?
 *		s05a_01e0 Monto
+* OTROS: s02a_15 En los últimos 12 meses, recibió (…) el Bono de Indigencia por Ceguera (IBC) o el Bono Mensual para Personas con Discapacidad?
+*		s02a_15a Monto
+*		s04c_20b Durante los últimos doce meses, recibió usted: B. Bono de natalidad?
+*		s05b_06a En los últimos 12 meses, recibió usted Bono Contra el Hambre?
+
+gen x=1
+drop nmiembros_ch
+bys idh_ch: egen nmiembros_ch= sum(x)
 
 * Ingreso del hogar
 egen ingreso_total = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci), missing
 bys idh_ch: egen y_hog = sum(ingreso_total)
 drop ingreso_total
 
-* Personas que perciben transferencias
-gen percibe_ptmc_ci = (s03a_08==1)
-bys idh_ch: egen ptmc_ch = max(percibe_ptmc)
+* Personas y hogares que perciben transferencias (ptmc)
+gen ptmc_ci = (s03a_08==1| s02b_24a1==1 | s02b_24b==1 | s02c_30==1)
+bys idh_ch: egen ptmc_ch = max(ptmc_ci)
 
-* Se imputa el ingreso del bono juancito pinto el cual es de Bs. 200 anuales 
-* por estudiente que asiste a la escuela y tiene entre 6-20 años
-* para este año no se puede ver si asiste a la escuela 
+* Ingreso por transferencias (imputacion)
+gen ing_bjp_ci = (200/12) if ptmc_ci ==1 & (edad_ci>5 & edad_ci<21) & asiste_ci==1
+gen ing_prenatal_ci= (50*s02b_24a2)/12 if s02b_24a1==1 	 	  //Monto es 50Bs por control prenatal, max. 4
+gen ing_parto_ci= 120/12 if s02b_24b==1 					 //Monto es 120Bs por parto en establecimiento de salud
+gen ing_bimensual_ci= (125*s02c_30a)/12 if s02c_30a<= 6		//Monto es 125Bs por cada control 
+egen ing_ptmc_ci = rowtotal(ing_bjp_ci ing_prenatal_ci ing_parto_ci ing_bimensual_ci) if ptmc_ci==1
+bys idh_ch: egen ing_ptmc_ch = sum(ing_ptmc_ci)
+drop ing_bjp_ci ing_prenatal_ci ing_parto_ci ing_bimensual_ci
+replace ing_ptmc_ch=. if y_hog==.
 
-gen ing_bjp = (200/12) if ptmc ==1 & (edad_ci>5 & edad_ci<21)
-bys idh_ch: egen ing_ptmc = sum(ing_bjp)
-drop ing_bjp
+* Personas y hogares que reciben pensión no contributiva (pnc)
+gen pnc_elegible_ci=(edad>64 & edad!=.)
+gen pnc_ci=(s05a_01e==1 & pnc_elegible_ci==1)
+bys idh_ch: egen pnc_ch = max(ptmc_ci)
 
-replace ing_ptmc=. if y_hog==.
-replace ptmc_ch  = ((percibe_ptmc==1)| (ing_ptmc>0 & ing_ptmc!=.))
+* Monto pension no contributiva (pnc)
+gen ing_pnc_ci =s05a_01e0
+bys idh_ch: egen ing_pnc_ch = sum(ing_pnc_ci)
+replace ing_pnc_ch=. if y_hog==.
 
-* Personas que reciben pensión no contributiva
-gen mayor64_ci=(edad>64 & edad!=.)
-gen pnc_ci= (s05a_01e==1)
+* Personas y hogares que reciben otros programas
+gen potrot_ci = (s02a_15==1| s04c_20b==1 | s05b_06a==1)
+bys idh_ch: egen potrot_ch = max(potrot_ci)
 
-* Monto pension no contributiva
-bys idh_ch: egen ing_pension = sum(s05a_01e0)
-replace ing_pension=. if y_hog==.
+*Ingreso por otros programas (imputacion)
+gen ing_natalidad_ci= 2000/12 if s04c_20b==1
+gen ing_hambre_ci= 1000/12 if s05b_06a==1
+egen ing_otrot_ci = rowtotal(s02a_15a ing_natalidad_ci ing_hambre_ci)
+bys idh_ch: egen ing_otrot_ch = sum(ing_otrot_ci)
+drop ing_natalidad_ci ing_hambre_ci
+
+*Beneficiario por PTMC PNC u Otros
+gen pcasht_ci = (ptmc_ch==1|pnc_ch==1| potrot_ch==1)
+bys idh_ch: egen pcasht_ch = max(pcasht_ci)
 
 * Ingreso neto del hogar
-gen y_pc_net = (y_hog - ing_ptmc - ing_pension) / nmiembros_ch
+gen y_pc_net = (y_hog - ing_ptmc_ch - ing_pnc_ch - ing_otrot_ch) / nmiembros_ch
 drop y_hog 
 
-lab def ptmc_ch 1 "Beneficiario PTMC" 0 "No beneficiario PTMC"
+lab def ptmc_ch 1 "Hogar Beneficiario PTMC" 0 "Hogar no beneficiario PTMC"
 lab val ptmc_ch ptmc_ch
 
-lab def pnc_ci 1 "Beneficiario PNC" 0 "No beneficiario PNC"
+lab def ptmc_ci 1 "Persona Beneficiaria PTMC" 0 "Persona no beneficiaria PTMC"
+lab val ptmc_ci ptmc_ci
+
+lab def pnc_ci 1 "Persona beneficiaria PNC" 0 "Persona no beneficiaria PNC"
 lab val pnc_ci pnc_ci
+
+lab def pnc_ch 1 "Hogar beneficiario PNC" 0 "Hogar no beneficiario PNC"
+lab val pnc_ch pnc_ch
+
+lab def potrot_ci 1 "Persona beneficiaria otros programas" 0 "Persona no beneficiaria otros programas"
+lab val potrot_ci potrot_ci
+
+lab def potrot_ch 1 "Hogar beneficiario otros programas" 0 "Hogar no beneficiario otros programas"
+lab val potrot_ch potrot_ch
 
 /*_____________________________________________________________________________________________________*/
 * Asignación de etiquetas e inserción de variables externas: tipo de cambio, Indice de Precios al 
