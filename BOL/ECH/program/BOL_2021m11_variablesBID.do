@@ -2365,7 +2365,6 @@ label var miglac_ci "=1 si es migrante proveniente de un pais LAC"
 ********* PTMC y PNC *********
 ******************************
 
-<<<<<<< Updated upstream
 * PTMC: s03a_08 ¿Recibió el Bono Juancito Pinto el año pasado (2019)?
 *		s02b_24a1 En los últimos 12 meses, cobró usted el Bono Juana Azurduy por: A.Controles prenatales realizados?
 *		s02b_24b "En los últimos 12 meses, cobró usted el Bono Juana Azurduy por: B. El parto y primer control postparto?
@@ -2378,15 +2377,10 @@ label var miglac_ci "=1 si es migrante proveniente de un pais LAC"
 *		s04c_20b Durante los últimos doce meses, recibió usted: B. Bono de natalidad?
 *		s05b_06a En los últimos 12 meses, recibió usted Bono Contra el Hambre?
 
-gen x=1
-drop nmiembros_ch
-bys idh_ch: egen nmiembros_ch= sum(x)
-=======
 * PTMC: s03a_08 ¿Recibió el Bono Juancito Pinto el año pasado (2020)?
 *		s02b_24b En los últimos 12 meses, cobró usted el Bono Juana Azurduy por: B. El parto y primer control postparto?
 *		s02b_24a1 En los últimos 12 meses, cobró usted el Bono Juana Azurduy por: A. Controles prenatales realizados? 
 *		s02c_30 En los últimos 12 meses, cobró usted el Bono Juana Azurduy por los controles integrales de salud de (…)?
->>>>>>> Stashed changes
 
 * PNC: 	s05a_01e Recibe usted ingresos (rentas) mensuales por: E. ¿Renta Dignidad?
 *		s05a_01e0 Monto Renta Dignidad
@@ -2408,7 +2402,6 @@ egen ingreso_total = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci), missing
 bys idh_ch: egen y_hog = sum(ingreso_total)
 drop ingreso_total
 
-<<<<<<< Updated upstream
 * Personas y hogares que perciben transferencias (ptmc)
 gen ptmc_ci = (s03a_08==1| s02b_24a1==1 | s02b_24b==1 | s02c_30==1)
 bys idh_ch: egen ptmc_ch = max(ptmc_ci)
