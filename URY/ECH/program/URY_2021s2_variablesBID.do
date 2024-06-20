@@ -1879,13 +1879,23 @@ lab val atencion_ci atencion_ci
 *		 monto recibido por asignaciones familiares (g257)
 * PNC: 	 Pensión a la vejez y Pensión por invalidez (f125 (1 y 3))
 
+isid idh_ch idp_ci
+
+gen x=1
+drop nmiembros_ch
+bys idh_ch: egen nmiembros_ch= sum(x)
+
 * Ingreso del hogar
 egen ingreso_total = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci), missing
-bys idh_ch: egen y_hog = sum(ingreso_total)
+bys idh_ch: egen y_hog_ch = sum(ingreso_total)
 
 * Personas que reciben transferencias monetarias condicionadas
-bys idh_ch: egen ing_ptmc = sum(g257)
-replace ing_ptmc = 0 if ing_ptmc ==.
+gen ptmc_ci= (g255 == 1 | g150 == 1)
+bys idh_ch: egen ptmc_ch = max(ptmc_ci)
+
+bys idh_ch: egen ing_ptmc_ci = sum(g257)
+replace ing_ptmc_ci = 0 if ing_ptmc_ci ==.
+replace ing_ptmc_ci = g257/2 if g255==1 & g152==2
 
 gen ptmc_ci = (g255 == 1)
 bys idh_ch: egen ptmc_ch = max(ptmc_ci) // nivel hogar
