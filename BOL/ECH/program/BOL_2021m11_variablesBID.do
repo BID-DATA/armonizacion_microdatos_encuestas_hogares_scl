@@ -2419,7 +2419,7 @@ replace ing_ptmc_ch=. if y_hog==.
 * Personas y hogares que reciben pensión no contributiva (pnc)
 gen pnc_elegible_ci=(edad>64 & edad!=.)
 gen pnc_ci=(s05a_01e==1 & pnc_elegible_ci==1)
-bys idh_ch: egen pnc_ch = max(ptmc_ci)
+bys idh_ch: egen pnc_ch = max(pnc_ci)
 
 * Monto pension no contributiva (pnc)
 gen ing_pnc_ci =s05a_01e0
@@ -2440,6 +2440,7 @@ drop ing_natalidad_ci ing_hambre_ci
 *Beneficiario por PTMC PNC u Otros
 gen pcasht_ci = (ptmc_ch==1|pnc_ch==1| potrot_ch==1)
 bys idh_ch: egen pcasht_ch = max(pcasht_ci)
+drop pcasht_ci
 
 * Ingreso neto del hogar
 gen y_pc_net = (y_hog - ing_ptmc_ch - ing_pnc_ch - ing_otrot_ch) / nmiembros_ch
