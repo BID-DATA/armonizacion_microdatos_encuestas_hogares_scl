@@ -1872,7 +1872,7 @@ lab val atencion_ci atencion_ci
 	label var miglac_ci "=1 si es migrante proveniente de un pais LAC"
 	
 ******************************
-* Variables SPH - PMTC y PNC *
+* Variables SPH - PMTC, PNC y Otros programas *
 ******************************
 
 * PTMC:  Asignaciones familiares del plan de equidad del mides (g255)
@@ -1887,40 +1887,70 @@ bys idh_ch: egen nmiembros_ch= sum(x)
 
 * Ingreso del hogar
 egen ingreso_total = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci), missing
-bys idh_ch: egen y_hog_ch = sum(ingreso_total)
+bys idh_ch: egen y_hog = sum(ingreso_total)
 
 * Personas que reciben transferencias monetarias condicionadas
 gen ptmc_ci= (g255 == 1 | g150 == 1)
 bys idh_ch: egen ptmc_ch = max(ptmc_ci)
 
-bys idh_ch: egen ing_ptmc_ci = sum(g257)
+*Monto recibido por transferencias monetarias
+gen ing_ptmc_ci = g257
 replace ing_ptmc_ci = 0 if ing_ptmc_ci ==.
 replace ing_ptmc_ci = g257/2 if g255==1 & g152==2
-
-gen ptmc_ci = (g255 == 1)
-bys idh_ch: egen ptmc_ch = max(ptmc_ci) // nivel hogar
-replace ptmc_ch  = ((ptmc_ci == 1)| (ing_ptmc > 0 & ing_ptmc !=.))
-
+bys idh_ch: egen ing_ptmc_ch = sum(ing_ptmc_ci)
+replace ing_ptmc_ch  = ((ptmc_ci == 1)| (ing_ptmc_ch > 0 & ing_ptmc_ch !=.))
 
 * Personas que perciben pensiones
-gen pnc_ci =.
-bys idh_ch: egen ing_pension = sum(ypensub_ci)
+gen pnc_elegible_ci = (edad_ci>70 & edad_ci!=.)
+gen pnc_ci = (f125== 1 & pnc_elegible_ci==1)
+bys idh_ch: egen pnc_ch = max(pnc_ci)
 
-* Adultos mayores 
-gen mayor64_ci = (edad > 64 & edad !=.)
-bys idh_ch: egen mayor64_ch = max(mayor64_ci)
+*Monto recibido por pnc
+egen ing_pnc_ci = rowtotal (g148_2_1 g148_2_2 g148_2_3) if pnc_ci==1
+bys idh_ch: egen ing_pnc_ch = sum(ing_pnc_ci)
+
+*Personas que perciben otros programas
+gen potrot_ci = (f125==3 | f125==5 | f125==6 | f125==7 | f125==8)
+
+*Monto recibido por otros programas
+egen ing_f125_3 =  rowtotal (g148_2_1 g148_2_2 g148_2_3) if f125==3 // pension invalidez
+egen ing_f125_5 = rowtotal (g148_2_1 g148_2_2 g148_2_3) if f125==5 // delitos violentos
+egen ing_f125_6 = rowtotal (g148_2_1 g148_2_2 g148_2_3) if f125==6 //violencia domestica
+egen ing_f125_7 = rowtotal (g148_2_1 g148_2_2 g148_2_3) if f125==7 // fallecidos violencia dom
+egen ing_f125_8 = rowtotal (g148_2_1 g148_2_2 g148_2_3) if f125==8 // personas trans
+egen ing_otrot_ci = rowtotal (ing_f125_3 ing_f125_5 ing_f125_6 ing_f125_7 ing_f125_8)
+drop ing_f125_3 ing_f125_5 ing_f125_6 ing_f125_7 ing_f125_8
+
+egen ing_f125_otros = rowtotal (g148_2_5 g148_2_6 g148_2_7 g148_2_8 g148_2_9 g148_2_10 g148_2_11 g148_2_12)
+replace potrot_ci =. if  ing_f125_otros>0 & ing_otrot_ci==0
+drop ing_f125_otros
+
+bys idh_ch: egen potrot_ch = max(potrot_ci)
+bys idh_ch: egen ing_otrot_ch = sum(ing_otrot_ci) if potrot_ch==1
+
+gen pcasht_ch= (ptmc_ch==1 | pnc_ch==1 | potrot_ch==1)
 
 *ingreso neto del hogar
-gen y_pc = y_hog / nmiembros_ch 
-gen y_pc_net = (y_hog - ing_ptmc -ing_pension) / nmiembros_ch
+gen y_pc = y_hog / nmiembros_ch
+gen y_pc_net = (y_hog - ing_ptmc_ch -ing_pnc_ch - ing_otrot_ch) / nmiembros_ch
 
-
-lab def ptmc_ch 1 "Beneficiario PTMC" 0 "No beneficiario PTMC"
+lab def ptmc_ch 1 "Hogar beneficiario PTMC" 0 "Hogar no beneficiario PTMC"
 lab val ptmc_ch ptmc_ch
 
-lab def pnc_ci 1 "Beneficiario PNC" 0 "No beneficiario PNC"
+lab def ptmc_ci 1 "Persona beneficiaria PTMC" 0 "Persona no beneficiaria PTMC"
+lab val ptmc_ci ptmc_ci
+
+lab def pnc_ci 1 "Persona beneficiaria PNC" 0 "Persona no beneficiaria PNC"
 lab val pnc_ci pnc_ci
 
+lab def pnc_ch 1 "Hogar beneficiario PNC" 0 "Hogar no beneficiario PNC"
+lab val pnc_ch pnc_ch
+
+lab def potrot_ci 1 "Persona beneficiaria PNC" 0 "Persona no beneficiaria PNC"
+lab val potrot_ci potrot_ci
+
+lab def potrot_ch 1 "Hogar beneficiario PNC" 0 "Hogar no beneficiario PNC"
+lab val potrot_ch potrot_ch
 	
 /*_____________________________________________________________________________________________________*/
 * Asignación de etiquetas e inserción de variables externas: tipo de cambio, Indice de Precios al 
