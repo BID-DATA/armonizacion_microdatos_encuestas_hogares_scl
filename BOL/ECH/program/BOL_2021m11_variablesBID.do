@@ -2377,19 +2377,6 @@ label var miglac_ci "=1 si es migrante proveniente de un pais LAC"
 *		s04c_20b Durante los últimos doce meses, recibió usted: B. Bono de natalidad?
 *		s05b_06a En los últimos 12 meses, recibió usted Bono Contra el Hambre?
 
-* PTMC: s03a_08 ¿Recibió el Bono Juancito Pinto el año pasado (2020)?
-*		s02b_24b En los últimos 12 meses, cobró usted el Bono Juana Azurduy por: B. El parto y primer control postparto?
-*		s02b_24a1 En los últimos 12 meses, cobró usted el Bono Juana Azurduy por: A. Controles prenatales realizados? 
-*		s02c_30 En los últimos 12 meses, cobró usted el Bono Juana Azurduy por los controles integrales de salud de (…)?
-
-* PNC: 	s05a_01e Recibe usted ingresos (rentas) mensuales por: E. ¿Renta Dignidad?
-*		s05a_01e0 Monto Renta Dignidad
-
-* OTHERS: s02a_15 En los últimos 12 meses, recibió (…) el Bono de Indigencia por Ceguera (IBC) o el Bono Mensual para Personas con Discapacidad?
-*		  s02a_15a Monto IBC o Bono Mensual Discapacidad
-*		  s04c_20b Durante los últimos doce meses, recibió usted: B. Bono de natalidad?
-*		  s05b_06a En los últimos 12 meses, recibió usted Bono Contra el Hambre?
-
 *****Miembros del hogar (incluyendo los no parientes - para calculos SPH)******
 isid idh_ch idp_ci
 
@@ -2468,77 +2455,6 @@ lab val potrot_ch potrot_ch
 * Asignación de etiquetas e inserción de variables externas: tipo de cambio, Indice de Precios al 
 * Consumidor (2011=100), Paridad de Poder Adquisitivo (PPA 2011),  líneas de pobreza
 /*_____________________________________________________________________________________________________*/
-=======
-*****PTMC******
-* Personas que perciben transferencias
-gen ptmc_ci = (s03a_08==1 | s02b_24a1==1 | s02b_24b==1 | s02c_30==1)
-bys idh_ch: egen ptmc_ch = max(ptmc_ci)
-
-* Se imputa el ingreso del bono juancito pinto el cual es de Bs. 200 anuales 
-* por estudiente que asiste a la escuela y tiene entre 6-20 años
-
-gen ing_bjp = (200/12) if s03a_08==1 & (edad_ci>5 & edad_ci<21) &  asiste_ci==1
-
-* Se imputa el ingreso del Bono Juana Azurduy (bja) para cada componente:
-gen ing_bja_prenatal = (50*s02b_24a2)/12 if s02b_24a1==1
-gen ing_bja_parto = 120/12 if s02b_24b==1
-gen ing_bja_control = (125*s02c_30a)/12 if s02c_30==1
-
-egen ing_ptmc_ci = rowtotal(ing_bjp ing_bja_prenatal ing_bja_parto ing_bja_control)
-bys idh_ch: egen ing_ptmc_ch = sum(ing_ptmc_ci)
-drop ing_bjp ing_bja_prenatal ing_bja_parto ing_bja_control
-
-replace ing_ptmc_ch=. if y_hog==.
-replace ing_ptmc_ci=. if y_hog==.
-
-***** Personas que reciben pensión no contributiva (PNC)******
-gen pnc_elegible_ci=(edad>60 & edad!=.)
-gen pnc_ci= (s05a_01e==1 & pnc_elegible_ci==1)
-
-bys idh_ch: egen pnc_ch = max(pnc_ci)
-
-* Monto pension no contributiva
-egen ing_pnc_ci = rowtotal (s05a_01e0)
-bys idh_ch: egen ing_pnc_ch = sum(ing_pnc_ci)
-
-replace ing_pnc_ch=. if y_hog==.
-replace ing_pnc_ci=. if y_hog==.
-
-***** Personas y hogares que reciben otros programas sociales (otros)******
-gen potrot_ci = (s02a_15==1 | s05b_06a==1 | s04c_20b==1)
-bys idh_ch: egen potrot_ch = max(potrot_ci)
-
-*Se imputa y mensualiza el valor para el bono de natalidad y bono contra el hambre
-gen ing_natalidad_ci= 2000/12 if s04c_20b==1
-gen ing_hambre_ci= 1000/12 if s05b_06a==1	
-
-egen ing_potrot_ci = rowtotal (s02a_15a ing_natalidad_ci ing_hambre_ci)	
-bys idh_ch: egen ing_potrot_ch = sum(ing_potrot_ci)
-drop ing_natalidad_ci ing_hambre_ci
-
-* Ingreso neto del hogar
-gen y_pc_net_ch = (y_hog - ing_ptmc_ch - ing_pnc_ch - ing_potrot_ch) / nmiembros_ch
-replace y_pc_net_ch= 0 if y_pc_net_ch<0
-drop y_hog 
-
-lab def ptmc_ch 1 "Hogar beneficiario PTMC" 0 "Hogar no beneficiario PTMC"
-lab val ptmc_ch ptmc_ch
-
-lab def ptmc_ci 1 "Persona beneficiaria PTMC" 0 "Persona no beneficiaria PTMC"
-lab val ptmc_ci ptmc_ci
-
-lab def pnc_ch 1 "Hogar beneficiario PNC" 0 "Hogar no beneficiario PNC"
-lab val pnc_ch pnc_ch
-
-lab def pnc_ci 1 "Persona beneficiaria PNC" 0 "Persona no beneficiaria PNC"
-lab val pnc_ci pnc_ci
-
-lab def potrot_ch 1 "Hogar beneficiario otros programas" 0 "Hogar no beneficiario otros programas"
-lab val potrot_ch potrot_ch
->>>>>>> Stashed changes
-
-lab def potrot_ci 1 "Persona beneficiaria otros programas" 0 "Persona no beneficiaria otros programas"
-lab val potrot_ci potrot_ci
 
 do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\Labels&ExternalVars_Harmonized_DataBank.do"
 
