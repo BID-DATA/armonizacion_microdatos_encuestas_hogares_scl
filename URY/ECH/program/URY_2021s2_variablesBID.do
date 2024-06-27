@@ -1890,7 +1890,7 @@ egen ingreso_total = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci), missing
 bys idh_ch: egen y_hog = sum(ingreso_total)
 
 * Personas que reciben transferencias monetarias condicionadas
-gen ptmc_ci= (g255 == 1 | g150 == 1)
+gen ptmc_ci= (g255 == 1)
 bys idh_ch: egen ptmc_ch = max(ptmc_ci)
 
 *Monto recibido por transferencias monetarias
@@ -1913,9 +1913,9 @@ bys idh_ch: egen ing_pnc_ch = sum(ing_pnc_ci)
 gen potrot_ci = (f125==3 | f125==5 | f125==6 | f125==7 | f125==8)
 
 *Monto recibido por otros programas
-egen ing_f125_3 =  rowtotal (g148_2_1 g148_2_2 g148_2_3) if f125==3 // pension invalidez
+egen ing_f125_3 = rowtotal (g148_2_1 g148_2_2 g148_2_3) if f125==3 // pension invalidez
 egen ing_f125_5 = rowtotal (g148_2_1 g148_2_2 g148_2_3) if f125==5 // delitos violentos
-egen ing_f125_6 = rowtotal (g148_2_1 g148_2_2 g148_2_3) if f125==6 //violencia domestica
+egen ing_f125_6 = rowtotal (g148_2_1 g148_2_2 g148_2_3) if f125==6 // violencia domestica
 egen ing_f125_7 = rowtotal (g148_2_1 g148_2_2 g148_2_3) if f125==7 // fallecidos violencia dom
 egen ing_f125_8 = rowtotal (g148_2_1 g148_2_2 g148_2_3) if f125==8 // personas trans
 egen ing_otrot_ci = rowtotal (ing_f125_3 ing_f125_5 ing_f125_6 ing_f125_7 ing_f125_8)
