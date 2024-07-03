@@ -1506,15 +1506,14 @@ label var pension_ci "1=Recibe pension contributiva"
 *************
 **ypen_ci*
 *************
-egen ypen_ci=rsum(y28_2b1 y28_2e1 y28_2g y28_2h y28_2i y28_2j), m
+egen ypen_ci=rsum(y280201 y280301 yin0101 ymon0101), m
 drop auxpen
 label var ypen_ci "Valor de la pension contributiva"
 
 ***************
 *pensionsub_ci*
 ***************
-gen auxpens=.
-gen pensionsub_ci=.
+egen pensionsub_ci=rsum(y280101 y280302 ymon0102 yesp0102)
 label var pensionsub_ci "1=recibe pension subsidiada / no contributiva"
 
 * EN BASE 2022 SE ELIMINARON LAS VARIABLES y28_2amonto Y y28_2dmonto
