@@ -34,7 +34,9 @@ Pais: Republica Dominicana
 Encuesta: ENCFT
 Round: m10
 Autores: Mayra Saenz mayras@iadb.org
-Fecha última modificación:8 de agosto 2022 by Juan Camilo Perdomo/ jcamilop@iadb.org
+
+Fecha última modificación: julio de 2024 / Pablo Cortés Sánchez- 
+							SCL/MIG - IADB
 
 							SCL/LMK - IADB
 **************************************************************************************/

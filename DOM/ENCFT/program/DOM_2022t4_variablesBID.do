@@ -35,7 +35,12 @@ País: Republica Dominicana
 Encuesta: ENCFT
 Round: t4
 Autores: Alvaro Altamirano (alvaroalt@iadb.org)
-Fecha última modificación: Agosto 8 de 2022 / Juan Camilo Perdomo- jcamilop@iadb.org
+
+
+
+
+*****************************************************************************
+Fecha última modificación: julio de 2024 / Pablo Cortés Sánchez- 
 							SCL/MIG - IADB
 ****************************************************************************/
 /***************************************************************************
@@ -1669,9 +1674,11 @@ label var ypensub_ci "Valor de la pension subsidiada / no contributiva"
 *************
 **salmm_ci***
 *************
-***Para empresas com menos de RD$2 millones en activos, ver: http://mt.gob.do/images/docs/acuerdos_y_convenios/tarifayresolucion0517/resolucion.pdf
-*En 2018 se mantiene el salario de 2017 (cambia cada dos años)
-gen salmm_ci=9411.6
+
+
+* https://tss.gob.do/aumento-topes-smc.html#:~:text=Asimismo%2C%20la%20instituci%C3%B3n%20responsable%20de,de%20cotizaci%C3%B3n%20del%20R%C3%A9gimen%20Contributivo
+
+gen salmm_ci=16262.5
 label var salmm_ci "Salario minimo legal"
 
 
