@@ -10,8 +10,6 @@ set more off
  * Se tiene acceso al servidor únicamente al interior del BID.
  * El servidor contiene las bases de datos MECOVI.
  *________________________________________________________________________________________________________________*
- 
-
 
 global ruta = "${surveysFolder}"
 
@@ -45,7 +43,8 @@ Fecha última modificación: julio de 2024 / Pablo Cortés Sánchez-
 ****************************************************************************/
 /***************************************************************************
 Detalle de procesamientos o modificaciones anteriores:
-
+Agosto 8 de 2022 / Juan Camilo Perdomo- jcamilop@iadb.org
+							SCL/MIG - IADB
 ****************************************************************************/
 
 
@@ -158,7 +157,7 @@ label variable pais_c "Pais"
 ***anio***
 **********
 
-gen anio_c=2021
+gen anio_c=2022
 label variable anio_c "Anio de la encuesta"
 
 ***************
@@ -577,7 +576,7 @@ label variable ocupa_ci "Ocupacion laboral"
 
 rename rama_principal_cod ramac
 des ramac
-ta ramac,m
+ta ramac if emp_ci ==1,m 
 destring ramac, replace 
 ta ramac,m
 
@@ -599,6 +598,13 @@ label def rama_ci 1"Agricultura, caza, silvicultura y pesca" 2"Explotación de m
 label def rama_ci 4"Electricidad, gas y agua" 5"Construcción" 6"Comercio, restaurantes y hoteles" 7"Transporte y almacenamiento", add
 label def rama_ci 8"Establecimientos financieros, seguros e inmuebles" 9"Servicios sociales y comunales", add
 label val rama_ci rama_ci
+
+ta rama_ci if emp_ci ==1,m 
+
+**Nota**
+****************
+***En este periodo la encuesta viene con 8 personas que dicen estar ocupadas pero en el reporte de sector son missings
+
 
 ************
 *durades_ci*
@@ -1148,6 +1154,7 @@ label var edupub_ci "Asiste a un centro de enseñanza público"
 ****************
 ***aguared_ch***
 ****************
+
 generate aguared_ch =.
 replace aguared_ch = 1 if tiene_agua_red_publica==1 
 replace aguared_ch = 0 if tiene_agua_red_publica==2
@@ -1171,6 +1178,10 @@ replace aguafuente_ch = 6 if donde_proviene_agua==9
 replace aguafuente_ch = 8 if donde_proviene_agua==6
 replace aguafuente_ch = 9 if donde_proviene_agua==3
 replace aguafuente_ch = 10 if (donde_proviene_agua==8 | donde_proviene_agua==99)
+
+*******
+** nota
+** No hay una combinación lógica de categorías de esta variable (donde_proviene_agua) que estén acordes con la pregunta de la variable aguared_ch. La preguntas no se pensaron conjuntamente 
 
 
 *************
@@ -1743,20 +1754,6 @@ label var benefdes_ci "=1 si tiene seguro de desempleo"
 	gen migrante_ci=(pais_nacimiento!=647 & pais_nacimiento!=.)
 	label var migrante_ci "=1 si es migrante"
 	
-	**********************
-	*** migantiguo5_ci ***
-	**********************
-	
-	gen migantiguo5_ci=.
-	label var migantiguo5_ci "=1 si es migrante antiguo (5 anos o mas)"
-		
-	**********************
-	*** migrantelac_ci ***
-	**********************
-	
-	gen migrantelac_ci=(migrante_ci==1 & inlist(pais_nacimiento,63,77,83,88,97,105,169,196,211,239,242,317,325,341,345,391,493,580,586,589,770,810,845,850)) if migrante_ci!=.
-	label var migrantelac_ci "=1 si es migrante proveniente de un pais LAC"
-	/* Codigos obtenidos de la carpeta de docs originales de DOM de 2005, archivo llamado Diccionario ENFT Octubre 2005 */
 	
 	**********************
 	*** migrantiguo5_ci ***
@@ -1851,7 +1848,8 @@ gen mayor64_ci=(edad>64 & edad!=.)
 * PNC
 bys idh_ch: egen ing_pension = sum(gob_proteccion_vejez_monto)
 replace ing_pension=. if y_hog==.
-gen pnc_ci=(ps_apoyo_adultos_mayores==1)
+gen pnc_ci=(ps_apoyo_adultos_mayores==1 & mayor64_ci ==1)
+
 
 *ingreso neto del hogar
 gen y_pc     = y_hog / nmiembros_ch 
