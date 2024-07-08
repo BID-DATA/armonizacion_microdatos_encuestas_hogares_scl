@@ -1871,13 +1871,21 @@ lab val atencion_ci atencion_ci
 	replace miglac_ci = . if migrante_ci == 0
 	label var miglac_ci "=1 si es migrante proveniente de un pais LAC"
 	
-******************************
-* Variables SPH - PMTC, PNC y Otros programas *
-******************************
+**************************************************
+***Variables SPH - PMTC, PNC y Otros programas ***
+**************************************************
 
-* PTMC:  Asignaciones familiares del plan de equidad del mides (g255)
-*		 monto recibido por asignaciones familiares (g257)
-* PNC: 	 Pensión a la vejez y Pensión por invalidez (f125 (1 y 3))
+* PTMC: * Asignaciones familiares del plan de equidad del mides (g255)
+*		* Monto recibido por asignaciones familiares (g257)
+
+* PNC: 	* Pensión a la vejez (f125 1)
+		
+* Otros programas:		
+		* Pensión por invalidez (f125 3)
+		* Pensión a las víctimas de delitos violentos (f125 5)
+		* Pensión para hijos de fallecidos por violencia doméstica (f125 6)
+		* Pensión Especial Reparatoria (f125 7)
+		* Pensión Reparatoria Ley Integral para Personas Trans (f125 8)
 
 isid idh_ch idp_ci
 
@@ -1889,44 +1897,50 @@ bys idh_ch: egen nmiembros_ch= sum(x)
 egen ingreso_total = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci), missing
 bys idh_ch: egen y_hog = sum(ingreso_total)
 
-* Personas que reciben transferencias monetarias condicionadas
-gen ptmc_ci= (g255 == 1)
-bys idh_ch: egen ptmc_ch = max(ptmc_ci)
+******PTMC******
 
 *Monto recibido por transferencias monetarias
 gen ing_ptmc_ci = g257
-replace ing_ptmc_ci = 0 if ing_ptmc_ci ==.
+replace ing_ptmc_ci =. if g257 ==.
 replace ing_ptmc_ci = g257/2 if g255==1 & g152==2
 bys idh_ch: egen ing_ptmc_ch = sum(ing_ptmc_ci)
-replace ing_ptmc_ch  = ((ptmc_ci == 1)| (ing_ptmc_ch > 0 & ing_ptmc_ch !=.))
+
+* Personas que reciben transferencias monetarias condicionadas
+gen ptmc_ci = 0
+replace ptmc_ci=1 if g255 == 1
+replace ptmc_ci = 1 if ing_ptmc_ci != . & ing_ptmc_ci > 0
+bys idh_ch: egen ptmc_ch = max(ptmc_ci)
+
+******PNC******
+gen pnc_elegible_ci = (edad_ci>70 & edad_ci!=.)
+
+*Monto recibido por pnc
+egen ing_pnc_ci = rowtotal (g148_2_1 g148_2_2 g148_2_3) if f125==1
+replace ing_pnc_ci = . if pnc_elegible_ci == 0
+replace ing_pnc_ci = . if (g148_2_1==. & g148_2_2==. & g148_2_3==.)
+bys idh_ch: egen ing_pnc_ch = sum(ing_pnc_ci)
 
 * Personas que perciben pensiones
-gen pnc_elegible_ci = (edad_ci>70 & edad_ci!=.)
 gen pnc_ci = (f125== 1 & pnc_elegible_ci==1)
 bys idh_ch: egen pnc_ch = max(pnc_ci)
 
-*Monto recibido por pnc
-egen ing_pnc_ci = rowtotal (g148_2_1 g148_2_2 g148_2_3) if pnc_ci==1
-bys idh_ch: egen ing_pnc_ch = sum(ing_pnc_ci)
-
-*Personas que perciben otros programas
-gen potrot_ci = (f125==3 | f125==5 | f125==6 | f125==7 | f125==8)
+******Otros programas sociales******
 
 *Monto recibido por otros programas
-egen ing_f125_3 = rowtotal (g148_2_1 g148_2_2 g148_2_3) if f125==3 // pension invalidez
-egen ing_f125_5 = rowtotal (g148_2_1 g148_2_2 g148_2_3) if f125==5 // delitos violentos
-egen ing_f125_6 = rowtotal (g148_2_1 g148_2_2 g148_2_3) if f125==6 // violencia domestica
-egen ing_f125_7 = rowtotal (g148_2_1 g148_2_2 g148_2_3) if f125==7 // fallecidos violencia dom
-egen ing_f125_8 = rowtotal (g148_2_1 g148_2_2 g148_2_3) if f125==8 // personas trans
+forvalues y=3/8 {
+	egen ing_f125_`y' = rowtotal (g148_2_1 g148_2_2 g148_2_3) if f125 ==`y'  
+}
+
 egen ing_otrot_ci = rowtotal (ing_f125_3 ing_f125_5 ing_f125_6 ing_f125_7 ing_f125_8)
-drop ing_f125_3 ing_f125_5 ing_f125_6 ing_f125_7 ing_f125_8
+drop ing_f125_3 ing_f125_4 ing_f125_5 ing_f125_6 ing_f125_7 ing_f125_8
+bys idh_ch: egen ing_otrot_ch = sum(ing_otrot_ci)
 
-egen ing_f125_otros = rowtotal (g148_2_5 g148_2_6 g148_2_7 g148_2_8 g148_2_9 g148_2_10 g148_2_11 g148_2_12)
-replace potrot_ci =. if  ing_f125_otros>0 & ing_otrot_ci==0
-drop ing_f125_otros
-
+*Personas que perciben otros programas
+gen potrot_ci = 0 
+replace potrot_ci = 1  if (f125==3 | f125==5 | f125==6 | f125==7 | f125==8)
+replace potrot_ci = 1 if ing_otrot_ci != . & ing_otrot_ci > 0 
+replace potrot_ci = . if ing_otrot_ci == .
 bys idh_ch: egen potrot_ch = max(potrot_ci)
-bys idh_ch: egen ing_otrot_ch = sum(ing_otrot_ci) if potrot_ch==1
 
 gen pcasht_ch= (ptmc_ch==1 | pnc_ch==1 | potrot_ch==1)
 
@@ -1972,21 +1986,25 @@ replace grupo_int = 4 if (y_pc_net>=(lp31_ci*4) & y_pc_net<.)
 
 tab grupo_int, gen(gpo_ingneto)
 
-* Crear interacción entre recibirla la PTMC y el gpo de ingreso
-gen ptmc_ingneto1 = 0
-replace ptmc_ingneto1 = 1 if ptmc_ch == 1 & gpo_ingneto1 == 1
+********************************
+*********pcash_coverage_************
+********************************
+forval i =1/4 {
+	gen pcasht_coverage`i' = .
+	replace pcasht_coverage`i' = 0 if grupo_int == `i'
+	replace pcasht_coverage`i' = 1 if grupo_int == `i' & pcasht_ch ==1
+}
 
-gen ptmc_ingneto2 = 0
-replace ptmc_ingneto2 = 1 if ptmc_ch == 1 & gpo_ingneto2 == 1
+********************************
+*********pcash_dist_************
+********************************
 
-gen ptmc_ingneto3 = 0
-replace ptmc_ingneto3 = 1 if ptmc_ch == 1 & gpo_ingneto3 == 1
+forval i =1/4 {
+	gen pcasht_dist`i' = .
+	replace pcasht_dist`i' = 0 if pcasht_ch == 1
+	replace pcasht_dist`i' = 1 if grupo_int == `i & pcasht_ch ==1
+}
 
-gen ptmc_ingneto4 = 0
-replace ptmc_ingneto4 = 1 if ptmc_ch == 1 & gpo_ingneto4 == 1
-
-lab def grupo_int 1 "Pobre extremo" 2 "Pobre moderado" 3 "Vulnerable" 4 "No pobre"
-lab val grupo_int grupo_int
 
 /*_____________________________________________________________________________________________________*/
 * Verificación de que se encuentren todas las variables armonizadas 
