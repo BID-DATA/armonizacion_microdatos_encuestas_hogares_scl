@@ -2361,9 +2361,9 @@ label var migrantiguo5_ci "=1 si es migrante antiguo (5 anos o mas)"
 gen miglac_ci=.
 label var miglac_ci "=1 si es migrante proveniente de un pais LAC"
 
-******************************
-********* PTMC y PNC *********
-******************************
+***********************************************
+********* PTMC, PNC y otros programas *********
+***********************************************
 
 * PTMC: s03a_08 ¿Recibió el Bono Juancito Pinto el año pasado (2019)?
 *		s02b_24a1 En los últimos 12 meses, cobró usted el Bono Juana Azurduy por: A.Controles prenatales realizados?
@@ -2389,47 +2389,58 @@ egen ingreso_total = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci), missing
 bys idh_ch: egen y_hog = sum(ingreso_total)
 drop ingreso_total
 
-* Personas y hogares que perciben transferencias (ptmc)
-gen ptmc_ci = (s03a_08==1| s02b_24a1==1 | s02b_24b==1 | s02c_30==1)
-bys idh_ch: egen ptmc_ch = max(ptmc_ci)
+******PTMC*******
 
 * Ingreso por transferencias (imputacion)
-gen ing_bjp_ci = (200/12) if ptmc_ci ==1 & (edad_ci>5 & edad_ci<21) & asiste_ci==1
+gen ing_bjp_ci = (200/12) if s03a_08==1 & (edad_ci>5 & edad_ci<21) & asiste_ci==1
 gen ing_prenatal_ci= (50*s02b_24a2)/12 if s02b_24a1==1 	 	  //Monto es 50Bs por control prenatal, max. 4
 gen ing_parto_ci= 120/12 if s02b_24b==1 					 //Monto es 120Bs por parto en establecimiento de salud
 gen ing_bimensual_ci= (125*s02c_30a)/12 if s02c_30a<= 6		//Monto es 125Bs por cada control 
-egen ing_ptmc_ci = rowtotal(ing_bjp_ci ing_prenatal_ci ing_parto_ci ing_bimensual_ci) if ptmc_ci==1
+egen ing_ptmc_ci = rowtotal(ing_bjp_ci ing_prenatal_ci ing_parto_ci ing_bimensual_ci)
+replace ing_ptmc_ci = . if (s02b_24a2 == . & s02b_24b == . & s02c_30a == . & s03a_08 == .)
+
 bys idh_ch: egen ing_ptmc_ch = sum(ing_ptmc_ci)
 drop ing_bjp_ci ing_prenatal_ci ing_parto_ci ing_bimensual_ci
-replace ing_ptmc_ch=. if y_hog==.
 
-* Personas y hogares que reciben pensión no contributiva (pnc)
+* Personas y hogares que perciben transferencias (ptmc)
+gen ptmc_ci = (s03a_08==1| s02b_24a1==1 | s02b_24b==1 | s02c_30==1)
+replace ptmc_ci = 1 if ing_ptmc_ci != . & ing_ptmc_ci > 0 
+bys idh_ch: egen ptmc_ch = max(ptmc_ci)
+
+******PNC*******
 gen pnc_elegible_ci=(edad>64 & edad!=.)
-gen pnc_ci=(s05a_01e==1 & pnc_elegible_ci==1)
-bys idh_ch: egen pnc_ch = max(pnc_ci)
 
 * Monto pension no contributiva (pnc)
 gen ing_pnc_ci =s05a_01e0
+replace ing_pnc_ci = . if s05a_01e0 == .
+replace ing_pnc_ci = . if pnc_elegible_ci == 0 
 bys idh_ch: egen ing_pnc_ch = sum(ing_pnc_ci)
-replace ing_pnc_ch=. if y_hog==.
 
-* Personas y hogares que reciben otros programas
-gen potrot_ci = (s02a_15==1| s04c_20b==1 | s05b_06a==1)
-bys idh_ch: egen potrot_ch = max(potrot_ci)
+* Personas y hogares que reciben pensión no contributiva (pnc)
+gen pnc_ci=(s05a_01e==1 & pnc_elegible_ci==1)
+replace pnc_ci = 1 if ing_pnc_ci !=. & ing_pnc_ci > 0
+replace pnc_ci = . if pnc_elegible_ci == 0
+bys idh_ch: egen pnc_ch = max(pnc_ci)
+
+*******Otros programas**************
 
 *Ingreso por otros programas (imputacion)
 gen ing_natalidad_ci= 2000/12 if s04c_20b==1
 gen ing_hambre_ci= 1000/12 if s05b_06a==1
 egen ing_otrot_ci = rowtotal(s02a_15a ing_natalidad_ci ing_hambre_ci)
+replace ing_otrot_ci = . if (s04c_20b==. & s05b_06a==. & s02a_15a==.)
 bys idh_ch: egen ing_otrot_ch = sum(ing_otrot_ci)
 drop ing_natalidad_ci ing_hambre_ci
 
-*Beneficiario por PTMC PNC u Otros
-gen pcasht_ci = (ptmc_ch==1|pnc_ch==1| potrot_ch==1)
-bys idh_ch: egen pcasht_ch = max(pcasht_ci)
-drop pcasht_ci
+* Personas y hogares que reciben otros programas
+gen potrot_ci = (s02a_15==1| s04c_20b==1 | s05b_06a==1)
+replace potrot_ci = 1 if ing_otrot_ci != . & ing_otrot_ci > 0 
+bys idh_ch: egen potrot_ch = max(potrot_ci)
 
-* Ingreso neto del hogar
+*Beneficiario por PTMC PNC u Otros
+gen pcasht_ch = (ptmc_ch==1|pnc_ch==1| potrot_ch==1)
+
+* Ingreso neto del hogar per cápita
 gen y_pc_net = (y_hog - ing_ptmc_ch - ing_pnc_ch - ing_otrot_ch) / nmiembros_ch
 drop y_hog 
 
@@ -2464,25 +2475,31 @@ do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\Labels&Extern
 * con base en ingreso neto (Sin transferencias)
 * y líneas de pobreza internacionales
 
-gen     grupo_int = 1 if (y_pc_net_ch<lp31_ci)
-replace grupo_int = 2 if (y_pc_net_ch>=lp31_ci & y_pc_net_ch<(lp31_ci*1.6))
-replace grupo_int = 3 if (y_pc_net_ch>=(lp31_ci*1.6) & y_pc_net_ch<(lp31_ci*4))
-replace grupo_int = 4 if (y_pc_net_ch>=(lp31_ci*4) & y_pc_net_ch<.)
+gen     grupo_int = 1 if (y_pc_net<lp31_ci)
+replace grupo_int = 2 if (y_pc_net>=lp31_ci & y_pc_net<(lp31_ci*1.6))
+replace grupo_int = 3 if (y_pc_net>=(lp31_ci*1.6) & y_pc_net<(lp31_ci*4))
+replace grupo_int = 4 if (y_pc_net>=(lp31_ci*4) & y_pc_net<.)
 
 tab grupo_int, gen(gpo_ingneto)
 
-* Crear interacción entre recibirla la PTMC y el gpo de ingreso
-gen ptmc_ingneto1 = 0``''
-replace ptmc_ingneto1 = 1 if ptmc_ch == 1 & gpo_ingneto1 == 1
+********************************
+*********pcash_coverage_************
+********************************
+forval i =1/4 {
+	gen pcasht_coverage`i' = .
+	replace pcasht_coverage`i' = 0 if grupo_int == `i'
+	replace pcasht_coverage`i' = 1 if grupo_int == `i' & pcasht_ch ==1
+}
 
-gen ptmc_ingneto2 = 0
-replace ptmc_ingneto2 = 1 if ptmc_ch == 1 & gpo_ingneto2 == 1
+********************************
+*********pcash_dist_************
+********************************
 
-gen ptmc_ingneto3 = 0
-replace ptmc_ingneto3 = 1 if ptmc_ch == 1 & gpo_ingneto3 == 1
-
-gen ptmc_ingneto4 = 0
-replace ptmc_ingneto4 = 1 if ptmc_ch == 1 & gpo_ingneto4 == 1
+forval i =1/4 {
+	gen pcasht_dist`i' = .
+	replace pcasht_dist`i' = 0 if pcasht_ch == 1
+	replace pcasht_dist`i' = 1 if grupo_int == `i & pcasht_ch ==1
+}
 
 lab def grupo_int 1 "Pobre extremo" 2 "Pobre moderado" 3 "Vulnerable" 4 "No pobre"
 lab val grupo_int grupo_int
