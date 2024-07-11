@@ -1718,8 +1718,9 @@ do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&Exter
 *** VARIABLES DE PROTECCION SOCIAL ***
 **************************************
 
-* ADD LABELS? STANDARIZE
-
+* MIEMBROS DEL HOGAR
+	gen x = 1
+	bys idh_ch: egen nmiembros_sph_ch= sum(x)
 
 * BENEFICIARIOS Y MONTOS
 
@@ -1745,7 +1746,7 @@ do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&Exter
 	gen 	ptmc_ci = a9a == 1
 	replace ptmc_ci = 1 if a9a == 5 
 	replace ptmc_ci = 1 if inlist(a19a,1,2,3,4,7) 
-	replace ptmc_ci = 1 if ing_ptmc_ci != .
+	replace ptmc_ci = 1 if ing_ptmc_ci != . & ing_ptmc_ci > 0
 	bys idh_ch: egen ptmc_ch = max(ptmc_ci)
 	
 	*****************
@@ -1760,7 +1761,7 @@ do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&Exter
 	bys idh_ch: egen ing_pnc_ch = sum(ing_pnc_ci)
 	
 	gen 	pnc_ci = h9e == 1
-	replace pnc_ci = 1 if ing_pnc_ci != .
+	replace pnc_ci = 1 if ing_pnc_ci != . & ing_pnc_ci > 0
 	replace pnc_ci = . if pnc_elegible_ci == 0
 	bys idh_ch: egen pnc_ch = max(pnc_ci)
 	
@@ -1776,6 +1777,7 @@ do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&Exter
 	
 	gen 	potrot_ci = a9a == 2
 	replace potrot_ci = 1 if h9e == 1 & pnc_ci != . 
+	replace potrot_ci = 1 if potrot_ci == 0 & ing_otrot_ci != .
 	bys idh_ch: egen potrot_ch = max(potrot_ci)
 	
 	*****************
@@ -1789,13 +1791,12 @@ do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&Exter
 * COBERTURA Y DISTRIBUCION
 	
 	* Ingreso neto del hogar
-	egen 	y_hog_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci) , missing
-	replace y_hog_ci = . if miembros_ci != 1
+	egen 	y_hog_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci), missing
 	replace y_hog_ci = 0 if y_hog_ci < 0
-	gen 	y_pc_ci = y_hog_ci / nmiembros_ch
+	gen 	y_pc_ci = y_hog_ci / nmiembros_sph_ch 
 	
 	bys idh_ch: egen y_hog_ch = sum(y_hog_ci), missing
-	gen 	y_pc_net_ch = (y_hog_ch - ing_pcasht_ch) / nmiembros_ch
+	gen 	y_pc_net_ch = (y_hog_ch - ing_pcasht_ch) / nmiembros_sph_ch
 	replace y_pc_net_ch = 0 if y_pc_net_ch < 0
 	
 	* Grupos
