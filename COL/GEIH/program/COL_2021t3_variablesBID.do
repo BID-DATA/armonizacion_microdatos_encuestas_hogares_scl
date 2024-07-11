@@ -1530,13 +1530,22 @@ do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&Exter
 *** VARIABLES DE PROTECCION SOCIAL ***
 **************************************
 
+* MIEMBROS DEL HOGAR
+	gen x = 1
+	bys idh_ch: egen nmiembros_sph_ch= sum(x)
+	
 
 * BENEFICIARIOS Y MONTOS
 
 	*****************
 	**** ptmc_ch ****
 	*****************
+		
 	egen 	ing_ptmc_ci = rowtotal(p1661s1a1 p1661s2a1)
+	replace ing_ptmc_ci = ing_ptmc_ci + p1661s4a2 if regexm(p1661s4a1,".I.*GRESO.* SOL.*")
+	replace ing_ptmc_ci = ing_ptmc_ci + p1661s4a2 if regexm(p1661s4a1,".*SOL.*")
+	replace ing_ptmc_ci = ing_ptmc_ci + p1661s4a2 if regexm(p1661s4a1,".*INGRESO.*DARIO.*")
+	replace ing_ptmc_ci = ing_ptmc_ci + p1661s4a2 if regexm(p1661s4a1,".*BONO.*DARIO.*")
 	replace ing_ptmc_ci = ing_ptmc_ci / 12
 	replace ing_ptmc_ci = . if p1661s1a1 == . & p1661s2a1 == .
 	replace ing_ptmc_ci = . if p1661s1a1 == 98
@@ -1545,17 +1554,17 @@ do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&Exter
 	
 	gen 	ptmc_ci = p1661s1 == 1
 	replace ptmc_ci = 1 if p1661s2 == 1
-	replace ptmc_ci = 1 if ing_ptmc_ci != .
+	replace ptmc_ci = 1 if regexm(p1661s4a1,".I.*GRESO.* SOL.*")
+	replace ptmc_ci = 1 if regexm(p1661s4a1,".*SOL.*")
+	replace ptmc_ci = 1 if regexm(p1661s4a1,".*INGRESO.*DARIO.*")
+	replace ptmc_ci = 1 if regexm(p1661s4a1,".*BONO.*DARIO.*")
+	replace ptmc_ci = 1 if ing_ptmc_ci != . & ing_ptmc_ci > 0
 	bys idh_ch: egen ptmc_ch = max(ptmc_ci)
-	
-	* Imputar beneficiarios sin montos
-	* Numero a imputar: 
-	* TBD
 	
 	*****************
 	**** pnc_ch *****
 	*****************
-	gen pnc_elegible_ci = 0
+	gen     pnc_elegible_ci = 0
 	replace pnc_elegible_ci = 1 if edad_ci > 54 & sexo_ci == 2
 	replace pnc_elegible_ci = 1 if edad_ci > 57 & sexo_ci == 1
 	
@@ -1567,7 +1576,7 @@ do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&Exter
 	bys idh_ch: egen ing_pnc_ch = sum(ing_pnc_ci)
 	
 	gen 	pnc_ci = p1661s3 == 1
-	replace pnc_ci = 1 if ing_pnc_ci != .
+	replace pnc_ci = 1 if ing_pnc_ci != . & ing_pnc_ci > 0
 	replace pnc_ci = . if pnc_elegible_ci == 0
 	bys idh_ch: egen pnc_ch = max(pnc_ci)
 	
@@ -1578,17 +1587,18 @@ do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&Exter
 	*****************
 	*** otrot_ch ****
 	*****************
+		
 	gen 	ing_otrot_ci = p1661s4a2
 	replace ing_otrot_ci = ing_otrot_ci / 12
 	replace ing_otrot_ci = . if p1661s4a2 == .
 	replace ing_otrot_ci = . if p1661s4a2 == 98
-	replace ing_otrot_ci = . if !strpos(p1661s4a1,"SOLIDARIO") & !strpos(p1661s4a1,"IVA") & !strpos(p1661s4a1,"DESPLA")
+	replace ing_otrot_ci = . if regexm(p1661s4a1,".I.*GRESO.* SOL.*")
+	replace ing_otrot_ci = . if regexm(p1661s4a1,".*SOL.*")
+	replace ing_otrot_ci = . if regexm(p1661s4a1,".*INGRESO.*DARIO.*")
+	replace ing_otrot_ci = . if regexm(p1661s4a1,".*BONO.*DARIO.*")
 	bys idh_ch: egen ing_otrot_ch = sum(ing_otrot_ci)
 	
 	gen 	potrot_ci = 0
-	replace potrot_ci = 1 if strpos(p1661s4a1,"SOLIDARIO")
-	replace potrot_ci = 1 if strpos(p1661s4a1,"IVA")
-	replace potrot_ci = 1 if strpos(p1661s4a1,"DESPLA")
 	replace potrot_ci = 1 if ing_otrot_ci != .
 	replace potrot_ci = 1 if potrot_ci == 0 & ing_otrot_ci != .
 	bys idh_ch: egen potrot_ch = max(potrot_ci)
@@ -1604,13 +1614,12 @@ do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&Exter
 * COBERTURA Y DISTRIBUCION
 	
 	* Ingreso neto del hogar
-	egen 	y_hog_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci) , missing
-	replace y_hog_ci = . if miembros_ci != 1
+	egen 	y_hog_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci), missing
 	replace y_hog_ci = 0 if y_hog_ci < 0
-	gen 	y_pc_ci = y_hog_ci / nmiembros_ch
+	gen 	y_pc_ci = y_hog_ci / nmiembros_sph_ch 
 	
 	bys idh_ch: egen y_hog_ch = sum(y_hog_ci), missing
-	gen 	y_pc_net_ch = (y_hog_ch - ing_pcasht_ch) / nmiembros_ch
+	gen 	y_pc_net_ch = (y_hog_ch - ing_pcasht_ch) / nmiembros_sph_ch
 	replace y_pc_net_ch = 0 if y_pc_net_ch < 0
 	
 	* Grupos
