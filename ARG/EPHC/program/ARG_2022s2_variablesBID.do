@@ -1424,8 +1424,8 @@ label value categoinac_ci categoinac_ci
 ***********
 *formal_ci*
 ***********
-gen byte formal_ci=1 if cotizando_ci==1 & (condocup_ci==1 | condocup_ci==2)
-recode formal_ci .=0 if (condocup_ci==1 | condocup_ci==2)
+gen byte formal_ci=1 if cotizando_ci==1 & condocup_ci==1
+recode formal_ci .=0 if cotizando_ci==0 & (condocup_ci==1 | condocup_ci==2)
 label var formal_ci "1=afiliado o cotizante / PEA"
 
 ***********
