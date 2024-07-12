@@ -3352,18 +3352,18 @@ label var formal_ci "1=afiliado o cotizante / PEA"
 ******************************
 *	aedu_ci
 ******************************
-gen nivel_ed = N_INSTR161
-gen grado_ed = N_INSTR162
+gen nivel_ed = n_instr161
+gen grado_ed = n_instr162
 
 gen aedu_ci = .
 replace aedu_ci = 0 if nivel_ed == 0 | nivel_ed == 1 
 replace aedu_ci = grado_ed if nivel_ed == 2
 replace aedu_ci = grado_ed + 6 if nivel_ed == 3
-replace aedu_ci = grado_ed + 6 if nivel_ed == 6 & ANTEC_ESC == 1
+replace aedu_ci = grado_ed + 6 if nivel_ed == 6 & antec_esc == 1
 replace aedu_ci = grado_ed + 9 if nivel_ed == 4
-replace aedu_ci = grado_ed + 9 if nivel_ed == 6 & ANTEC_ESC == 2
+replace aedu_ci = grado_ed + 9 if nivel_ed == 6 & antec_esc == 2
 replace aedu_ci = grado_ed + 12 if nivel_ed == 5 | nivel_ed == 7
-replace aedu_ci = grado_ed + 12 if nivel_ed == 6 & ANTEC_ESC == 3
+replace aedu_ci = grado_ed + 12 if nivel_ed == 6 & antec_esc == 3
 replace aedu_ci = grado_ed + 12 + 5 if nivel_ed == 8
 replace aedu_ci = grado_ed + 12 + 5 + 2 if nivel_ed == 9
 
@@ -3435,16 +3435,18 @@ label var edus2c_ci "2do ciclo de Educacion Secundaria Completo"
 ******************************
 *	eduui_ci
 ******************************
-gen byte eduui_ci = (aedu_ci > 12 & aedu_ci < 16) & (nivel_ed == 7 | nivel_ed == 5)
-replace eduui_ci = 1 if (aedu_ci > 12 & aedu_ci < 15 & nivel_ed == 6 & (ANTEC_ESC == 3 | ANTEC_ESC == 2)) 
+gen byte eduui_ci = (aedu_ci > 12 & aedu_ci < 16) & (nivel_ed == 5)
+replace eduui_ci = 1 if (aedu_ci > 12 & aedu_ci < 17) & (nivel_ed == 7)
+replace eduui_ci = 1 if (aedu_ci > 12 & aedu_ci < 15 & nivel_ed == 6 & (antec_esc == 3 | antec_esc == 2)) 
 replace eduui_ci = . if aedu_ci == .
 label var eduui_ci "Universitaria o Terciaria Incompleta"
 
 ******************************
 *	eduuc_ci
 ******************************
-gen byte eduuc_ci = (aedu_ci >= 16) & (nivel_ed == 7 | nivel_ed == 5)
-replace eduui_ci = 1 if (aedu_ci >= 15  & nivel_ed == 6 & (ANTEC_ESC == 3 | ANTEC_ESC == 2))
+gen byte eduuc_ci = (aedu_ci >= 16) & (nivel_ed == 5)
+replace eduuc_ci = 1 if (aedu_ci >= 17) & (nivel_ed == 7)
+replace eduuc_ci = 1 if (aedu_ci >= 15  & nivel_ed == 6 & (antec_esc == 3 | antec_esc == 2))
 replace eduuc_ci = 1 if nivel_ed == 8 | nivel_ed == 9
 replace eduuc_ci = . if aedu_ci == .
 label var eduuc_ci "Universitaria o Terciaria Completa"
@@ -3458,14 +3460,14 @@ label var edupre_ci "Educacion preescolar"
 ******************************
 *	asispre_ci
 ******************************
-g asispre_ci = (ASIS_ESC == 1 & NIVEL == 1)
+g asispre_ci = (antec_esc == 1 & nivel == 1)
 la var asispre_ci "Asiste a educacion prescolar"	
 	
 ******************************
 *	eduac_ci
 ******************************
 gen byte eduac_ci=.
-replace eduac_ci = 0 if nivel_ed == 6 & ANTEC_ESC ==3 | nivel_ed == 5
+replace eduac_ci = 0 if nivel_ed == 6 & antec_esc ==3 | nivel_ed == 5
 replace eduac_ci = 1 if nivel_ed >= 7 & nivel_ed <= 9
 label var eduac_ci "Superior universitario vs. no universitario"
 
@@ -3473,8 +3475,8 @@ label var eduac_ci "Superior universitario vs. no universitario"
 *	asiste_ci
 ******************************
 
-gen asiste_ci = (ASIS_ESC==1)
-replace asiste_ci = . if ASIS_ESC != 1 & ASIS_ESC != 2
+gen asiste_ci = (antec_esc==1)
+replace asiste_ci = . if antec_esc != 1 & antec_esc != 2
 label var asiste_ci "Personas que actualmente asisten a la escuela"
 
 ******************************
@@ -3505,8 +3507,8 @@ gen repiteult_ci = .
 *	edupub_ci
 ******************************
 gen edupub_ci=.
-replace edupub_ci=1 if TIPOESC == 1 
-replace edupub_ci=0 if TIPOESC == 2 | TIPOESC == 3
+replace edupub_ci=1 if tipoesc == 1 
+replace edupub_ci=0 if tipoesc == 2 | tipoesc == 3
 label var edupub_ci "Personas que asisten a centros de ensenanza publicos"
 
 

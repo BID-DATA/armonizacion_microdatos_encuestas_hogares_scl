@@ -967,19 +967,25 @@ label var edusc_ci "1 = personas que han completado el nivel secundario"
 **************
 ***eduui_ci***
 **************
-gen eduui_ci=(aedu_ci>=12 & s711e==2) & (s7q11==7 | s7q11==8) // 12 anios de educacion sin titulo
-replace eduui_ci=1 if aedu_ci==12 & s711e==1 & (s7q11==7 | s7q11==8)
-replace eduui_ci=0 if aedu_ci==12 & (s7q11==4 | s7q11==6) // 12 anios y solo media
+gen eduui_ci = (inlist(s7q4, 7, 8) | (inlist(s7q11, 7, 8) & s7q13 != 1))
+replace eduui_ci = 0 if (inlist(s7q11, 7, 8) & s7q4 == 9)
 replace eduui_ci=. if aedu_ci==.
 label var eduui_ci "1 = personas que no han completado el nivel universitario o superior"
 
 ***************
 ***eduuc_ci***
 ***************
-gen byte eduuc_ci=(aedu_ci>=13 & s711e==1) & (s7q11==7 | s7q11==8) // mas de 11 anios de educacion, nivel terciario y titulo
-replace eduuc_ci=1 if (aedu_ci>=13 & s7q11==9)
+gen byte eduuc_ci = ((inlist(s7q11, 7, 8) &  s7q13 == 1) | s7q4 == 9 | s7q11 == 9)
 replace eduuc_ci=. if aedu_ci==.
 label var eduuc_ci "1 = personas que han completado el nivel universitario o superior"
+
+**************
+***eduac_ci***
+**************
+gen eduac_ci=.
+replace eduac_ci = 1 if inlist(s7q11, 8, 9) | inlist(s7q4, 8, 9)
+replace eduac_ci = 0 if s7q11 == 7 | s7q4 == 7
+label var eduac_ci "Educacion terciaria académica versus educación terciaria no-académica "
 
 ***************
 ***edus1i_ci***
@@ -1011,14 +1017,6 @@ replace edus2c_ci=0 if aedu_ci==11 & s711e==2 // 11 y sin titulo
 replace edus2c_ci=1 if aedu_ci==12 & (s7q11==4 |s7q11==6) // 12 anios y solo media
 replace edus2c_ci=. if aedu_ci==.
 label variable edus2c_ci "2do ciclo de la secundaria completo"
-
-**************
-***eduac_ci***
-**************
-gen eduac_ci=.
-replace eduac_ci=1 if (s7q11==8)
-replace eduac_ci=0 if (s7q11==7)
-label var eduac_ci "Educacion terciaria académica versus educación terciaria no-académica "
 
 ***************
 ***asispre_ci**

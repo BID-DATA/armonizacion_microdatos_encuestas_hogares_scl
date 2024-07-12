@@ -1599,25 +1599,32 @@ gen byte edus2c_ci=(aedu_ci==12)
 replace edus2c_ci=. if aedu_ci==.
 label variable edus2c_ci "2do ciclo de la secundaria completo"
 
+
 **************
 ***eduui_ci***
 **************
-gen byte eduui_ci=(aedu_ci>=13 & aedu_ci<17 ) & s5a_02==71 //educacion normal.
-replace  eduui_ci= 1 if (aedu_ci>=13 & aedu_ci<17 ) & s5a_02==72 // universitaria
-replace  eduui_ci= 1 if (aedu_ci>=13 & aedu_ci<15 ) & s5a_02>=76 & s5a_02<=79  // tecnico superior, incluye adultos
-replace eduui_ci=. if aedu_ci==.
-label variable eduui_ci "Universitaria incompleta"
+gen byte eduui_ci = (inlist(s5a_05, 71, 72, 73, 77, 79) | (s5a_04 == 2 & inlist(s5a_02,  71, 72, 73, 77, 79) &  s5b_11 != 6)) 
+replace eduui_ci = . if aedu_ci == . 
+label variable eduui_ci "Superior Incompleto"
 
-***************
+**************
 ***eduuc_ci***
-***************
+**************
 
-gen byte eduuc_ci=(aedu_ci>=17 & s5a_02==72 ) // duracion del grado universitario
-replace eduuc_ci=1 if (aedu_ci>=17 & s5a_02==71) // educacion normal
-replace eduuc_ci=1 if (aedu_ci>=13 & s5a_02>=73 & s5a_02<=75) // postgrados
-replace eduuc_ci=1 if (aedu_ci>=15 & s5a_02>=76 & s5a_02<=79) // tecnico superior
-replace eduuc_ci=. if aedu_ci==.
-label variable eduuc_ci "Universitaria completa"
+gen byte eduuc_ci = ((s5a_04 == 2 & ((inlist(s5a_02,  71, 72, 73, 77, 79) &  s5b_11 == 6) | inlist(s5a_02, 74, 75, 76))) | inlist(s5a_05, 74, 75, 76))
+replace eduuc_ci = . if aedu_ci == . 
+label variable eduuc_ci "Superior Completo"
+
+**************
+***eduac_ci***
+**************
+
+gen eduac_ci = . 
+replace eduac_ci = 1 if (inlist(s5a_02, 71, 72, 73, 74, 75, 76, 79) | inlist(s5a_05, 71, 72, 73, 74, 75, 76, 79) )
+replace eduac_ci = 0 if (s5a_02 == 77) | (s5a_05 == 77)
+replace eduac_ci = . if inlist(s5a_05, 42, 78, 81) & s5a_02 >= 71
+label variable eduac_ci "Superior universitario vs superior no universitario"
+
 
 ***************
 ***edupre_ci***
@@ -1632,16 +1639,7 @@ label variable edupre_ci "Educacion preescolar"
 *Variable añadida por Iván Bornacelly - 01/12/2017
 	g asispre_ci=s5a_04==1 & s5a_05==13
 	la var asispre_ci "Asiste a educacion prescolar"
-**************
-***eduac_ci***
-**************
 
-* Se cambia para universidad completa o más 
-gen byte eduac_ci=.
-replace eduac_ci=1 if (s5a_02>=72 & s5a_02<=75)
-replace eduac_ci=0 if s5a_02==71 //educacion normal
-replace eduac_ci=0 if (s5a_02>=76 & s5a_02<=79)
-label variable eduac_ci "Superior universitario vs superior no universitario"
 
 ***************
 ***asiste_ci***

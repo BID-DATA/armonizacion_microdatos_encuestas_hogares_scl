@@ -876,18 +876,28 @@ replace edus2i_ci=. if aedu_ci==.
 g byte edus2c_ci=(aedu_ci==11)
 replace edus2c_ci=. if aedu_ci==.
 
-******************************
-*	eduui_ci 
-******************************
-g byte eduui_ci=(aedu_ci>11 & aedu_ci<15) 
-replace eduui_ci=. if aedu_ci==.
-la var eduui_ci "Universitaria o Terciaria Incompleta"
-******************************
-*	eduuc_ci 
-******************************
-g byte eduuc_ci=aedu_ci>14
-replace eduuc_ci=. if aedu_ci==.
-la var eduuc_ci "Universitaria o Terciaria Completa"
+**************
+***eduui_ci***
+**************
+gen eduui_ci = (((P06B06A == 5 & P06B25A == 5) | P06B25A == 6) &  inrange(P06B27A, 103, 499)) 
+replace eduui_ci = . if aedu_ci == .
+lab var eduui_ci "Superior Incompleto"
+
+**************
+***eduuc_ci***
+**************
+gen eduuc_ci = ((P06B25A == 6 & inrange(P06B27A, 500, 7100)) | P06B25A == 7 | P06B06A == 6)
+replace eduuc_ci = . if aedu_ci == .
+lab var eduuc_ci "Superior Completo"
+
+**************
+***eduac_ci***
+**************
+* Se construye para aquellos que completaron el ciclo.
+gen eduac_ci = (inrange(P06B27A, 2001, 7012))
+replace eduac_ci = . if (P06B27A == . | P06B27A <= 423)
+label variable eduac_ci "Superior universitario vs superior no universitario"
+
 ******************************
 *	edupre_ci 
 ******************************
@@ -905,12 +915,6 @@ g byte asispre_ci = 0
 replace asispre_ci = 1 if P06B06A == 1
 la var asispre_ci "Asiste a Educacion preescolar"
 
-**************
-***eduac_ci***
-**************
-* No se discrimina terciaria.
-gen byte eduac_ci=.
-label variable eduac_ci "Superior universitario vs superior no universitario"
 
 ******************************
 *	asiste_ci: 

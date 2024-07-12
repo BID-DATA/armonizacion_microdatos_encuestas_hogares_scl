@@ -1363,14 +1363,14 @@ label variable edusc_ci "Secundaria completa"
 **************
 ***eduui_ci***
 **************
-gen eduui_ci = (aedu_ci > 11 &  aedu_ci < 16) 
+gen eduui_ci = (inlist(s07p15a, 6, 7) & (s07p16 == 1 | (s07p16 == 2 & s07p17 != 10)))
 replace eduui_ci = . if aedu_ci == . 
 label variable eduui_ci "Superior incompleto"
 
 **************
 ***eduuc_ci***
 **************
-gen eduuc_ci = (aedu_ci >= 16) 
+gen eduuc_ci = (inlist(s07p15a, 6, 7) & (s07p16 == 2 & s07p17 == 10) | inlist(s07p15a, 8, 9))
 replace eduuc_ci = . if aedu_ci == .
 label variable eduuc_ci "Superior completo"
 

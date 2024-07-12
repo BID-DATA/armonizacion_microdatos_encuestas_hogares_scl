@@ -930,19 +930,29 @@ gen edusc_ci=(aedu_ci==11)
 replace edusc=. if aedu_ci==.
 label var edusc_ci "1 = personas que han completado el nivel secundario"
 					
+
 **************
 ***eduui_ci***
 **************
-gen eduui_ci=(aedu_ci>11 & aedu_ci<14)
+gen eduui_ci = inlist(emhp28n, 5, 6) & emhp29 == 1 | inlist(emhp28n, 5, 6) &  emhp31 != 1
 replace eduui_ci=. if aedu_ci==.
 label var eduui_ci "1 = personas que no han completado el nivel universitario o superior"
 
 ***************
 ***eduuc_ci***
 ***************
-gen byte eduuc_ci=(aedu_ci>=14)
+gen byte eduuc_ci = (inlist(emhp28n, 5, 6) &  emhp31 == 1) | emhp28n == 7
 replace eduuc_ci=. if aedu_ci==.
 label var eduuc_ci "1 = personas que han completado el nivel universitario o superior"
+
+**************
+***eduac_ci***
+**************
+gen eduac_ci=.
+replace eduac_ci = 1 if inlist(emhp28n, 6, 7)
+replace eduac_ci = 0 if emhp28n == 5
+label var eduac_ci "Educacion terciaria académica versus educación terciaria no-académica "
+
 
 ***************
 ***edus1i_ci***
@@ -972,11 +982,6 @@ gen edus2c_ci=(aedu_ci==11)
 replace edus2c_ci=. if aedu_ci==.
 label variable edus2c_ci "2do ciclo de la secundaria completo"
 
-**************
-***eduac_ci***
-**************
-gen eduac_ci=.
-label var eduac_ci "Educacion terciaria académica versus educación terciaria no-académica "
 
 ***************
 ***asispre_ci**

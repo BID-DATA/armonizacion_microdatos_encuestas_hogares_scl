@@ -3728,7 +3728,8 @@ label var edus2c_ci "2do ciclo de Educacion Secundaria Completo"
 ******************************
 *	eduui_ci
 ******************************
-gen byte eduui_ci = (aedu_ci > 12 & aedu_ci < 16) & (nivel_ed == 7 | nivel_ed == 5)
+gen byte eduui_ci = (aedu_ci > 12 & aedu_ci < 16) & (nivel_ed == 5)
+replace eduui_ci = 1 if (aedu_ci > 12 & aedu_ci < 17) & (nivel_ed == 7)
 replace eduui_ci = 1 if (aedu_ci > 12 & aedu_ci < 15 & nivel_ed == 6 & (antec_esc == 3 | antec_esc == 2)) 
 replace eduui_ci = . if aedu_ci == .
 label var eduui_ci "Universitaria o Terciaria Incompleta"
@@ -3736,8 +3737,9 @@ label var eduui_ci "Universitaria o Terciaria Incompleta"
 ******************************
 *	eduuc_ci
 ******************************
-gen byte eduuc_ci = (aedu_ci >= 16) & (nivel_ed == 7 | nivel_ed == 5)
-replace eduui_ci = 1 if (aedu_ci >= 15  & nivel_ed == 6 & (antec_esc == 3 | antec_esc == 2))
+gen byte eduuc_ci = (aedu_ci >= 16) & (nivel_ed == 5)
+replace eduuc_ci = 1 if (aedu_ci >= 17) & (nivel_ed == 7)
+replace eduuc_ci = 1 if (aedu_ci >= 15  & nivel_ed == 6 & (antec_esc == 3 | antec_esc == 2))
 replace eduuc_ci = 1 if nivel_ed == 8 | nivel_ed == 9
 replace eduuc_ci = . if aedu_ci == .
 label var eduuc_ci "Universitaria o Terciaria Completa"

@@ -1705,26 +1705,31 @@ gen byte edus2c_ci=(aedu_ci==12)
 replace edus2c_ci=. if aedu_ci==.
 label variable edus2c_ci "2do ciclo de la secundaria completo"
 
+
 **************
 ***eduui_ci***
 **************
-gen byte eduui_ci=(aedu_ci>=13 & aedu_ci<17 ) & (s4_02a==29 | s4_02a==30) // universitaria
-replace  eduui_ci= 1 if (aedu_ci>=13 & aedu_ci<17 ) & s4_02a==28   // normal
-replace  eduui_ci= 1 if (aedu_ci>=13 & aedu_ci<15 ) & s4_02a>=34 & s4_02a<=36   // tecnicaturas y formacion militar y policial
-replace eduui_ci=. if aedu_ci==.
-label variable eduui_ci "Universitaria incompleta"
+gen byte eduui_ci = (inlist(s4_05a, 28, 29, 30, 34, 36) | ((s4_04 == 2 & inlist(s4_02a, 28, 29, 30, 34, 36) & s4_13 != 6)))
+replace eduui_ci = . if aedu_ci == . 
+label variable eduui_ci "Superior Incompleto"
 
-***************
+**************
 ***eduuc_ci***
-***************
-gen byte eduuc_ci=(aedu_ci>=17 ) & (s4_02a==29 | s4_02a==30) // universitaria
-replace eduuc_ci=1 if aedu_ci>=17  & s4_02a==28 // normal
-replace eduuc_ci=1 if (aedu_ci>=13 & aedu_ci>=15 ) & s4_02a>=34 & s4_02a<=36 // tecnicaturas
-replace eduuc_ci=1 if  s4_02a>=31 & s4_02a<=33 // postgrados
+**************
 
-replace eduuc_ci=. if aedu_ci==.
-label variable eduuc_ci "Universitaria completa"
+gen byte eduuc_ci =  ((s4_04 == 2 & (inlist(s4_02a, 28, 29, 30, 34, 36) & s4_13 == 6 | inlist(s4_02a, 31, 32, 33))) | inlist(s4_05a, 31, 32, 33))
+replace eduuc_ci = . if aedu_ci == . 
+label variable eduuc_ci "Superior Completo"
 
+**************
+***eduac_ci***
+**************
+
+gen eduac_ci = . 
+replace eduac_ci = 1 if (inlist(s4_02a, 28, 29, 30, 31, 32, 33, 36) | inlist(s4_05a, 28, 29, 30, 31, 32, 33, 36))
+replace eduac_ci = 0 if (inlist(s4_02a, 34) | inlist(s4_05a, 34))
+replace eduac_ci = . if inlist(s4_05a, 26, 35, 37) & s4_02a >= 28
+label variable eduac_ci "Superior universitario vs superior no universitario"
 
 ***************
 ***edupre_ci***
@@ -1739,17 +1744,6 @@ label variable edupre_ci "Educacion preescolar"
 *Variable añadida por Iván Bornacelly - 01/12/2017
 	g asispre_ci=s4_04==1 & s4_05a==13
 	la var asispre_ci "Asiste a educacion prescolar"
-
-
-**************
-***eduac_ci***
-**************
-gen byte eduac_ci=.
-replace eduac_ci=1 if (s4_02a>=29 & s4_02a<=35 ) // grados
-replace eduac_ci=0 if (s4_02a>=34 & s4_02a<=36 ) //tecnicaturas
-replace eduac_ci=0 if (s4_02a==28 ) // normal
-
-label variable eduac_ci "Superior universitario vs superior no universitario"
 
 ***************
 ***asiste_ci***
@@ -1828,10 +1822,6 @@ replace edupub_ci=0 if s4_10==3
 replace edupub_ci=. if s4_10==.
 label var edupub_ci "Asiste a un centro de ensenanza público"
 
-
-**********************************
-**** VARIABLES DE LA VIVIENDA ****
-**********************************
 
 **********************************
 **** VARIABLES DE LA VIVIENDA ****

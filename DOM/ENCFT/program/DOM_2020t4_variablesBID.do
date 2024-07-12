@@ -997,22 +997,29 @@ gen byte edusc_ci=aedu_ci==12
 replace edusc_ci=. if aedu_ci==.
 label variable edusc_ci "Secundaria completa"
 
-
 **************
 ***eduui_ci***
 **************
 
-gen byte eduui_ci=aedu_ci>12 & aedu_ci<16 
-replace eduui_ci=. if aedu_ci==.
+gen byte eduui_ci = (nivel_se_matriculo == 5 | nivel_ultimo_ano_aprobado == 5 & porque_no_estudia != 2)
+replace eduui_ci = 0 if inlist(nivel_se_matriculo, 6, 7, 8)
+replace eduui_ci = . if aedu_ci == .
 label variable eduui_ci "Universitaria incompleta"
+
 
 ***************
 ***eduuc_ci****
 ***************
 
-gen byte eduuc_ci=aedu_ci>=16 // mas de 16 todos
-replace eduuc_ci=. if aedu_ci==. 
+gen byte eduuc_ci = (nivel_ultimo_ano_aprobado == 5 & porque_no_estudia == 2 | inlist(nivel_se_matriculo, 6, 7, 8))
+replace eduuc_ci = . if aedu_ci == . 
 label variable eduuc_ci "Universitaria completa o mas"
+
+**************
+***eduac_ci***
+**************
+gen byte eduac_ci=.  
+label variable eduac_ci "Superior universitario vs superior no universitario"
 
 ***************
 ***edus1i_ci***
@@ -1061,13 +1068,6 @@ g asispre_ci= 1 if nivel_se_matriculo==1 & asiste_centro_educativo ==1
 replace asispre_ci=0 if nivel_se_matriculo!=1 & asiste_centro_educativo ==1
 label variable asispre_ci "Asistencia a Educacion preescolar"
 	
-**************
-***eduac_ci***
-**************
-gen byte eduac_ci=.  
-label variable eduac_ci "Superior universitario vs superior no universitario"
-
-
 ***************
 ***asiste_ci***
 ***************

@@ -1770,23 +1770,27 @@ label variable edus2c_ci "2do ciclo de la secundaria completo"
 ***eduui_ci***
 **************
 
-gen byte eduui_ci=(aedu_ci>=13 & aedu_ci<17 ) & s03a_02a==71 //educacion normal. 
-replace  eduui_ci= 1 if (aedu_ci>=13 & aedu_ci<17 ) & s03a_02a==72 // universitaria
-replace  eduui_ci= 1 if (aedu_ci>=13 & aedu_ci<15 ) & s03a_02a>=76 & s03a_02a<=79  // tecnico superior, incluye adultos
-replace eduui_ci=. if aedu_ci==.
+gen byte eduui_ci = .
 label variable eduui_ci "Universitaria incompleta"
 
 ***************
 ***eduuc_ci***
 ***************
 
-gen byte eduuc_ci=(aedu_ci>=17 & s03a_02a==72 ) // duracion del grado universitario
-replace eduuc_ci=1 if (aedu_ci>=17 & s03a_02a==71) // educacion normal
-replace eduuc_ci=1 if (aedu_ci>=13 & s03a_02a>=73 & s03a_02a<=75) // postgrados
-replace eduuc_ci=1 if (aedu_ci>=15 & s03a_02a>=76 & s03a_02a<=79) // tecnico superior
-replace eduuc_ci=. if aedu_ci==.
+gen byte eduuc_ci = .
 label variable eduuc_ci "Universitaria completa"
 
+**************
+***eduac_ci***
+**************
+
+* Unica que se puede calcular, en eduui_ci y eduuc_ci no se puede discriminar entre completo e incompleto en 2020
+
+gen eduac_ci = . 
+replace eduac_ci = 1 if (inlist(s03a_02a, 71, 72, 73, 74, 75, 76, 78, 79) | inlist( s03a_05a, 71, 72, 73, 74, 75, 76, 78, 79))
+replace eduac_ci = 0 if (s03a_02a == 76) | (s03a_05a == 76)
+replace eduac_ci = . if inlist(s05a_06a, 77, 81) & s05a_02a >= 71
+label variable eduac_ci "Superior universitario vs superior no universitario"
 
 ***************
 ***edupre_ci***
@@ -1801,16 +1805,6 @@ label variable edupre_ci "Educacion preescolar"
 	g asispre_ci=s03a_04==1 & s03a_05a==13 
 	la var asispre_ci "Asiste a educacion prescolar"
 	
-**************
-***eduac_ci***
-**************
-
-gen byte eduac_ci=.
-replace eduac_ci=1 if (s03a_02a>=72 & s03a_02a<=75)
-replace eduac_ci=0 if s03a_02a==71 //educacion normal
-replace eduac_ci=0 if (s03a_02a>=76 & s03a_02a<=79)
-label variable eduac_ci "Superior universitario vs superior no universitario"
-
 
 ***************
 ***asiste_ci***
