@@ -881,6 +881,9 @@ replace aedu_ci=0         if s7q11==1 | s7q11==2 // Ninguno | Preescolar
 replace aedu_ci=s7q11a    if s7q11==3 /*regimen anterior: basica (1-9 años)*/ | s7q11==5 /*regimen actual: primaria (1-6 años)*/
 replace aedu_ci=s7q11a+9 if s7q11==4 // regimen anterior: media diversificado y profesional (1-3 años)
 replace aedu_ci=s7q11a+6 if s7q11==6 // regimen actual: media (1-6 años)
+replace aedu_ci=s7q11b+9 if (s7q11==4 & s7q11a==. & aedu_ci==.) // regimen anterior: media diversificado y profesional (1-3 años) que computan anios en s7q11b
+replace aedu_ci=s7q11b+6 if (s7q11==6 & s7q11a==. & aedu_ci==.) // regimen actual: media (1-6 años) que computan anios en s7q11b
+
 
 /*
 Explanation:
@@ -899,9 +902,6 @@ replace aedu_ci=16+s7q11b      if s7q11ba==1 & s7q11==9 // Posgrado
 replace aedu_ci=16+s7q11c*0.5  if s7q11ba==2 & s7q11==9 // Posgrado
 replace aedu_ci=16+s7q11d*0.25 if s7q11ba==3 & s7q11==9 // Posgrado
 
-**para los que s7q11<=6 pero tienen missing en s7q11a y valor en s7q11b
-replace aedu_ci=s7q11b+9 if s7q11==4 & s7q11b!=. & s7q11a==. & aedu_ci==. // regimen anterior: media diversificado y profesional (1-3 años)
-replace aedu_ci=s7q11b+6 if s7q11==6 & s7q11b!=. & s7q11a==. & aedu_ci==. // regimen actual: media (1-6 años)
 
 **para los que tienen missing en el regimen de estudio (s7q11ba) pero tienen valor en s7q11b/s7q11c/s7q11d
 replace aedu_ci=11+s7q11b      if (s7q11==7 | s7q11==8) & s7q11b!=. & s7q11ba==. & aedu_ci==. // Técnico (TSU) | Universitario
@@ -912,12 +912,6 @@ replace aedu_ci=16+s7q11b      if s7q11==9 & s7q11b!=. & s7q11ba==. & aedu_ci==.
 replace aedu_ci=16+s7q11c*0.5  if s7q11==9 & s7q11c!=. & s7q11ba==. & aedu_ci==. // Posgrado
 replace aedu_ci=16+s7q11d*0.25 if s7q11==9 & s7q11d!=. & s7q11ba==. & aedu_ci==. // Posgrado
 
-**para los que tienen missing en s7q11b/s7q11c/s7q11d pero no en s7q11ba
-replace aedu_ci=11 if (s7q11==7 | s7q11==8) & s7q11ba!=. & s7q11b==. & s7q11c==. & s7q11d==. & aedu_ci==. // Técnico (TSU) | Universitario
-
-**para los que solo tienen valor en s7q11
-replace aedu_ci=6  if s7q11==4 & s7q11ba==. & s7q11b==. & s7q11c==. & s7q11d==. & aedu_ci==. // regimen anterior: media diversificado y profesional (1-3 años)
-replace aedu_ci=11 if (s7q11==7 | s7q11==8) & s7q11ba==. & s7q11b==. & s7q11c==. & s7q11d==. & aedu_ci==. // Técnico (TSU) | Universitario
 				
 label variable aedu_ci "Años de Educacion"
 

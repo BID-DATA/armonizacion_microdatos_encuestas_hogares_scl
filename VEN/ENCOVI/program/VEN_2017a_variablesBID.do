@@ -882,12 +882,6 @@ label variable aedu_ci "Años de Educacion"
 //emhp28s contaings grades approved in semesters, this applies for TSU, universitario and posgrado, that's the reason
 //why they're multiplied by 0.5
 
-**para los que tienen missing en el regimen de estudio
-replace aedu_ci=0  if emhp28n==3 & aedu_ci==.              // Primaria
-replace aedu_ci=6  if emhp28n==4 & aedu_ci==.              // Media
-replace aedu_ci=11 if (emhp28n==5 | emhp28n==6) & aedu_ci==. // Técnico (TSU) | Universitario
-replace aedu_ci=16 if emhp28n==7 & aedu_ci==. // Posgrado
-
 replace aedu_ci=floor(aedu_ci) // redondear la variable
 
 **************

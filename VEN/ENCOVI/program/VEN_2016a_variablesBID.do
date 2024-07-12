@@ -864,12 +864,6 @@ replace aedu_ci= ep30a + 6 if ep30n == 4 // Media
 replace aedu_ci=(11 + (0.5 * ep30s)) if (ep30n == 5 | ep30n == 6)  // técnico (TSU),  Universitario
 replace aedu_ci=(16 + (0.5 * ep30s)) if ep30n == 7 //posgrado
 
-* Imputación para los que declaran solo nivel de estudio
-replace aedu_ci = 0 if ep30n == 3 & aedu_ci == . // Primaria
-replace aedu_ci = 6 if ep30n == 4 & aedu_ci == . // Media
-replace aedu_ci = 11 if (ep30n == 5 | ep30n == 6) & aedu_ci == . // Técnico (TSU),  Universitario
-replace aedu_ci = 16 if ep30n == 7 & aedu_ci == . // Posgrado
-replace aedu_ci=floor(aedu_ci) // redondear la variable
 label variable aedu_ci "Años de Educacion"
 
 

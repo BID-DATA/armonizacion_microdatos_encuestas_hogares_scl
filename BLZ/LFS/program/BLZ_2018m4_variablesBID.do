@@ -931,9 +931,10 @@ gen aedu_ci = .
 
 replace aedu_ci = ED5New 	if ED5New<=12
 replace aedu_ci = 14		if ED5New==13
-replace aedu_ci = 17		if ED5New==14 //3 years of bachelor (Tha programs last between 2/4 years)
-replace aedu_ci = 19		if ED5New==15 //2 years of Masters 
+replace aedu_ci = 16		if ED5New==14 //4 years of bachelor (Tha programs last between 2/4 years)
+replace aedu_ci = 18		if ED5New==15 //2 years of Masters 
 replace aedu_ci = 0 		if ED5New==17 | ED5New==18
+
 
 label var aedu_ci "número de años de educación culminados"
 
