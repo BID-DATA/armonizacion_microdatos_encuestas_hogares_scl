@@ -52,15 +52,15 @@ use "`base_in'", clear
 **************
 
 *Modificación Mayra Sáenz - Septiembre 2014	
-gen region_ci    = 1 if dptorep == 0
-replace region_ci= 2 if dptorep == 2		  
-replace region_ci= 3 if dptorep == 5		  
-replace region_ci= 4 if dptorep == 7
-replace region_ci= 5 if dptorep == 10
-replace region_ci= 6 if dptorep == 11
+gen region_c    = 1 if dptorep == 0
+replace region_c= 2 if dptorep == 2		  
+replace region_c= 3 if dptorep == 5		  
+replace region_c= 4 if dptorep == 7
+replace region_c= 5 if dptorep == 10
+replace region_c= 6 if dptorep == 11
 *replace region_c= 7 if dptorep == 1 | dptorep == 3 | dptorep == 4 | dptorep == 6 | dptorep == 8 | dptorep == 9 | (dptorep >= 12 & dptorep >= 15) 
-replace region_ci= 7 if dptorep == 20
-label define region_ci ///
+replace region_c= 7 if dptorep == 20
+label define region_c ///
 1 "Asunción" ///
 2 "San Pedro" ///
 3 "Caaguazú" ///
@@ -68,8 +68,8 @@ label define region_ci ///
 5 "Alto Paraná" ///
 6 "Central" ///
 7 "Resto" 
-label value region_ci region_ci
-label var region_ci "División política"
+label value region_c region_c
+label var region_c "División política"
 
 **************
 ***ine01***
