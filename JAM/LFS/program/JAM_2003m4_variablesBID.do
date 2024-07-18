@@ -10,8 +10,9 @@ set more off
  * El servidor contiene las bases de datos MECOVI.
  *________________________________________________________________________________________________________________*
  
-
+global surveysFolder "\\sapidbshares.file.core.windows.net\idbshares\SURVEYS"
 global ruta = "${surveysFolder}"
+
 
 local PAIS JAM
 local ENCUESTA LFS
@@ -22,7 +23,7 @@ local log_file = "$ruta\harmonized\\`PAIS'\\`ENCUESTA'\log\\`PAIS'_`ANO'`ronda'_
 *local base_in  = "$ruta\survey\\`PAIS'\\`ENCUESTA'\\`ANO'\\`ronda'\data_orig\\`PAIS'_`ANO'`ronda'.dta"
 local base_in  = "$ruta\survey\\`PAIS'\\`ENCUESTA'\\`ANO'\\`ronda'\data_merge\\`PAIS'_`ANO'`ronda'.dta"
 local base_out = "$ruta\harmonized\\`PAIS'\\`ENCUESTA'\data_arm\\`PAIS'_`ANO'`ronda'_BID.dta"
-
+display "`base_out'"
 
 capture log close
 log using "`log_file'", replace 
@@ -34,9 +35,8 @@ País: Jamaica
 Encuesta: LFS
 Round: Abril, 2003
 Autores:
-Versión 2013: Mayra Sáenz
-Última versión: Mayra Sáenz - Email: mayras@iadb.org, saenzmayra.a@gmail.com
-Fecha última modificación: 19 de Agosto de 2013
+Versión 2013: Mayra Sáenz - Email: mayras@iadb.org, saenzmayra.a@gmail.com
+Fecha última modificación: 09 de julio de 2024
 
 							SCL/LMK - IADB
 ****************************************************************************/
@@ -127,19 +127,18 @@ label var region_BID_c "Regiones BID"
 label define region_BID_c 1 "Centroamérica_(CID)" 2 "Caribe_(CCB)" 3 "Andinos_(CAN)" 4 "Cono_Sur_(CSC)"
 label value region_BID_c region_BID_c
 
-
 **************************
 * identificador del hogar*
 **************************
-
-ren  hhold idh_ch
+*ren  hhold idh_ch // 2024: la mayoria tiene el mismo número = 1. No están todas las variables necesarias para identificar a los hogares. Se intentará conseguir la base raw nuevamente.
+gen idh_ch = .
 label var idh_ch "ID del hogar"
 
 ****************************
 * identificador de persona *
 ****************************
-
-ren indiv idp_ci
+*ren indiv idp_ci  // 2024: no hay una variable con identificadores únicos. Existen muchos duplicados. En el momento de calcular los indicadores, la muestra se reduce. Se intentó usar el identificador del merge, pero el problema persiste. Por ese motivo se decidió crear un nuevo identificador único por persona. Se intentará conseguir la base raw nuevamente.
+gen idp_ci = _n
 label var idp_ci "ID de la persona en el hogar"
 
 *************** 
@@ -1692,7 +1691,6 @@ lab val atencion_ci atencion_ci
 * Asignación de etiquetas e inserción de variables externas: tipo de cambio, Indice de Precios al 
 * Consumidor (2011=100), líneas de pobreza
 /*_____________________________________________________________________________________________________*/
-
 
 do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&ExternalVars_Harmonized_DataBank.do"
 
