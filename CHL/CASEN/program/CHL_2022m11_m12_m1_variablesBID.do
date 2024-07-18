@@ -911,7 +911,6 @@ label variable edusc_ci "Secundaria completa"
 **************
 gen byte eduui_ci = (inrange(e6a_asiste, 12, 15) | (inrange(e6a_no_asiste, 12,15) & e6c_completo == 2))
 replace eduui_ci = . if aedu_ci == .
-label variable eduui_ci "Superior Incompleto" 
 
 ***************
 ***eduuc_ci****
@@ -972,14 +971,6 @@ label variable edupre_ci "Educacion preescolar"
 ****************
 gen asispre_ci=(e3==1 & e6a==4) // Asiste a Prekínder / Kínder
 la var asispre_ci "Asiste a educacion prescolar"
-
-**************
-***eduac_ci***
-**************
-gen eduac_ci=(e6a>=14 & e6a<=17)
-replace eduac_ci=0 if (e6a==12 | e6a==13)
-replace eduac_ci=. if e6a<=11 
-label variable eduac_ci "Superior universitario vs superior no universitario"
 
 *****************
 ***pqnoasis_ci***
