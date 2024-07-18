@@ -909,17 +909,24 @@ label variable edusc_ci "Secundaria completa"
 **************
 ***eduui_ci***
 **************
-gen byte eduui_ci=(aedu_ci>12 & e6a==12)  | (aedu_ci>12 & e6a==14) 
-replace eduui_ci=0 if aedu_ci==13 & e6a==11 // education TP con 13 anios
-replace eduui_ci=. if aedu_ci==.
-label variable eduui_ci "Universitaria incompleta" 
+gen byte eduui_ci = (inrange(e6a_asiste, 12, 15) | (inrange(e6a_no_asiste, 12,15) & e6c_completo == 2))
+replace eduui_ci = . if aedu_ci == .
+label variable eduui_ci "Superior Incompleto" 
 
 ***************
 ***eduuc_ci****
 ***************
-gen byte eduuc_ci=(aedu_ci>12 & (e6a==13 | e6a==15 | e6a==16 | e6a==17))
-replace eduuc_ci=. if aedu_ci==.
-label variable eduuc_ci "Universitaria completa o mas"
+gen byte eduuc_ci = (inrange(e6a_asiste, 14, 15)|(inrange(e6a_no_asiste, 12,13) & e6c_completo == 1) | inrange(e6a_no_asiste, 14, 15))
+replace eduuc_ci = . if aedu_ci == .
+label variable eduui_ci "Superior Completo"
+
+**************
+***eduac_ci***
+**************
+gen eduac_ci = . 
+replace eduac_ci = 1 if  (inrange(e6a_asiste, 13, 15) | inrange(e6a_no_asiste, 13, 15))
+replace eduac_ci = 0 if  (e6a_asiste == 12 | e6a_no_asiste == 12)
+label variable eduac_ci "Superior universitario vs superior no universitario"
 
 ***************
 ***edus1i_ci***
