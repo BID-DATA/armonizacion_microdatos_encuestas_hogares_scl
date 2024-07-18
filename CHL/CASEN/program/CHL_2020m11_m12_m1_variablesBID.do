@@ -904,17 +904,16 @@ label variable edusc_ci "Secundaria completa"
 **************
 ***eduui_ci***
 **************
-gen byte eduui_ci=(aedu_ci>12 & e6a==12)  | (aedu_ci>12 & e6a==14) 
-replace eduui_ci=0 if aedu_ci==13 & e6a==11 // education TP con 13 anios
-replace eduui_ci=. if aedu_ci==.
-label variable eduui_ci "Universitaria incompleta" 
+gen byte eduui_ci = (e6a == 12 |e6a == 14)
+replace eduui_ci = . if aedu_ci == .
+label variable eduui_ci "Superior Incompleto"
 
 ***************
 ***eduuc_ci****
 ***************
-gen byte eduuc_ci=(aedu_ci>12 & (e6a==13 | e6a==15 | e6a==16 | e6a==17))
-replace eduuc_ci=. if aedu_ci==.
-label variable eduuc_ci "Universitaria completa o mas"
+gen byte eduuc_ci = inlist(e6a, 13, 15, 16, 17)
+replace eduuc_ci = . if aedu_ci == .
+label variable eduui_ci "Superior Completo"
 
 ***************
 ***edus1i_ci***
@@ -960,14 +959,6 @@ label variable edupre_ci "Educacion preescolar"
 ****************
 gen asispre_ci=(e2==1 & e6a==4) // Asiste a Prekínder / Kínder
 la var asispre_ci "Asiste a educacion prescolar"
-
-**************
-***eduac_ci***
-**************
-gen eduac_ci=(e6a>=14 & e6a<=17)
-replace eduac_ci=0 if (e6a==12 | e6a==13)
-replace eduac_ci=. if e6a<=11 
-label variable eduac_ci "Superior universitario vs superior no universitario"
 
 *****************
 ***pqnoasis_ci***
@@ -1397,40 +1388,31 @@ label var afiliado_ci "Afiliado a la Seguridad Social"
 ****************
 *tipopen_ci*****
 ****************
-gen vejez=.
-replace vejez = 1 if (y28_1a == 1) | (y28_1c == 1)
-gen invalidez=.
-replace invalidez = 1 if (y28_1d == 1) | (y28_1f == 1)
+egen vejez=rsum(y28_1a y28_1b y28_1c), m
+egen invalidez=rsum(y28_1d y28_1e y28_1f), m
 gen montepio=y28_1g 
 gen orfandad=y28_1h 
-gen otros=.
-replace otros = 1 if (y28_1i == 1) | (y28_1j == 1)
+egen otros2=rsum(y28_1i y28_1j), m
 gen tipopen_ci=.
-replace tipopen_ci = 1 if (vejez == 1)
-replace tipopen_ci = 2 if (invalidez == 1)
-replace tipopen_ci = 3 if (montepio == 1)
-replace tipopen_ci = 4 if (orfandad == 1)
-replace tipopen_ci = 12 if (vejez == 1) & (invalidez == 1)
-replace tipopen_ci = 13 if (vejez == 1) & (montepio == 1)
-replace tipopen_ci = 14 if (vejez == 1) & (orfandad == 1)
-replace tipopen_ci = 23 if (invalidez == 1) & (montepio == 1)
-replace tipopen_ci = 24 if (invalidez == 1) & (orfandad == 1)
-replace tipopen_ci = 123 if (vejez == 1) & (invalidez == 1) & (montepio == 1)
-replace tipopen_ci = 1234 if (vejez == 1) & (invalidez == 1) & (montepio == 1) & (orfandad == 1)
+replace tipopen_ci = 1 if (vejez > 0 & vejez!= .)
+replace tipopen_ci = 2 if (invalidez> 0 & invalidez!= .)
+replace tipopen_ci = 3 if (montepio> 0 & montepio!= .)
+replace tipopen_ci = 4 if (orfandad> 0 & orfandad != .)
+replace tipopen_ci = 12 if (vejez > 0 & vejez!= .) | (invalidez> 0 & invalidez!= .)
+replace tipopen_ci = 13 if (vejez > 0 & vejez!= .) | (montepio> 0 & montepio!= .)
+replace tipopen_ci = 14 if (vejez > 0 & vejez!= .) | (orfandad> 0 & orfandad != .)
+replace tipopen_ci = 23 if (invalidez> 0 & invalidez!= .)| (montepio> 0 & montepio!= .)
+replace tipopen_ci = 24 if (invalidez> 0 & invalidez!= .) | (orfandad> 0 & orfandad != .)
+replace tipopen_ci = 123 if (vejez > 0 & vejez!= .) | (invalidez> 0 & invalidez!= .) | (montepio> 0 & montepio!= .)
+replace tipopen_ci = 1234 if (vejez > 0 & vejez!= .) | (invalidez> 0 & invalidez!= .) | (montepio> 0 & montepio!= .) | (orfandad> 0 & orfandad != .)
 label define  t 1 "Jubilacion" 2 "Pension invalidez" 3 "Pension viudez" 4 "Orfandad" 12 " Jub y inv" 13 "Jub y viud" 14 "Jub y orfandad" 23 "Viud e inv" 24 "orfandad y inv"  123 "Jub inv viud" 1234 "Todas"
 label value tipopen_ci t
-label var tipopen_ci "Tipo de pension - variable original de cada pais"
+label var tipopen_ci "Tipo de pension - variable original de cada pais" 
 
 ****************
 *instpen_ci*****
 ****************
-gen instpen_ci=.
-replace instpen_ci = y28_3c if vejez == 1
-replace instpen_ci = y28_3f if invalidez == 1
-replace instpen_ci = y28_3g if montepio == 1
-replace instpen_ci = y28_3h if orfandad == 1
-replace instpen_ci = y28_3j if otros == 1
-label var instpen_ci "Institucion proveedora de la pension - variable original de cada pais" 
+gen instpen_ci=y28_3a
 
 ****************
 *instcot_ci*****
