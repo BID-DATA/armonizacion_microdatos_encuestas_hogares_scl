@@ -5,7 +5,7 @@
 *                                                     INCLUSIóN DE VARIABLES EXTERNAS                                                *
 *====================================================================================================================================*
 capture drop _merge
-merge m:1 pais_c anio_c using "$ruta\general_documentation\data_externa\poverty\International_Poverty_Lines\5_International_Poverty_Lines_LAC_long",   keepusing (ppp_2011 cpi_2011 lp19_2011 lp31_2011 lp5_2011 tc_wdi ppp_wdi2011)
+merge m:1 pais_c anio_c using "$ruta\general_documentation\data_externa\poverty\International_Poverty_Lines\5_International_Poverty_Lines_LAC_long_PPP17",   keepusing (lp19_2011 lp31_2011 lp5_2011 lp365_2017 lp685_2017 ppp_2011 ppp_2017 cpi_2011 cpi_2017 tc_wdi ppp_wdi)
 
 drop if _merge ==2
 
