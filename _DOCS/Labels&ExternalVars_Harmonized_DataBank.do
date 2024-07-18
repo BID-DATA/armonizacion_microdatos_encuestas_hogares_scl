@@ -5,7 +5,7 @@
 *                                                     INCLUSIóN DE VARIABLES EXTERNAS                                                *
 *====================================================================================================================================*
 capture drop _merge
-merge m:1 pais_c anio_c using "$ruta\general_documentation\data_externa\poverty\International_Poverty_Lines\5_International_Poverty_Lines_LAC_long",   keepusing (ppp_2011 cpi_2011 lp19_2011 lp31_2011 lp5_2011 tc_wdi ppp_wdi2011)
+merge m:1 pais_c anio_c using "$ruta\general_documentation\data_externa\poverty\International_Poverty_Lines\5_International_Poverty_Lines_LAC_long_PPP17",   keepusing (lp19_2011 lp31_2011 lp5_2011 lp365_2017 lp685_2017 ppp_2011 ppp_2017 cpi_2011 cpi_2017 tc_wdi ppp_wdi)
 
 drop if _merge ==2
 
@@ -250,8 +250,7 @@ label var edus1i_ci "1er ciclo de la secundaria incompleto"
 label var edus1c_ci "1er ciclo de la secundaria completo"
 label var edus2i_ci "2do ciclo de la secundaria incompleto"
 label var edus2c_ci "2do ciclo de la secundaria completo"
-label var edupre_ci "Educacion preescolar"
-label var eduac_ci "Superior universitario vs superior no universitario"	
+label var edupre_ci "Educacion preescolar"	
 label var asiste_ci "=1 si asiste actualmente a la escuela"
 								
 label var pqnoasis_ci "Razones para no asistir a la escuela-variable original de cada pais"
