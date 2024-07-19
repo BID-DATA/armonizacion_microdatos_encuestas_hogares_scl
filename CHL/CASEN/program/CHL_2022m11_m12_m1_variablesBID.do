@@ -909,17 +909,23 @@ label variable edusc_ci "Secundaria completa"
 **************
 ***eduui_ci***
 **************
-gen byte eduui_ci=(aedu_ci>12 & e6a==12)  | (aedu_ci>12 & e6a==14) 
-replace eduui_ci=0 if aedu_ci==13 & e6a==11 // education TP con 13 anios
-replace eduui_ci=. if aedu_ci==.
-label variable eduui_ci "Universitaria incompleta" 
+gen byte eduui_ci = (inrange(e6a_asiste, 12, 15) | (inrange(e6a_no_asiste, 12,15) & e6c_completo == 2))
+replace eduui_ci = . if aedu_ci == .
 
 ***************
 ***eduuc_ci****
 ***************
-gen byte eduuc_ci=(aedu_ci>12 & (e6a==13 | e6a==15 | e6a==16 | e6a==17))
-replace eduuc_ci=. if aedu_ci==.
-label variable eduuc_ci "Universitaria completa o mas"
+gen byte eduuc_ci = (inrange(e6a_asiste, 14, 15)|(inrange(e6a_no_asiste, 12,13) & e6c_completo == 1) | inrange(e6a_no_asiste, 14, 15))
+replace eduuc_ci = . if aedu_ci == .
+label variable eduui_ci "Superior Completo"
+
+**************
+***eduac_ci***
+**************
+gen eduac_ci = . 
+replace eduac_ci = 1 if  (inrange(e6a_asiste, 13, 15) | inrange(e6a_no_asiste, 13, 15))
+replace eduac_ci = 0 if  (e6a_asiste == 12 | e6a_no_asiste == 12)
+label variable eduac_ci "Superior universitario vs superior no universitario"
 
 ***************
 ***edus1i_ci***
@@ -965,14 +971,6 @@ label variable edupre_ci "Educacion preescolar"
 ****************
 gen asispre_ci=(e3==1 & e6a==4) // Asiste a Prekínder / Kínder
 la var asispre_ci "Asiste a educacion prescolar"
-
-**************
-***eduac_ci***
-**************
-gen eduac_ci=(e6a>=14 & e6a<=17)
-replace eduac_ci=0 if (e6a==12 | e6a==13)
-replace eduac_ci=. if e6a<=11 
-label variable eduac_ci "Superior universitario vs superior no universitario"
 
 *****************
 ***pqnoasis_ci***
@@ -1402,11 +1400,11 @@ label var afiliado_ci "Afiliado a la Seguridad Social"
 ****************
 *tipopen_ci*****
 ****************
-egen vejez=rsum(y28_1b y28_1c), m
-egen invalidez=rsum(y28_1d y28_1e y28_1f), m
-gen montepio=y28_1g 
-gen orfandad=y28_1h 
-egen otros2=rsum(y28_1i y28_1j), m
+gen vejez=1 if (y28_1b==1) | (y28_1c==1)
+gen invalidez=1 if (y28_1d==1) | (y28_1e==1) | (y28_1f==1)
+gen montepio=1 if y28_1g==1 
+gen orfandad=1 if y28_1h==1
+gen otros=1 if (y28_1i==1) | (y28_1j==1)
 gen tipopen_ci=.
 replace tipopen_ci = 1 if (vejez > 0 & vejez!= .)
 replace tipopen_ci = 2 if (invalidez> 0 & invalidez!= .)
@@ -1501,14 +1499,14 @@ label var pension_ci "1=Recibe pension contributiva"
 *************
 **ypen_ci*
 *************
-gen ypen_ci=auxpen
-replace ypen_ci=. if auxpen<0
+egen ypen_ci=rsum(y28_2b1 y28_2c1 y28_2e1 y28_2g1 y28_2i1), m
+replace ypen_ci=. if ypen_ci<0
 label var ypen_ci "Valor de la pension contributiva"
 
 ***************
 *pensionsub_ci*
 ***************
-egen pensionsub_ci=rsum(y280101 y280302 ymon0102 yesp0102)
+gen pensionsub_ci=1 if (y28_1c1==1) | (y28_1g1==1) | (y28_1i1==1)
 label var pensionsub_ci "1=recibe pension subsidiada / no contributiva"
 
 * EN BASE 2022 SE ELIMINARON LAS VARIABLES y28_2amonto Y y28_2dmonto
@@ -1517,8 +1515,8 @@ label var pensionsub_ci "1=recibe pension subsidiada / no contributiva"
 **ypensub_ci*
 *****************
 
-gen ypensub_ci=auxpen
-replace ypensub_ci=. if auxpen<0
+egen ypensub_ci=rsum(y280101 y280302 ymon0102 yesp0102), m
+replace ypensub_ci=. if ypensub_ci<0
 drop auxpen
 label var ypensub_ci "Valor de la pension subsidiada / no contributiva"
 
