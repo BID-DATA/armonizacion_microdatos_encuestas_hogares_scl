@@ -1787,19 +1787,27 @@ label variable edus2c_ci "2do ciclo de la secundaria completo"
 **************
 ***eduui_ci***
 **************
-* Se incorpora la restricción s5_02b<8 para que sea comparable con los otros años LCM dic 2013
+gen byte eduui_ci = (inlist(s03a_06a, 71, 72, 76, 78, 79) | (s03a_04 == 2 & inlist(s03a_02a,  71, 72, 76, 78, 79) &  s03a_05 != 1)) 
+replace eduui_ci = . if aedu_ci == . 
+label variable eduui_ci "Superior Incompleto"
 
-gen byte eduui_ci=(aedu_ci>=13 & s03a_02c<8)
-replace eduui_ci=. if aedu_ci==.
-label variable eduui_ci "Universitaria incompleta"
-
-***************
+**************
 ***eduuc_ci***
-***************
+**************
 
-gen byte eduuc_ci=(aedu_ci>=13 & eduui_ci==0)
-replace eduuc_ci=. if aedu_ci==.
-label variable eduuc_ci "Universitaria completa"
+gen byte eduuc_ci = ((s03a_04 == 2 & ((inlist(s03a_02a,  71, 72, 76, 78, 79) &  s03a_05 == 1) | inlist( s03a_02a, 73, 74, 75))) | inlist(s03a_06a, 73, 74, 75))
+replace eduuc_ci = . if aedu_ci == . 
+label variable eduuc_ci "Superior Completo"
+
+**************
+***eduac_ci***
+**************
+
+gen eduac_ci = . 
+replace eduac_ci = 1 if (inlist(s03a_06a, 71, 72, 73, 74, 75, 76, 78, 79) | inlist( s03a_02a, 71, 72, 73, 74, 75, 76, 78, 79))
+replace eduac_ci = 0 if (s03a_06a == 76) | ( s03a_02a == 76)
+replace eduac_ci = . if inlist( s03a_06a, 77, 81) &  s03a_02a >= 71
+label variable eduac_ci "Superior universitario vs superior no universitario"
 
 ***************
 ***edupre_ci***
@@ -1818,19 +1826,7 @@ label variable edupre_ci "Educacion preescolar"
 	replace asispre_ci = 0 if s05b_10 == 2
 	la var asispre_ci "Asiste a educacion prescolar"
 	*/
-**************
-***eduac_ci***
-**************
 
-* Se cambia para universidad completa o más 
-gen byte eduac_ci=.
-replace eduac_ci=1 if (s03a_02a>=72 & s03a_02a<=75)
-replace eduac_ci=0 if s03a_02a==71 //educacion normal
-replace eduac_ci=0 if (s03a_02a>=76 & s03a_02a<=79)
-label variable eduac_ci "Superior universitario vs superior no universitario"
-/*cambio de eduuc_ci de LCM introcucido por YL solo para este año.
-YL: No estoy segura de aceptar esta definicion pero la copio para hacerla comparable con
-los otros años*/
 
 ***************
 ***asiste_ci***
