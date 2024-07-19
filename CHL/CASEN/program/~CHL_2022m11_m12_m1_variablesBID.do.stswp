@@ -1518,7 +1518,7 @@ label var pensionsub_ci "1=recibe pension subsidiada / no contributiva"
 *****************
 
 gen ypensub_ci=auxpen
-replace ypensub_ci=. if auxpens<0
+replace ypensub_ci=. if auxpen<0
 drop auxpen
 label var ypensub_ci "Valor de la pension subsidiada / no contributiva"
 
