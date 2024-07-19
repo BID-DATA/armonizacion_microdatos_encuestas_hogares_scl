@@ -911,11 +911,6 @@ replace aedu_ci=16+s7q11b      if s7q11a==1 & s7q11==9 // Posgrado
 replace aedu_ci=16+s7q11b*0.5  if s7q11a==2 & s7q11==9 // Posgrado
 replace aedu_ci=16+s7q11b*0.25 if s7q11a==3 & s7q11==9 // Posgrado
 
-**para los que tienen missing en el regimen de estudio
-replace s7q11b=. if s7q11b==.a
-replace aedu_ci=11 if (s7q11==7 | s7q11==8) & s7q11b==. & aedu_ci==. // técnico (TSU) | Universitario
-replace aedu_ci=16 if s7q11==9 & s7q11b==. & aedu_ci==. // postgrado
-
 label variable aedu_ci "Años de Educacion"
 
 replace aedu_ci=floor(aedu_ci) // redondear la variable

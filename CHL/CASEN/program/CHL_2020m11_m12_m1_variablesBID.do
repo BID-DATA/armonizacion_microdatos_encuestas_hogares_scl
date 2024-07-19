@@ -822,7 +822,7 @@ label var remesas_ch "Remesas mensuales del hogar"
 gen asiste_ci=(e2==1)
 replace asiste_ci=. if e2==.
 label var asiste_ci "Personas que actualmente asisten a centros de enseñanza"
-
+* e2. Por COVID cambia la pregunta a: Actualmente, ¿participa en clases virtuales o presenciales impartidas por un establecimiento educacional, jardín infantil o sala cuna?
 
 *************
 ***aedu_ci*** 

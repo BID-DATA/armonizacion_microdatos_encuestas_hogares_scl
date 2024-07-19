@@ -969,8 +969,8 @@ label var ypeoficial_ch "Ingreso per cápita generado por el país"
 	replace aedu_ci = 12 if p6210 == 5 & p6210s1 == 12
 	replace aedu_ci = 13 if p6210 == 5 & p6210s1 == 13
 *Superior
-	gen grado_asist=round(p6210s1/2) if p6210==6 // E.superior: respuesta en semetres e convierten a anios
-	replace aedu_ci = 11+grado_asist if p6210==6
+	replace aedu_ci = 11+p6210s1 if p6210==6 
+
 *Missing
 	replace aedu_ci =. if p6210==.
 
