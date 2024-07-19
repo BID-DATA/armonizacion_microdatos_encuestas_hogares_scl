@@ -1401,11 +1401,11 @@ label var afiliado_ci "Afiliado a la Seguridad Social"
 ****************
 *tipopen_ci*****
 ****************
-egen vejez=rsum(y28_1b y28_1c), m
-egen invalidez=rsum(y28_1d y28_1e y28_1f), m
-gen montepio=y28_1g 
-gen orfandad=y28_1h 
-egen otros2=rsum(y28_1i y28_1j), m
+gen vejez=1 if (y28_1b==1) | (y28_1c==1)
+gen invalidez=1 if (y28_1d==1) | (y28_1e==1) | (y28_1f==1)
+gen montepio=1 if y28_1g==1 
+gen orfandad=1 if y28_1h==1
+gen otros=1 if (y28_1i==1) | (y28_1j==1)
 gen tipopen_ci=.
 replace tipopen_ci = 1 if (vejez > 0 & vejez!= .)
 replace tipopen_ci = 2 if (invalidez> 0 & invalidez!= .)
@@ -1420,7 +1420,8 @@ replace tipopen_ci = 123 if (vejez > 0 & vejez!= .) | (invalidez> 0 & invalidez!
 replace tipopen_ci = 1234 if (vejez > 0 & vejez!= .) | (invalidez> 0 & invalidez!= .) | (montepio> 0 & montepio!= .) | (orfandad> 0 & orfandad != .)
 label define  t 1 "Jubilacion" 2 "Pension invalidez" 3 "Pension viudez" 4 "Orfandad" 12 " Jub y inv" 13 "Jub y viud" 14 "Jub y orfandad" 23 "Viud e inv" 24 "orfandad y inv"  123 "Jub inv viud" 1234 "Todas"
 label value tipopen_ci t
-label var tipopen_ci "Tipo de pension - variable original de cada pais" 
+label var tipopen_ci "Tipo de pension - variable original de cada pais"
+
 
 ****************
 *instpen_ci*****
@@ -1484,6 +1485,7 @@ label value tamemp_o tamemp_o
 gen tamemp_ci=. // No está la pregunta en la encuesta 2020
 label var tamemp_ci "# empleados en la empresa segun rangos-OECD"
 
+
 *************
 **pension_ci*
 *************
@@ -1492,19 +1494,18 @@ gen pension_ci=1 if auxpen>0 & auxpen!=.
 recode pension_ci .=0 
 label var pension_ci "1=Recibe pension contributiva"
 
+
 *************
 **ypen_ci*
 *************
-gen ypen_ci=auxpen
-replace ypen_ci=. if auxpen<0
-drop auxpen
+egen ypen_ci=rsum(y28_2b1 y28_2c1 y28_2e1 y28_2g1 y28_2i1), m
+replace ypen_ci=. if ypen_ci<0
 label var ypen_ci "Valor de la pension contributiva"
 
 ***************
 *pensionsub_ci*
 ***************
-gen auxpens=.
-gen pensionsub_ci=.
+gen pensionsub_ci=1 if (y28_1c1==1) | (y28_1g1==1) | (y28_1i1==1)
 label var pensionsub_ci "1=recibe pension subsidiada / no contributiva"
 
 * EN BASE 2022 SE ELIMINARON LAS VARIABLES y28_2amonto Y y28_2dmonto
@@ -1513,9 +1514,9 @@ label var pensionsub_ci "1=recibe pension subsidiada / no contributiva"
 **ypensub_ci*
 *****************
 
-gen ypensub_ci=auxpens
-replace ypensub_ci=. if auxpens<0
-drop auxpens
+egen ypensub_ci=rsum(y280101 y280302 ymon0102 yesp0102), m
+replace ypensub_ci=. if ypensub_ci<0
+drop auxpen
 label var ypensub_ci "Valor de la pension subsidiada / no contributiva"
 
 **********
