@@ -1407,7 +1407,7 @@ egen invalidez=rsum(y28_1d y28_1e y28_1f), m
 gen montepio=y28_1g 
 gen orfandad=y28_1h 
 egen otros2=rsum(y28_1i y28_1j), m
-gen tipopen_ci=.9:52 AM 7/19/2024
+gen tipopen_ci=.
 replace tipopen_ci = 1 if (vejez > 0 & vejez!= .)
 replace tipopen_ci = 2 if (invalidez> 0 & invalidez!= .)
 replace tipopen_ci = 3 if (montepio> 0 & montepio!= .)
