@@ -1397,14 +1397,11 @@ label var afiliado_ci "Afiliado a la Seguridad Social"
 ****************
 *tipopen_ci*****
 ****************
-gen vejez=.
-replace vejez = 1 if (y28_1a == 1) | (y28_1c == 1)
-gen invalidez=.
-replace invalidez = 1 if (y28_1d == 1) | (y28_1f == 1)
-gen montepio=y28_1g 
-gen orfandad=y28_1h 
-gen otros=.
-replace otros = 1 if (y28_1i == 1) | (y28_1j == 1)
+gen vejez=1 if (y28_1a == 1) | (y28_1c == 1)
+gen invalidez=1 if (y28_1d == 1) | (y28_1f == 1)
+gen montepio=1 if y28_1g==1
+gen orfandad=1 if y28_1h==1
+gen otros=1 if (y28_1i == 1) | (y28_1j == 1)
 gen tipopen_ci=.
 replace tipopen_ci = 1 if (vejez == 1)
 replace tipopen_ci = 2 if (invalidez == 1)
@@ -1489,10 +1486,9 @@ label var tamemp_ci "# empleados en la empresa segun rangos-OECD"
 *************
 **pension_ci*
 *************
-gen auxpen=. 
-replace auxpen = 1 if (vejez == 1) | (invalidez == 1) | (montepio == 1) | (orfandad == 1) | (otros == 1)
-gen pension_ci=.
-replace pension_ci = 1 if (y28_1c == 1) | (y28_1f == 1) | (y28_1j == 1) | (y28_1h == 1) | (y28_1i == 1)
+egen auxpen=rsum(vejez invalidez montepio orfandad otros), m
+gen pension_ci=1 if auxpen>0 & auxpen!=.
+recode pension_ci .=0
 label var pension_ci "1=Recibe pension contributiva"
 
 
