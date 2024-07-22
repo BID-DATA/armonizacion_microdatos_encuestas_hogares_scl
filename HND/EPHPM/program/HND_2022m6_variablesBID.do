@@ -1094,7 +1094,7 @@ use "`base_in'", clear
 	**************
 	** telef_ch **
 	**************
-	gen telef_ch=(h01_7>=1)
+	gen telef_ch=(h01_7>=1&h01_7!=.)
 
 	**************
 	** refrig_ch **
@@ -1114,8 +1114,8 @@ use "`base_in'", clear
 	**************
 	** compu_ch **
 	**************
-	gen compu_ch=(h01_11>=1)
-
+	gen compu_ch=(h01_11>=1&h01_11!=.)
+	
 	**************
 	** internet_ch **
 	**************
