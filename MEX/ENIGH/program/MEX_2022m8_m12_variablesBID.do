@@ -1772,7 +1772,7 @@ ren servicios servicios_orig
 *		Beneficio de otros programas para adultos mayores (P045)
 
 * Ingreso del hogar
-egen ingreso_total = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci), missing
+egen ingreso_total_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci), missing
 bys idh_ch: egen y_hog = sum(ingreso_total)
 
 gen ptmc_ci=(P101>0 | P102>0 | P103>0) 
@@ -1792,7 +1792,7 @@ replace ing_ptmc=0 if ing_ptmc==.
 replace ing_pension=0 if ing_pension==.
 
 * Adultos mayores 
-gen mayor64_ci=(edad_ci>64 & edad_ci<.)
+gen elegiblePS_ci=(edad_ci>64 & edad_ci<.)
 
 * Ingreso per cápita
 gen y_pc     = y_hog / nmiembros_ch 
