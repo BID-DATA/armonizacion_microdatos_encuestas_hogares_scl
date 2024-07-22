@@ -18,8 +18,8 @@ local ENCUESTA PNADC
 local ANO "2018"
 local ronda a 
 local log_file = "$ruta\harmonized\\`PAIS'\\`ENCUESTA'\log\\`PAIS'_`ANO'`ronda'_variablesBID.log"
-local base_in  = "$ruta\survey\\`PAIS'\\`ENCUESTA'\\`ANO'\\`ronda'\data_merge\\`PAIS'_`ANO'`ronda'v1.dta"
-local base_out = "$ruta\harmonized\\`PAIS'\\`ENCUESTA'\data_arm\\`PAIS'_`ANO'`ronda'_BIDv2.dta"
+local base_in  = "$ruta\survey\\`PAIS'\\`ENCUESTA'\\`ANO'\\`ronda'\data_merge\\`PAIS'_`ANO'`ronda'.dta"
+local base_out = "$ruta\harmonized\\`PAIS'\\`ENCUESTA'\data_arm\\`PAIS'_`ANO'`ronda'_BID.dta"
           
 capture log close
 log using "`log_file'", replace 
@@ -38,12 +38,6 @@ Autores: Angela Lopez alop@iadb.org
 ****************************************************************************/
 
 use `base_in', clear
-*Extra steps
-rename *, lower
-replace v4010 = "" if v4010 == "NA"
-destring v4010, replace
-replace v4013 = "" if v4013 == "NA"
-destring v4013, replace
 
 **********************************
 **** ARMONIZACIÓN PNAD_C 2018 **** 
@@ -1629,7 +1623,7 @@ lab val pnc_ci pnc_ci
 * Consumidor (2011=100), Paridad de Poder Adquisitivo (PPA 2011),  líneas de pobreza
 /*_____________________________________________________________________________________________________*/
 
-*do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&ExternalVars_Harmonized_DataBank.do"
+do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&ExternalVars_Harmonized_DataBank.do"
 
 *_____________________________________________________________________________________________________*
 
