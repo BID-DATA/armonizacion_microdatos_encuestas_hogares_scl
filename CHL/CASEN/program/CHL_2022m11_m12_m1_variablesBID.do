@@ -911,7 +911,6 @@ label variable edusc_ci "Secundaria completa"
 **************
 gen byte eduui_ci = (inrange(e6a_asiste, 12, 15) | (inrange(e6a_no_asiste, 12,15) & e6c_completo == 2))
 replace eduui_ci = . if aedu_ci == .
-label variable eduui_ci "Superior Incompleto"
 
 ***************
 ***eduuc_ci****
@@ -1427,6 +1426,11 @@ label var tipopen_ci "Tipo de pension - variable original de cada pais"
 *instpen_ci*****
 ****************
 gen instpen_ci=.
+replace instpen_ci = y28_3c if vejez == 1
+replace instpen_ci = y28_3f if invalidez == 1
+replace instpen_ci = y28_3g if montepio == 1
+replace instpen_ci = y28_3h if orfandad == 1
+replace instpen_ci = y28_3j if otros == 1
 label var instpen_ci "Institucion proveedora de la pension - variable original de cada pais" 
 
 * EN BASE 2022 SE ELIMINÍ LA VARIABLE y28_3a, Juan C Perdomo 20/09/23
