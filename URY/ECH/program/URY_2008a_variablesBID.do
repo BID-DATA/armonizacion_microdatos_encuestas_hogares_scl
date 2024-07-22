@@ -1671,146 +1671,107 @@ gen remesas_ch=h174_2
 /*Para la suma de años educativos se generan variables temporales de maximo 
 para niveles que son equivalentes, se imputa el maximo correspondiente 
 a cada nivel de manera de no sobreestimar los años de educacion aprobados*/
+**************
+***AEDU_CI****
+**************
 
-egen cb_añostc = rowmax(e52_4 e52_7_1) if e52_7_2 == 3 /*computa el maximo de CB o tecnico con requisito primaria*/
-egen bach_años = rowmax(e52_5 e52_6) /*computa el maximo de bachillerato o bachillerato tecnologico*/
-egen bach_añostc = rowmax(e52_5 e52_6 e52_7_1) if e52_7_2 == 2 /*computa el maximo de bachillerato, bachillerato tecnologico o tecnica con requisito CB*/
+/*Para la suma de años educativos se generan variables temporales de maximo 
+para niveles que son equivalentes, se imputa el maximo correspondiente 
+a cada nivel de manera de no sobreestimar los años de educacion aprobados*/
+
+
+// secundaria
+
+replace e52_5 = . if e52_5==9
+replace e52_6 = . if e52_6==9
+egen años_bc = rowmax(e52_5 e52_6) /*computa el maximo de bachillerato o bachillerato tecnologico*/
+
+// superior
+
+replace e52_8 = . if e52_8==9
+replace e52_9 = . if e52_9==9
+replace e52_10 = . if e52_10==9
+replace e52_7_1 = . if e52_7_1==9
+replace e52_7_1 = . if e52_7_1==9
+
 egen sup_años = rowmax(e52_8 e52_9 e52_10) /*computa el maximo de superior: magisterio, universitario o terciario no universitario */
 egen sup_añostc = rowmax(e52_8 e52_9 e52_10 e52_7_1) if e52_7_2 == 1 /*computa el maximo de superior: magisterio, universitario, terciario no universitario o tecnico con requisito bachillerato completo */
 
+
 /* Se generan años aprobados para los niveles remplazando por missing 
 el codigo de perdido (9) */
-gen años_cb = e52_4 
-replace años_cb = cb_añostc if e52_7_2 == 3
-replace años_cb =. if años_cb == 9
 
-gen años_bc = bach_años
-replace años_bc = bach_añostc if e52_7_2 == 2
-replace años_bc =. if años_bc == 9
+gen años_prim = e52_2 if e52_2!=9
+
+gen años_cb = e52_4 if e52_4!=9
 
 gen años_sup = sup_años
 replace años_sup = sup_añostc if e52_7_2 == 1
-replace años_sup =. if años_sup == 9
 
-gen años_prim = e52_2
-replace años_prim =. if años_prim == 9
+gen años_post = e52_11 if e52_11!=9
 
-gen años_post = e52_11
-replace años_post =. if años_post == 9
 
 ** Se genera aedu_ci 
 
-gen aedu_ci = 0
-qui foreach v of var años_prim años_cb años_bc años_sup años_post {
-
-	replace aedu_ci = aedu_ci + `v' if !missing(`v')
-
-}
-replace aedu_ci =. if (años_prim==. & años_cb==. & años_bc==. & años_sup==. & años_post)
-replace aedu_ci =. if e52_2 == 9
-replace aedu_ci = floor(aedu_ci)
-
-replace aedu_ci = 0 if e52_2 == 9 // Se agrega aquellos que estan comenzando el primer anio de primaria común.
-
-** eliminamos las variables temporales 
-drop años_prim años_post cb_añostc bach_años bach_añostc sup_años sup_añostc años_cb años_bc años_sup
-
-**************
-***eduno_ci***
-**************
-
-gen byte eduno_ci=(aedu_ci==0) 
-replace eduno_ci=. if aedu_ci==.
-label variable eduno_ci "Cero anios de educacion"
-
-**************
-***edupi_ci***
-**************
-
-gen byte edupi_ci=(aedu_ci>=1 & aedu_ci<6)
-replace edupi_ci=. if aedu_ci==.
-label variable edupi_ci "Primaria incompleta"
-
-**************
-***edupc_ci***
-**************
-
-gen byte edupc_ci=(aedu_ci==6)
-replace edupc_ci=. if aedu_ci==.
-label variable edupc_ci "Primaria completa"
-
-**************
-***edusi_ci***
-**************
-
-gen byte edusi_ci=(aedu_ci>6 & aedu_ci<12)
-replace edusi_ci=. if aedu_ci==.
-label variable edusi_ci "Secundaria incompleta"
-
-**************
-***edusc_ci***
-**************
+egen aedu_ci = rowtotal(años_prim  años_cb  años_bc  años_sup  años_post)
 
 
-gen byte edusc_ci=(aedu_ci==12)
-replace edusc_ci=. if aedu_ci==.
-label variable edusc_ci "Secundaria completa"
+** cursando **
 
-***************
-***edus1i_ci***
-***************
+replace aedu_ci = e52_3_v-1 if (e52_3_v > 0 & e52_3_v!=.) // 0  primaria
 
-gen byte edus1i_ci=(aedu_ci>6 & aedu_ci<9)
-replace edus1i_ci=. if aedu_ci==.
-label variable edus1i_ci "1er ciclo de la secundaria incompleto"
+// Secundaria formal
+replace aedu_ci = (6 + e52_4_v) -1 if (e52_4_v > 0 & e52_4_v!=.) // 0 Anios cursados en ciclo básico liceo 
+replace aedu_ci = (6 + e52_5_v) -1 if (e52_5_v > 0 & e52_5_v!=.) // 0 Anios cursados en ciclo UTU
+replace aedu_ci = (6 + e52_6_v) -1 if (e52_6_v > 0 & e52_6_v!=.) // 0 Anios cursados bachilerato secundaria
+replace aedu_ci = (6 + e52_7_v) -1 if (e52_7_v > 0 & e52_7_v!=.) // 0 Anios cursados Formación Profesional Básica
+replace aedu_ci = (6 + e52_8_v) -1 if (e52_8_v > 0 & e52_8_v!=.) // 0 Bachillerato Tecnológico UTU (4to a 6to)
 
-***************
-***edus1c_ci***
-***************
+// Formación superior
+replace aedu_ci = (12 + e52_9_v) - 1  if (e52_9_v > 0 & e52_9_v!=.) // Magisterio o profesorado.
+replace aedu_ci = (12 + e52_10_v) - 1 if (e52_10_v > 0 & e52_10_v!=.) // Universidad o similar.
+replace aedu_ci = (12 + e52_11_v) - 1 if (e52_11_v > 0 & e52_11_v!=.) // Terciario no universitario.
+replace aedu_ci = (16 + e52_12_v) - 1 if (e52_12_v > 0 & e52_12_v!=.) // Posgrado (maestría o doctorado).
 
-gen byte edus1c_ci=(aedu_ci==9)
-replace edus1c_ci=. if aedu_ci==.
-label variable edus1c_ci "1er ciclo de la secundaria completo"
+label var  aedu_ci "Anios de Educacion"
 
-***************
-***edus2i_ci***
-***************
-
-gen byte edus2i_ci=(aedu_ci>9 & aedu_ci<12)
-replace edus2i_ci=. if aedu_ci==.
-label variable edus2i_ci "2do ciclo de la secundaria incompleto"
-
-***************
-***edus2c_ci***
-***************
-
-gen byte edus2c_ci=(aedu_ci==12)
-replace edus2c_ci=. if aedu_ci==.
-label variable edus2c_ci "2do ciclo de la secundaria completo"
-
-**************
-***eduui_ci***
-**************
-
-gen byte eduui_ci=(aedu_ci>12 & e52_8<4) | (aedu_ci>12 & e52_10<3) | (aedu_ci>12 & e52_9<4) // magisterio, profesorado, tecnica, universitaria
-replace eduui_ci=. if aedu_ci==.
-label variable eduui_ci "Universitaria incompleta" 
+drop aedu_ci
 
 
 ***************
 ***eduuc_ci***
 ***************
+ 
+gen eduuc_ci = 0
+replace eduuc_ci=1 if (e52_8 > 0 & e52_8!=. & e53_2==1)
+replace eduuc_ci=1 if (e52_9 > 0 & e52_9!=. & e53_2==1)
+replace eduuc_ci=1 if (e52_10 > 0 & e52_10!=. & e53_2==1)
+replace eduuc_ci=1 if e52_12_v > 0 & e52_12_v!=.
 
-gen byte eduuc_ci=(aedu_ci>12 & e52_8>=4 & e52_8!=9) | (aedu_ci>12 & e52_10>=3 & e52_10!=9) | (aedu_ci>12 & e52_9>=4 & e52_9!=9) // magisterio, tecnica, universitaria
-replace eduuc_ci=. if aedu_ci==.
-label variable eduuc_ci "Universitaria completa o mas"
+ 
+**************
+***eduui_ci***
+**************
+gen eduui_ci = 0
+replace eduui_ci=1 if (e52_8 > 0 & e52_8!=. & e53_2==2)
+replace eduui_ci=1 if (e52_9 > 0 & e52_9!=. & e53_2==2)
+replace eduui_ci=1 if (e52_10 > 0 & e52_10!=. & e53_2==2)
+replace eduui_ci=1 if e52_9_v > 0 & e52_9_v!=.
+replace eduui_ci=1 if e52_10_v > 0 & e52_10_v!=.
+replace eduui_ci=1 if e52_11_v > 0 & e52_11_v!=.
 
-/* 
-Para los casos en los cuales el respondiente imputa un nivel finalizado pero 
-otro incompleto y por ende se pisan eduuc con eduui se le da prioridad al 
-nivel completo.
-*/
-replace eduui_ci = 0 if eduuc_ci == 1
+ 
+***************
+***eduac_ci****
+***************
+gen eduac_ci=.
+replace eduac_ci=0 if e52_8 > 0 & e52_8!=.
+replace eduac_ci=1 if e52_9 > 0 & e52_9!=. 
+replace eduac_ci=0 if e52_10 > 0 & e52_10!=. 
+replace eduac_ci=1 if e52_12_v > 0 & e52_12_v!=.
+replace eduac_ci=0 if e52_9_v > 0 & e52_9_v!=.
+replace eduac_ci=1 if e52_10_v > 0 & e52_10_v!=.
+replace eduac_ci=0 if e52_11_v > 0 & e52_11_v!=.
 
 
 ***************
@@ -1824,15 +1785,6 @@ label variable edupre_ci "Educacion preescolar"
 ***asispre_ci***
 ***************
 gen asispre_ci=.
-
-***************
-***eduac_ci***
-***************
-
-gen eduac_ci=.
-replace eduac_ci = 0 if aedu_ci>12 & e52_8>0 & e52_8!=9 // magisterio o profesorado
-replace eduac_ci = 0 if aedu_ci>12 & e52_10>0 & e52_10!=9 // terciario no univ
-replace eduac_ci = 1 if aedu_ci>12 & e52_9>0 & e52_9!=9 // universidad o similar
 
 
 ***************

@@ -1570,21 +1570,35 @@ gen byte edus2c_ci=(aedu_ci==12)
 replace edus2c_ci=. if aedu_ci==.
 label variable edus2c_ci "2do ciclo de la secundaria completo"
 
-**************
-***eduui_ci***
-**************
-
-gen byte eduui_ci=(aedu_ci>12 & e51_8<4) | (aedu_ci>12 & e51_10<3) | (aedu_ci>12 & e51_9<4) // magisterio, profesorado, tecnica, universitaria
-replace eduui_ci=. if aedu_ci==.
-label variable eduui_ci "Universitaria incompleta"
-
 ***************
 ***eduuc_ci***
 ***************
+ 
+gen eduuc_ci = 0
+replace eduuc_ci=1 if e51_8 > 0 & e53==1
+replace eduuc_ci=1 if e51_9 > 0 & e53==1
+replace eduuc_ci=1 if e51_10 > 0 & e53==1
+replace eduuc_ci=1 if e51_11 > 0
 
-gen byte eduuc_ci=(aedu_ci>12 & e51_8>=4 & e51_8!=9) | (aedu_ci>12 & e51_10>=3 & e51_10!=9) | (aedu_ci>12 & e51_9>=4 & e51_9!=9) // magisterio, tecnica, universitaria
-replace eduuc_ci=. if aedu_ci==.
-label variable eduuc_ci "Universitaria completa o mas"
+ 
+**************
+***eduui_ci***
+**************
+gen eduui_ci = 0
+replace eduui_ci=1 if e51_8 > 0 & e53==2
+replace eduui_ci=1 if e51_9 > 0 & e53==2
+replace eduui_ci=1 if e51_10 > 0 & e53==2
+
+ 
+***************
+***eduac_ci****
+***************
+gen eduac_ci=.
+replace eduac_ci=0 if e51_8 > 0 & e53!=0
+replace eduac_ci=1 if e51_9 > 0 & e53!=0
+replace eduac_ci=0 if e51_10 > 0 & e53!=0
+replace eduac_ci=1 if e51_11 > 0 & e53!=0
+
 
 ***************
 ***edupre_ci***
@@ -1598,14 +1612,6 @@ label variable edupre_ci "Educacion preescolar"
 ***************
 g asispre_ci=.
 
-***************
-***eduac_ci****
-***************
-
-gen eduac_ci=.
-replace eduac_ci = 0 if aedu_ci>12 & e51_8>0 & e51_8!=9 
-replace eduac_ci = 0 if aedu_ci>12 & e51_10>0 & e51_10!=9
-replace eduac_ci = 1 if aedu_ci>12 & e51_9>0 & e51_9!=9
 
 *88. Personas que actualmente asisten a centros de ensenanza
 gen byte asiste_ci=(e49==1)
