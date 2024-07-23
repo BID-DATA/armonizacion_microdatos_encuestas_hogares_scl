@@ -583,7 +583,15 @@ label var instpen_ci "Institución que otorga la pensión o jubilación"
 *************************************
 * INGRESO MONETARIO MENSUAL LABORAL *
 *************************************
-gen ylmpri_ci= tearngs if tearngs>=0 & emp_ci==1
+gen ylmpri_ci=      ((1+323.9)/2) if earngs==1 & emp_ci==1
+replace ylmpri_ci=((324.9+501.97)/2) if earngs==2 & emp_ci==1
+replace ylmpri_ci=((502.97+680.04)/2) if earngs==3 & emp_ci==1
+replace ylmpri_ci=((681.04+858.11)/2) if earngs==4 & emp_ci==1
+replace ylmpri_ci=((859.11+1036.19)/2) if earngs==5 & emp_ci==1
+replace ylmpri_ci=((1037.19+1240.5)/2) if earngs==6 & emp_ci==1
+replace ylmpri_ci=((1241.5+6507.83)/2) if earngs==7 & emp_ci==1
+replace ylmpri_ci=((6509.83+11775.15)/2) if earngs==8 & emp_ci==1
+replace ylmpri_ci=((11776.15+22305.8)/2) if earngs==9 & emp_ci==1
 label var ylmpri_ci "Monto mensual de ingreso laboral de la actividad principal"
 
 *******************
