@@ -1480,9 +1480,9 @@ gen repiteult_ci=.
 
 *92. Personas que asisten a centros de ensenanza públicos
 
-gen edupub_ci = 1 if (e581 == 1 | e581a == 1) & (asiste_ci == 1)
-replace edupub_ci = 0 if (e581 == 2 | e581 == 3 | e581a == 2) & (asiste_ci == 1)
-replace edupub_ci =. if (asiste_ci != 1)
+gen edupub_ci = .
+replace edupub_ci = 1 if e581 == 1
+replace edupub_ci = 0 if (e581 == 2 | e581 == 3) 
 
 		**********************************
 		**** VARIABLES DE LA VIVIENDA ****
