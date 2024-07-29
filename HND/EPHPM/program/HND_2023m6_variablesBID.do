@@ -27,7 +27,7 @@ log using "`log_file'", replace
 
 
 /***************************************************************************
-                 BASES DE DATOS DE ENCUESTA DE HOGARES 
+                 BASES DE DATOS DE ENCUESTA DE HOGARES - SOCIOMETRO 
 País: Honduras
 Encuesta: EPHPM
 Round: m6
@@ -36,19 +36,16 @@ Autores: Mayte Ysique
 Fecha última modificación: Abril de 2023
 
 			  
-							SCL/GDI - IADB
+							SCL/LMK - IADB
 ****************************************************************************/
-
 /***************************************************************************
 Detalle de procesamientos o modificaciones anteriores:
-
- -----------------CORREGIR: Se trabajo con un Tipo de cambio y linea de pobreza provisional
- 
+* no disponible base septiembre hasta el momento
 ****************************************************************************/
 
 
 use "`base_in'", clear
-*use "/Users/mysique/Library/CloudStorage/OneDrive-Inter-AmericanDevelopmentBankGroup/Documents/SCL Data/Armonizacion Honduras/2023/m6/data_merge/HND_2023m6.dta"
+
 
 **********************************
 ***VARIABLES DEL IDENTIFICACION***
@@ -57,7 +54,7 @@ use "`base_in'", clear
 	********
 	*anio_c*
 	********
-	gen anio_c=`ANO'
+	gen anio_c=2023
 
 	*******
 	*mes_c*
@@ -109,6 +106,11 @@ use "`base_in'", clear
 	label value ine01 ine01
 	label var ine01 "Division administrativa, departamentos"
 
+	***************
+	** region_c  ** 
+	***************	
+	gen region_c= ine01
+	
 	********
 	*zona_c*
 	********
@@ -169,6 +171,7 @@ use "`base_in'", clear
 	*********
 	gen edad_ci=edad 
 	label var edad_ci "Edad del Individuo"
+	drop edad
 
 	*************
 	*relacion_ci*
@@ -341,21 +344,19 @@ use "`base_in'", clear
 	***afroind_ci***
 	***************
 	gen afroind_ci=.  
-	replace afroind_ci=1 if (inlist(ch308,1,2)==1)==1
-	replace afroind_ci=2 if (inrange(ch308,3,9)==1)==1
+	replace afroind_ci=1 if afro_ci==1 
+	replace afroind_ci=2 if ind_ci==1  
 	replace afroind_ci=3 if noafroind_ci==1 
 
 	***************
-	***afroind_ch**
+	***afroind_ch***
 	***************
-	gen byte afroind_jefe= afroind_ci if relacion_ci==1 
-	egen afroind_ch  = max(afroind_jefe), by(idh_ch)  
-	drop afroind_jefe 
-	
+	gen afroind_ch=. 
+
 	*******************
 	***afroind_ano_c***
 	*******************
-	gen afroind_ano_c=.	
+	gen afroind_ano_c=.		
 	
 	************
 	***dis_ci***
@@ -367,56 +368,48 @@ use "`base_in'", clear
 	************
 	gen dis_ch=. 
 
-	************
-	**disWG_ci**
-	************
-	gen disWG_ci=. 
-
-	**************
-	**HND_dis_ci**
-	**************
-	gen HND_dis_ci=.
-	replace HND_dis_ci=1 if inrange(ch307,1,8)
-	replace HND_dis_ci=0 if ch307==9
-
 
 ************************************
 *** VARIABLES DEL MERCADO LABORAL***
 ************************************
 
-	****************
-	****condocup_ci*
-	****************
-	/*
-	Entre el año 2019 y 2020, el límite de edad de las personas que conforman la 
-	fuerza de trabajo, pasó de 10 años y más, a 15 años y más. 
-	Fuente: 
-	https://www.ilo.org/wcmsp5/groups/public/---americas/---ro-lima/---sro-san_jose/documents/publication/wcms_851127.pdf
-	*/
-	gen condocup_ci=.
-	replace condocup_ci=1 if condact==1
-	replace condocup_ci=2 if condact==2
-	replace condocup_ci=3 if condact==3
-	replace condocup_ci=4 if (edad_ci<15)
+****************
+****condocup_ci*
+****************
+/*
+gen condocup_ci=condact
+replace condocup_ci=4 if edad_ci<10
+label var condocup_ci "Condicion de ocupación de acuerdo a def de cada pais"
+label define condocup_ci 1 "Ocupado" 2 "Desocupado" 3 "Inactivo" 4 "Menor que 10" 
+label value condocup_ci condocup_ci
+*/
+* Comprobacion con variables originales.  Se considera ocupado a quienes estan en trabajos no remunerados. 5/28/2014 MGD
+* La edad minima de la encuesta se cambia a 5 anios.
 
-	label var condocup_ci "Condicion de ocupación de acuerdo a def de cada pais"
-	label define condocup_ci  1 "Ocupado" 2 "Desocupado" 3 "Inactivo" 4 "Menor que 10" 
-	label value condocup_ci condocup_ci
+g condocup_ci=.
+replace condocup_ci=1 if condact==1
+replace condocup_ci=2 if condact==2
+replace condocup_ci=3 if condact==3
+replace condocup_ci=4 if edad_ci<15
 
-	************
-	***emp_ci***
-	************
-	gen emp_ci=(condocup_ci==1)
+label var condocup_ci "Condicion de ocupación de acuerdo a def de cada pais"
+label define condocup_ci  1 "Ocupado" 2 "Desocupado" 3 "Inactivo" 4 "Menor que 10" 
+label value condocup_ci condocup_ci
 
-	****************
-	***desemp_ci***
-	****************
-	gen desemp_ci=(condocup_ci==2)
+************
+***emp_ci***
+************
+gen emp_ci=(condocup_ci==1)
 
-	*************
-	***pea_ci***
-	*************
-	gen pea_ci=(emp_ci==1 | desemp_ci==1)
+****************
+***desemp_ci***
+****************
+gen desemp_ci=(condocup_ci==2)
+
+*************
+***pea_ci***
+*************
+gen pea_ci=(emp_ci==1 | desemp_ci==1)
 
 	*******************
 	***categoinac_ci***
@@ -455,15 +448,13 @@ use "`base_in'", clear
 	replace durades_ci=ca516tiempo/30   if ca516dsm==1
 	replace durades_ci=ca516tiempo/4.3  if ca516dsm==2
 	replace durades_ci=ca516tiempo      if ca516dsm==3
-	label var durades "Duracion del Desempleo (en meses)"
-	
-	*************
-	*desalent_ci*
-	*************
-	gen desalent_ci=.
-	replace desalent_ci=1 if ca513==6 & condocup_ci==3
-	replace desalent_ci=0 if ca513!=6 & condocup_ci==3
+	label var durades "Duracion del Desempleo (en meses)
 
+
+	/**************************
+					  COPIAR DESDE AQUI
+					  ***********************************/ 
+				
 	*************
 	*horaspri_ci*
 	*************
@@ -588,6 +579,13 @@ use "`base_in'", clear
 	*******************
 	gen byte formal_ci=.
 
+	*************
+	*desalent_ci*
+	*************
+	gen desalent_ci=.
+	replace desalent_ci=1 if ca513==6 & condocup_ci==3
+	replace desalent_ci=0 if ca513!=6 & condocup_ci==3
+
 	*****************
 	*tipocontrato_ci*
 	*****************
@@ -599,29 +597,30 @@ use "`base_in'", clear
 	**********
 	*ocupa_ci*
 	**********
-	gen ocupa_ci=.
-	replace ocupa_ci=1 if ocupaop==2 & emp_ci==1
-	replace ocupa_ci=2 if ocupaop==1 & emp_ci==1
-	replace ocupa_ci=3 if (ocupaop==3 | ocupaop==4) & emp_ci==1
-	replace ocupa_ci=4 if ocupaop==5 & emp_ci==1
-	replace ocupa_ci=5 if ocupaop==7 & emp_ci==1
-	replace ocupa_ci=6 if ocupaop==6 & emp_ci==1
-	replace ocupa_ci=7 if ocupaop==8 & emp_ci==1
-	replace ocupa_ci=8 if ocupaop==10 & emp_ci==1
-	replace ocupa_ci=9 if ocupaop==9 & emp_ci==1
+		gen ocupa_ci=.
+		replace ocupa_ci=1 if ocupaop==2 & emp_ci==1
+		replace ocupa_ci=2 if ocupaop==1 & emp_ci==1
+		replace ocupa_ci=3 if (ocupaop==3 | ocupaop==4) & emp_ci==1
+		replace ocupa_ci=4 if ocupaop==5 & emp_ci==1
+		replace ocupa_ci=5 if ocupaop==7 & emp_ci==1
+		replace ocupa_ci=6 if ocupaop==6 & emp_ci==1
+		replace ocupa_ci=7 if ocupaop==8 & emp_ci==1
+		replace ocupa_ci=8 if ocupaop==10 & emp_ci==1
+		replace ocupa_ci=9 if ocupaop==9 & emp_ci==1
 
-	label variable ocupa_ci "Ocupacion laboral"
-	label define ocupa_ci 	1"Profesionales y técnicos" ///
-							2"Directores y funcionarios superiores" ///
-							3"Personal administrativo y nivel intermedio"  ///
-							4"Comerciantes y vendedores" ///
-							5"Trabajadores en servicios" ///
-							6"Trabajadores agrícolas y afines" ///
-							7"Obreros no agrícolas, conductores de máquinas y vehículos de transporte y similares" ///
-							8"Fuerzas Armadas" ///
-							9"Otras ocupaciones no clasificadas en las anteriores"
-	label value ocupa_ci ocupa_ci
+		label variable ocupa_ci "Ocupacion laboral"
+		label define ocupa_ci 	1"Profesionales y técnicos" ///
+								2"Directores y funcionarios superiores" ///
+								3"Personal administrativo y nivel intermedio"  ///
+								4"Comerciantes y vendedores" ///
+								5"Trabajadores en servicios" ///
+								6"Trabajadores agrícolas y afines" ///
+								7"Obreros no agrícolas, conductores de máquinas y vehículos de transporte y similares" ///
+								8"Fuerzas Armadas" ///
+								9"Otras ocupaciones no clasificadas en las anteriores"
+		label value ocupa_ci ocupa_ci
 
+	
 	****************
 	*tipopen_ci*****
 	****************
@@ -633,6 +632,7 @@ use "`base_in'", clear
 	****************
 	gen instpen_ci=.
 	label var instpen_ci "Institucion proveedora de la pension - variable original de cada pais" 
+
 
 ************************************
 ******* VARIABLES DE INGRESO *******
@@ -732,7 +732,7 @@ use "`base_in'", clear
 	gen remesad=(oih12_us*tc_c1)/3
 	*especies
 	gen remesp=oih12_lps_esp/3
-	gen remespd= (oih12_us_esp*tc_c1)/3
+	gen remespd= (oih12_us_esp*tc_c)/3
 	*13 Bono esperanza - discapacidad
 	gen bondis= oih13/3
 	*14 Bono oro
@@ -772,7 +772,6 @@ use "`base_in'", clear
 	***************
 	by idh_ch, sort: egen ylnm_ch=sum(ylnm_ci) if miembros_ci==1, missing 
 	label var ylnm_ch "Ingreso laboral no monetario del hogar"
-	
 	
 	*****************
 	***nrylmpri_ci***
@@ -860,6 +859,7 @@ use "`base_in'", clear
 	* HON 2023 Fuente: https://nearshoreamericas.com/honduras-raises-minimum-wage-by-7/
 	gen salmm_ci= 12377.73 
 	label var salmm_ci "Salario minimo legal"
+
 
 ************************************
 ****** VARIABLES DE EDUCACION ******
@@ -1057,6 +1057,7 @@ use "`base_in'", clear
 	label var repiteult_ci "Personas que están repetiendo el ultimo grado"
 
 
+
 ************************************
 ****** VARIABLES DE VIVIENDA  ******
 ************************************
@@ -1152,11 +1153,10 @@ use "`base_in'", clear
 	replace cocina_ch=1 if h02==1
 	replace cocina_ch=0 if inrange(h02,2,5)
 	
-
 	**************
 	** telef_ch **
 	**************
-	gen telef_ch=(h01_7>=1)
+	gen telef_ch2=(h01_7>=1&h01_7!=.)
 
 	**************
 	** refrig_ch **
@@ -1176,20 +1176,19 @@ use "`base_in'", clear
 	**************
 	** compu_ch **
 	**************
-	gen compu_ch=(h01_11>=1)
+	gen compu_ch=(h01_11>=1&h01_11!=.)
 
 	**************
 	** internet_ch **
 	**************
 	by idh_ch : egen internet_ch=max(at05_1) if miembros_ci==1
 	replace internet_ch = 0 if internet_ch==.
-
+	tab internet_ch
 	**************
 	** cel_ch **
 	**************
-	by idh_ch : egen cel_ch=max(tic09) if miembros_ci==1
-	replace cel_ch = 0 if cel_ch==.
-	
+	gen cel_ch=(tic09==1)
+
 	**************
 	** vivi1_ch **
 	**************
@@ -1450,6 +1449,8 @@ use "`base_in'", clear
 
 	gen pnc_ci = . 
 	gen ing_pension = . 
+
+
 	
 /*_____________________________________________________________________________________________________*/
 * Asignación de etiquetas e inserción de variables externas: tipo de cambio, Indice de Precios al 
@@ -1477,20 +1478,7 @@ aguared_ch aguafconsumo_ch aguafuente_ch aguadist_ch aguadisp1_ch aguadisp2_ch a
 pared_ch techo_ch resid_ch dorm_ch cuartos_ch cocina_ch telef_ch refrig_ch freez_ch auto_ch compu_ch internet_ch cel_ch ///
 vivi1_ch vivi2_ch viviprop_ch vivitit_ch vivialq_ch	vivialqimp_ch migrante_ci migrantiguo5_ci miglac_ci, first
 
-
-/*Homologar nombre del identificador de ocupaciones (isco, ciuo, etc.) y de industrias y dejarlo en base armonizada 
-para análisis de trends (en el marco de estudios sobre el futuro del trabajo)*/
-
 compress
-
-**DZ Agosto 2019: Se truncan labels de las variables para poder guardarlos en una versión antigua de stata**
-foreach i of varlist _all { 
-local longlabel: var label `i' 
-local shortlabel = substr("`longlabel'",1,79) 
-label var `i' "`shortlabel'"
-}
-saveold "`base_out'", version(12) replace
-
 
 log close
 
