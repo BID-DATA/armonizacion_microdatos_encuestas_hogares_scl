@@ -1262,13 +1262,13 @@ gen pea_ci=(emp_ci==1 | desemp_ci==1)
 	*****************
 	*aguafuente_ch*
 	*****************
-	gen aguafuente_ch =.
-	replace aguafuente_ch = 1 if inlist(v05,2,3)
-	replace aguafuente_ch = 2 if inlist(v05,1,4)
-	replace aguafuente_ch = 6 if inlist(v05,6)
+    gen aguafuente_ch =.
+	replace aguafuente_ch = 1 if inlist(v05,1) & v06<=2
+	replace aguafuente_ch = 2 if inlist(v05,4)  | (inlist(v05,1)  &v06>2) 
+	replace aguafuente_ch = 6 if inlist(v05,6) 
 	replace aguafuente_ch = 7 if inlist(v05,7)
 	replace aguafuente_ch = 8 if inlist(v05,5)
-	replace aguafuente_ch = 10 if inlist(v05,8)
+	replace aguafuente_ch = 10 if inlist(v05,2,3,8,9) 
 
 	label define aguafuente_ch 		1 "Red de distribución, llave privada" ///
 									2 "Llave pública, standpipe" ///
@@ -1282,7 +1282,6 @@ gen pea_ci=(emp_ci==1 | desemp_ci==1)
 									10 "Pozo, manantial, u otra fuente sin clasificación clara"
 	
 	label value aguafuente_ch aguafuente_ch
-	
 	
 	*************
 	*aguadist_ch*
