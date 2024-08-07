@@ -160,39 +160,7 @@ gen estrato_ci=v4602
 /************************************************************************/	
 
 
- *****************
- ***aguared_ch****
- *****************  
-gen aguared_ch=(v0212==2 | v0213==1)
-label var aguared_ch "Acceso a fuente de agua por red"
 
- *****************
- ***aguadist_ch****
- *****************  
-gen aguadist_ch=1 if v0211==1 |v0213==1
-replace aguadist_ch=2 if v0214==2
-replace aguadist_ch=3 if v0214==4
-replace aguadist_ch=. if v0214==9 
-label var aguadist_ch "Ubicación de la principal fuente de agua"
-label def aguadist_ch 1"Adentro de la casa" 2"Afuera de la casa pero dentro del terreno" 3"Afuera de la casa y del terreno" 
-label val aguadist_ch aguadist_ch  
-
- *****************
- ***aguamala_ch***
- ***************** 
-gen aguamala_ch=(v0212==6) /*"Otra procedencia"*/	
-replace aguamala_ch=. if v0212 == 9
-label var aguamala_ch "Agua unimproved según MDG"
-
- *****************
- ***aguamide_ch***
- ***************** 
-gen aguamide_ch=.
-label var aguamide_ch "Usan medidor para pagar consumo de agua"
-
- ************
- ***luz_ch***
- ************ 
 
 ****************
 ***aguared_ch***
@@ -297,7 +265,10 @@ gen aguatrat_ch =9
 replace aguatrat_ch = 1 if v0224==2
 replace aguatrat_ch = 0 if v0224==4
 
-		
+
+ ************
+ ***luz_ch***
+ ************ 		
 
 gen luz_ch=(v0219==1)
 replace luz_ch=. if v0219==9

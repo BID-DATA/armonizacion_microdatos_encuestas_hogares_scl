@@ -159,35 +159,109 @@ gen estrato_ci=v4602
 /*			vARIABLES DE INFRAESTRUCTURA DEL HOGAR		*/
 /************************************************************************/	
 
- *****************
- ***aguared_ch****
- *****************  
+ 
+****************
+***aguared_ch***
+****************
 gen aguared_ch=(v0212==2 | v0213==1)
 label var aguared_ch "Acceso a fuente de agua por red"
 
- *****************
- ***aguadist_ch****
- *****************  
-gen aguadist_ch=1 if v0211==1 |v0213==1
-replace aguadist_ch=2 if v0214==2
-replace aguadist_ch=3 if v0214==4
-replace aguadist_ch=. if v0214==9 
-label var aguadist_ch "Ubicación de la principal fuente de agua"
-label def aguadist_ch 1"Adentro de la casa" 2"Afuera de la casa pero dentro del terreno" 3"Afuera de la casa y del terreno" 
-label val aguadist_ch aguadist_ch  
 
- *****************
- ***aguamala_ch***
- ***************** 
-gen aguamala_ch=(v0212==6) /*"Otra procedencia"*/	
-replace aguamala_ch=. if v0212 == 9
-label var aguamala_ch "Agua unimproved según MDG"
+*****************
+*aguafconsumo_ch*
+*****************
+gen aguafconsumo_ch =0
 
- *****************
- ***aguamide_ch***
- ***************** 
+
+*****************
+*aguafuente_ch*
+*****************
+gen aguafuente_ch =.
+replace aguafuente_ch = 1 if v0212 == 2 | v0213 == 1
+replace aguafuente_ch = 10 if (v0212 == 4 |v0212 == 6|v0212 == 9)
+replace aguafuente_ch = 10 if aguafuente_ch ==. & jefe_ci==1
+
+*************
+*aguadist_ch*
+*************
+gen aguadist_ch=.
+replace aguadist_ch= 1 if v0211==1
+replace aguadist_ch= 2 if (v0213==1|v0214==2)
+replace aguadist_ch = 3 if (v0213 ==3 & v0214 ==4)
+
+
+**************
+*aguadisp1_ch*
+**************
+gen aguadisp1_ch = 9
+
+
+**************
+*aguadisp2_ch*
+**************
+gen aguadisp2_ch = 9
+
+
+*************
+*aguamala_ch*  Altered
+*************
+gen aguamala_ch = 2
+replace aguamala_ch = 0 if aguafuente_ch<=7
+replace aguamala_ch = 1 if aguafuente_ch>7 & aguafuente_ch!=10
+
+
+*****************
+*aguamejorada_ch*  Altered
+*****************
+gen aguamejorada_ch = 2
+replace aguamejorada_ch = 0 if aguafuente_ch>7 & aguafuente_ch!=10
+replace aguamejorada_ch = 1 if aguafuente_ch<=7
+
+*****************
+***aguamide_ch***
+*****************
 gen aguamide_ch=.
-label var aguamide_ch "Usan medidor para pagar consumo de agua"
+
+
+*****************
+*bano_ch         *  Altered
+*****************
+gen bano_ch=.
+
+replace bano_ch=1 if (v0217==1|v0217==2)
+replace bano_ch=2 if v0217==3
+replace bano_ch=6 if (v0217==4 | v0217==7)
+replace bano_ch=4 if (v0217==5|v0217==6)
+replace bano_ch=0 if v0215 == 3
+replace bano_ch=6 if bano_ch ==. & jefe_ci==1
+
+***************
+***banoex_ch***
+***************
+gen banoex_ch=(v0216==2)
+replace banoex_ch=. if bano_ch==0 | bano_ch==.
+label var banoex_ch "El servicio sanitario es exclusivo del hogar"
+
+
+*****************
+*banomejorado_ch*  Altered
+*****************
+gen banomejorado_ch= 2
+replace banomejorado_ch =1 if bano_ch<=3 & bano_ch!=0
+replace banomejorado_ch =0 if (bano_ch ==0 | bano_ch>=4) & bano_ch!=6
+
+************
+*sinbano_ch*
+************
+gen sinbano_ch = 3
+replace sinbano_ch =  0 if v0215==1
+
+*************
+*aguatrat_ch*
+*************
+gen aguatrat_ch =9
+replace aguatrat_ch = 1 if v0224==2
+replace aguatrat_ch = 0 if v0224==4
 
  ************
  ***luz_ch***
