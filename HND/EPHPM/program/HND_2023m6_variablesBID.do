@@ -1479,6 +1479,8 @@ vivi1_ch vivi2_ch viviprop_ch vivitit_ch vivialq_ch	vivialqimp_ch migrante_ci mi
 
 compress
 
+saveold "`base_out'", version(12) replace
+
 log close
 
 
