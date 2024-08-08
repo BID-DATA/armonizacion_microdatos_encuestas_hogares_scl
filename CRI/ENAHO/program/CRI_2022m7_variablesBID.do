@@ -1619,6 +1619,25 @@ label var vivialqimp_ch " Alquiler mensual imputado"
 gen rentaimp_ch=vivialqimp_ch
 label var rentaimp_ch "Rentas imputadas del hogar"
 
+********************************************************************************************************************************
+***47._DES1_CH : Tipo de desagüe incluyendo la definición de "Unimproved" del MDG
+********************************************************************************************************************************
+gen des1_ch=.
+replace des1_ch=0 if v13a==0
+replace des1_ch=1 if v13a==1 |v13a==2 |v13a==3
+replace des1_ch=2 if v13a==4 
+label define des1_ch 0 "No tiene" 1 "Alcantarilla, tanque séptico común y fosa biológica" 2 "hueco, letrina"
+label value des1_ch des1_ch
+label var des1_ch "Tipo de desague incluido unimproved"
+********************************************************************************************************************************
+***48._DES2_CH : Tipo de desagüe sin incluir la definición de "Unimproved" del MDG
+********************************************************************************************************************************
+
+gen des2_ch=0 if v13a==0
+replace des2_ch =1 if v13a==1 |v13a==2 |v13a==3 | v13a==4 
+replace des2_ch=2 if v13a==5 
+label var des2_ch "Tipo de desague sin incluir unimproved"
+
 
 *******************
 *** benefdes_ci ***
@@ -1754,7 +1773,7 @@ rename ramaemppr codindustria
 compress
 
 
-saveold "`base_out'", replace
+save "`base_out'", replace
 
 
 log close
