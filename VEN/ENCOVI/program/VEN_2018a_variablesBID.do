@@ -410,7 +410,7 @@ label var afiliado_ci "Afiliado a la Seguridad Social"
 ****************
 *cotizando_ci***
 ****************
-*Las preguntas relacionadas con pensiones son respondidas por personas a partir de los 40 años pp61, pp61ss, pp61ep 
+*Las preguntas relacionadas con pensiones cambian en esta encuesta y están relacionadas a la pregunta de seguro social como parte del trabajo, pmhp56sv seguro social del estado pmhp56si otro seguro social público, pmhp56se otro seguro social privado pmhp56so otros fondos de pensiones
 
 gen cotizando_ci=0     if condocup_ci==1 | condocup_ci==2 
 replace cotizando_ci=1 if (pmhp56sv ==1 | pmhp56si==2 | pmhp56se==3 | pmhp56so==4) & cotizando_ci==0

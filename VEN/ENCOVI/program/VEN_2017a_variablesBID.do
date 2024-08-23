@@ -410,10 +410,10 @@ label var afiliado_ci "Afiliado a la Seguridad Social"
 ****************
 *cotizando_ci***
 ****************
-*Las preguntas relacionadas con pensiones son respondidas por personas a partir de los 40 años pp61, pp61ss, pp61ep 
+*Las preguntas relacionadas con pensiones cambian en esta encuesta y están relacionadas a la pregunta de seguro social como parte del trabajo, tmhp47ss == 4 significa seguro social obligatorio
 
 gen cotizando_ci=0     if condocup_ci==1 | condocup_ci==2 
-replace cotizando_ci=1 if (pmhp611 ==1 | pmhp612==2 | pmhp613==3 | pmhp614==4) & cotizando_ci==0
+replace cotizando_ci=1 if tmhp47ss == 4 & cotizando_ci==0
 label var cotizando_ci "Cotizante a la Seguridad Social"
 
 ****************

@@ -426,9 +426,10 @@ label var afiliado_ci "Afiliado a la Seguridad Social"
 ****************
 *cotizando_ci***
 ****************
+*Las preguntas relacionadas con pensiones cambian en esta encuesta y están relacionadas a la pregunta de si recibe seguro social obligatorio, aporta a la seguridad social o cotiza en un régimen de prestaciones
 
 gen cotizando_ci=0     if condocup_ci==1 | condocup_ci==2 
-replace cotizando_ci=1 if s9q36==1 & cotizando_ci==0
+replace cotizando_ci=1 if (s9q36==1 | s9q20__1==1 | s9q20__2==1) & cotizando_ci==0
  
 label var cotizando_ci "Cotizante a la Seguridad Social"
 
