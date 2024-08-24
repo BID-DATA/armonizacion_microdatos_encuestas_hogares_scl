@@ -873,96 +873,27 @@ gen pea_ci=(emp_ci==1 | desemp_ci==1)
 	gen aedu_ci=.
 	replace aedu_ci=0 if (ed05>=1 & ed05<=3)
 	replace aedu_ci=ed08 if ed05==4  & ed08<99
-	replace aedu_ci=9+ed08 if ed05==5 & ed08<99 //9 años de basica
-	replace aedu_ci=9+2+ed08 if (ed05==6 | ed05==7 | ed05==8) & ed08<99 //9(basica) + 2(media)
-	replace aedu_ci=9+2+4+ed08 if (ed05==9 | ed05==10 | ed05==11) & ed08<99 //11 (basica y media) + 4 (grado)
+	replace aedu_ci=9+ed08 if ed05==5 & ed08<99 //9 años de basica - ciclo comun
+	replace aedu_ci=9+ed08 if ed05==6 & ed08<99 //9 años de basica - ciclo div
+	replace aedu_ci=11+ed08 if (ed05==7 |ed05==8 |ed05==9) & ed08<99 // Terciario 
+	replace aedu_ci=15+ed08 if (ed05==10) & ed08<99 //Post
 
 	*Para quienes asisten actualmente:
 	replace aedu_ci=0 if (ed10>=1 & ed10<=3)
-	replace aedu_ci=ed13 if ed10==4 & ed13<99
-	replace aedu_ci=9+ed13 if ed10==5 //9 años de basica
-	replace aedu_ci=9+2+ed13 if (ed10==6 | ed10==7 | ed10==8) //9(basica) + 2(media)
-	replace aedu_ci=9+2+4+ed13 if (ed10==9 | ed10==10) //11 (basica y media) + 4 (grado)
+	replace aedu_ci=ed13 - 1 if ed10==4 & ed13<99
+	replace aedu_ci=9+ed13 - 1 if ed10==5 //9 años de basica - ciclo comun
+	replace aedu_ci=9+ed13 - 1 if ed10==6 //9 años de basica- ciclo div
+	replace aedu_ci=11+ed13 - 1 if (ed10==7 | ed10==8 | ed10==9) //Terciario
+	replace aedu_ci=15+ed13 - 1 if (ed10==10) & ed13<99 //Post
 	
-	*Para los que no fueron en el 2023, pero si en el 2022
-	replace aedu_ci=0 if (ed16>=1 & ed16<=3) & aedu_ci==.
-	replace aedu_ci=ed17 if ed16==4 & aedu_ci==.
-	replace aedu_ci=9+ed17 if ed16==5  & aedu_ci==. //9 años de basica
-	replace aedu_ci=9+2+ed17 if (ed16==6 | ed16==7 | ed16==8) & aedu_ci==. //9(basica) + 2(media)
-	replace aedu_ci=9+2+4+ed17 if (ed16==9 | ed16==10) & aedu_ci==. //11 (basica y media) + 4 (grado)
-
 	label var aedu_ci "Años de educacion aprobados"	
-	
-	**************
-	***eduno_ci***
-	**************
-	g byte eduno_ci=((aedu_ci==0) & (ed05!=3 | ed10!=3))
-	replace eduno_ci=. if aedu_ci==.
-	la var eduno_ci "Personas sin educacion. Excluye preescolar"
-
+		
 	***************
 	***edupre_ci***
 	***************
-	g byte edupre_ci=((aedu_ci==0) & (ed05==3 | ed10==3 | ed16==3))
-	replace eduno_ci=. if aedu_ci==.
+	g byte edupre_ci=.
 	la var edupre_ci "Tiene Educacion preescolar"
 	
-	**************
-	***edupi_ci*** 
-	**************
-	g byte edupi_ci=(aedu_ci>=1 & aedu_ci<6)
-	replace edupi_ci=. if aedu_ci==.
-	la var edupi_ci "Personas que no han completado Primaria"
-
-	**************
-	***edupc_ci*** 
-	**************
-	g byte edupc_ci=(aedu_ci==6)
-	replace edupc_ci=. if aedu_ci==.
-	la var edupc_ci "Primaria Completa"
-
-	**************
-	***edusi_ci*** 
-	**************
-	g byte edusi_ci=(aedu_ci>6 & aedu_ci<=10)
-	replace edusi_ci=. if aedu_ci==.
-	la var edusi_ci "Secundaria Incompleta"
-
-	**************
-	***edusc_ci***
-	**************
-	g byte edusc_ci=(aedu_ci==11)
-	replace edusc_ci=. if aedu_ci==.
-	la var edusc_ci "Secundaria Completa"
-
-	***************
-	***edus1i_ci*** 
-	***************
-	g byte edus1i_ci=(aedu_ci>6 & aedu_ci<9)
-	replace edus1i_ci=. if aedu_ci==.
-	la var edus1i_ci "1er ciclo de Educacion Secundaria Incompleto"
-
-	***************
-	***edus1c_ci*** 
-	***************
-	g byte edus1c_ci=(aedu_ci==9)
-	replace edus1c_ci=. if aedu_ci==.
-	la var edus1c_ci "1er ciclo de Educacion Secundaria Completo"
-
-	***************
-	***edus2i_ci*** 
-	***************
-	g byte edus2i_ci=(aedu_ci>9 & aedu_ci<11)
-	replace edus2i_ci=. if aedu_ci==.
-	la var edus2i_ci "2do ciclo de Educacion Secundaria Incompleto"
-
-	***************
-	***edus2c_ci*** 
-	***************
-	g byte edus2c_ci=(aedu_ci==11)
-	replace edus2c_ci=. if aedu_ci==.
-	la var edus2c_ci "2do ciclo de Educacion Secundaria Completo"
-
 	**************
 	***eduui_ci*** 
 	**************
@@ -1010,25 +941,19 @@ gen pea_ci=(emp_ci==1 | desemp_ci==1)
 	gen byte asispre_ci=(ed10==3) if asiste_ci==1 // Asiste a pre-básica
 	la var asispre_ci "Asiste a educacion prescolar"	
 	
-	**************
-	***pqnoasis*** 
-	**************
-	gen pqnoasis_ci=ed04
-	label values pqnoasis_ci labels31 
-	label var pqnoasis_ci "Razones para no asistir a centros de enseñanza"
 
 	******************
 	***pqnoasis1_ci***
 	******************
-	gen		pqnoasis1_ci = 1 if inlist(pqnoasis_ci,7)
-	replace pqnoasis1_ci = 2 if inlist(pqnoasis_ci,11)
-	replace pqnoasis1_ci = 3 if inlist(pqnoasis_ci,6)
-	replace pqnoasis1_ci = 4 if inlist(pqnoasis_ci,3)
-	replace pqnoasis1_ci = 5 if inlist(pqnoasis_ci,4,10)
-	replace pqnoasis1_ci = 6 if inlist(pqnoasis_ci,2)
-	replace pqnoasis1_ci = 7 if inlist(pqnoasis_ci,8,9)
-	replace pqnoasis1_ci = 8 if inlist(pqnoasis_ci,5)
-	replace pqnoasis1_ci = 9 if inlist(pqnoasis_ci,1,12,13)
+	gen		pqnoasis1_ci = 1 if inlist(ed04,7)
+	replace pqnoasis1_ci = 2 if inlist(ed04,11)
+	replace pqnoasis1_ci = 3 if inlist(ed04,6)
+	replace pqnoasis1_ci = 4 if inlist(ed04,3)
+	replace pqnoasis1_ci = 5 if inlist(ed04,4,10)
+	replace pqnoasis1_ci = 6 if inlist(ed04,2)
+	replace pqnoasis1_ci = 7 if inlist(ed04,8,9)
+	replace pqnoasis1_ci = 8 if inlist(ed04,5)
+	replace pqnoasis1_ci = 9 if inlist(ed04,1,12,13)
 
 	label define pqnoasis1_ci 	1 "Problemas económicos" ///
 								2 "Por trabajo" ///
@@ -1471,8 +1396,8 @@ tiempoparc_ci categopri_ci categosec_ci rama_ci spublico_ci tamemp_ci cotizando_
 formal_ci tipocontrato_ci ocupa_ci horaspri_ci horastot_ci	pensionsub_ci pension_ci tipopen_ci instpen_ci	ylmpri_ci nrylmpri_ci ///
 ylnmpri_ci ylmsec_ci ylnmsec_ci	ylmotros_ci	ylnmotros_ci ylm_ci	ylnm_ci	ynlm_ci	ynlnm_ci ylm_ch	ylnm_ch	ylmnr_ch  ///
 ynlm_ch	ynlnm_ch ylmhopri_ci ylmho_ci nrylmpri_ch remesas_ci remesas_ch	ypen_ci	ypensub_ci ///
-salmm_ci tc_c ipc_c lp19_c lp31_c lp5_c aedu_ci eduno_ci edupi_ci edupc_ci	edusi_ci edusc_ci eduui_ci eduuc_ci	edus1i_ci ///
-edus1c_ci edus2i_ci edus2c_ci edupre_ci eduac_ci asiste_ci pqnoasis_ci pqnoasis1_ci	repite_ci repiteult_ci edupub_ci ///
+salmm_ci tc_c ipc_c lp19_c lp31_c lp5_c aedu_ci eduui_ci eduuc_ci ///
+ edupre_ci eduac_ci asiste_ci pqnoasis1_ci	repite_ci repiteult_ci edupub_ci ///
 aguared_ch aguafconsumo_ch aguafuente_ch aguadist_ch aguadisp1_ch aguadisp2_ch aguamala_ch aguamejorada_ch aguamide_ch bano_ch banoex_ch banomejorado_ch sinbano_ch aguatrat_ch luz_ch luzmide_ch combust_ch piso_ch ///
 pared_ch techo_ch resid_ch dorm_ch cuartos_ch cocina_ch telef_ch refrig_ch freez_ch auto_ch compu_ch internet_ch cel_ch ///
 vivi1_ch vivi2_ch viviprop_ch vivitit_ch vivialq_ch	vivialqimp_ch migrante_ci migrantiguo5_ci miglac_ci, first
