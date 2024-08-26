@@ -1043,7 +1043,7 @@ replace sinbano_ch = 0 if v1k_servic!=3
 *************
 gen aguatrat_ch =9
 
-gen luz_ch=(v1o_luz>==1 & v1o_luz<=1)
+gen luz_ch=(v1o_luz>=1 & v1o_luz<=1)
 replace luz_ch=. if v1o_luz==.
 
 gen luzmide_ch=.
