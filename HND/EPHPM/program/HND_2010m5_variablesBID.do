@@ -1508,8 +1508,8 @@ gen compu_ch=(dh08_14==1)
 *************
 *internet_ch*
 *************
-gen internet_ch=(at04==1)
-replace internet_ch=. if at04==. | at04==9
+gen internet_ch=( at04==1 &  at06==1)
+replace internet_ch=. if ( at04==.| at04==9) &  at06==.
 
 ********
 *cel_ch*
