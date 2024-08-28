@@ -1034,8 +1034,8 @@ use "`base_in'", clear
 	**************
 	** internet_ch **
 	**************
-	by idh_ch : egen internet_ch=max(at05_1) if miembros_ci==1
-	replace internet_ch = 0 if internet_ch==.
+	gen internet_ch=(tic03==1 & at05_1==1)
+	replace internet_ch=. if (tic03==.|tic03==9) & at05_1==.
 
 	**************
 	** cel_ch **
@@ -1325,7 +1325,7 @@ formal_ci tipocontrato_ci ocupa_ci horaspri_ci horastot_ci	pensionsub_ci pension
 ylnmpri_ci ylmsec_ci ylnmsec_ci	ylmotros_ci	ylnmotros_ci ylm_ci	ylnm_ci	ynlm_ci	ynlnm_ci ylm_ch	ylnm_ch	ylmnr_ch  ///
 ynlm_ch	ynlnm_ch ylmhopri_ci ylmho_ci nrylmpri_ch remesas_ci remesas_ch	ypen_ci	ypensub_ci ///
 salmm_ci tc_c ipc_c lp19_c lp31_c lp5_c aedu_ci eduui_ci eduuc_ci ///
-edupre_ci eduac_ci asiste_ci pqnoasis1_ci	repite_ci repiteult_ci edupub_ci ///
+edupre_ci eduac_ci asiste_ci pqnoasis1_ci	repite_ci edupub_ci ///
 aguared_ch aguafconsumo_ch aguafuente_ch aguadist_ch aguadisp1_ch aguadisp2_ch aguamala_ch aguamejorada_ch aguamide_ch bano_ch banoex_ch banomejorado_ch sinbano_ch aguatrat_ch luz_ch luzmide_ch combust_ch piso_ch ///
 pared_ch techo_ch resid_ch dorm_ch cuartos_ch cocina_ch telef_ch refrig_ch freez_ch auto_ch compu_ch internet_ch cel_ch ///
 vivi1_ch vivi2_ch viviprop_ch vivitit_ch vivialq_ch	vivialqimp_ch migrante_ci migrantiguo5_ci miglac_ci, first
