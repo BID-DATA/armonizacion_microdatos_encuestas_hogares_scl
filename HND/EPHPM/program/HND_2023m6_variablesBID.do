@@ -1106,9 +1106,10 @@ gen pea_ci=(emp_ci==1 | desemp_ci==1)
 	**************
 	** internet_ch **
 	**************
-	by idh_ch : egen internet_ch=max(at05_1) if miembros_ci==1
-	replace internet_ch = 0 if internet_ch==.
-	tab internet_ch
+	gen internet_ch=(tic03==1 & at05_1==1)
+	replace internet_ch=. if (tic03==.|tic03==9) & at05_1==.
+
+
 	**************
 	** cel_ch **
 	**************
