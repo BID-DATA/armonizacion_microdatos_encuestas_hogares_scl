@@ -22,7 +22,7 @@ local base_in  = "$ruta\survey\\`PAIS'\\`ENCUESTA'\\`ANO'\\`ronda'\data_merge\\`
 local base_out = "$ruta\harmonized\\`PAIS'\\`ENCUESTA'\data_arm\\`PAIS'_`ANO'`ronda'_BID.dta"
                         
 capture log close
-log using "`log_file'", replace 
+*log using "`log_file'", replace 
 
 
 /***************************************************************************
@@ -1256,6 +1256,7 @@ gen aguatrat_ch = 9
 ***luz_ch***
 ************
 gen luz_ch=p4030s1==1 
+replace luz_ch==. if p4030s1==.
 label var luz_ch  "La principal fuente de iluminación es electricidad"
 
 ****************

@@ -1306,8 +1306,10 @@ gen aguatrat_ch = 9
 ************
 ***luz_ch***
 ************
-gen luz_ch=0
+gen luz_ch=.
 replace luz_ch=1 if P4030S1==1 
+replace luz_ch=0 if P4030S1==2 
+
 label var luz_ch  "La principal fuente de iluminación es electricidad"
 
 
