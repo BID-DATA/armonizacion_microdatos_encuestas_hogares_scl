@@ -1566,10 +1566,7 @@ replace compu_ch=0 if v10l==2
 ***************
 **internet_ch *
 ***************
-
-gen internet_ch=.
-replace internet_ch= 1 if  p035 ==1
-replace internet_ch= 0 if  p035 ==2
+gen internet_ch=(p036_1==1)
 
 ***************
 **cel_ch      *
