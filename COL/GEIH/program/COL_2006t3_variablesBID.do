@@ -1409,8 +1409,9 @@ gen aguatrat_ch = 9
 ************
 ***luz_ch***
 ************
-gen luz_ch=0
-replace luz_ch=1 if P4030S1==1 
+gen luz_ch=.
+replace luz_ch=1 if P4030S1==1
+replace luz_ch=0 if P4030S1==2
 label var luz_ch  "La principal fuente de iluminación es electricidad"
 
 
@@ -1425,7 +1426,8 @@ label var luzmide_ch "Usan medidor para pagar consumo de electricidad"
 ***combust_ch***
 ****************
 gen combust_ch=0
-replace combust_ch=1 if  P5080==1 | P5080==3 | P5080==4
+replace combust_ch=1 if P5080==1 | P5080==3 | P5080==4
+replace combust_ch=. if P5080==.
 label var combust_ch "Principal combustible gas o electricidad" 
 
 
