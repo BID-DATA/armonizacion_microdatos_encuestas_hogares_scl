@@ -1941,7 +1941,7 @@ replace potrot_ci = 1 if ing_otrot_ci != . & ing_otrot_ci > 0
 replace potrot_ci = . if ing_otrot_ci == .
 bys idh_ch: egen potrot_ch = max(potrot_ci)
 
-gen pcasht_ch= (ptmc_ch==1 | pnc_ch==1 | potrot_ch==1)
+bys idh_ch: gen pcasht_ch= (ptmc_ch==1 | pnc_ch==1 | potrot_ch==1)
 
 *ingreso neto del hogar
 gen y_pc_net_ch = (y_hog_ch - ing_ptmc_ch -ing_pnc_ch - ing_otrot_ch) / nmiembros_sph_ch
