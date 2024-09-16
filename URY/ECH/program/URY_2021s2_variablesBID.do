@@ -1890,12 +1890,11 @@ lab val atencion_ci atencion_ci
 isid idh_ch idp_ci
 
 gen x=1
-drop nmiembros_ch
-bys idh_ch: egen nmiembros_ch= sum(x)
+bys idh_ch: egen nmiembros_sph_ch= sum(x)
 
 * Ingreso del hogar
-egen ingreso_total = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci), missing
-bys idh_ch: egen y_hog = sum(ingreso_total)
+egen y_hog_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci), missing
+bys idh_ch: egen y_hog_ch = sum(y_hog_ci)
 
 ******PTMC******
 
@@ -1945,26 +1944,8 @@ bys idh_ch: egen potrot_ch = max(potrot_ci)
 gen pcasht_ch= (ptmc_ch==1 | pnc_ch==1 | potrot_ch==1)
 
 *ingreso neto del hogar
-gen y_pc = y_hog / nmiembros_ch
-gen y_pc_net = (y_hog - ing_ptmc_ch -ing_pnc_ch - ing_otrot_ch) / nmiembros_ch
+gen y_pc_net_ch = (y_hog_ch - ing_ptmc_ch -ing_pnc_ch - ing_otrot_ch) / nmiembros_sph_ch
 
-lab def ptmc_ch 1 "Hogar beneficiario PTMC" 0 "Hogar no beneficiario PTMC"
-lab val ptmc_ch ptmc_ch
-
-lab def ptmc_ci 1 "Persona beneficiaria PTMC" 0 "Persona no beneficiaria PTMC"
-lab val ptmc_ci ptmc_ci
-
-lab def pnc_ci 1 "Persona beneficiaria PNC" 0 "Persona no beneficiaria PNC"
-lab val pnc_ci pnc_ci
-
-lab def pnc_ch 1 "Hogar beneficiario PNC" 0 "Hogar no beneficiario PNC"
-lab val pnc_ch pnc_ch
-
-lab def potrot_ci 1 "Persona beneficiaria PNC" 0 "Persona no beneficiaria PNC"
-lab val potrot_ci potrot_ci
-
-lab def potrot_ch 1 "Hogar beneficiario PNC" 0 "Hogar no beneficiario PNC"
-lab val potrot_ch potrot_ch
 	
 /*_____________________________________________________________________________________________________*/
 * Asignación de etiquetas e inserción de variables externas: tipo de cambio, Indice de Precios al 
@@ -1979,10 +1960,10 @@ do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&Exter
 *  Pobres extremos, pobres moderados, vulnerables y no pobres 
 * con base en ingreso neto (Sin transferencias)
 * y líneas de pobreza internacionales
-gen     grupo_int = 1 if (y_pc_net<lp31_ci)
-replace grupo_int = 2 if (y_pc_net>=lp31_ci & y_pc_net<(lp31_ci*1.6))
-replace grupo_int = 3 if (y_pc_net>=(lp31_ci*1.6) & y_pc_net<(lp31_ci*4))
-replace grupo_int = 4 if (y_pc_net>=(lp31_ci*4) & y_pc_net<.)
+gen     grupo_int = 1 if (y_pc_net_ch<lp31_ci)
+replace grupo_int = 2 if (y_pc_net_ch>=lp31_ci & y_pc_net_ch<(lp31_ci*1.6))
+replace grupo_int = 3 if (y_pc_net_ch>=(lp31_ci*1.6) & y_pc_net_ch<(lp31_ci*4))
+replace grupo_int = 4 if (y_pc_net_ch>=(lp31_ci*4) & y_pc_net_ch<.)
 
 tab grupo_int, gen(gpo_ingneto)
 
