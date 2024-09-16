@@ -2436,7 +2436,7 @@ replace potrot_ci = 1 if ing_otrot_ci != . & ing_otrot_ci > 0
 bys idh_ch: egen potrot_ch = max(potrot_ci)
 
 *Beneficiario por PTMC PNC u Otros
-gen pcasht_ch = (ptmc_ch==1|pnc_ch==1| potrot_ch==1)
+bys idh_ch: gen pcasht_ch = (ptmc_ch==1|pnc_ch==1| potrot_ch==1)
 
 * Ingreso neto del hogar per cápita
 gen y_pc_net_ch = (y_hog_ch - ing_ptmc_ch - ing_pnc_ch - ing_otrot_ch) / nmiembros_sph_ch
