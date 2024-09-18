@@ -309,9 +309,9 @@ Other
    *** afroind_ci ***
 	***************
 gen afroind_ci=. 
-replace afroind_ci = 1 if (q1_07 == 4)
-replace afroind_ci = 2 if (q1_07 == 1 | q1_07 == 3 | q1_07 == 8)
-replace afroind_ci = 3 if (q1_07 == 2 | q1_07 == 5 | q1_07 == 6 | q1_07 == 7 | q1_07 == 9)
+replace afroind_ci = 1 if (q1_07 == 4 )
+replace afroind_ci = 2 if (q1_07 == 1 | q1_07 == 3 )
+replace afroind_ci = 3 if (q1_07 == 2 | q1_07 == 5 | q1_07 == 6 | q1_07 == 7 | q1_07 == 9 | q1_07 == 8 )
 
 	***************
    *** afroind_ch ***
