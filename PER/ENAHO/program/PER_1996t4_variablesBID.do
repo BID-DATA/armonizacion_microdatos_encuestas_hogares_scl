@@ -1289,8 +1289,8 @@ gen piso_ch=0 if matpiso==6
 replace piso_ch=1 if matpiso>=1 & matpiso<=5
 replace piso_ch=2 if matpiso==7
 
-gen pared_ch=0 if matpared==3 | matpared==4 | matpared==7
-replace pared_ch=1 if matpared==1 | matpared==2 | matpared==5 | matpared==6
+gen pared_ch=0 if  matpared==4 
+replace pared_ch=1 if matpared==1 | matpared==2 | matpared==5 | matpared==6 | matpared==3 |  matpared==7
 replace pared_ch=2 if matpared==8
 
 gen techo_ch=.
