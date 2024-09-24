@@ -1071,7 +1071,7 @@ recode r304 (5=0 "Dirt floor")(1/4=1 "Permanent materials")(6=2 "Other materials
 ******************************
 *	pared_ch
 ******************************
-recode r303 (2 3 5/8=0 "Non-permanent materials")(1 4 =1 "Permanent materials")(9=2 "Other materials"),g (pared_ch)
+recode r303 (2 5/8=0 "Non-permanent materials")(1 3 4 =1 "Permanent materials")(9=2 "Other materials"),g (pared_ch)
 
 ******************************
 *	techo_ch

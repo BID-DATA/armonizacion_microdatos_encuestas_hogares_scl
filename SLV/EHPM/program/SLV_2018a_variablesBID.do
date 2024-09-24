@@ -1190,8 +1190,8 @@ label val piso_ch piso_ch
 **************
 ***pared_ch***
 **************
-gen pared_ch=0 		if r303==2 | r303==3 |r303==5 |r303==6 |r303==7 
-replace pared_ch=1 	if r303==1 | r303==4
+gen pared_ch=0 		if r303==2 | r303==5 |r303==6 |r303==7 
+replace pared_ch=1 	if r303==1 | r303==4 | r303==3 
 replace pared_ch=2 	if r303==8
 replace pared_ch=. 	if r303==.
 label var pared_ch "Materiales de construcción de las paredes"
