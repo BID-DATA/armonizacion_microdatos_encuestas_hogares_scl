@@ -173,9 +173,9 @@ label var edad_ci "edad del individuo"
 	***afroind_ci***
 	*************** 
 gen afroind_ci = .
-replace afroind_ci = 1 if inlist(HL6, 3, 4)/* Indigena */
+replace afroind_ci = 1 if inlist(HL6, 3)/* Indigena */
 replace afroind_ci = 2 if inlist(HL6, 1, 2)/* Afro */
-replace afroind_ci = 3 if inlist(HL6, 5, 6, 7)/* Otros */ 
+replace afroind_ci = 3 if inlist(HL6, 4, 5, 6, 7)/* Otros */ 
 
 	***************
 	***afroind_ch***
