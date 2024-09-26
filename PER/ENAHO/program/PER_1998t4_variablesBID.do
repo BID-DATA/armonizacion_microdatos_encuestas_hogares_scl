@@ -1702,8 +1702,8 @@ gen piso_ch=0 if P103==6
 replace piso_ch=1 if P103>=1 & P103<=5
 replace piso_ch=2 if P103==7
 
-gen pared_ch=0 if P102==3 | P102==4 | P102==7
-replace pared_ch=1 if P102==1 | P102==2 | P102==5 | P102==6
+gen pared_ch=0 if P102==4 
+replace pared_ch=1 if P102==1 | P102==2 | P102==5 | P102==6 | p102==3 | p102==7
 replace pared_ch=2 if P102==8
 
 gen techo_ch=.

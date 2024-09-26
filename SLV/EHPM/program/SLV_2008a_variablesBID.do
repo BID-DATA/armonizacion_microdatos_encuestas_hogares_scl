@@ -1067,8 +1067,8 @@ replace piso_ch=2 if r304==6
 *	pared_ch
 ******************************
 g pared_ch=.
-replace pared_ch=0 if r303==2 | r303==3 | r303==5| r303==6 | r303==7 |r303==8
-replace pared_ch=1 if r303==1 | r303==4 
+replace pared_ch=0 if r303==2 | r303==5| r303==6 | r303==7 |r303==8
+replace pared_ch=1 if r303==1 | r303==4 | r303==3 
 replace pared_ch=2 if r303==9
 ******************************
 *	techo_ch
