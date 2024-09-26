@@ -297,6 +297,127 @@ by idh_ch, sort: egen nmenor1_ch = sum(miembros_ci == 1 & edad_ci < 1)
 label variable nmenor1_ch "Numero de familiares menores a 1 anio"
 
 
+	*********************************************
+	*	VARIABLES DE IDENTIDAD ÉTNICO-RACIAL	*
+	*********************************************
+	
+***************
+***afro_ci***
+***************
+gen afro_ci =. 
+
+***************
+***ind_ci***
+***************
+gen ind_ci =. 
+	
+***************
+**noafroind_ci*
+***************
+gen noafroind_ci =. 
+
+***************
+****afro_ch****
+***************
+gen afro_ch =. 
+
+***************
+****ind_ch*****
+***************
+gen ind_ch =. 
+
+***************
+**noafroind_ch*
+***************
+gen noafroind_ch =. 
+
+
+*******************
+***afroind_ano_c***
+*******************
+gen afroind_ano_c =.	
+
+***************
+**afroind_ci***
+***************
+gen afroind_ci =. 
+
+***************
+**afroind_ch***
+***************
+gen afroind_ch =. 
+
+
+	*********************************
+	*	SITUACIÓN DE DISCAPACIDAD	*
+	*********************************
+
+*******************
+***dis_ci***
+*******************
+gen dis_ci =. 
+
+*******************
+***disWG_ci***
+*******************
+gen disWG_ci =.
+
+*******************
+**ISO3pais_dis_ci**
+*******************
+gen HND_dis_ci =.
+
+*******************
+***dis_ch***
+*******************
+gen dis_ch =.
+
+
+
+	************************************
+	*** VARIABLES DEL MERCADO LABORAL***
+	************************************
+	
+****************
+****condocup_ci*
+****************
+/*
+Siguiendo la metodlogía planteada por la autoridad estadística
+
+DESOCUPADOS = Hacen parte de los desocupados los cesantes, los aspirantes y 
+los iniciadores.
+
+no es posible calcular los aspirantes e iniciadores en esta encuesta, la edad mínima cambia a 15 26/9/2021
+*/
+* Comprobacion con variables originales.  Se considera ocupado a quienes estan en trabajos no remunerados. 5/28/2014 MGD
+* La edad minima de la encuesta se cambia a 5 anios.
+
+gen condocup_ci = .
+replace condocup_ci = 1 if !missing(categop) & edad_ci >= 15
+by idh_ch, sort: egen perd_trabajo = total(ed043)
+gen cesantes = 1 if condocup_ci == 1 & perd_trabajo > 0
+replace condocup_ci = 2 if cesantes == 1
+replace condocup_ci = 3 if missing(condocup_ci) & edad_ci >= 15
+replace condocup_ci = 4 if edad_ci < 15
+
+label var condocup_ci "Condición de ocupación de acuerdo a definición de cada país"
+label define condocup_ci  1 "Ocupado" 2 "Desocupado" 3 "Inactivo" 4 "Menor que 15" 
+label values condocup_ci condocup_ci
+drop perd_trabajo cesantes
+
+
+***********************************************AQUI******************************************
+*******************
+***categoinac_ci***
+*******************
+gen categoinac_ci = 1 if !missing(oih02_lps) | !missing(oih01_lps)
+replace categoinac_ci = 2 if  (cp512==5 & condocup_ci==3)
+replace categoinac_ci = 3 if  (cp512==6 & condocup_ci==3)
+replace categoinac_ci = 4 if  ((categoinac_ci ~=1 & categoinac_ci ~=2 & categoinac_ci ~=3) & condocup_ci==3)
+label var categoinac_ci "Categoría de inactividad"
+label define categoinac_ci 1 "jubilados o pensionados" 2 "Estudiantes" 3 "Quehaceres domésticos" 4 "Otros" 
+	
+
 
 
 ************
@@ -322,9 +443,7 @@ label define ine01  ///
 label value ine01 ine01
 label var ine01 "Division administrativa, departamentos"
 
-	*********************************************
-	*	VARIABLES DE IDENTIDAD ÉTNICO-RACIAL	*
-	*********************************************
+
 
 
 
@@ -340,57 +459,15 @@ label var ine01 "Division administrativa, departamentos"
 **María Antonella Pereira & Nathalia Maya - Marzo 2021 
 
 
-	***************
-	***afroind_ci***
-	***************
-gen afroind_ci=. 
-
-	***************
-	***afroind_ch***
-	***************
-gen afroind_ch=. 
-
-	*******************
-	***afroind_ano_c***
-	*******************
-gen afroind_ano_c=.		
-
-	*******************
-	***dis_ci***
-	*******************
-gen dis_ci=. 
-
-	*******************
-	***dis_ch***
-	*******************
-gen dis_ch=. 
 
 
-************************************
-*** VARIABLES DEL MERCADO LABORAL***
-************************************
 
-****************
-****condocup_ci*
-****************
-/*
-gen condocup_ci=condact
-replace condocup_ci=4 if edad_ci<10
-label var condocup_ci "Condicion de ocupación de acuerdo a def de cada pais"
-label define condocup_ci 1 "Ocupado" 2 "Desocupado" 3 "Inactivo" 4 "Menor que 10" 
-label value condocup_ci condocup_ci
-*/
-* Comprobacion con variables originales.  Se considera ocupado a quienes estan en trabajos no remunerados. 5/28/2014 MGD
-* La edad minima de la encuesta se cambia a 5 anios.
 
-g condocup_ci=.
-replace condocup_ci=1 if (cp501==1 | cp504==1 | cp505==1)
-replace condocup_ci=2 if (cp501==2 | cp504==2 | cp505==2) & (cp510==1 | cp510==1) 
-recode condocup_ci (.=3) if edad_ci>=5
-recode condocup_ci (.=4) if edad_ci<5
-label var condocup_ci "Condicion de ocupación de acuerdo a def de cada pais"
-label define condocup_ci  1 "Ocupado" 2 "Desocupado" 3 "Inactivo" 4 "Menor que 10" 
-label value condocup_ci condocup_ci
+
+
+
+
+
 
 ************
 ***emp_ci***
@@ -774,16 +851,7 @@ gen lpe_ci = 1796.42 if zona_c==1
 replace lpe_ci= 1355.49 if zona_c==0
 label var lpe_ci "Linea de indigencia oficial del pais"
 
-*******************
-***categoinac_ci***
-*******************
 
-gen categoinac_ci =1 if ((cp512 ==2 | cp512==3) & condocup_ci==3)
-replace categoinac_ci = 2 if  (cp512==5 & condocup_ci==3)
-replace categoinac_ci = 3 if  (cp512==6 & condocup_ci==3)
-replace categoinac_ci = 4 if  ((categoinac_ci ~=1 & categoinac_ci ~=2 & categoinac_ci ~=3) & condocup_ci==3)
-label var categoinac_ci "Categoría de inactividad"
-label define categoinac_ci 1 "jubilados o pensionados" 2 "Estudiantes" 3 "Quehaceres domésticos" 4 "Otros" 
 
 *******************
 ***formal***
