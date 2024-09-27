@@ -1547,8 +1547,8 @@ label var auto_ch "El hogar posee automóvil particular"
 * compu_ch *
 ************
 gen compu_ch= .
-replace compu_ch = 1 if v18f==3 | v18g==5
 replace compu_ch = 0 if v18f==4 | v18g==6
+replace compu_ch = 1 if v18f==3 | v18g==5
 label var compu_ch "El hogar posee computadora"
 
 ***************
