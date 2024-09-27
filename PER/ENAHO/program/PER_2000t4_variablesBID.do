@@ -1693,11 +1693,6 @@ label def aguadist_ch 1"Dentro de la vivienda" 2"Fuera de la vivienda pero en el
 label def aguadist_ch 3"Fuera de la vivienda y del terreno", add
 label val aguadist_ch aguadist_ch
 
-gen aguamala_ch=.
-/*NA*/
-
-gen aguamide_ch=.
-/*NA*/
 
 gen luz_ch=p1121
 
@@ -2286,6 +2281,7 @@ no le permiten
 
 gen DISCONN=0 if     (edad>=15 & edad<=24)
 replace DISCONN=1 if (edad>=15 & edad<=24) & (peaa==. | peaa==3) & p303!=1 & ((p549>=1 & p549<=4) | p549==9)
+gen aguared_ch =.
 
 /*_____________________________________________________________________________________________________*/
 * Asignación de etiquetas e inserción de variables externas: tipo de cambio, Indice de Precios al 

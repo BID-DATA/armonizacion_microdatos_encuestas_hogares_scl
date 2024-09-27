@@ -2382,8 +2382,12 @@ replace DISCONN=1 if (edad>=15 & edad<=24) & (peaa==. | peaa==3) & p307!=1 & ((p
 	replace miglac_ci = . if migrante_ci == 0
 	label var miglac_ci "=1 si es migrante proveniente de un pais LAC"
 	** Fuente: Los codigos de paises se obtiene del censo de peru (redatam)
-	
-	
+
+gen aguared_ch =.
+gen luz_ch = .
+gen luzmide_ch=.
+gen combust_ch =.
+
 /*_____________________________________________________________________________________________________*/
 * Asignación de etiquetas e inserción de variables externas: tipo de cambio, Indice de Precios al 
 * Consumidor (2011=100), líneas de pobreza
