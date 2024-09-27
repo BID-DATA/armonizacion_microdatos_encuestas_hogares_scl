@@ -1587,11 +1587,11 @@ gen aguafconsumo_ch = 0
 *aguafuente_ch*
 *****************
 gen aguafuente_ch =.
-replace aguafuente_ch = 1 if (p110==1|p110==2) 
-replace aguafuente_ch = 2 if p110==3
-replace aguafuente_ch = 6 if p110==4
+replace aguafuente_ch = 1 if (P110==1|P110==2) 
+replace aguafuente_ch = 2 if P110==3
+replace aguafuente_ch = 6 if P110==4
 *replace aguafuente_ch = 8 if p110==8 
-replace aguafuente_ch = 10 if (p110==5 |p110==7| p110==6)
+replace aguafuente_ch = 10 if (P110==5 |P110==7| P110==6)
 
 **************
 *aguadisp1_ch*
@@ -1632,10 +1632,10 @@ gen aguamide_ch=.
 *****************
 
 gen bano_ch=0
-replace bano_ch=1 if (p111==1|p111==2)
-replace bano_ch = 2 if p111==3
-replace bano_ch=4 if p111==5
-replace bano_ch = 6 if p111 == 4
+replace bano_ch=1 if (P111==1|P111==2)
+replace bano_ch = 2 if P111==3
+replace bano_ch=4 if P111==5
+replace bano_ch = 6 if P111 == 4
 
 
 ***************
@@ -1655,7 +1655,7 @@ replace banomejorado_ch =0 if (bano_ch ==0 | bano_ch>=4) & bano_ch!=6
 *sinbano_ch*
 ************
 gen sinbano_ch = 0
-replace sinbano_ch =3 if p111 == 6
+replace sinbano_ch =3 if P111 == 6
 
 
 *************
@@ -1670,9 +1670,9 @@ gen aguatrat_ch = 9
 ***aguadist_ch***
 *****************
 gen aguadist_ch = 0
-replace aguadist_ch=1 if p110==1
-replace aguadist_ch=2 if p110==2
-replace aguadist_ch=3 if p110==3 
+replace aguadist_ch=1 if P110==1
+replace aguadist_ch=2 if P110==2
+replace aguadist_ch=3 if P110==3 
 
 
 label var aguadist_ch "Ubicación de la principal fuente de agua"
@@ -1703,7 +1703,7 @@ replace piso_ch=1 if P103>=1 & P103<=5
 replace piso_ch=2 if P103==7
 
 gen pared_ch=0 if P102==4 
-replace pared_ch=1 if P102==1 | P102==2 | P102==5 | P102==6 | p102==3 | p102==7
+replace pared_ch=1 if P102==1 | P102==2 | P102==5 | P102==6 | P102==3 | P102==7
 replace pared_ch=2 if P102==8
 
 gen techo_ch=.
@@ -1755,7 +1755,7 @@ replace vivialqimp_ch=. if P106==99999*/
 *Modificación Mayra Sáenz - Julio 2015
 gen vivialqimp_ch= vivialqimp
 
-
+ gen aguared_ch=.
 /*_____________________________________________________________________________________________________*/
 * Asignación de etiquetas e inserción de variables externas: tipo de cambio, Indice de Precios al 
 * Consumidor (2011=100), líneas de pobreza

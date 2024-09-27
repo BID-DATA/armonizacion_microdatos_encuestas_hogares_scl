@@ -1502,8 +1502,8 @@ replace banomejorado_ch =0 if (bano_ch ==0 | bano_ch>=4) & bano_ch!=6
 ************
 *sinbano_ch*
 ************
-gen sinbano_ch = 0
-replace sinbano_ch =3 if p111 == 6
+*gen sinbano_ch = 0
+*replace sinbano_ch =3 if P111 == 6
 
 
 *************
@@ -1517,10 +1517,11 @@ gen aguatrat_ch = 9
 *****************
 ***aguadist_ch***
 *****************
-gen aguadist_ch = 0
-replace aguadist_ch=1 if p110==1
-replace aguadist_ch=2 if p110==2
-replace aguadist_ch=3 if p110==3 
+gen aguadist_ch = .
+/*gen aguadist_ch = 0
+replace aguadist_ch=1 if P110==1
+replace aguadist_ch=2 if P110==2
+replace aguadist_ch=3 if P110==3 */
 
 
 label var aguadist_ch "Ubicación de la principal fuente de agua"
