@@ -469,7 +469,6 @@ label var pea_ci "Población Económicamente Activa"
 *****************
 ***desalent_ci***
 *****************
-drop desalent_ci
 gen desalent_ci=(motivo_no_busca_trabajo==5 | motivo_no_busca_trabajo==6) & condocup_ci ==3
 replace desalent_ci=. if motivo_no_busca_trabajo==.
 label var desalent_ci "Trabajadores desalentados"
@@ -485,12 +484,6 @@ label var horaspri_ci "Horas trabajadas semanalmente en el trabajo principal"
 *****************
 ***horastot_ci***
 *****************
-gen horastot_ci=tothoras  if emp_ci==1 
-label var horastot_ci "Horas trabajadas semanalmente en todos los empleos"
-
-***************
-***subemp_ci***
-***************    
 *Horas semanales trabajadas empleo principal
 gen promhora=horas_trabaja_semana_principal if emp_ci==1 
 *Horas semanales trabajadas empleo secundario
@@ -498,6 +491,12 @@ gen promhora1=horas_trabajo_ocup_secun if emp_ci==1
 egen tothoras=rowtotal(promhora promhora1)
 replace tothoras=. if promhora==. & promhora1==. 
 replace tothoras=. if tothoras>=168
+gen horastot_ci=tothoras  if emp_ci==1 
+label var horastot_ci "Horas trabajadas semanalmente en todos los empleos"
+
+***************
+***subemp_ci***
+***************    
 *Modificacion MGD 06/20/2014: condiciona solo a horas en ocupacion primaria.
 gen subemp_ci=0  
 replace  subemp_ci=1 if (promhora>=1 & promhora<=30) & emp_ci==1 & desea_trabajar_mas_horas==1
@@ -889,8 +888,27 @@ gen ynlnm_ci=regalos_ext_monto
 replace ynlnm_ci=. if regalos_ext_monto==.
 label var ynlnm_ci "Ingreso no laboral no monetario" 
 
+******************
+* C.No respuesta
+******************
+
+*****************
+***nrylmpri_ci***
+*****************
+gen nrylmpri_ci=(ylmpri_ci==. & emp_ci==1)
+label var nrylmpri_ci "Id no respuesta ingreso de la actividad principal"  
+
+*******************
+*** nrylmpri_ch ***
+*******************
+*Creating a Flag label for those households where someone has a ylmpri_ci as missing
+by idh_ch, sort: egen nrylmpri_ch=sum(nrylmpri_ci) if miembros_ci==1, missing
+replace nrylmpri_ch=1 if nrylmpri_ch>0 & nrylmpri_ch<.
+replace nrylmpri_ch=. if nrylmpri_ch==.
+label var nrylmpri_ch "Hogares con algún miembro que no respondió por ingresos"
+
 *********************************************************
-* C.	Ingresos laborales y no laborales a nivel hogar
+* D.  Ingresos laborales y no laborales a nivel hogar
 *********************************************************
 
 **************
@@ -941,26 +959,6 @@ gen ylmho_ci=ylm_ci/(horastot_ci*4.3)
 label var ylmho_ci "Salario monetario de todas las actividades" 
 
 
-******************
-* E.No respuesta
-******************
-
-*****************
-***nrylmpri_ci***
-*****************
-gen nrylmpri_ci=(ylmpri_ci==. & emp_ci==1)
-label var nrylmpri_ci "Id no respuesta ingreso de la actividad principal"  
-
-*******************
-*** nrylmpri_ch ***
-*******************
-*Creating a Flag label for those households where someone has a ylmpri_ci as missing
-by idh_ch, sort: egen nrylmpri_ch=sum(nrylmpri_ci) if miembros_ci==1, missing
-replace nrylmpri_ch=1 if nrylmpri_ch>0 & nrylmpri_ch<.
-replace nrylmpri_ch=. if nrylmpri_ch==.
-label var nrylmpri_ch "Hogares con algún miembro que no respondió por ingresos"
-
-
 ************
 *F.	Remesas
 ************
@@ -1007,20 +1005,14 @@ label var ypensub_ci "Valor de la pension subsidiada / no contributiva"
 
 
  
-	****************************
-	***VARIABLES DE EDUCACION***
-	****************************
+		****************************
+		***VARIABLES DE EDUCACION***
+		****************************
 
 *************
 ***aedu_ci*** 
 *************
-
 gen	 aedu_ci=.
-
-label define nivel 1 "Pre-escolar" 2 "Primario" 3 "Secundario" 4 "Secundario-técnico" 5 "Universitario" 6 "Post-grado" 7 "Maestria" 8 "Doctorado" 9 "Ninguno" 10 "Quisqueya Aprende" 99 "Otro"
-label values nivel_ultimo_ano_aprobado nivel 
-label values nivel_se_matriculo nivel
-
 replace aedu_ci= 0 if nivel_ultimo_ano_aprobado==1  
 replace aedu_ci= 0 if nivel_ultimo_ano_aprobado==9
 replace aedu_ci= 0 if nivel_ultimo_ano_aprobado==10
@@ -1031,74 +1023,55 @@ replace aedu_ci = ultimo_ano_aprobado+12 if nivel_ultimo_ano_aprobado == 5
 replace aedu_ci = ultimo_ano_aprobado+12+4 if nivel_ultimo_ano_aprobado==6 | nivel_ultimo_ano_aprobado==7 
 replace aedu_ci = ultimo_ano_aprobado+12+4+2 if nivel_ultimo_ano_aprobado==8 
 replace aedu_ci=.  if nivel_ultimo_ano_aprobado==.
-
 label var aedu_ci "Anios de educacion aprobados" 
+label define nivel 1 "Pre-escolar" 2 "Primario" 3 "Secundario" 4 "Secundario-técnico" 5 "Universitario" 6 "Post-grado" 7 "Maestria" 8 "Doctorado" 9 "Ninguno" 10 "Quisqueya Aprende" 99 "Otro"
+label values nivel_ultimo_ano_aprobado nivel 
+label values nivel_se_matriculo nivel
 
 **************
 ***eduno_ci***
 **************
-
 gen byte eduno_ci=aedu_ci==0
 replace eduno_ci=. if aedu_ci==.
 label variable eduno_ci "Sin educacion"
 
+***************
+***edupre_ci***
+***************
+gen byte edupre_ci=.
+label variable edupre_ci "Educacion preescolar completa"
 
 **************
 ***edupi_ci***
 **************
-
 gen byte edupi_ci=(aedu_ci>=1 & aedu_ci<6) 
 replace edupi_ci=. if aedu_ci==. 
 label variable edupi_ci "Primaria incompleta"
 
-
 **************
 ***edupc_ci***
 **************
-
 gen byte edupc_ci=aedu_ci==6
 replace edupc_ci=. if aedu_ci==.
 label variable edupc_ci "Primaria completa"
 
-
 **************
 ***edusi_ci***
 **************
-
 gen byte edusi_ci=(aedu_ci>=7 & aedu_ci<12) 
 replace edusi_ci=. if aedu_ci==.
 label variable edusi_ci "Secundaria incompleta"
 
-
 **************
 ***edusc_ci***
 **************
-
 gen byte edusc_ci=aedu_ci==12 
 replace edusc_ci=. if aedu_ci==.
 label variable edusc_ci "Secundaria completa"
 
-
-**************
-***eduui_ci***
-**************
-
-gen byte eduui_ci=aedu_ci>12 & aedu_ci<16 
-replace eduui_ci=. if aedu_ci==.
-label variable eduui_ci "Universitaria incompleta"
-
-***************
-***eduuc_ci****
-***************
-
-gen byte eduuc_ci=aedu_ci>=16 // mas de 16 todos
-replace eduuc_ci=. if aedu_ci==. 
-label variable eduuc_ci "Universitaria completa o mas"
-
 ***************
 ***edus1i_ci***
 ***************
-
 gen byte edus1i_ci=aedu_ci>6 & aedu_ci<8 
 replace edus1i_ci=. if aedu_ci==. 
 label variable edus1i_ci "1er ciclo de la secundaria incompleto"
@@ -1106,7 +1079,6 @@ label variable edus1i_ci "1er ciclo de la secundaria incompleto"
 ***************
 ***edus1c_ci***
 ***************
-
 gen byte edus1c_ci=aedu_ci==8
 replace edus1c_ci=. if aedu_ci==. 
 label variable edus1c_ci "1er ciclo de la secundaria completo"
@@ -1114,7 +1086,6 @@ label variable edus1c_ci "1er ciclo de la secundaria completo"
 ***************
 ***edus2i_ci***
 ***************
-
 gen byte edus2i_ci=aedu_ci>8 & aedu_ci<12 
 replace edus2i_ci=. if aedu_ci==.
 label variable edus2i_ci "2do ciclo de la secundaria incompleto"
@@ -1122,18 +1093,46 @@ label variable edus2i_ci "2do ciclo de la secundaria incompleto"
 ***************
 ***edus2c_ci***
 ***************
-
 gen byte edus2c_ci=aedu_ci==12 
 replace edus2c_ci=. if aedu_ci==. 
 label variable edus2c_ci "2do ciclo de la secundaria completo"
 
+**************
+***eduui_ci***
+**************
+gen byte eduui_ci=aedu_ci>12 & aedu_ci<16 
+replace eduui_ci=. if aedu_ci==.
+label variable eduui_ci "Universitaria incompleta"
 
 ***************
-***edupre_ci***
+***eduuc_ci****
 ***************
+gen byte eduuc_ci=aedu_ci>=16 // mas de 16 todos
+replace eduuc_ci=. if aedu_ci==. 
+label variable eduuc_ci "Universitaria completa o mas"
 
-gen byte edupre_ci=.
-label variable edupre_ci "Educacion preescolar completa"
+**************
+***eduac_ci***
+**************
+gen byte eduac_ci=.  
+label variable eduac_ci "Superior universitario vs superior no universitario"
+
+***************
+***asiste_ci***
+***************
+generat asiste_ci=1 if asiste_centro_educativo ==1 
+replace asiste_ci=0 if asiste_centro_educativo ==2
+replace asiste_ci=. if asiste_centro_educativo ==.
+label variable asiste_ci "Asiste actualmente a la escuela"
+
+***************
+***edupub_ci***
+***************
+gen edupub_ci=.
+replace edupub_ci=1 if tipo_centro_estudios==3 & asiste_centro_educativo==1 //publico
+replace edupub_ci=0 if tipo_centro_estudios==1 & asiste_centro_educativo==1 // privado
+replace edupub_ci=0 if tipo_centro_estudios==2 & asiste_centro_educativo==1 // semiprivado
+label var edupub_ci "Asiste a un centro de enseñanza público"
 
 ****************
 ***asispre_ci***
@@ -1142,22 +1141,6 @@ g asispre_ci= 1 if nivel_se_matriculo==1 & asiste_centro_educativo ==1
 replace asispre_ci=0 if nivel_se_matriculo!=1 & asiste_centro_educativo ==1
 label variable asispre_ci "Asistencia a Educacion preescolar"
 	
-**************
-***eduac_ci***
-**************
-gen byte eduac_ci=.  
-label variable eduac_ci "Superior universitario vs superior no universitario"
-
-
-***************
-***asiste_ci***
-***************
-
-generat asiste_ci=1 if asiste_centro_educativo ==1 
-replace asiste_ci=0 if asiste_centro_educativo ==2
-replace asiste_ci=. if asiste_centro_educativo ==.
-label variable asiste_ci "Asiste actualmente a la escuela"
-
 **************
 ***pqnoasis***
 **************
@@ -1186,27 +1169,16 @@ label value  pqnoasis1_ci pqnoasis1_ci
 ***************
 ***repite_ci***
 ***************
-
 gen repite_ci=.
 label var repite_ci "Ha repetido al menos un grado"
-
 
 ******************
 ***repiteult_ci***
 ******************
-
 gen repiteult_ci=.
 label var repiteult "Ha repetido el último grado"
 
 
-***************
-***edupub_ci***
-***************
-gen edupub_ci=.
-replace edupub_ci=1 if tipo_centro_estudios==3 & asiste_centro_educativo==1 //publico
-replace edupub_ci=0 if tipo_centro_estudios==1 & asiste_centro_educativo==1 // privado
-replace edupub_ci=0 if tipo_centro_estudios==2 & asiste_centro_educativo==1 // semiprivado
-label var edupub_ci "Asiste a un centro de enseñanza público"
 
 **********************************
 **** VARIABLES DE LA VIVIENDA ****
