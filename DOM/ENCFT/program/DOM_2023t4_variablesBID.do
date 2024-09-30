@@ -51,7 +51,7 @@ use `base_in', clear
 **********
 ***anio***
 **********
-gen byte anio_c=2023
+gen anio_c=2023
 label variable anio_c "Anio de la encuesta"
 
 *********
@@ -143,13 +143,14 @@ label variable upm_ci "Unidad Primaria de Muestreo"
 ****idh_ch*****
 ***************
 sort vivienda hogar
-egen idh_ch = group(vivienda hogar)
+egen idh_ch = concat(vivienda hogar)
 label variable idh_ch "ID del hogar"
 
 *************
 ****idp_ci****
 **************
-egen idp_ci=group(vivienda hogar miembro)
+* string
+egen idp_ci=concat(vivienda hogar miembro)
 label variable idp_ci "ID de la persona en el hogar"
 duplicates report idp_ci
 
@@ -1395,31 +1396,36 @@ label var vivialqimp_ch "Alquiler mensual imputado"
 ****************
 ***aguared_ch***
 ****************
-generate aguared_ch =.
-replace aguared_ch = 1 if tiene_agua_red_publica==1 
-replace aguared_ch = 0 if tiene_agua_red_publica==2
+gen aguared_ch2 = (donde_proviene_agua==1 | donde_proviene_agua==2)
 la var aguared_ch "Acceso a fuente de agua por red"
 
 *****************
 *aguafconsumo_ch*
 *****************
-*se asume por el cuestionario y por los datos que agua para consumo es agua de red,
 gen aguafconsumo_ch = 0
 
 *****************
 *aguafuente_ch*
 *****************
+/*Del acueducto dentro de la vivienda........01
+Del acueducto en el patio de la vivienda......02
+De una llave de otra vivienda......................03 SIN DATOS EN LA BASE
+De una llave pública.....................................04 SIN DATOS EN LA BASE
+De un tubo de la calle...................................05
+Manantial, río, arroyo.........06
+Lluvia...............................07
+Pozo.................................08
+Camión tanque..................09
+Otro.- (Especifique)..........99*/
 gen aguafuente_ch = 1 if (donde_proviene_agua==1 | donde_proviene_agua==2)
-replace aguafuente_ch = 2 if (donde_proviene_agua==4 | donde_proviene_agua==5)
+replace aguafuente_ch = 2 if (donde_proviene_agua==5)
 replace aguafuente_ch = 5 if donde_proviene_agua==7
 replace aguafuente_ch = 6 if donde_proviene_agua==9
 replace aguafuente_ch = 8 if donde_proviene_agua==6
-replace aguafuente_ch = 9 if donde_proviene_agua==3
 replace aguafuente_ch = 10 if (donde_proviene_agua==8 | donde_proviene_agua==99)
-
 *******
 ** nota
-** No hay una combinación lógica de categorías de esta variable (donde_proviene_agua) que estén acordes con la pregunta de la variable aguared_ch. La preguntas no se pensaron conjuntamente 
+** Antes del 2023, se utilizaban las preguntas "donde_proviene_agua" por hogar para armonizar aguafuente_ch y "tiene_agua_red_publica" por vivienda para armonizar aguared_ch. Sin embargo, el proceso de calidad review-harmonization de los indicadores, revela que hay contradicciones. Por ejemplo, hay hogares que no tienen acceso a una fuente de agua por red (aguared_ch!=1), pero declaran que cuentan con red de distribución llave privada (aguafuente_ch ==1) .  La preguntas no se pensaron conjuntamente y eso trae dichas incosistencias. A partir del 2023, se decide armonizar aguared_ch y aguafuente_ch a partir de donde_proviene_agua.
 
 *************
 *aguadist_ch*
