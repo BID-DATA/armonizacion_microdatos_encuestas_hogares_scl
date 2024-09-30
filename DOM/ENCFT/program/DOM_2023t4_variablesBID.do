@@ -1180,132 +1180,14 @@ label var repiteult "Ha repetido el último grado"
 
 
 
-**********************************
-**** VARIABLES DE LA VIVIENDA ****
-**********************************
-****************
-***aguared_ch***
-****************
-
-generate aguared_ch =.
-replace aguared_ch = 1 if tiene_agua_red_publica==1 
-replace aguared_ch = 0 if tiene_agua_red_publica==2
-la var aguared_ch "Acceso a fuente de agua por red"
-
-*****************
-*aguafconsumo_ch*
-*****************
-*se asume por el cuestionario y por los datos que agua para consumo es agua de red,
-gen aguafconsumo_ch = 0
-
-
-
-*****************
-*aguafuente_ch*
-*****************
-gen aguafuente_ch = 1 if (donde_proviene_agua==1 | donde_proviene_agua==2)
-replace aguafuente_ch = 2 if (donde_proviene_agua==4 | donde_proviene_agua==5)
-replace aguafuente_ch = 5 if donde_proviene_agua==7
-replace aguafuente_ch = 6 if donde_proviene_agua==9
-replace aguafuente_ch = 8 if donde_proviene_agua==6
-replace aguafuente_ch = 9 if donde_proviene_agua==3
-replace aguafuente_ch = 10 if (donde_proviene_agua==8 | donde_proviene_agua==99)
-
-*******
-** nota
-** No hay una combinación lógica de categorías de esta variable (donde_proviene_agua) que estén acordes con la pregunta de la variable aguared_ch. La preguntas no se pensaron conjuntamente 
-
-
-*************
-*aguadist_ch*
-*************
-gen aguadist_ch=0
-replace aguadist_ch=1 if donde_proviene_agua==1
-replace aguadist_ch=2 if donde_proviene_agua==2
-replace aguadist_ch=3 if donde_proviene_agua==3|donde_proviene_agua== 4 
-
-
-**************
-*aguadisp1_ch*
-**************
-gen aguadisp1_ch =9
-
-**************
-*aguadisp2_ch*
-**************
-gen aguadisp2_ch = 9
-*label var aguadisp2_ch "= 9 la encuesta no pregunta si el servicio de agua es constante"
-
-
-*************
-*aguamala_ch*  Altered
-*************
-gen aguamala_ch = 2
-replace aguamala_ch = 0 if aguafuente_ch<=7
-replace aguamala_ch = 1 if aguafuente_ch>7 & aguafuente_ch!=10
-*label var aguamala_ch "= 1 si la fuente de agua no es mejorada"
-
-*****************
-*aguamejorada_ch*  Altered
-*****************
-gen aguamejorada_ch = 2
-replace aguamejorada_ch = 0 if aguafuente_ch>7 & aguafuente_ch!=10
-replace aguamejorada_ch = 1 if aguafuente_ch<=7
-*label var aguamejorada_ch "= 1 si la fuente de agua es mejorada"
-
-*****************
-***aguamide_ch***
-*****************
-gen aguamide_ch =.
-label var aguamide_ch "Usan medidor para pagar consumo de agua"
-
-
-*****************
-*bano_ch         *  Altered
-*****************
-gen bano_ch=.
-replace bano_ch=0 if tipo_sanitario==5
-replace bano_ch=1 if (tipo_sanitario==1 | tipo_sanitario==2) & se_encuentra_conectada_a==2
-replace bano_ch=2 if (tipo_sanitario==1 | tipo_sanitario==2) & se_encuentra_conectada_a==1
-replace bano_ch=6 if (tipo_sanitario==3 | tipo_sanitario==4)
-
-***************
-***banoex_ch***
-***************
-generate banoex_ch=9
-replace banoex_ch= 1 if (tipo_sanitario==1 | tipo_sanitario==3)
-replace banoex_ch= 0 if (tipo_sanitario==2 | tipo_sanitario==4)
-la var banoex_ch "El servicio sanitario es exclusivo del hogar"
-
-
-*****************
-*banomejorado_ch*  Altered
-*****************
-gen banomejorado_ch= 2
-replace banomejorado_ch =1 if bano_ch<=3 & bano_ch!=0
-replace banomejorado_ch =0 if (bano_ch ==0 | bano_ch>=4) & bano_ch!=6
-
-
-************
-*sinbano_ch*
-************
-gen sinbano_ch = 3
-replace sinbano_ch = 0 if tipo_sanitario!=5
-
-*label var sinbano_ch "= 0 si tiene baño en la vivienda o dentro del terreno"
-
-*************
-*aguatrat_ch*
-*************
-gen aguatrat_ch = 9
-*label var aguatrat_ch "= 9 la encuesta no pregunta de si se trata el agua antes de consumirla"
-
-
+			**********************************
+			**** VARIABLES DE LA VIVIENDA ****
+			**********************************
+			
 
 ************
 ***luz_ch***
 ************
-
 gen luz_ch=0
 replace luz_ch=1 if tipo_alumbrado==1 | tipo_alumbrado==2 | tipo_alumbrado==3 | tipo_alumbrado==6  //*2017, 6 es panel solar
 * 2015, 05 modif LC se incorporó en valor cero opciones 4, y 5 que se refieren a gas, *2017, 7 a vela.
@@ -1315,62 +1197,32 @@ label var luz_ch  "La principal fuente de iluminación es electricidad"
 ****************
 ***luzmide_ch***
 ****************
-
 gen luzmide_ch=.
 label var luzmide_ch "Usan medidor para pagar consumo de electricidad"
-
 
 ****************
 ***combust_ch***
 ****************
-
 gen combust_ch=0
 replace combust_ch=1 if combustible_para_cocinar==1 | combustible_para_cocinar==3 | combustible_para_cocinar==2
 *2015, 5 se incorporó las opciones 4 (leña) y 5 (carbón)
 replace combust_ch=0 if combustible_para_cocinar==99 | combustible_para_cocinar==4 | combustible_para_cocinar==5
 label var combust_ch "Principal combustible gas o electricidad" 
-
-
-
-*************
-***des1_ch***
-*************
-*AJAM 2018, opciones de respuesta cambiaron, y tipo de conexión se indica en nueva variable, y se vuelve igual a la variable bano_ch
-gen des1_ch=.
-replace des1_ch=0 if bano_ch==0
-replace des1_ch=1 if tipo_sanitario==1 | tipo_sanitario==2
-label var des1_ch "Tipo de desague según unimproved de MDG"
-label def des1_ch 0"No tiene servicio sanitario" 1"Conectado a red general o cámara séptica"
-label def des1_ch 2"Letrina o conectado a pozo ciego", add
-label val des1_ch des1_ch
-
-*************
-***des2_ch***
-*************
-*idem a comentario anterior
-gen des2_ch=.
-replace des2_ch=0 if bano_ch==0
-replace des2_ch=1 if bano_ch==1
-label var des2_ch "Tipo de desague sin incluir definición MDG"
-label def des2_ch 0"No tiene servicio sanitario" 1"Conectado a red general, cámara séptica, pozo o letrina"
-label def des2_ch 2"Cualquier otro caso", add
-label val des2_ch des2_ch
-
-*************
-***material_piso_ch***
-*************
-
+	
+************
+**piso_ch***
+************
 gen piso_ch=1
-replace piso_ch=0 if material_piso==3 | material_piso==9 
+replace piso_ch=0 if  material_piso==9 
 replace piso_ch = 2 if material_piso==99
 label var piso_ch "Materiales de construcción del material_piso"  
 label def piso_ch 0"material_piso de tierra" 1"Materiales permanentes" 2"otros materiales"
 label val piso_ch piso_ch
 
+
 **************
 ***pared_ch***
 **************
-
 gen pared_ch=1 
 replace pared_ch=0 if material_pared_exterior==3 | material_pared_exterior==11 | material_pared_exterior==12 | material_pared_exterior==13
 replace pared_ch=2 if material_pared_exterior==99
@@ -1378,11 +1230,9 @@ label var pared_ch "Materiales de construcción de las paredes"
 label def pared_ch 0"No permanentes" 1"Permanentes" 2"otros materiales"
 label val pared_ch pared_ch
 
-
 **************
-***material_techo_ch***
+***techo_ch***
 **************
-
 gen techo_ch=1
 replace techo_ch=0 if material_techo==3 | material_techo==5
 replace techo_ch=2 if material_techo==99
@@ -1393,7 +1243,6 @@ label val techo_ch techo_ch
 **************
 ***resid_ch***
 **************
-
 gen resid_ch =0    if como_elimina_basura==1 | como_elimina_basura==2 | como_elimina_basura==3
 replace resid_ch=1 if como_elimina_basura==4
 replace resid_ch=2 if como_elimina_basura==5 | como_elimina_basura==6 | como_elimina_basura==7
@@ -1403,13 +1252,11 @@ label def resid_ch 0"Recolección pública o privada" 1"Quemados o enterrados"
 label def resid_ch 2"Tirados a un espacio abierto" 3"Otros", add
 label val resid_ch resid_ch
 
-
 *************
 ***dorm_ch***
 *************
 *Hay hogares que reportan no tener cuartos exclusivamente para dormir y cuentan con un solo espacio. Para estas 
 *observaciones se cambia el 0 que tienen por 1. Porque aunque no sea exclusivo tienen un espacio para dormitorio
-
 gen dorm_ch=cant_dormitorios_vivienda
 replace dorm_ch=1 if cant_dormitorios_vivienda==0
 label var dorm_ch "Habitaciones para dormir"
@@ -1417,14 +1264,12 @@ label var dorm_ch "Habitaciones para dormir"
 ****************
 ***cuartos_ch***
 ****************
-
 gen cuartos_ch=cant_cuartos_vivienda
 label var cuartos_ch "Habitaciones en el hogar"
  
 ***************
 ***cocina_ch***
 ***************
-
 gen cocina_ch=.
 label var cocina_ch "Cuarto separado y exclusivo para cocinar"
 
@@ -1439,19 +1284,18 @@ label var telef_ch "El hogar tiene servicio telefónico fijo"
 ***************
 ***refrig_ch***
 ***************
-
 gen refrig_ch=0
 replace refrig_ch=1 if  refrigerador==1
 replace refrig_ch=. if  refrigerador==.
 label var refrig_ch "El hogar posee refrigerador o heladera"
 
-
 **************
 ***freez_ch***
 **************
-
 gen freez_ch=.
 label var freez_ch "El hogar posee congelador"
+
+
 
 *************
 ***auto_ch***
@@ -1465,7 +1309,6 @@ label var auto_ch "El hogar posee automovil particular"
 **************
 ***compu_ch***
 **************
-
 gen compu_ch=0
 replace compu_ch=1 if computador==1
 replace compu_ch=. if computador==.
@@ -1474,7 +1317,6 @@ label var compu_ch "El hogar posee computador"
 *****************
 ***internet_ch***
 *****************
-
 gen internet_ch=0
 replace internet_ch=1 if internet==1
 replace internet_ch=. if internet==.
@@ -1483,7 +1325,6 @@ label var internet_ch "El hogar posee conexión a Internet"
 ************
 ***cel_ch***
 ************
-
 gen cel_ch=0
 replace cel_ch=1 if celular==1
 replace cel_ch=. if celular==.
@@ -1492,7 +1333,6 @@ label var cel_ch "El hogar tiene servicio telefonico celular"
 **************
 ***vivi1_ch***
 **************
-
 gen vivi1_ch=1 if tipo_vivienda==1 | tipo_vivienda==2 | tipo_vivienda==3
 replace vivi1_ch=2 if tipo_vivienda==4 | tipo_vivienda==5 
 replace vivi1_ch=3 if tipo_vivienda==6 | tipo_vivienda==7 | tipo_vivienda==8 
@@ -1504,7 +1344,6 @@ label val vivi1_ch vivi1_ch
 *************
 ***vivi2_ch***
 *************
-
 gen vivi2_ch=0
 replace vivi2_ch=1 if vivi1_ch==1 | vivi1_ch==2
 replace vivi2_ch=. if vivi1_ch==.
@@ -1527,10 +1366,8 @@ label val viviprop_ch viviprop_ch
 ****************
 ***vivitit_ch***
 ****************
-
 gen vivitit_ch=.
 label var vivitit_ch "El hogar posee un título de propiedad"
-
 
 ****************
 ***vivialq_ch***
@@ -1550,69 +1387,228 @@ label var vivialq_ch "Alquiler mensual"
 gen vivialqimp_ch=monto_alquilaria_vivienda_mes
 label var vivialqimp_ch "Alquiler mensual imputado"
 
-*Modificación Mayra Sáenz - Febrero 2014
-gen rentaimp_ch= vivialqimp_ch
-label var rentaimp_ch "Rentas imputadas del hogar"
 
-/************************************************************************************************************
-* 3. Creación de nuevas variables de SS and LMK a incorporar en Armonizadas
-************************************************************************************************************/
+		************************
+		*** Variables de WASH **
+		************************
 
-*********
-*lp_ci***
-*********
+****************
+***aguared_ch***
+****************
+generate aguared_ch =.
+replace aguared_ch = 1 if tiene_agua_red_publica==1 
+replace aguared_ch = 0 if tiene_agua_red_publica==2
+la var aguared_ch "Acceso a fuente de agua por red"
 
-gen lp_ci =.
-replace lp_ci =  5319.5 if zona_c==1
-replace lp_ci =  4736.2 if zona_c==0
-label var lp_ci "Linea de pobreza oficial del pais"
+*****************
+*aguafconsumo_ch*
+*****************
+*se asume por el cuestionario y por los datos que agua para consumo es agua de red,
+gen aguafconsumo_ch = 0
 
-*********
-*lpe_ci***
-*********
-gen lpe_ci =.
-replace lpe_ci =  2395.2 if zona_c==1
-replace lpe_ci =  2295.0 if zona_c==0
-label var lpe_ci "Linea de indigencia oficial del pais"
+*****************
+*aguafuente_ch*
+*****************
+gen aguafuente_ch = 1 if (donde_proviene_agua==1 | donde_proviene_agua==2)
+replace aguafuente_ch = 2 if (donde_proviene_agua==4 | donde_proviene_agua==5)
+replace aguafuente_ch = 5 if donde_proviene_agua==7
+replace aguafuente_ch = 6 if donde_proviene_agua==9
+replace aguafuente_ch = 8 if donde_proviene_agua==6
+replace aguafuente_ch = 9 if donde_proviene_agua==3
+replace aguafuente_ch = 10 if (donde_proviene_agua==8 | donde_proviene_agua==99)
 
-
- 
-
-
-
-
-**********
-*busca_ci* 
-**********
-gen busca_ci=0 if condocup==2
-replace busca_ci=1 if busco_trabajo_establ_negocio==1 
-label var busca_ci "Busco trabajo la semana anterior"
-label define busca_ci 0 "No" 1 "Si"
-label value busca_ci busca_ci
-
-
-
-
+*******
+** nota
+** No hay una combinación lógica de categorías de esta variable (donde_proviene_agua) que estén acordes con la pregunta de la variable aguared_ch. La preguntas no se pensaron conjuntamente 
 
 *************
-**salmm_ci***
+*aguadist_ch*
 *************
+gen aguadist_ch=0
+replace aguadist_ch=1 if donde_proviene_agua==1
+replace aguadist_ch=2 if donde_proviene_agua==2
+replace aguadist_ch=3 if donde_proviene_agua==3|donde_proviene_agua== 4 
+
+**************
+*aguadisp1_ch*
+**************
+gen aguadisp1_ch =9
+
+**************
+*aguadisp2_ch*
+**************
+gen aguadisp2_ch = 9
+*label var aguadisp2_ch "= 9 la encuesta no pregunta si el servicio de agua es constante"
+
+*************
+*aguatrat_ch*
+*************
+gen aguatrat_ch = 9
+*label var aguatrat_ch "= 9 la encuesta no pregunta de si se trata el agua antes de consumirla"
+
+*************
+*aguamala_ch* 
+*************
+gen aguamala_ch = 2
+replace aguamala_ch = 0 if aguafuente_ch<=7
+replace aguamala_ch = 1 if aguafuente_ch>7 & aguafuente_ch!=10
+*label var aguamala_ch "= 1 si la fuente de agua no es mejorada"
+
+*****************
+*aguamejorada_ch*  
+*****************
+gen aguamejorada_ch = 2
+replace aguamejorada_ch = 0 if aguafuente_ch>7 & aguafuente_ch!=10
+replace aguamejorada_ch = 1 if aguafuente_ch<=7
+*label var aguamejorada_ch "= 1 si la fuente de agua es mejorada"
+
+*****************
+***aguamide_ch***
+*****************
+gen aguamide_ch =.
+label var aguamide_ch "Usan medidor para pagar consumo de agua"
+
+*****************
+*bano_ch         
+*****************
+gen bano_ch=.
+replace bano_ch=0 if tipo_sanitario==5
+replace bano_ch=1 if (tipo_sanitario==1 | tipo_sanitario==2) & se_encuentra_conectada_a==2
+replace bano_ch=2 if (tipo_sanitario==1 | tipo_sanitario==2) & se_encuentra_conectada_a==1
+replace bano_ch=6 if (tipo_sanitario==3 | tipo_sanitario==4)
+
+***************
+***banoex_ch***
+***************
+generate banoex_ch=9
+replace banoex_ch= 1 if (tipo_sanitario==1 | tipo_sanitario==3)
+replace banoex_ch= 0 if (tipo_sanitario==2 | tipo_sanitario==4)
+la var banoex_ch "El servicio sanitario es exclusivo del hogar"
+
+************
+*sinbano_ch*
+************
+gen sinbano_ch = 3
+replace sinbano_ch = 0 if tipo_sanitario!=5
+
+*****************
+*banomejorado_ch*  
+*****************
+gen banomejorado_ch= 2
+replace banomejorado_ch =1 if bano_ch<=3 & bano_ch!=0
+replace banomejorado_ch =0 if (bano_ch ==0 | bano_ch>=4) & bano_ch!=6
 
 
-* https://tss.gob.do/aumento-topes-smc.html#:~:text=Asimismo%2C%20la%20instituci%C3%B3n%20responsable%20de,de%20cotizaci%C3%B3n%20del%20R%C3%A9gimen%20Contributivo
 
-gen salmm_ci=16262.5
-label var salmm_ci "Salario minimo legal"
+		*****************************
+		*** Variables de migración **
+		*****************************
 
+*******************
+*** migrante_ci ***
+*******************
+gen migrante_ci=(pais_nacimiento!=647 & pais_nacimiento!=.)
+label var migrante_ci "=1 si es migrante"
+	
+**********************
+*** migrantiguo5_ci ***
+**********************
+gen migrantiguo5_ci=.
+label var migrantiguo5_ci "=1 si es migrante antiguo (5 anos o mas)"
+		
+**********************
+*** miglac_ci ***
+**********************	
+gen miglac_ci=(migrante_ci==1 & inlist(pais_nacimiento,63,77,83,88,97,105,169,196,211,239,242,317,325,341,345,391,493,580,586,589,770,810,845,850)) if migrante_ci!=.
+replace miglac_ci = 0 if !inlist(pais_nacimiento,63,77,83,88,97,105,169,196,211,239,242,317,325,341,345,391,493,580,586,589,770,810,845,850) & migrante_ci==1
+replace miglac_ci = . if migrante_ci==0 
+label var miglac_ci "=1 si es migrante proveniente de un pais LAC"	
+	
+	
+		**************************************
+		*** Variables de protección social ***
+		***** Variables SPH - PMTC y PNC *****
+		**************************************
 
+* PTMC:  Comer primero (ps_comer_es_p gob_comer_pri)
+*		 Incentivo de asistencia escoalr (ps_incentivo_ gob_inc_asis_)
+* 		 Bono de estudiante (bono_estudiante_progreso gob_bono_estu)
+* PNC: 	 Apoyo de adultos mayores (gob_proteccio ps_apoyo_adul)
+* 		 Bonos (ps_bono_luz ps_bono_gas gob_bono_luz_ gob_bonogas_h)
 
+*************
+*** y_hog ***
+*************	
+* Ingreso del hogar
+egen ingreso_total = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci), missing
+bys idh_ch: egen y_hog = sum(ingreso_total)
 
+*************
+*** y_pc  ***
+*************	
+gen y_pc     = y_hog / nmiembros_ch 
 
+****************
+*** ing_ptmc ***
+****************
+* Personas que reciben transferencias monetarias condicionadas
+egen aux = rowtotal(gob_comer_primero_monto gob_inc_asis_escolar_monto ///
+			gob_bono_estudiante_prog_monto),m
+bys idh_ch: egen ing_ptmc = sum(aux)
+replace ing_ptmc=. if y_hog==.
+drop aux
+
+*******************
+*** ing_pension ***
+*******************
+bys idh_ch: egen ing_pension = sum(gob_proteccion_vejez_monto)
+replace ing_pension=. if y_hog==.
+
+****************
+*** y_pc_net ***
+****************
+*ingreso neto del hogar
+gen y_pc_net = (y_hog - ing_ptmc - ing_pension) / nmiembros_ch
+
+***********************
+*** percibe_ptmc_ci ***
+***********************
+* consultar a SPH. no está esta variable, la creé como missing
+gen percibe_ptmc_ci =.
+
+****************
+*** ptmc_ch  ***
+****************
+gen ptmc_ci=(ps_comer_es_primero==1) | (ps_incentivo_asist_escolar==1) ///
+| (bono_estudiante_progreso==1)
+bys idh_ch: egen ptmc_ch=max(ptmc_ci)
+lab def ptmc_ch 1 "Beneficiario PTMC" 0 "No beneficiario PTMC"
+lab val ptmc_ch ptmc_ch
+
+******************
+*** mayor64_ci ***
+******************
+* Adultos mayores 
+gen mayor64_ci=(edad>64 & edad!=.)
+
+********************
+*** pnc_elegible ***
+********************
+* consultar a SPH. no está esta variable, la creé como missing
+
+**************
+*** pnc_ci ***
+**************
+gen pnc_ci=(ps_apoyo_adultos_mayores==1 & mayor64_ci ==1)
+lab def pnc_ci 1 "Beneficiario PNC" 0 "No beneficiario PNC"
+lab val pnc_ci pnc_ci
+
+	
+/* Esto no está en el manual de armonizaciones. como las variables de SPH aún están en construcción, no borro este contenido que figura en el 2022.
 
 *******************
 *** benefdes_ci ***
 *******************
-
 g benefdes_ci=0 if desemp_ci==1
 replace benefdes_ci=1 if  recibio_cesantia==1 & desemp_ci==1
 label var benefdes_ci "=1 si tiene seguro de desempleo"
@@ -1623,137 +1619,6 @@ label var benefdes_ci "=1 si tiene seguro de desempleo"
 *Encuesta no muestra monto de cesantía
 *g ybenefdes_ci=monto_cesantia if benefdes_ci==1
 *label var ybenefdes_ci "Monto de seguro de desempleo"
-
-******************************
-*** VARIABLES DE MIGRACION ***
-******************************
-
-* Variables incluidas por SCL/MIG Fernando Morales
-
-	*******************
-	*** migrante_ci ***
-	*******************
-	
-	gen migrante_ci=(pais_nacimiento!=647 & pais_nacimiento!=.)
-	label var migrante_ci "=1 si es migrante"
-	
-	
-	**********************
-	*** migrantiguo5_ci ***
-	**********************
-	
-	gen migrantiguo5_ci=.
-	label var migrantiguo5_ci "=1 si es migrante antiguo (5 anos o mas)"
-		
-	**********************
-	*** miglac_ci ***
-	**********************
-	
-	gen miglac_ci=(migrante_ci==1 & inlist(pais_nacimiento,63,77,83,88,97,105,169,196,211,239,242,317,325,341,345,391,493,580,586,589,770,810,845,850)) if migrante_ci!=.
-	replace miglac_ci = 0 if !inlist(pais_nacimiento,63,77,83,88,97,105,169,196,211,239,242,317,325,341,345,391,493,580,586,589,770,810,845,850) & migrante_ci==1
-	replace miglac_ci = . if migrante_ci==0 
-	label var miglac_ci "=1 si es migrante proveniente de un pais LAC"	
-	
-	
-	**************************
-	** PROVINCIAS ************
-	************************** 
-
-   gen ine01=.   
-   replace ine01=1  if  id_provincia==1			    /*Distrito Nacional*/
-   replace ine01=2  if  id_provincia==2				/*Azua*/
-   replace ine01=3  if  id_provincia==3				/*Bahoruco*/
-   replace ine01=4  if  id_provincia==4				/*Barahona*/
-   replace ine01=5  if  id_provincia==5		    	/*Dajabon*/
-   replace ine01=6  if  id_provincia==6				/*Duarte*/
-   replace ine01=7  if  id_provincia==7				/*Elias Piña*/
-   replace ine01=8  if  id_provincia==8				/*El Seibo*/
-   replace ine01=9  if  id_provincia==9				/*Espaillat*/
-   replace ine01=10 if  id_provincia==10			/*Independencia*/
-   replace ine01=11 if  id_provincia==11			/*La Altagracia*/
-   replace ine01=12 if  id_provincia==12			/*La Romana*/
-   replace ine01=13 if  id_provincia==13			/*La Vega*/
-   replace ine01=14 if  id_provincia==14			/*Maria Trinidad Sanchez*/
-   replace ine01=15 if  id_provincia==15			/*Monte Cristi*/
-   replace ine01=16 if  id_provincia==16			/*Pedernales*/
-   replace ine01=17 if  id_provincia==17			/*Peravia*/
-   replace ine01=18 if  id_provincia==18			/*Puerto Plata*/
-   replace ine01=19 if  id_provincia==19			/*Salcedo*/
-   replace ine01=20 if  id_provincia==20		    /*Samana*/
-   replace ine01=21 if  id_provincia==21			/*San Cristobal*/
-   replace ine01=22 if  id_provincia==22			/*San Juan*/
-   replace ine01=23 if  id_provincia==23			/*San Pedro De Macoris*/
-   replace ine01=24 if  id_provincia==24			/*Sanchez Ramirez*/
-   replace ine01=25 if  id_provincia==25			/*Santiago*/
-   replace ine01=26 if  id_provincia==26			/*Santiago Rodriguez*/
-   replace ine01=27 if  id_provincia==27			/*Valverde*/
-   replace ine01=28 if  id_provincia==28			/*Monseñor Nouel*/
-   replace ine01=29 if  id_provincia==29			/*Monte Plata*/
-   replace ine01=30 if  id_provincia==30			/*Hato Mayor*/
-   replace ine01=31 if  id_provincia==31			/*San Jose De Ocoa*/
-   replace ine01=32 if  id_provincia==32			/*Santo Domingo*/
-
-	label define ine01 1"Distrito Nacional" 2"Azua" 3"Bahoruco" 4"Barahona" 5"Dajabon" 6"Duarte" 7"Elias Piña" 8"El Seibo" 9"Espaillat" 10"Independencia" 11"La Altagracia" 12"La Romana" 13"La Vega" 14"Maria Trinidad Sanchez" 15"Monte Cristi" 16"Pedernales" 17"Peravia" 18"Puerto Plata" 19"Salcedo" 20"Samana" 21"San Cristobal" 22"San Juan" 23"San Pedro De Macoris" 24"Sanchez Ramirez" 25"Santiago" 26"Santiago Rodriguez" 27"Valverde" 28"Monseñor Nouel" 29"Monte Plata" 30"Hato Mayor" 31"San Jose De Ocoa" 32"Santo Domingo"
-	label value ine01 ine01
-	label var ine01 " Primera division politico-administrativa, Provincia"
-	
-
-
-******************************
-* Variables SPH - PMTC y PNC *
-******************************
-
-* PTMC:  Comer primero (ps_comer_es_p gob_comer_pri)
-*		 Incentivo de asistencia escoalr (ps_incentivo_ gob_inc_asis_)
-* 		 Bono de estudiante (bono_estudiante_progreso gob_bono_estu)
-* PNC: 	 Apoyo de adultos mayores (gob_proteccio ps_apoyo_adul)
-* 		 Bonos (ps_bono_luz ps_bono_gas gob_bono_luz_ gob_bonogas_h)
-
-* Ingreso del hogar
-egen ingreso_total = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci), missing
-bys idh_ch: egen y_hog = sum(ingreso_total)
-
-* Personas que reciben transferencias monetarias condicionadas
-egen aux = rowtotal(gob_comer_primero_monto gob_inc_asis_escolar_monto ///
-			gob_bono_estudiante_prog_monto),m
-bys idh_ch: egen ing_ptmc = sum(aux)
-drop aux
-
-gen ptmc_ci=(ps_comer_es_primero==1) | (ps_incentivo_asist_escolar==1) ///
-| (bono_estudiante_progreso==1)
-
-bys idh_ch: egen ptmc_ch=max(ptmc_ci)
-replace ing_ptmc=. if y_hog==.
-
-* Adultos mayores 
-gen mayor64_ci=(edad>64 & edad!=.)
-
-* PNC
-bys idh_ch: egen ing_pension = sum(gob_proteccion_vejez_monto)
-replace ing_pension=. if y_hog==.
-gen pnc_ci=(ps_apoyo_adultos_mayores==1 & mayor64_ci ==1)
-
-
-*ingreso neto del hogar
-gen y_pc     = y_hog / nmiembros_ch 
-gen y_pc_net = (y_hog - ing_ptmc - ing_pension) / nmiembros_ch
-
-
-lab def ptmc_ch 1 "Beneficiario PTMC" 0 "No beneficiario PTMC"
-lab val ptmc_ch ptmc_ch
-
-lab def pnc_ci 1 "Beneficiario PNC" 0 "No beneficiario PNC"
-lab val pnc_ci pnc_ci
-	
-/*_____________________________________________________________________________________________________*/
-* Asignación de etiquetas e inserción de variables externas: tipo de cambio, Indice de Precios al 
-* Consumidor (2011=100), Paridad de Poder Adquisitivo (PPA 2011),  líneas de pobreza
-/*_____________________________________________________________________________________________________*/
-
-
-do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&ExternalVars_Harmonized_DataBank.do"
-
-*_____________________________________________________________________________________________________*
 
 *  Pobres extremos, pobres moderados, vulnerables y no pobres 
 * con base en ingreso neto (Sin transferencias)
@@ -1780,10 +1645,58 @@ replace ptmc_ingneto4 = 1 if ptmc_ch == 1 & gpo_ingneto4 == 1
 
 lab def grupo_int 1 "Pobre extremo" 2 "Pobre moderado" 3 "Vulnerable" 4 "No pobre"
 lab val grupo_int grupo_int
+*/
 
 
-gen codocupa=ocupacion_principal_cod
-gen codindustria=ramac
+		***************************************
+		*** Variables de referencia externa ***
+		***************************************
+
+*************
+**salmm_ci***
+*************
+* 2021 https://tss.gob.do/aumento-topes-smc.html#:~:text=Asimismo%2C%20la%20instituci%C3%B3n%20responsable%20de,de%20cotizaci%C3%B3n%20del%20R%C3%A9gimen%20Contributivo
+*2023: https://tss.gob.do/assets/reso01-2023.pdf
+gen salmm_ci=18702
+label var salmm_ci "Salario minimo legal"
+
+*************************************
+*lineas de pobreza internacionales***
+*************************************
+* se calculan luego en do. 
+
+*********
+*lp_ci***
+*********
+* 2023 : Líneas de pobreza monetaria general por persona https://www.one.gob.do/media/tm5paqul/pobreza-monetaria-en-la-rep%C3%BAblica-dominicana-2023elfinal.pdf
+gen lp_ci =.
+replace lp_ci = 7645.3 
+label var lp_ci "Linea de pobreza oficial del pais"
+
+*********
+*lpe_ci***
+*********
+* 2023 https://www.one.gob.do/media/tm5paqul/pobreza-monetaria-en-la-rep%C3%BAblica-dominicana-2023elfinal.pdf
+gen lpe_ci =.
+replace lpe_ci =  3643.5 
+label var lpe_ci "Linea de pobreza extrema del pais"
+
+************
+** Otros ***
+************
+* se calculan luego en do. 
+
+
+/*_____________________________________________________________________________________________________*/
+* Asignación de etiquetas e inserción de variables externas: tipo de cambio, Indice de Precios al 
+* Consumidor (2011=100), Paridad de Poder Adquisitivo (PPA 2011),  líneas de pobreza
+/*_____________________________________________________________________________________________________*/
+
+
+do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&ExternalVars_Harmonized_DataBank.do"
+
+*_____________________________________________________________________________________________________*
+
 /*_____________________________________________________________________________________________________*/
 * Verificación de que se encuentren todas las variables armonizadas 
 /*_____________________________________________________________________________________________________*/
@@ -1794,22 +1707,16 @@ clasehog_ch nmiembros_ch miembros_ci nmayor21_ch nmenor21_ch nmayor65_ch nmenor6
 categoinac_ci nempleos_ci emp_ci antiguedad_ci	desemp_ci cesante_ci durades_ci	pea_ci desalent_ci subemp_ci ///
 tiempoparc_ci categopri_ci categosec_ci rama_ci spublico_ci tamemp_ci cotizando_ci instcot_ci	afiliado_ci ///
 formal_ci tipocontrato_ci ocupa_ci horaspri_ci horastot_ci	pensionsub_ci pension_ci tipopen_ci instpen_ci	ylmpri_ci nrylmpri_ci ///
-tcylmpri_ci ylnmpri_ci ylmsec_ci ylnmsec_ci	ylmotros_ci	ylnmotros_ci ylm_ci	ylnm_ci	ynlm_ci	ynlnm_ci ylm_ch	ylnm_ch	ylmnr_ch  ///
-ynlm_ch	ynlnm_ch ylmhopri_ci ylmho_ci rentaimp_ch autocons_ci autocons_ch nrylmpri_ch tcylmpri_ch remesas_ci remesas_ch	ypen_ci	ypensub_ci ///
+ ylnmpri_ci ylmsec_ci ylnmsec_ci	ylmotros_ci	ylnmotros_ci ylm_ci	ylnm_ci	ynlm_ci	ynlnm_ci ylm_ch	ylnm_ch	ylmnr_ch  ///
+ynlm_ch	ynlnm_ch ylmhopri_ci ylmho_ci  nrylmpri_ch remesas_ci remesas_ch	ypen_ci	ypensub_ci ///
 salmm_ci tc_c ipc_c lp19_c lp31_c lp5_c lp_ci lpe_ci aedu_ci eduno_ci edupi_ci edupc_ci	edusi_ci edusc_ci eduui_ci eduuc_ci	edus1i_ci ///
 edus1c_ci edus2i_ci edus2c_ci edupre_ci eduac_ci asiste_ci pqnoasis_ci pqnoasis1_ci	repite_ci repiteult_ci edupub_ci ///
-aguared_ch aguafconsumo_ch aguafuente_ch aguadist_ch aguadisp1_ch aguadisp2_ch aguamala_ch aguamejorada_ch aguamide_ch bano_ch banoex_ch banomejorado_ch sinbano_ch aguatrat_ch luz_ch luzmide_ch combust_ch des1_ch des2_ch piso_ch ///
+aguared_ch aguafconsumo_ch aguafuente_ch aguadist_ch aguadisp1_ch aguadisp2_ch aguamala_ch aguamejorada_ch aguamide_ch bano_ch banoex_ch banomejorado_ch sinbano_ch aguatrat_ch luz_ch luzmide_ch combust_ch piso_ch ///
 pared_ch techo_ch resid_ch dorm_ch cuartos_ch cocina_ch telef_ch refrig_ch freez_ch auto_ch compu_ch internet_ch cel_ch ///
-vivi1_ch vivi2_ch viviprop_ch vivitit_ch vivialq_ch	vivialqimp_ch migrante_ci migrantiguo5_ci miglac_ci, first
-
+vivi1_ch vivi2_ch viviprop_ch vivitit_ch vivialq_ch	vivialqimp_ch migrante_ci migrantiguo5_ci miglac_ci ingreso_total y_hog  y_pc  ing_ptmc ing_pension y_pc_net percibe_ptmc_ci ptmc_ci mayor64_ci pnc_ci, first
 
 compress
-
-
-saveold "`base_out'", version(12) replace
-
+save "`base_out'", replace
 
 log close
-
-
 
