@@ -44,45 +44,82 @@ Fecha de última modificación:
 import spss "$ruta\REG01_EPHC_ANUAL_2023.sav", clear
 rename *, lower
 cap sort upm nvivi nhoga
-cap sort upm nvivi nhoga l02
+
+gen upms =	string(upm)
+gen nvivis=	string(nvivi)
+gen nhogas=	string(nhoga)
+
+replace upms = substr("00000" + upms, -5, 5) /*de acuerdo a documentación upm siempre tiene 5 caracteres */
+replace nvivis = substr("000" + nvivis, -3, 3) /*de acuerdo a documentación upm siempre tiene 3 caracteres */
+
 save "$ruta\vivienda_ephc2023.dta", replace
 
 /*Ingreso familiar*/
 import spss "$ruta\INGREFAM_EPHC_ANUAL_2023.sav", clear
 rename *, lower
 cap sort upm nvivi nhoga
-cap sort upm nvivi nhoga l02
+
+gen upms =	string(upm)
+gen nvivis=	string(nvivi)
+gen nhogas=	string(nhoga)
+
+replace upms = substr("00000" + upms, -5, 5) /*de acuerdo a documentación upm siempre tiene 5 caracteres */
+replace nvivis = substr("000" + nvivis, -3, 3) /*de acuerdo a documentación upm siempre tiene 3 caracteres */
+
 save "$ruta\ingrefam_ephc2023.dta", replace
 
 /*Poblcion*/
 import spss "$ruta\REG02_EPHC_ANUAL_2023_V2.sav", clear
 rename *, lower
-cap sort upm nvivi nhoga
 cap sort upm nvivi nhoga l02
+
+gen upms =	string(upm)
+gen nvivis=	string(nvivi)
+gen nhogas=	string(nhoga)
+gen l02s= 	string(l02)
+
+replace upms = substr("00000" + upms, -5, 5) /*de acuerdo a documentación upm siempre tiene 5 caracteres */
+replace nvivis = substr("000" + nvivis, -3, 3) /*de acuerdo a documentación upm siempre tiene 3 caracteres */
+replace l02s = substr("00" + l02s, -2, 2) /*de acuerdo a documentación upm siempre tiene 2 caracteres */
+
 save "$ruta\poblacion_ephc2023.dta", replace
 
 /*4to trimestre*/
 import spss "$ruta\c0fe4-REG02_EPHC_4º Trim 2023.SAV", clear
 rename *, lower
-cap sort upm nvivi nhoga
 cap sort upm nvivi nhoga l02
+
+gen upms =	string(upm)
+gen nvivis=	string(nvivi)
+gen nhogas=	string(nhoga)
+gen l02s= 	string(l02)
+
+replace upms = substr("00000" + upms, -5, 5) /*de acuerdo a documentación upm siempre tiene 5 caracteres */
+replace nvivis = substr("000" + nvivis, -3, 3) /*de acuerdo a documentación upm siempre tiene 3 caracteres */
+replace l02s = substr("00" + l02s, -2, 2) /*de acuerdo a documentación upm siempre tiene 2 caracteres */
+
 save "$ruta\reg02_ephc_t4_2023.dta", replace
 
 /*Unifico los modulos de interes para el sociometro: vivienda, ingresos y personas*/
  
 use "$ruta\reg02_ephc_t4_2023.dta", clear
 
-cap sort upm nvivi nhoga
-cap sort upm nvivi nhoga l02
-merge m:1 upm nvivi nhoga using "$ruta\vivienda_ephc2023.dta"
+cap sort upms nvivis nhogas l02s
+merge m:1 upms nvivis nhogas using "$ruta\vivienda_ephc2023.dta"
+keep if _merge == 3
 drop _merge
-sort upm nvivi nhoga l02
+sort upms nvivis nhogas l02s
 
-merge m:1 upm nvivi nhoga using "$ruta\ingrefam_ephc2023.dta", force
+merge m:1 upms nvivis nhogas using "$ruta\ingrefam_ephc2023.dta"
+keep if _merge == 3
 drop _merge
-sort upm nvivi nhoga
+sort upms nvivis nhogas l02s
 
-merge m:m upm nvivi nhoga l02 using "$ruta\poblacion_ephc2023.dta", force
+merge m:m upms nvivis nhogas l02s using "$ruta\poblacion_ephc2023.dta"
+keep if _merge == 3
+drop _merge
+sort upms nvivis nhogas l02s
+
 
 saveold "`base_out'", v(12) replace
 
