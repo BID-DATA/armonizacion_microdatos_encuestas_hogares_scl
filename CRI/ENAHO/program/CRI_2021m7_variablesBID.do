@@ -1727,7 +1727,6 @@ do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&Exter
 	*****************
 	**** ptmc_ch ****
 	*****************
-		* CONFIRMAR BECAS PUBLICAS A19A
 	
 	gen 	ing_ptmc_ci = . 
 	replace ing_ptmc_ci = a9b   if a9a == 1 & a9b <= 300000 & a9c != 9 & a9c != .
