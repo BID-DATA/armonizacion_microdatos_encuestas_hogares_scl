@@ -1592,10 +1592,6 @@ do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&Exter
 	replace ing_otrot_ci = ing_otrot_ci / 12
 	replace ing_otrot_ci = . if p1661s4a2 == .
 	replace ing_otrot_ci = . if p1661s4a2 == 98
-	replace ing_otrot_ci = . if regexm(p1661s4a1,".I.*GRESO.* SOL.*")
-	replace ing_otrot_ci = . if regexm(p1661s4a1,".*SOL.*")
-	replace ing_otrot_ci = . if regexm(p1661s4a1,".*INGRESO.*DARIO.*")
-	replace ing_otrot_ci = . if regexm(p1661s4a1,".*BONO.*DARIO.*")
 	bys idh_ch: egen ing_otrot_ch = sum(ing_otrot_ci)
 	
 	gen 	potrot_ci = 0
