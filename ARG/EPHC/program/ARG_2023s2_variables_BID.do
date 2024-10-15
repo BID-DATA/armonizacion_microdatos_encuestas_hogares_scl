@@ -1,5 +1,6 @@
 *(Versión stata 17)
 
+**# Bookmark #1
 clear
 set more off
 
@@ -16,7 +17,7 @@ global ruta = "${surveysFolder}"
 
 local PAIS ARG
 local ENCUESTA EPHC
-local ANO "2022"
+local ANO "2023"
 local ronda s2 
 
 local log_file = "$ruta\harmonized\\`PAIS'\\`ENCUESTA'\log\\`PAIS'_`ANO'`ronda'_variablesBID.log"
@@ -32,20 +33,21 @@ cap log off
                  BASES DE DATOS DE ENCUESTA DE HOGARES - SOCIOMETRO 
 Pais: Argentina
 Encuesta: EPHC
-Round: IISem-2022
+Round: IISem-2023
 Autores: 
 Versión 2012: Yessenia Loaysa
 Alvaro Altamirano (LMK/SCL) - Email: alvaroalt@iadb.org, 24 de junio de 2020
 Cesar Lins (SCL/GDI) Marzo 2021
 Agustina Thailinger (SCL/EDU) Junio 2022
 Agustina Thailinger (SCL/EDU) Mayo  2023
+Nicolás García Balus (SCL/SPH) Octubre 2024
 ****************************************************************************/
 
 /***************************************************************************
 Detalle de procesamientos o modificaciones anteriores:
 ****************************************************************************/
 
-use `base_in', clear
+use "`base_in'", clear
 
 **********************************
 ***VARIABLES DEL IDENTIFICACION***
@@ -215,7 +217,7 @@ gen str3 pais_c="ARG"
 ******
 *anio*
 ******
-gen anio_c=2022
+gen anio_c=2023
 
 **********
 *semestre*
@@ -261,6 +263,7 @@ replace edad_ci=98 if edad_ci>=98
 **************
 recode ch07 (1 2=2 "Union formal o informal") (3=3 "Divorciado o separado") (4=4 "Viudo") (5=1 "Soltero") (else=.), gen(civil_ci) 
 label variable civil_ci "Estado civil"
+
 	
 *********
 *jefe_ci*
@@ -631,7 +634,7 @@ replace antiguedad3=5 if pp07a==6
 replace antiguedad3=. if pp07a==0 | pp07a==9
 	
 *Para trabajadores Independientes
-gen antiguedad4     = 0    if pp05h==1
+gen antiguedad4 = 0    if pp05h==1
 replace antiguedad4 = 2/12 if pp05h==2
 replace antiguedad4 = 4/12 if pp05h==3
 replace antiguedad4 = 9/12 if pp05h==4
@@ -651,6 +654,8 @@ replace antiguedad_ci= antiguedad4 if antiguedad4!=.
 **************************
 
 destring ipcf itf p21, replace
+destring ipcf, dpcomma replace 
+
 ***********
 *ylmpri_ci*
 ***********
@@ -796,10 +801,12 @@ label var yoficial_ch "Ingreso del hogar total generado por el país"
 gen ypeoficial_ch=ipcf
 label var ypeoficial_ch "Ingreso per cápita generado por el país"
 
+/*Anulo estas lineas porque lo solucione antes* 
 replace  ypeoficial_ch=subinstr(ypeoficial_ch,",",".",.)
 destring yoficial_ch ypeoficial_ch, replace
 replace ypeoficial_ch=. if yoficial_ch==0
-			
+	*/ 
+	
 ****************************
 ***VARIABLES DE EDUCACION***
 ****************************
@@ -1503,10 +1510,11 @@ label var miglac_ci "=1 si es migrante proveniente de un pais LAC"
 /* Asignación de etiquetas e insercion de variables externas: tipo de cambio, Indice de Precios al*/
 /* Consumidor (2011=100), Paridad de Poder Adquisitivo (PPA 2011),  lineas de pobreza             */
 /*________________________________________________________________________________________________*/
+end 
 
 
-do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&ExternalVars_Harmonized_DataBank.do"
 
+do "C:\Users\nicolasga\OneDrive - Inter-American Development Bank Group\Documents\GitHub\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&ExternalVars_Harmonized_DataBank.do"
 /*________________________________________________________________________________________________*/
 
 /* Verificación ¤e que se encuentren todas las variables armonizadas                              */
@@ -1538,11 +1546,12 @@ local longlabel: var label `i'
 local shortlabel = substr(`"`longlabel'"',1,79)
 label var `i' `"`shortlabel'"'
 }
+
 global ruta = "${surveysFolder}"
 
 local PAIS ARG
 local ENCUESTA EPHC
-local ANO "2022"
+local ANO "2023"
 local ronda s2 
 
 local log_file = "$ruta\harmonized\\`PAIS'\\`ENCUESTA'\log\\`PAIS'_`ANO'`ronda'_variablesBID.log"
