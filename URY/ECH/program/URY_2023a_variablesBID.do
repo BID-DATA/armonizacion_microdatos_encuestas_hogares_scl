@@ -1205,6 +1205,8 @@ gen byte asiste_ci = (e49 == 3)
 *89. Razones para no asistir a la escuela
 * Se genera como mising porque no hay para todas las preguntas. 
 gen pqnoasis_ci=.
+
+gen  pqnoasis1_ci=.
 	
 *92. Personas que asisten a centros de ensenanza públicos
 gen edupub_ci = 1 if (e581 == 1 | e581a == 1) & (asiste_ci == 1)
@@ -1236,6 +1238,11 @@ replace eduac_ci=0 if e215_1==1 | e221_1==1 & (e218_1!=1)
 replace eduac_ci=0 if (e215_1==2 | e221_1==2) & (e218_1==0)  
 replace eduac_ci=1 if e218_1==1 
 replace eduac_ci=1 if e218_1==2 & (e215_1!=1 & e221_1!=1)  
+
+***************
+***repite_ci****
+***************
+gen repite_ci=.
 
 
 		**********************************
@@ -1514,18 +1521,18 @@ gen vivialqimp_ch = d8_3 if (viviprop_ch != 0)
 	*** migrantiguo5 ***
 	**********************
 	
-	gen migrantiguo5 = 1 if migrante_ci == 1 & e38_1>=5
-	replace migrantiguo5 = 1 if migrante_ci == 1 & (e236==1| e236==2 |e236==3 )
-	replace migrantiguo5 = 0 if migrante_ci == 1 & e236==4
+	gen migrantiguo5_ci = 1 if migrante_ci == 1 & e38_1>=5
+	replace migrantiguo5_ci = 1 if migrante_ci == 1 & (e236==1| e236==2 |e236==3 )
+	replace migrantiguo5_ci = 0 if migrante_ci == 1 & e236==4
 
 	
 	**********************
 	*** miglac ***
 	**********************
 	** La variable e234_2 usa codigo sistema WITS 
-	gen miglac =0
-	replace miglac = 1 if inlist(e234_2, 660, 28, 32, 533, 44, 52, 84, 68, 76, 152, 170, 188, 192, 531, 212, 218, 222, 320, 254, 328, 332, 340, 136, 796, 92, 388, 484, 558, 591, 600, 604, 214, 659, 658, 534, 670, 662, 740, 780, 862)
-	replace miglac=. if migrante_ci==0
+	gen miglac_ci =0
+	replace miglac_ci = 1 if inlist(e234_2, 660, 28, 32, 533, 44, 52, 84, 68, 76, 152, 170, 188, 192, 531, 212, 218, 222, 320, 254, 328, 332, 340, 136, 796, 92, 388, 484, 558, 591, 600, 604, 214, 659, 658, 534, 670, 662, 740, 780, 862)
+	replace miglac_ci=. if migrante_ci==0
 
 	
 ******************************
@@ -1618,19 +1625,19 @@ order region_BID_c region_c pais_c anio_c mes_c zona_c ///
     formal_ci tipocontrato_ci ocupa_ci horaspri_ci horastot_ci pensionsub_ci pension_ci tipopen_ci instpen_ci ylmpri_ci ///
     nrylmpri_ci tcylmpri_ci ylnmpri_ci ylmsec_ci ylnmsec_ci ylmotros_ci ylnmotros_ci ylm_ci ylnm_ci ynlm_ci ynlnm_ci ylm_ch ///
     ylnm_ch ylmnr_ch ynlm_ch ynlnm_ch ylmhopri_ci ylmho_ci autocons_ci autocons_ch nrylmpri_ch tcylmpri_ch remesas_ci ///
-    remesas_ch ypen_ci ypensub_ci salmm_ci tc_c ipc_c lp19_ci lp31_ci lp5_ci lp_ci lpe_ci ppp_wdi2011 aedu_ci eduno_ci edupi_ci ///
-    edupc_ci edusi_ci edusc_ci eduui_ci eduuc_ci edus1i_ci edus1c_ci edus2i_ci edus2c_ci edupre_ci eduac_ci asiste_ci pqnoasis_ci ///
-    pqnoasis1_ci repite_ci repiteult_ci edupub_ci asispre_ci luz_ch luzmide_ch combust_ch bano_ch banoex_ch des1_ch des2_ch piso_ch ///
+    remesas_ch ypen_ci ypensub_ci salmm_ci tc_c ipc_c lp19_ci lp31_ci lp5_ci lp_ci lpe_ci ppp_wdi aedu_ci ///
+    eduui_ci eduuc_ci edupre_ci eduac_ci asiste_ci pqnoasis_ci ///
+    pqnoasis1_ci repite_ci  edupub_ci asispre_ci luz_ch luzmide_ch combust_ch bano_ch banoex_ch des1_ch des2_ch piso_ch ///
     pared_ch techo_ch resid_ch dorm_ch cuartos_ch cocina_ch telef_ch refrig_ch freez_ch auto_ch compu_ch internet_ch cel_ch vivi1_ch ///
     vivi2_ch viviprop_ch vivitit_ch vivialq_ch vivialqimp_ch aguared_ch aguafconsumo_ch aguafuente_ch aguadist_ch aguadisp1_ch ///
     aguadisp2_ch aguamala_ch aguamejorada_ch aguamide_ch bano_ch banoex_ch banomejorado_ch sinbano_ch aguatrat_ch migrante_ci ///
-    migantiguo5_ci migrantelac_ci miglac_ci migrantiguo5_ci y_hog y_pc y_pc y_pc_net ing_ptmc ing_ptmc percibe_ptmc_ci ptmc_ch ptmc_ch ///
-    mayor64_ci pnc_ci pnc_ci pnc_ci ing_pension
+    miglac_ci migrantiguo5_ci y_hog y_pc y_pc y_pc_net ing_ptmc ing_ptmc ptmc_ci ptmc_ch ///
+    mayor64_ci pnc_ci ing_pension
 
 
 
 compress
 
-saveold "`base_out'", v(12) replace
+save "`base_out'", replace
 
 log close
