@@ -1510,11 +1510,11 @@ label var miglac_ci "=1 si es migrante proveniente de un pais LAC"
 /* Asignación de etiquetas e insercion de variables externas: tipo de cambio, Indice de Precios al*/
 /* Consumidor (2011=100), Paridad de Poder Adquisitivo (PPA 2011),  lineas de pobreza             */
 /*________________________________________________________________________________________________*/
-end 
+ 
 
 
 
-do "C:\Users\nicolasga\OneDrive - Inter-American Development Bank Group\Documents\GitHub\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&ExternalVars_Harmonized_DataBank.do"
+do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&ExternalVars_Harmonized_DataBank.do"
 /*________________________________________________________________________________________________*/
 
 /* Verificación ¤e que se encuentren todas las variables armonizadas                              */
