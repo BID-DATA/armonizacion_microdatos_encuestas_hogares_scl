@@ -33,7 +33,7 @@ foreach trim of local trims {
 		sort codusu nro_hogar aglomerado
 		*save, replace
 
-		use "`base_in'\usu_individual_`trim'20`ano'.dta", clear
+		use "`base_in'\usu_in_`trim'20`ano'.dta", clear
 		sort codusu nro_hogar aglomerado
 
 		merge m:1 codusu nro_hogar aglomerado using "`base_in'\usu_hogar_`trim'20`ano'.dta"
