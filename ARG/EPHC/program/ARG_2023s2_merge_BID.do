@@ -21,7 +21,7 @@ foreach modulo of local modulos {
 		import delimited "$ruta\survey\ARG\EPHC\20`ano'\t4\data_orig\usu_`modulo'_T4`ano'.txt", encoding(ISO-8859-2) clear 
 		save "$ruta\survey\ARG\EPHC\20`ano'\t4\data_orig\usu_`modulo'_t420`ano'.dta", replace
 }
-*/
+
 
 * Modulos trimestres
 foreach trim of local trims {
