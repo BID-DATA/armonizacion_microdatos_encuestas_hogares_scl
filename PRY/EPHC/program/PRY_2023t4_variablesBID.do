@@ -1623,7 +1623,8 @@ forval i =1/4 {
 forval i =1/4 {
 	gen pcasht_dist`i' = .
 	replace pcasht_dist`i' = 0 if pcasht_ch == 1
-	replace pcasht_dist`i' = 1 if grupo_int == `i & pcasht_ch ==1
+	replace pcasht_dist`i' = 1 if grupo_int == `i' & pcasht_ch ==1
+}
 
 lab def grupo_int 1 "Pobre extremo" 2 "Pobre moderado" 3 "Vulnerable" 4 "No pobre"
 lab val grupo_int grupo_int
@@ -1661,6 +1662,6 @@ local shortlabel = substr(`"`longlabel'"',1,79)
 label var `i' `"`shortlabel'"'
 }
 
-saveold "`base_out'", version(12) replace
+save "`base_out'", replace
 
 log close

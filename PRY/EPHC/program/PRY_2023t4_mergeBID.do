@@ -121,6 +121,6 @@ drop _merge
 sort upms nvivis nhogas l02s
 
 
-saveold "`base_out'", v(12) replace
+save "`base_out'", replace
 
 log close
