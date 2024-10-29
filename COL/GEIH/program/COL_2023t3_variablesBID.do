@@ -1,21 +1,24 @@
-* (Version Stata 14)
+* (Version Stata 17)
 clear
 set more off  
 *________________________________________________________________________________________________________________*
 
  * Activar si es necesario (dejar desactivado para evitar sobreescribir la base y dejar la posibilidad de 
  * utilizar un loop)
- * Los datos se obtienen de las carpetas que se encuentran en el servidor: \\Sdssrv03\surveys
+ * Los datos se obtienen de las carpetas que se encuentran en el servidor: \\sapidbshares.file.core.windows.net\idbshares\SURVEYS
  * Se tiene acceso al servidor técnicamente al interior del BID.
  * El servidor contiene las bases de datos MECOVI.
  *________________________________________________________________________________________________________________*
  
 
-global ruta = "${surveysFolder}"
+*global ruta = "${surveysFolder}"
+global gitFolder = "${gitFolder}"
+
+global ruta = C:\Users\olgadu\OneDrive - Inter-American Development Bank Group\Documents\COL\GEIH"
 
 local PAIS COL
 local ENCUESTA GEIH
-local ANO "2022"
+local ANO "2023"
 local ronda t3 
 local log_file = "$ruta\harmonized\\`PAIS'\\`ENCUESTA'\log\\`PAIS'_`ANO'`ronda'_variablesBID.log"
 local base_in  = "$ruta\survey\\`PAIS'\\`ENCUESTA'\\`ANO'\\`ronda'\data_merge\\`PAIS'_`ANO'`ronda'.dta"
@@ -30,10 +33,10 @@ log using "`log_file'", replace
 Paíss: Colombia
 Encuesta: GEIH
 Round: t3
-Autores: Eric Torres (etorresram@gmail.com)
-Fecha última modificación: Noviembre 2022
+Autores: Olga Dulce (olgadu@iadb.org)
+Fecha última modificación: Octubre 2024
 
-							SCL/LMK - IADB
+							SCL/EDU - IADB
 ****************************************************************************/
 ****************************************************************************/
 
@@ -160,7 +163,7 @@ la var pais_c "País"
 **********
 ***anio***
 **********
-g anio_c = 2022
+g anio_c = 2023
 la var anio_c "Año de la encuesta"
 
 destring mes, replace
@@ -169,7 +172,6 @@ gen mes_c=mes
 ***************
 ***factor_ci***
 ***************
-* YL -> El factor fue dividido para 3 porque se unieron los 3 meses (en do-file de merge).
 g factor_ci=fex_c18
 la var factor_ci "Factor de expansión del individuo"
 
@@ -360,8 +362,8 @@ label var afroind_ano_c "Año Cambio de Metodología Medición Raza/Etnicidad"
 	***dis_ci***
 	*******************
 gen dis_ci=.
-replace dis_ci=1 if p1906s1<=3 | p1906s2<=3 | p1906s3<=3 | p1906s4<=3 | p1906s5<=3 | p1906s6<=3 | p1906s7<=3 
-replace dis_ci=0 if p1906s1==4 & p1906s2==4 & p1906s3==4 & p1906s4==4 & p1906s5==4 & p1906s6==4 & p1906s7==4 
+replace dis_ci=1 if p1906s1<=3 | p1906s2<=3 | p1906s3<=3 | p1906s4<=3 | p1906s5<=3 | p1906s6<=3 | p1906s7<=3 | p1906s8<=3  
+replace dis_ci=0 if p1906s1==4 & p1906s2==4 & p1906s3==4 & p1906s4==4 & p1906s5==4 & p1906s6==4 & p1906s7==4 & p1906s8==4  
 label var dis_ci "Personas con discapacidad"
 
 	*******************
@@ -393,7 +395,7 @@ label value condocup_ci condocup_ci
 *afiliado_ci****
 ****************
 gen afiliado_ci=(p6090==1) /*afiliacion para todas las personas*/
-replace afiliado_ci=. if p6090==.
+replace afiliado_ci=. if p6090==9
 label var afiliado_ci "Afiliado a la Seguridad Social"
 
 ****************
@@ -410,7 +412,7 @@ label var cotizando_ci "1 Cotizante a la Seguridad Social"
 ********************
 gen instcot_ci=p6930
 label var instcot_ci "institución a la cual cotiza"
-label define instcot_ci 1 "Fondo privado" 2 "ISS, Cajanal" 3 "Regímenes especiales (FFMM, Ecopetrol etc)" 4 "Fondo Subsidiado (Prosperar,etc.)" 
+label define instcot_ci 1 "Fondo privado" 2 "Colpensiones" 3 "Regímenes especiales (FFMM, Ecopetrol etc)" 4 "Fondo Subsidiado (Prosperar,etc.)" 
 label value instcot_ci instcot_ci
 
 ****************
