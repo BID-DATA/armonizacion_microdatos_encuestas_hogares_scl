@@ -466,7 +466,7 @@ label value tipocontrato_ci tipocontrato_ci
 *************
 *cesante_ci* 
 *************
-*En 2022 la variable p7310 no está presente
+*En 20223 la variable p7310 no está presente
 *gen cesante_ci=1 if p7310==2
 *replace cesante_ci=0 if p7310==1
 gen cesante_ci=.
@@ -478,7 +478,7 @@ label var cesante_ci "Desocupado - definicion oficial del pais"
 gen tamemp_ci=.
 replace tamemp_ci=1 if p7360>=1 & p7360<=3
 replace tamemp_ci=2 if p7360>=4 & p7360<=7
-replace tamemp_ci=3 if p7360>=8 & p7360<=9
+replace tamemp_ci=3 if p7360>=8 & p7360<=10
 label var tamemp_ci "# empleados en la empresa"
 label define tamemp_ci 1 "Pequena" 2 "Mediana" 3 "Grande"
 label value tamemp_ci tamemp_ci
