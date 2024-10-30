@@ -1080,7 +1080,7 @@ g pqnoasis1_ci = .
 	
 
 		**********************************
-		**** VARIABLES DE LA VIVIENDA ****
+		**** VARIABLES DE WASH ****
 		**********************************
 
 ****************
@@ -1142,6 +1142,12 @@ gen aguadisp1_ch =.
 gen aguadisp2_ch = 9
 *label var aguadisp2_ch "= 9 la encuesta no pregunta si el servicio de agua es constante"
 
+*************
+*aguatrat_ch*
+*************
+gen aguatrat_ch = 9
+*label var aguatrat_ch "= 9 la encuesta no pregunta de si se trata el agua antes de consumirla"
+
 
 *************
 *aguamala_ch*  Altered
@@ -1165,7 +1171,6 @@ replace aguamejorada_ch = 1 if aguafuente_ch<=7
 generate aguamide_ch = .
 label var aguamide_ch "Usan medidor para pagar consumo de agua"
 
-
 *****************
 *bano_ch         *  Altered
 *****************
@@ -1186,14 +1191,6 @@ replace banoex_ch = 1 if p5030==1
 replace banoex_ch = 0 if p5030==2
 la var banoex_ch "El servicio sanitario es exclusivo del hogar"
 
-
-*****************
-*banomejorado_ch*  Altered
-*****************
-gen banomejorado_ch= 2
-replace banomejorado_ch =1 if bano_ch<=3 & bano_ch!=0
-replace banomejorado_ch =0 if (bano_ch ==0 | bano_ch>=4) & bano_ch!=6
-
 ************
 *sinbano_ch*
 ************
@@ -1202,14 +1199,18 @@ replace sinbano_ch = 0 if p5020<6
 
 *label var sinbano_ch "= 0 si tiene baño en la vivienda o dentro del terreno"
 
-*************
-*aguatrat_ch*
-*************
-gen aguatrat_ch = 9
-*label var aguatrat_ch "= 9 la encuesta no pregunta de si se trata el agua antes de consumirla"
+*****************
+*banomejorado_ch*  Altered
+*****************
+gen banomejorado_ch= 2
+replace banomejorado_ch =1 if bano_ch<=3 & bano_ch!=0
+replace banomejorado_ch =0 if (bano_ch ==0 | bano_ch>=4) & bano_ch!=6
 
+	
+		**********************************
+		**** VARIABLES DE VIVIENDA ****
+		**********************************
 
-		
 		
 ************
 ***luz_ch***
@@ -1231,36 +1232,6 @@ gen aguatrat_ch = 9
 	replace combust_ch =. if p5080==.
 	la var combust_ch "Principal combustible gas o electricidad" 
 
-
-
-*************
-***des1_ch***
-*************
-	g des1_ch = .
-	replace des1_ch = 0 if bano_ch == 0
-	replace des1_ch = 1 if p5020 == 1 | p5020 == 2
-	replace des1_ch = 2 if p5020 == 3 | p5020 == 4
-	replace des1_ch = 3 if p5020 == 5
-	la var des1_ch "Tipo de desague inadecuado (unimproved) según MDG"
-	la def des1_ch 	0 "No tiene servicio sanitario" 				///
-					1 "Conectado a red general o cámara séptica" 	///
-					2 "Letrina o conectado a pozo ciego" 			///
-					3 "Desemboca en río o calle"
-	la val des1_ch des1_ch
-
-*************
-***des2_ch***
-*************
-	g des2_ch = .
-	replace des2_ch = 0 if bano_ch == 0
-	replace des2_ch = 1 if p5020 == 1 | p5020 == 2 | p5020 == 3 | p5020 == 4
-	replace des2_ch = 2 if p5020 == 5 
-	la var des2_ch "Tipo de desague sin incluir definición MDG"
-	la def des2_ch 	0 "No tiene servicio sanitario" 								///
-					1 "Conectado a red general, cámara pséptica, pozo o letrina" 	///
-					2 "Cualquier otro caso"
-	la val des2_ch des2_ch
-
 *************
 ***piso_ch***
 *************
@@ -1280,7 +1251,7 @@ gen aguatrat_ch = 9
 	la var pared_ch "Materiales de construcción de las paredes"
 	la de pared_ch 0"No permanentes" 1"Permanentes"
 	la val pared_ch pared_ch
-
+	
 **************
 ***techo_ch***
 **************
@@ -1302,7 +1273,6 @@ gen aguatrat_ch = 9
 					3 "Otros"
 	la val resid_ch resid_ch
 	
-
 
 *************
 ***dorm_ch***
@@ -1435,7 +1405,37 @@ gen aguatrat_ch = 9
 
 	gen  tcylmpri_ci =.
     gen tcylmpri_ch=.
-	
+
+*************
+***des1_ch***
+*************
+	g des1_ch = .
+	replace des1_ch = 0 if bano_ch == 0
+	replace des1_ch = 1 if p5020 == 1 | p5020 == 2
+	replace des1_ch = 2 if p5020 == 3 | p5020 == 4
+	replace des1_ch = 3 if p5020 == 5
+	la var des1_ch "Tipo de desague inadecuado (unimproved) según MDG"
+	la def des1_ch 	0 "No tiene servicio sanitario" 				///
+					1 "Conectado a red general o cámara séptica" 	///
+					2 "Letrina o conectado a pozo ciego" 			///
+					3 "Desemboca en río o calle"
+	la val des1_ch des1_ch
+
+*************
+***des2_ch***
+*************
+	g des2_ch = .
+	replace des2_ch = 0 if bano_ch == 0
+	replace des2_ch = 1 if p5020 == 1 | p5020 == 2 | p5020 == 3 | p5020 == 4
+	replace des2_ch = 2 if p5020 == 5 
+	la var des2_ch "Tipo de desague sin incluir definición MDG"
+	la def des2_ch 	0 "No tiene servicio sanitario" 								///
+					1 "Conectado a red general, cámara pséptica, pozo o letrina" 	///
+					2 "Cualquier otro caso"
+	la val des2_ch des2_ch
+
+
+
 *******************
 *** benefdes_ci ***
 *******************
@@ -1452,11 +1452,9 @@ label var ybenefdes_ci "Monto de seguro de desempleo"
  
 
  
-******************************
-*** VARIABLES DE MIGRACION ***
-******************************
-
-*Variables incluidas por SCL/MIG Fernando Morales
+	******************************
+	*** VARIABLES DE MIGRACION ***
+	******************************
 
 	*******************
 	*** migrante_ci ***
@@ -1465,19 +1463,6 @@ label var ybenefdes_ci "Monto de seguro de desempleo"
 	gen migrante_ci= (p3373==3)
 	label var migrante_ci "=1 si es migrante"
 	
-	**********************
-	*** migantiguo5_ci ***
-	**********************
-	
-	gen migantiguo5_ci=(migrante_ci==1 & inlist(p3382,2,3)) if migrante_ci!=. & p3382!=1
-	label var migantiguo5_ci "=1 si es migrante antiguo (5 anos o mas)"
-		
-	**********************
-	*** migrantelac_ci ***
-	**********************
-	
-	gen migrantelac_ci=.
-	label var migrantelac_ci "=1 si es migrante proveniente de un pais LAC"
 	
 	**********************
 	*** migrantiguo5_ci ***
