@@ -785,6 +785,11 @@ label val ramasec_ci ramasec_ci
 	g ycesantia	 = p7510s6a1 / 12
 */
 
+
+	
+	
+* A. INGRESOS LABORALES A NIVEL DE INDIVIDUO
+
 ***************
 ***ylmpri_ci***
 ***************
@@ -793,13 +798,6 @@ label val ramasec_ci ramasec_ci
 	replace ylmpri_ci = . if impa==. & impaes==.
 	la var 	ylmpri_ci "Ingreso laboral monetario actividad principal" 
 	
-
-
-*****************
-***nrylmpri_ci***
-*****************
-	g nrylmpri_ci = (ylmpri_ci == . & emp_ci == 1)
-	la var nrylmpri_ci "ID no respuesta ingreso de la actividad principal"  
 
 ****************
 ***ylnmpri_ci***
@@ -846,6 +844,9 @@ label val ramasec_ci ramasec_ci
 *************
 	egen ylnm_ci = rowtotal(ylnmpri_ci ylnmsec_ci ylnmotros_ci), m
 	la var ylnm_ci "Ingreso laboral NO monetario total"  
+	
+
+* B. INGRESOS NO LABORALES A NIVEL DE INDIVIDUO	
 
 *************
 ***ynlm_ci***
@@ -854,23 +855,13 @@ label val ramasec_ci ramasec_ci
 	la var ynlm_ci "Ingreso no laboral monetario"  
    
 **************
-***ylnm_ci***
+***ynlnm_ci***
 **************
 	g ynlnm_ci = .
 	la var ynlnm_ci "Ingreso no laboral no monetario" 
 
 
-			************************
-			*** HOUSEHOLD INCOME ***
-			************************
-
-*******************
-*** nrylmpri_ch ***
-*******************
-	bys idh_ch: egen nrylmpri_ch = sum(nrylmpri_ci) if miembros_ci == 1
-	replace nrylmpri_ch = 1 if nrylmpri_ch > 0 & nrylmpri_ch < .
-	replace nrylmpri_ch = . if nrylmpri_ch == .
-	la var nrylmpri_ch "Hogares con algún miembro que no respondió por ingresos"
+* C. INGRESOS LABORALES Y NO LABORALES A NIVEL DE HOGAR
 
 *******************
 ****** ylm_ch *****
@@ -897,18 +888,40 @@ label val ramasec_ci ramasec_ci
 **************
 	g ynlnm_ch = .
 	la var ynlnm_ch "Ingreso no laboral no monetario del hogar"
+	
+	
+* D. SALARIO POR HORA
 
-********
-***NA***
-********
-	g rentaimp_ch = .
-	la var rentaimp_ch "Rentas imputadas del hogar"
+*****************
+***ylhopri_ci ***
+*****************
+	g ylmhopri_ci = ylmpri_ci / (horaspri_ci * 4.3)
+	la var ylmhopri_ci "Salario monetario de la actividad principal" 
 
-	g autocons_ci = .
-	la var autocons_ci "Autoconsumo reportado por el individuo"
+***************
+***ylmho_ci ***
+***************
+	g ylmho_ci = ylm_ci / (horastot_ci * 4.3)
+	la var ylmho_ci "Salario monetario de todas las actividades" 
 
-	g autocons_ch = .
-	la var autocons_ch "Autoconsumo reportado por el hogar"
+	
+* E. NO RESPUESTA
+
+*****************
+***nrylmpri_ci***
+*****************
+	g nrylmpri_ci = (ylmpri_ci == . & emp_ci == 1)
+	la var nrylmpri_ci "ID no respuesta ingreso de la actividad principal"  
+
+*******************
+*** nrylmpri_ch ***
+*******************
+	bys idh_ch: egen nrylmpri_ch = sum(nrylmpri_ci) if miembros_ci == 1
+	replace nrylmpri_ch = 1 if nrylmpri_ch > 0 & nrylmpri_ch < .
+	replace nrylmpri_ch = . if nrylmpri_ch == .
+	la var nrylmpri_ch "Hogares con algún miembro que no respondió por ingresos"
+
+* F. REMESAS 
 
 ****************
 ***remesas_ci***
@@ -922,23 +935,31 @@ label val ramasec_ci ramasec_ci
 	bys idh_ch: egen remesas_ch = sum(remesas_ci) if miembros_ci == 1
 	la var remesas_ch "Remesas mensuales del hogar" 
 
-*****************
-***ylhopri_ci ***
-*****************
-	g ylmhopri_ci = ylmpri_ci / (horaspri_ci * 4.3)
-	la var ylmhopri_ci "Salario monetario de la actividad principal" 
+	
+G. PENSIONES 
+** FALTA
+*ypen_ci 
+*ypensub_ci 
 
-***************
-***ylmho_ci ***
-***************
-	g ylmho_ci = ylm_ci / (horastot_ci * 4.3)
-	la var ylmho_ci "Salario monetario de todas las actividades" 
+
+********
+***NA***
+********
+	g rentaimp_ch = .
+	la var rentaimp_ch "Rentas imputadas del hogar"
+
+	g autocons_ci = .
+	la var autocons_ci "Autoconsumo reportado por el individuo"
+
+	g autocons_ch = .
+	la var autocons_ch "Autoconsumo reportado por el hogar"
+
+
 	
 ******************
 *Ingreso Nacional*
 ******************
 gen yoficial_ch=.
-**#
 label var yoficial_ch "Ingreso del hogar total generado por el país"
 
 gen ypeoficial_ch=.
@@ -946,16 +967,10 @@ label var ypeoficial_ch "Ingreso per cápita generado por el país"
 
 
 
-
-
-
-
-
-
 			****************************
 			***VARIABLES DE EDUCACION***
 			****************************
-    **************
+**************
 ***aedu_ci***
 **************	
 	g aedu_ci = . 
@@ -969,64 +984,43 @@ label var ypeoficial_ch "Ingreso per cápita generado por el país"
 	replace aedu_ci = 4 if p3042 == 3 & p3042s1 == 4
 	replace aedu_ci = 5 if p3042 == 3 & p3042s1 == 5
 	replace aedu_ci = 5 if p3042 == 4 & p3042s1 == 0
-*Secundaria
+*Secundaria (se incluye normalista como otra modalidad de secundaria)
 	replace aedu_ci = 6  if p3042 == 4 & p3042s1 == 1
 	replace aedu_ci = 7  if p3042 == 4 & p3042s1 == 2
 	replace aedu_ci = 8  if p3042 == 4 & p3042s1 == 3
 	replace aedu_ci = 9  if p3042 == 4 & p3042s1 == 4	
 	replace aedu_ci = 9  if p3042 == 5 & p3042s1 == 0	
-	replace aedu_ci = 9  if p3042 == 6 & p3042s1 == 0	
-	
+	replace aedu_ci = 9  if p3042 == 6 & p3042s1 == 0
+	replace aedu_ci = 9  if p3042 == 7 & p3042s1 == 0
+	replace aedu_ci = 9  if p3042 == 7 & p3042s1 == 1
+		
 	replace aedu_ci = 10 if p3042 == 5 & p3042s1 == 1
 	replace aedu_ci = 10 if p3042 == 6 & p3042s1 == 1
+	replace aedu_ci = 10 if p3042 == 7 & p3042s1 == 2
+	replace aedu_ci = 10 if p3042 == 7 & p3042s1 == 3
 	replace aedu_ci = 11 if p3042 == 5 & p3042s1 == 2
 	replace aedu_ci = 11 if p3042 == 6 & p3042s1 == 2
+	replace aedu_ci = 11 if p3042 == 7 & p3042s1 == 4
+	
 *Superior
-	replace aedu_ci = 11+ trunc(p3042s1/2) if p3042>=7 & p3042<=13
+	replace aedu_ci = 12 if p3042 == 7 & p3042s1 == 5
+	replace aedu_ci = 11+ trunc(p3042s1/2) if p3042>=8 & p3042<=13
 	
 *Missing
 	replace aedu_ci =. if p3042==99
 	replace aedu_ci =. if p3042s1==99
 
-**************
-***eduno_ci***
-**************
-	g byte eduno_ci = aedu_ci == 0
-	replace eduno_ci=. if aedu_ci==.
-	la var eduno_ci "Sin educación"
+***************
+***edupre_ci***
+***************
+	g byte edupre_ci =.
+	la var edupre_ci "Educación preescolar"
 
-**************
-***edupi_ci***
-**************
-	g byte edupi_ci = (aedu_ci >= 1 & aedu_ci < 5) 
-	replace edupi_ci=. if aedu_ci==.
-	la var edupi_ci "Primaria incompleta"
 
-**************
-***edupc_ci***
-**************
-	g byte edupc_ci = aedu_ci == 5 
-	replace edupc_ci=. if aedu_ci==.
-	la var edupc_ci "Primaria completa"
-
-**************
-***edusi_ci***
-**************
-	g byte edusi_ci = (aedu_ci >= 6 & aedu_ci < 11) 
-	replace edusi_ci=. if aedu_ci==.
-	la var edusi_ci "Secundaria incompleta"
-
-**************
-***edusc_ci***
-**************
-	g byte edusc_ci = (aedu_ci==11) 
-	replace edusc_ci=. if aedu_ci==.
-	la var edusc_ci "Secundaria completa"
-
-	
 **************
 ***eduui_ci***
 **************
+* Nota: normalista es una modalidad especial que no hace parte de superior pero es postsecundaria
 
 	g byte eduui_ci = (inlist(p3042, 8, 9, 10, 11, 12, 13) & inlist(p3043, 2, 3, 4)) 
 	replace eduui_ci = . if aedu_ci == .
@@ -1036,6 +1030,7 @@ label var ypeoficial_ch "Ingreso per cápita generado por el país"
 ***************
 ***eduuc_ci***
 ***************
+* Nota: normalista es una modalidad especial que no hace parte de superior pero es postsecundaria
 
 	g byte eduuc_ci = (inlist(p3042, 8, 9, 10, 11, 12, 13) & inlist(p3043, 5, 6, 7, 8, 9, 10))
 	replace eduuc_ci = . if aedu_ci == .
@@ -1052,77 +1047,12 @@ label var ypeoficial_ch "Ingreso per cápita generado por el país"
 
 
 ***************
-***edus1i_ci***
-***************
-	g byte edus1i_ci = (aedu_ci >= 6 & aedu_ci < 9)
-	replace edus1i_ci=. if aedu_ci==.
-	la var edus1i_ci "1er ciclo de la secundaria incompleto"
-
-***************
-***edus1c_ci***
-***************
-	g byte edus1c_ci = aedu_ci == 9
-	replace edus1c_ci=. if aedu_ci==.
-	la var edus1c_ci "1er ciclo de la secundaria completo"
-
-***************
-***edus2i_ci***
-***************
-	g byte edus2i_ci = aedu_ci == 10 
-	replace edus2i_ci=. if aedu_ci==.
-	la var edus2i_ci "2do ciclo de la secundaria incompleto"
-
-***************
-***edus2c_ci***
-***************
-	g byte edus2c_ci = (aedu_ci == 11)
-	replace edus2c_ci=. if aedu_ci==.
-	la var edus2c_ci "2do ciclo de la secundaria completo"
-
-
-***************
-***edupre_ci***
-***************
-	g byte edupre_ci =.
-	la var edupre_ci "Educación preescolar"
-
-***************
-***asispre_ci**
-***************
-	g asispre_ci= (p6170==1 & p3042==2 & p3042s1 <2)
-	la var asispre_ci "Asiste a educación prescolar"
-	
-
-***************
 ***asiste_ci***
 ***************
 	g asiste_ci = 1 if p6170 == 1
 	replace asiste_ci = 0 if p6170 == 2
 	la var asiste_ci "Asiste actualmente a la escuela"
-
-**************
-***pqnoasis***
-**************
-	g pqnoasis_ci = .
-	la var pqnoasis_ci "Razones para no asistir a la escuela"
 	
-		
-**************
-*pqnoasis1_ci*
-**************
-g pqnoasis1_ci = .
-
-***************
-***repite_ci***
-***************
-	g repite_ci = .
-	la var repite_ci "Ha repetido al menos un grado"
-
-******************
-***repiteult_ci***
-******************
-	g repiteult_ci = .
-	la var repiteult "Ha repetido el último grado"
 
 ***************
 ***edupub_ci***
@@ -1131,8 +1061,21 @@ g pqnoasis1_ci = .
 	replace edupub=1 if p3041 == 1 & p6170==1
 	replace edupub_ci = 0 if p3041 == 2 & p6170==1
 	la var edupub_ci "Asiste a un centro de enseñanza público"
+
+
 	
-	
+***************
+***asispre_ci**
+***************
+	g asispre_ci= (p6170==1 & p3042==2 & p3042s1 <2)
+	la var asispre_ci "Asiste a educación prescolar"
+
+		
+**************
+*pqnoasis1_ci*
+**************
+g pqnoasis1_ci = .
+
 	
 	
 
