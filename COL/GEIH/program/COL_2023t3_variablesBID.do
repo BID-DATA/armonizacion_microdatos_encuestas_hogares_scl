@@ -117,6 +117,24 @@ label define ine01          ///
 label value ine01 ine01
 label var ine01 "division politico-administrativa, departamento"
 
+**********
+***anio_c***
+**********
+g anio_c = 2023
+la var anio_c "Año de la encuesta"
+
+**********
+***mes_c***
+**********
+
+destring mes, replace
+gen mes_c=mes
+
+************
+****pais_c****
+************
+g str3 pais_c = "COL"
+la var pais_c "País"
 
 ************
 * Region_BID *
@@ -127,11 +145,14 @@ label var region_BID_c "Regiones BID"
 label define region_BID_c 1 "Centroamérica_(CID)" 2 "Caribe_(CCB)" 3 "Andinos_(CAN)" 4 "Cono_Sur_(CSC)"
 label value region_BID_c region_BID_c
 
-***************
-***factor_ch***
-***************
-g factor_ch=fex_c18
-la var factor_ch "Factor de expansión del hogar"
+**********
+***zona_c***
+**********
+destring clase, replace
+g zona_c = clase == 1
+la var zona_c "Zona del país"
+la de zona_c 1 "Urbana" 0 "Rural"
+la val zona_c zona_c
 
 ***************
 ****idh_ch*****
@@ -145,40 +166,35 @@ la var idh_ch "ID del hogar"
 g idp_ci=orden
 la var idp_ci "ID de la persona en el hogar"
 
-**********
-***zona***
-**********
-destring clase, replace
-g zona_c = clase == 1
-la var zona_c "Zona del país"
-la de zona_c 1 "Urbana" 0 "Rural"
-la val zona_c zona_c
-
-************
-****pais****
-************
-g str3 pais_c = "COL"
-la var pais_c "País"
-
-**********
-***anio***
-**********
-g anio_c = 2023
-la var anio_c "Año de la encuesta"
-
-destring mes, replace
-gen mes_c=mes
-	
 ***************
 ***factor_ci***
 ***************
 g factor_ci=fex_c18
 la var factor_ci "Factor de expansión del individuo"
 
+***************
+***factor_ch***
+***************
+g factor_ch=fex_c18
+la var factor_ch "Factor de expansión del hogar"
 
 		****************************
 		***VARIABLES DEMOGRAFICAS***
 		****************************
+
+*************
+***sexo_ci***
+*************
+	g sexo_ci = p3271
+	la var sexo_ci "Sexo del individuo" 
+	la define sexo_ci 1 "Hombre" 2 "Mujer"
+	la val sexo_ci sexo_ci
+
+**********
+***edad***
+**********
+	g edad_ci = p6040
+	la var edad_ci "Edad del individuo (años)"
 
 *****************
 ***relacion_ci***
@@ -198,21 +214,7 @@ la var factor_ci "Factor de expansión del individuo"
 						6 "Empleado/a doméstico/a"
 	la val relacion_ci relacion_ci
 
-**********
-***sexo***
-**********
-	g sexo_ci = p3271
-	la var sexo_ci "Sexo del individuo" 
-	la define sexo_ci 1 "Hombre" 2 "Mujer"
-	la val sexo_ci sexo_ci
-
-**********
-***edad***
-**********
-	g edad_ci = p6040
-	la var edad_ci "Edad del individuo (años)"
-
-
+	
 *****************
 ****civil_ci*****
 *****************
@@ -293,6 +295,12 @@ la var factor_ci "Factor de expansión del individuo"
 	bys idh_ch: egen nmiembros_ch = sum(relacion_ci >= 1 & relacion_ci <= 4)
 	la var nmiembros_ch "Número de familiares en el hogar"
 
+****************
+***miembros_ci***
+****************
+	g miembros_ci = (relacion_ci <= 4)
+	la var miembros_ci "Miembro del hogar"
+	
 *****************
 ***nmayor21_ch***
 *****************
@@ -323,52 +331,106 @@ la var factor_ci "Factor de expansión del individuo"
 	bys idh_ch: egen nmenor1_ch = sum((relacion_ci >= 1 & relacion_ci <= 4) & edad_ci < 1)
 	la var nmenor1_ch "Número de familiares menores a 1 año"
 
-****************
-***miembros_ci***
-****************
-	g miembros_ci = (relacion_ci <= 4)
-	la var miembros_ci "Miembro del hogar"
+
 
 	
-*******************************
-*** VARIABLES DE DIVERSIDAD ***
-*******************************
-
-	***afroind_ci***
-	***************
+	********************************************
+	*** VARIABLES DE IDENTIDAD ETNICO-RACIAL ***
+	********************************************
 **Pregunta: De acuerdo con su cultura, pueblo o rasgos físicos, … es o se reconoce como:(P6080) (1- Indigena 2- Gitano - Rom 3- Raizal del archipiélago de San Andrés y providencia 4- Palenquero de San basilio o descendiente 5- Negro(a), mulato(a), Afrocolombiano(a) o Afrodescendiente 6- Ninguno de los anteriores (mestizo, blanco, etc)) 
-gen afroind_ci=. 
-replace afroind_ci=1  if p6080 == 1 
-replace afroind_ci=2 if p6080 == 3 | p6080 == 4 | p6080 == 5
-replace afroind_ci=3 if p6080 == 2 | p6080 == 6
-replace afroind_ci=. if p6080 ==.
-label var afroind_ci "Raza o etnia del individuo"
+	
+***************
+***afro_ci***
+***************
+		gen byte afro_ci = . 
+		replace afro_ci = 1 if inlist(p6080,3,4,5)
+		replace afro_ci = 0 if inlist(p6080,1,2,6)
 
-	***************
-	***afroind_ch***
-	***************
-gen afroind_jefe= afroind_ci if relacion_ci==1
-egen afroind_ch  = min(afroind_jefe), by(idh_ch) 
-label var afroind_ch "Raza/etnia del hogar en base a raza/etnia del jefe de hogar"
-drop afroind_jefe
 
-	*******************
-	***afroind_ano_c***
-	*******************
-gen afroind_ano_c=2006
-label var afroind_ano_c "Año Cambio de Metodología Medición Raza/Etnicidad"
+***************
+***ind_ci***
+***************
 
-	*******************
-	***dis_ci***
-	*******************
+		gen byte ind_ci = . 
+		replace ind_ci = 1 if inlist(p6080,1)
+		replace ind_ci = 0 if inlist(p6080,2,4,5,6)
+
+*****************
+***noafroind_ci**
+*****************
+
+		gen byte noafroind_ci = . 
+		replace noafroind_ci = 1 if afro_ci==0 & ind_ci==0
+		replace noafroind_ci = 0 if afro_ci==1 | ind_ci==1
+
+***************
+***afro_ch***
+***************
+		gen afro_jefe = afro_ci if relacion_ci == 1
+		egen afro_ch = min(afro_jefe), by(idh_ch) 
+		drop afro_jefe
+
+***************
+***ind_ch***
+***************
+		gen ind_jefe = ind_ci if relacion_ci == 1
+		egen ind_ch = min(ind_jefe), by(idh_ch) 
+		drop ind_jefe
+		
+***************
+***noafroind_ch***
+***************
+		gen noafroind_jefe = noafroind_ci if relacion_ci == 1
+		egen noafroind_ch = min(noafroind_jefe), by(idh_ch) 
+		drop noafroind_jefe
+
+*******************
+***afroind_ano_c***
+*******************
+		gen afroind_ano_c=2017
+
+***************
+***afroind_ci**
+***************
+		gen afroind_ci =. 
+		replace afroind_ci = 1 if afro_ci==1
+		replace afroind_ci = 2 if ind_ci ==1
+		replace afroind_ci = 3 if noafroind_ci==1
+
+
+***************
+***afroind_ch***
+***************
+		gen afroind_jefe = afroind_ci if relacion_ci == 1
+		egen afroind_ch = min(afroind_jefe), by(idh_ch) 
+		drop afroind_jefe
+
+
+	********************************************
+	*** VARIABLES EN SITUACION DE DISCAPACIDAD ***
+	********************************************
+
+*******************
+***dis_ci***
+*******************
 gen dis_ci=.
 replace dis_ci=1 if p1906s1<=3 | p1906s2<=3 | p1906s3<=3 | p1906s4<=3 | p1906s5<=3 | p1906s6<=3 | p1906s7<=3 | p1906s8<=3  
 replace dis_ci=0 if p1906s1==4 & p1906s2==4 & p1906s3==4 & p1906s4==4 & p1906s5==4 & p1906s6==4 & p1906s7==4 & p1906s8==4  
 label var dis_ci "Personas con discapacidad"
 
-	*******************
-	***dis_ch***
-	*******************
+*******************
+***disWG_ci***
+*******************
+		gen disWG_ci =.
+
+*******************
+***COL_dis_ci***
+*******************
+		gen PER_dis_ci =dis_ci
+
+*******************
+***dis_ch***
+*******************
 egen dis_ch = max(dis_ci), by(idh_ch) 
 lab var dis_ch "Hogares con miembros con discapacidad"
 
@@ -503,8 +565,8 @@ label var tipopen_ci "Tipo de pension - variable original de cada pais"
 *************
 *ypen_ci*
 *************
-replace p7500s2a1=. if p7500s2a1==98
 gen ypen_ci=p7500s2a1
+replace ypen_ci=. if p7500s2a1==98
 replace ypen_ci=. if pension_ci==0
 label var ypen_ci "Valor de la pension contributiva"
 
@@ -860,6 +922,22 @@ label val ramasec_ci ramasec_ci
 	g ynlnm_ci = .
 	la var ynlnm_ci "Ingreso no laboral no monetario" 
 
+* E. NO RESPUESTA
+
+*****************
+***nrylmpri_ci***
+*****************
+	g nrylmpri_ci = (ylmpri_ci == . & emp_ci == 1)
+	la var nrylmpri_ci "ID no respuesta ingreso de la actividad principal"  
+
+*******************
+*** nrylmpri_ch ***
+*******************
+	bys idh_ch: egen nrylmpri_ch = sum(nrylmpri_ci) if miembros_ci == 1
+	replace nrylmpri_ch = 1 if nrylmpri_ch > 0 & nrylmpri_ch < .
+	replace nrylmpri_ch = . if nrylmpri_ch == .
+	la var nrylmpri_ch "Hogares con algún miembro que no respondió por ingresos"
+	
 
 * C. INGRESOS LABORALES Y NO LABORALES A NIVEL DE HOGAR
 
@@ -905,22 +983,6 @@ label val ramasec_ci ramasec_ci
 	la var ylmho_ci "Salario monetario de todas las actividades" 
 
 	
-* E. NO RESPUESTA
-
-*****************
-***nrylmpri_ci***
-*****************
-	g nrylmpri_ci = (ylmpri_ci == . & emp_ci == 1)
-	la var nrylmpri_ci "ID no respuesta ingreso de la actividad principal"  
-
-*******************
-*** nrylmpri_ch ***
-*******************
-	bys idh_ch: egen nrylmpri_ch = sum(nrylmpri_ci) if miembros_ci == 1
-	replace nrylmpri_ch = 1 if nrylmpri_ch > 0 & nrylmpri_ch < .
-	replace nrylmpri_ch = . if nrylmpri_ch == .
-	la var nrylmpri_ch "Hogares con algún miembro que no respondió por ingresos"
-
 * F. REMESAS 
 
 ****************
@@ -934,12 +996,6 @@ label val ramasec_ci ramasec_ci
 ****************
 	bys idh_ch: egen remesas_ch = sum(remesas_ci) if miembros_ci == 1
 	la var remesas_ch "Remesas mensuales del hogar" 
-
-	
-G. PENSIONES 
-** FALTA
-*ypen_ci 
-*ypensub_ci 
 
 
 ********
@@ -1450,19 +1506,33 @@ label var benefdes_ci "=1 si tiene seguro de desempleo"
 g ybenefdes_ci=.
 label var ybenefdes_ci "Monto de seguro de desempleo"
  
-
  
-	******************************
-	*** VARIABLES DE MIGRACION ***
-	******************************
+******************************
+*** VARIABLES DE MIGRACION ***
+******************************
+ 
+*Variables incluidas por SCL/MIG Fernando Morales
 
 	*******************
 	*** migrante_ci ***
 	*******************
 	
-	gen migrante_ci= (p3373==3)
+	gen migrante_ci=1 if p3373==3
 	label var migrante_ci "=1 si es migrante"
 	
+	**********************
+	*** migantiguo5_ci ***
+	**********************
+	
+	gen migantiguo5_ci=(migrante_ci==1 & inlist(p3382,2,3)) if migrante_ci!=. & p3382!=1
+	label var migantiguo5_ci "=1 si es migrante antiguo (5 anos o mas)"
+		
+	**********************
+	*** migrantelac_ci ***
+	**********************
+	
+	gen migrantelac_ci=.
+	label var migrantelac_ci "=1 si es migrante proveniente de un pais LAC"
 	
 	**********************
 	*** migrantiguo5_ci ***
@@ -1489,6 +1559,125 @@ label var ybenefdes_ci "Monto de seguro de desempleo"
 do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&ExternalVars_Harmonized_DataBank.do"
 
 
+**************************************
+*** VARIABLES DE PROTECCION SOCIAL ***
+**************************************
+
+* MIEMBROS DEL HOGAR
+	gen x = 1
+	bys idh_ch: egen nmiembros_sph_ch= sum(x)
+	
+
+* BENEFICIARIOS Y MONTOS
+
+	*****************
+	**** ptmc_ch ****
+	*****************
+		
+	egen 	ing_ptmc_ci = rowtotal(p1661s1a1 p1661s2a1)
+	replace ing_ptmc_ci = ing_ptmc_ci + p1661s4a2 if regexm(p1661s4a1,".I.*GRESO.* SOL.*")
+	replace ing_ptmc_ci = ing_ptmc_ci + p1661s4a2 if regexm(p1661s4a1,".*SOL.*")
+	replace ing_ptmc_ci = ing_ptmc_ci + p1661s4a2 if regexm(p1661s4a1,".*INGRESO.*DARIO.*")
+	replace ing_ptmc_ci = ing_ptmc_ci + p1661s4a2 if regexm(p1661s4a1,".*BONO.*DARIO.*")
+	replace ing_ptmc_ci = ing_ptmc_ci / 12
+	replace ing_ptmc_ci = . if p1661s1a1 == . & p1661s2a1 == .
+	replace ing_ptmc_ci = . if p1661s1a1 == 98
+	replace ing_ptmc_ci = . if p1661s2a1 == 98
+	bys idh_ch: egen ing_ptmc_ch = sum(ing_ptmc_ci)
+	
+	gen 	ptmc_ci = p1661s1 == 1
+	replace ptmc_ci = 1 if p1661s2 == 1
+	replace ptmc_ci = 1 if regexm(p1661s4a1,".I.*GRESO.* SOL.*")
+	replace ptmc_ci = 1 if regexm(p1661s4a1,".*SOL.*")
+	replace ptmc_ci = 1 if regexm(p1661s4a1,".*INGRESO.*DARIO.*")
+	replace ptmc_ci = 1 if regexm(p1661s4a1,".*BONO.*DARIO.*")
+	replace ptmc_ci = 1 if ing_ptmc_ci != . & ing_ptmc_ci > 0
+	bys idh_ch: egen ptmc_ch = max(ptmc_ci)
+	
+	*****************
+	**** pnc_ch *****
+	*****************
+	gen     pnc_elegible_ci = 0
+	replace pnc_elegible_ci = 1 if edad_ci > 54 & sexo_ci == 2
+	replace pnc_elegible_ci = 1 if edad_ci > 57 & sexo_ci == 1
+	
+	gen 	ing_pnc_ci = p1661s3a1
+	replace ing_pnc_ci = ing_pnc_ci / 12
+	replace ing_pnc_ci = . if p1661s3a1 == .
+	replace ing_pnc_ci = . if p1661s3a1 == 98
+	replace ing_pnc_ci = . if pnc_elegible_ci == 0
+	bys idh_ch: egen ing_pnc_ch = sum(ing_pnc_ci)
+	
+	gen 	pnc_ci = p1661s3 == 1
+	replace pnc_ci = 1 if ing_pnc_ci != . & ing_pnc_ci > 0
+	replace pnc_ci = . if pnc_elegible_ci == 0
+	bys idh_ch: egen pnc_ch = max(pnc_ci)
+	
+	* Imputar beneficiarios sin montos
+	* Numero a imputar: 5
+	replace ing_pnc_ci = 80000 if ing_pnc_ci == . & pnc_ci == 1
+	
+	*****************
+	*** otrot_ch ****
+	*****************
+		
+	gen 	ing_otrot_ci = p1661s4a2
+	replace ing_otrot_ci = ing_otrot_ci / 12
+	replace ing_otrot_ci = . if p1661s4a2 == .
+	replace ing_otrot_ci = . if p1661s4a2 == 98
+	bys idh_ch: egen ing_otrot_ch = sum(ing_otrot_ci)
+	
+	gen 	potrot_ci = 0
+	replace potrot_ci = 1 if ing_otrot_ci != .
+	replace potrot_ci = 1 if potrot_ci == 0 & ing_otrot_ci != .
+	bys idh_ch: egen potrot_ch = max(potrot_ci)
+	
+	*****************
+	*** pcasht_ch ***
+	*****************
+	egen    ing_pcasht_ch = rowtotal(ing_ptmc_ch ing_pnc_ch ing_otrot_ch)
+	egen 	pcasht_ch = rowtotal(ptmc_ch pnc_ch potrot_ch)
+	replace pcasht_ch = 1 if pcasht_ch > 0
+	
+
+* COBERTURA Y DISTRIBUCION
+	
+	* Ingreso neto del hogar
+	egen 	y_hog_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci), missing
+	replace y_hog_ci = 0 if y_hog_ci < 0
+	gen 	y_pc_ci = y_hog_ci / nmiembros_sph_ch 
+	
+	bys idh_ch: egen y_hog_ch = sum(y_hog_ci), missing
+	gen 	y_pc_net_ch = (y_hog_ch - ing_pcasht_ch) / nmiembros_sph_ch
+	replace y_pc_net_ch = 0 if y_pc_net_ch < 0
+	
+	* Grupos
+	gen     grupo_int = 1 if (y_pc_net_ch <  lp31_ci         & y_pc_net_ch != .)
+	replace grupo_int = 2 if (y_pc_net_ch >= lp31_ci  	     & y_pc_net_ch < (lp31_ci * 1.6) & y_pc_net_ch != .)
+	replace grupo_int = 3 if (y_pc_net_ch >= (lp31_ci * 1.6) & y_pc_net_ch < (lp31_ci * 4)   & y_pc_net_ch != .)
+	replace grupo_int = 4 if (y_pc_net_ch >= (lp31_ci * 4)   & y_pc_net_ch < .               & y_pc_net_ch != .)
+
+	****************************
+	***** pcasht_coverage_ *****
+	****************************
+	forval i = 1/4 {
+		gen 	pcasht_coverage`i' = . 
+		replace pcasht_coverage`i' = 0 if grupo_int == `i'
+		replace pcasht_coverage`i' = 1 if grupo_int == `i' & pcasht_ch == 1
+	}
+		
+	********************
+	*** pcasht_dist_ ***
+	********************
+	forval i = 1/4 {
+		gen 	pcasht_dist`i' = . 
+		replace pcasht_dist`i' = 0 if pcasht_ch == 1
+		replace pcasht_dist`i' = 1 if grupo_int == `i' & pcasht_ch == 1
+	}
+
+
+
+
 /*_____________________________________________________________________________________________________*/
 * Verificación de que se encuentren todas las variables armonizadas 
 /*_____________________________________________________________________________________________________*/
@@ -1502,7 +1691,7 @@ tiempoparc_ci categopri_ci categosec_ci rama_ci spublico_ci tamemp_ci cotizando_
 formal_ci tipocontrato_ci ocupa_ci horaspri_ci horastot_ci	pensionsub_ci pension_ci tipopen_ci instpen_ci	ylmpri_ci nrylmpri_ci ///
 tcylmpri_ci ylnmpri_ci ylmsec_ci ylnmsec_ci	ylmotros_ci	ylnmotros_ci ylm_ci	ylnm_ci	ynlm_ci	ynlnm_ci ylm_ch	ylnm_ch	ylmnr_ch  ///
 ynlm_ch	ynlnm_ch ylmhopri_ci ylmho_ci rentaimp_ch autocons_ci autocons_ch nrylmpri_ch tcylmpri_ch remesas_ci remesas_ch	ypen_ci	ypensub_ci ///
-salmm_ci tc_c ipc_c lp19_c lp31_c lp5_c lp_ci lpe_ci aedu_ci eduno_ci edupi_ci edupc_ci	edusi_ci edusc_ci eduui_ci eduuc_ci	edus1i_ci ///
+salmm_ci ipc_c lp19_c lp31_c lp5_c lp_ci lpe_ci aedu_ci eduno_ci edupi_ci edupc_ci	edusi_ci edusc_ci eduui_ci eduuc_ci	edus1i_ci ///
 edus1c_ci edus2i_ci edus2c_ci edupre_ci eduac_ci asiste_ci pqnoasis_ci pqnoasis1_ci	repite_ci repiteult_ci edupub_ci ///
 aguared_ch aguafconsumo_ch aguafuente_ch aguadist_ch aguadisp1_ch aguadisp2_ch aguamala_ch aguamejorada_ch aguamide_ch bano_ch banoex_ch banomejorado_ch sinbano_ch aguatrat_ch luz_ch luzmide_ch combust_ch des1_ch des2_ch piso_ch ///
 pared_ch techo_ch resid_ch dorm_ch cuartos_ch cocina_ch telef_ch refrig_ch freez_ch auto_ch compu_ch internet_ch cel_ch ///
@@ -1511,7 +1700,7 @@ vivi1_ch vivi2_ch viviprop_ch vivitit_ch vivialq_ch	vivialqimp_ch, first
 
 *
 /*Homologar nombre del identificador de ocupaciones (isco, ciuo, etc.) y de industrias y dejarlo en base armonizada 
-para anÃ¡lisis de trends (en el marco de estudios sobre el futuro del trabajo) */
+para analisis de trends (en el marco de estudios sobre el futuro del trabajo) */
 rename  rama2d_r4 codindustria
 rename  oficio_c8 codocupa
 compress
