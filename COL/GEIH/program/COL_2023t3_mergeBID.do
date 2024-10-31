@@ -11,7 +11,7 @@ set more off
 local anio =2023
 local ronda1 a
 local ronda2 t3
-local ruta "C:\Users\olgadu\OneDrive - Inter-American Development Bank Group\Documents\COL\GEIH\\`anio'\"
+local ruta "${surveysFolder}\survey\COL\GEIH\\`anio'\"
 local m7 ="`ruta'\`ronda1'\data_orig\m7\" 
 local m8 ="`ruta'\`ronda1'\data_orig\m8\" 
 local m9 ="`ruta'\`ronda1'\data_orig\m9\" 
