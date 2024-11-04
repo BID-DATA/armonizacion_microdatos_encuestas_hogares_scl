@@ -249,15 +249,16 @@ label var pensionsub_ci "=1: recibe pension subsidiada / no contributiva"
 *                                                          VARIABLES DE EDUCACION                                             *
 *====================================================================================================================================*
 label var aedu_ci "Anios de educacion aprobados"	
+label var eduui_ci "Superior incompleto"
 label var eduuc_ci "Superior completo"
 label var edupre_ci "Educacion preescolar"
 label var eduac_ci "Superior universitario vs superior no universitario"	
-label var asiste_ci "=1 si asiste actualmente a la escuela"
-								
-label var pqnoasis1_ci "Razones para no asistir a la escuela-variable armonizada"
-label var repite_ci "Ha repetido al menos un grado"
-label var edupub_ci "Asiste a un centro de ensenanza público"
 
+label var asiste_ci "=1 si asiste actualmente a la escuela"						
+
+label var edupub_ci "Asiste a un centro de ensenanza público"
+label var asispre_ci "=1 si asiste actualmente a educación preescolar"	
+label var pqnoasis1_ci "Razones para no asistir a la escuela-variable armonizada"	
 
 *====================================================================================================================================*
 *                                                          VARIABLES DE INFRAESTRUCTURA DEL HOGAR                                    *
