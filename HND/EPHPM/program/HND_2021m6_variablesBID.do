@@ -843,12 +843,7 @@ label var ypensub_ci "Valor de la pension subsidiada / no contributiva"
 ***aedu_ci***
 *************
 * No hay años de escolaridad en 2021, sacamos la variable de las dicótomicas del máximo nivel alcanzado
-*Modificación Mayra Sáenz - Octubre 2016: Corrección enviada por Ivan Bornacelly SCL/EDU	
 gen aedu_ci = .
-replace aedu_ci = 15 if ed054 == 1
-replace aedu_ci = 11 if ed053 == 1 & ed054 == 0
-replace aedu_ci = 6 if ed052 == 1 & ed053 == 0 & ed054 == 0
-replace aedu_ci = 0 if ed051 == 1 & ed052 == 0 & ed053 == 0 & ed054 == 0
 
 **************
 ***eduno_ci***
