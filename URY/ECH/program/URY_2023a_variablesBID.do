@@ -487,7 +487,7 @@ gen categosec_ci = 1 if (f92 == 4)
 replace categosec_ci = 2 if (f92 == 9 | f92 == 3)
 replace categosec_ci = 3 if (f92 == 1 | f92 == 2 | f92 == 8)
 replace categosec_ci = 4 if (f92 == 7) 
-replace categopri_ci =. if (f92 == 0)
+replace categosec_ci =. if (f92 == 0)
 
 label define categosec_ci 1"Patron" 2"Cuenta propia" 
 label define categosec_ci 3"Empleado" 4" No remunerado", add
