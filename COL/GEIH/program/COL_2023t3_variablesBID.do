@@ -1520,7 +1520,7 @@ label var ybenefdes_ci "Monto de seguro de desempleo"
 	*** migrante_ci ***
 	*******************
 	
-	gen migrante_ci=1 if p3373==3
+	gen migrante_ci= (p3373==3)
 	label var migrante_ci "=1 si es migrante"
 	
 	**********************
