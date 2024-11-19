@@ -1712,7 +1712,6 @@ do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&Exter
 	*****************
 	**** ptmc_ch ****
 	*****************
-	
 	gen 	ing_ptmc_ci = .  // Sin informacion
 	bys idh_ch: egen ing_ptmc_ch = sum(ing_ptmc_ci)
 	
@@ -1728,7 +1727,7 @@ do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&Exter
 	replace pnc_elegible_ci = 1 if edad_ci > 70
 	
 	gen 	ing_pnc_ci = 50 
-	replace ing_onc_ci = . if r319a5 != 1
+	replace ing_pnc_ci = . if r319a5 != 1
 	replace ing_pnc_ci = . if pnc_elegible_ci == 0
 	bys idh_ch: egen ing_pnc_ch = sum(ing_pnc_ci)
 	
