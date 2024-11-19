@@ -4,8 +4,9 @@
 *====================================================================================================================================*
 *                                                     INCLUSIóN DE VARIABLES EXTERNAS                                                *
 *====================================================================================================================================*
+global ruta = "${surveysFolder}"
 capture drop _merge
-merge m:1 pais_c anio_c using "$ruta\general_documentation\data_externa\poverty\International_Poverty_Lines\5_International_Poverty_Lines_LAC_long",   keepusing (ppp_2011 cpi_2011 lp19_2011 lp31_2011 lp5_2011 tc_wdi ppp_wdi2011)
+merge m:1 pais_c anio_c using "$ruta\general_documentation\data_externa\poverty\International_Poverty_Lines\5_International_Poverty_Lines_LAC_long_PPP17",   keepusing (lp19_2011 lp31_2011 lp5_2011 lp365_2017 lp685_2017 ppp_2011 ppp_2017 cpi_2011 cpi_2017 tc_wdi ppp_wdi)
 
 drop if _merge ==2
 
@@ -18,6 +19,15 @@ g lp5_ci   = lp5_2011
 
 drop ppp_2011 cpi_2011 lp19_2011 lp31_2011 lp5_2011 tc_wdi _merge
 
+*====================================================================================================================================*
+*                                                         VARIABLES DE LÍNEAS DE POBREZA                                              *
+*====================================================================================================================================*
+
+label var ppp_wdi "Purchasing Power Parity Factor (PPP)"
+label var ppp_2017 "Purchasing Power Parity Factor (PPP) 2017"
+label var cpi_2017 "Consumer Price Index 2017"
+label var lp365_2017 "Línea de pobreza USD 3.65 día en moneda local a precios corrientes a PPA 2017"
+label var lp685_2017 "Línea de pobreza USD 6.85 día en moneda local a precios corrientes a PPA 2017"
 
 *====================================================================================================================================*
 *                                                         VARIABLES DE IDENTIFICACION                                                *
@@ -32,7 +42,7 @@ label var factor_ch "Factor de expansion del hogar"
 label var idh_ch "ID del hogar"
 label var idp_ci "ID de la persona en el hogar"
 
-label var region_c "Regiones especifica de cada país"
+*label var region_c "Regiones especifica de cada país"
 
 label var zona_c "Zona del pais"
 	label define zona_c 1 "urbana" 0 "rural", add modify
@@ -172,7 +182,7 @@ label var durades_ci "Duracion del desempleo en meses"
 label var ylmpri_ci "Ingreso laboral monetario actividad principal" 
 label var nrylmpri_ci "ID de no respuesta ingreso de la actividad principal"  
 label var ylnmpri_ci "Ingreso laboral NO monetario actividad principal"  
-label var tcylmpri_ci "Identificador de top-code del ingreso de la actividad principal" 
+*label var tcylmpri_ci "Identificador de top-code del ingreso de la actividad principal" 
 	* Actividad secundaria
 label var ylmsec_ci "Ingreso laboral monetario segunda actividad" 
 label var ylnmsec_ci "Ingreso laboral NO monetario actividad secundaria"
@@ -180,7 +190,7 @@ label var ylnmsec_ci "Ingreso laboral NO monetario actividad secundaria"
 label var ylmotros_ci "Ingreso laboral monetario de otros trabajos"
 label var ylnmotros_ci "Ingreso laboral NO monetario de otros trabajos" 
 	* Ingresos no laborales
-label var autocons_ci "Autoconsumo reportado por el individuo"
+*label var autocons_ci "Autoconsumo reportado por el individuo"
 label var remesas_ci "Remesas mensuales reportadas por el individuo" 
 label var ylmhopri_ci "Salario monetario horario de la actividad principal" 
 label var ylmho_ci "Salario monetario horario de todas las actividades" 
@@ -198,9 +208,9 @@ label var ylnm_ch "Ingreso laboral no monetario del hogar"
 label var ylmnr_ch "Ingreso laboral monetario del hogar con missing en NR"
 label var ynlm_ch "Ingreso no laboral monetario del hogar"
 label var ynlnm_ch "Ingreso no laboral no monetario del hogar"
-label var rentaimp_ch "Rentas imputadas del hogar"
+*label var rentaimp_ch "Rentas imputadas del hogar"
 
-label var autocons_ch "Autoconsumo reportado por el hogar"
+*label var autocons_ch "Autoconsumo reportado por el hogar"
 label var remesas_ch "Remesas mensuales del hogar"	
 label var ypen_ci "Monto de ingreso por pension contributiva"
 label var ypensub_ci "Monto de ingreso por pension subsidiada / no contributiva"
@@ -212,8 +222,8 @@ capture label var lp5_ci "Línea de pobreza USD5 por día en moneda local a prec
 capture label var tc_c "Tasa de cambio LCU/USD Fuente: WB/WDI"
 capture label var ipc_c "Índice de precios al consumidor base 2011=100 Fuente: IMF/WEO"
 capture label var ppa_c "Factor de conversión Paridad de Poder Adquisitivo PPA LCU/USD 2011 Fuente: WB/WDI"
-label var lp_ci "Linea de pobreza oficial del pais en moneda local a precios corrientes"
-label var lpe_ci "Linea de indigencia oficial del pais en moneda local a precios corrientes"
+*label var lp_ci "Linea de pobreza oficial del pais en moneda local a precios corrientes"
+*label var lpe_ci "Linea de indigencia oficial del pais en moneda local a precios corrientes"
 label var salmm_ci "Salario minimo legal a precios corrientes"
 
 
@@ -238,28 +248,17 @@ label var pensionsub_ci "=1: recibe pension subsidiada / no contributiva"
 *====================================================================================================================================*
 *                                                          VARIABLES DE EDUCACION                                             *
 *====================================================================================================================================*
-label var aedu_ci "Anios de educacion aprobados"
-label var eduno_ci "Sin educacion"
-label var edupi_ci "Primaria incompleta"
-label var edupc_ci "Primaria completa"	
-label var edusi_ci "Secundaria incompleta"	
-label var edusc_ci "Secundaria completa"	
-label var eduui_ci "Superior incompleto"	
+label var aedu_ci "Anios de educacion aprobados"	
+label var eduui_ci "Superior incompleto"
 label var eduuc_ci "Superior completo"
-label var edus1i_ci "1er ciclo de la secundaria incompleto"
-label var edus1c_ci "1er ciclo de la secundaria completo"
-label var edus2i_ci "2do ciclo de la secundaria incompleto"
-label var edus2c_ci "2do ciclo de la secundaria completo"
 label var edupre_ci "Educacion preescolar"
 label var eduac_ci "Superior universitario vs superior no universitario"	
-label var asiste_ci "=1 si asiste actualmente a la escuela"
-								
-label var pqnoasis_ci "Razones para no asistir a la escuela-variable original de cada pais"
-label var pqnoasis1_ci "Razones para no asistir a la escuela-variable armonizada"
-label var repite_ci "Ha repetido al menos un grado"
-label var repiteult_ci "Ha repetido el último grado"
-label var edupub_ci "Asiste a un centro de ensenanza público"
 
+label var asiste_ci "=1 si asiste actualmente a la escuela"						
+
+label var edupub_ci "Asiste a un centro de ensenanza público"
+label var asispre_ci "=1 si asiste actualmente a educación preescolar"	
+label var pqnoasis1_ci "Razones para no asistir a la escuela-variable armonizada"	
 
 *====================================================================================================================================*
 *                                                          VARIABLES DE INFRAESTRUCTURA DEL HOGAR                                    *
@@ -277,14 +276,6 @@ label var luzmide_ch "Usan medidor para pagar consumo de electricidad"
 label var combust_ch "Principal combustible gas o electricidad" 
 label var bano_ch "El hogar tiene servicio sanitario"
 label var banoex_ch "El servicio sanitario es exclusivo del hogar"
-label var des1_ch "Tipo de desague según unimproved de MDG"
-	label def des1_ch 0"No_tiene_servicio_sanitario" 1"Conectado_a_red_general_o_cámara_séptica", add modify
-	label def des1_ch 2"Letrina_o_conectado_a_pozo_ciego" 3"Desemboca_en_río_o_calle", add modify
-	label val des1_ch des1_ch
-label var des2_ch "Tipo de desague sin incluir definición MDG"
-	label def des2_ch 0"No_tiene_servicio_sanitario" 1"Conectado_a_red_general,_cámara_séptica,_pozo_o_letrina", add modify
-	label def des2_ch 2"Cualquier_otro_caso", add modify
-	label val des2_ch des2_ch
 label var piso_ch "Materiales de construcción del piso"  
 	label def piso_ch 0"Piso_de_tierra" 1"Materiales_permanentes", add modify
 	label val piso_ch piso_ch
