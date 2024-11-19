@@ -1873,45 +1873,80 @@ lab val atencion_ci atencion_ci
 	replace miglac_ci = . if migrante_ci == 0
 	label var miglac_ci "=1 si es migrante proveniente de un pais LAC"
 	
-******************************
-* Variables SPH - PMTC y PNC *
-******************************
+**************************************************
+***Variables SPH - PMTC, PNC y Otros programas ***
+**************************************************
 
-* PTMC:  Asignaciones familiares del plan de equidad del mides (g255)
-*		 monto recibido por asignaciones familiares (g257)
-* PNC: 	 Pensión a la vejez y Pensión por invalidez (f125 (1 y 3))
+* PTMC: * Asignaciones familiares del plan de equidad del mides (g255)
+*		* Monto recibido por asignaciones familiares (g257)
+
+* PNC: 	* Pensión a la vejez (f125 1)
+		
+* Otros programas:		
+		* Pensión por invalidez (f125 3)
+		* Pensión a las víctimas de delitos violentos (f125 5)
+		* Pensión para hijos de fallecidos por violencia doméstica (f125 6)
+		* Pensión Especial Reparatoria (f125 7)
+		* Pensión Reparatoria Ley Integral para Personas Trans (f125 8)
+
+isid idh_ch idp_ci
+
+gen x=1
+bys idh_ch: egen nmiembros_sph_ch= sum(x)
 
 * Ingreso del hogar
-egen ingreso_total = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci), missing
-bys idh_ch: egen y_hog = sum(ingreso_total)
+egen y_hog_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci), missing
+bys idh_ch: egen y_hog_ch = sum(y_hog_ci)
+
+******PTMC******
+
+*Monto recibido por transferencias monetarias
+gen ing_ptmc_ci = g257
+replace ing_ptmc_ci =. if g257 ==.
+replace ing_ptmc_ci = g257/2 if g255==1 & g152==2
+bys idh_ch: egen ing_ptmc_ch = sum(ing_ptmc_ci)
 
 * Personas que reciben transferencias monetarias condicionadas
-bys idh_ch: egen ing_ptmc = sum(g257)
-replace ing_ptmc = 0 if ing_ptmc ==.
+gen ptmc_ci = 0
+replace ptmc_ci=1 if g255 == 1
+replace ptmc_ci = 1 if ing_ptmc_ci != . & ing_ptmc_ci > 0
+bys idh_ch: egen ptmc_ch = max(ptmc_ci)
 
-gen ptmc_ci = (g255 == 1)
-bys idh_ch: egen ptmc_ch = max(ptmc_ci) // nivel hogar
-replace ptmc_ch  = ((ptmc_ci == 1)| (ing_ptmc > 0 & ing_ptmc !=.))
+******PNC******
+gen pnc_elegible_ci = (edad_ci>70 & edad_ci!=.)
 
+*Monto recibido por pnc
+egen ing_pnc_ci = rowtotal (g148_2_1 g148_2_2 g148_2_3) if f125==1
+replace ing_pnc_ci = . if pnc_elegible_ci == 0
+replace ing_pnc_ci = . if (g148_2_1==. & g148_2_2==. & g148_2_3==.)
+bys idh_ch: egen ing_pnc_ch = sum(ing_pnc_ci)
 
 * Personas que perciben pensiones
-gen pnc_ci =.
-bys idh_ch: egen ing_pension = sum(ypensub_ci)
+gen pnc_ci = (f125== 1 & pnc_elegible_ci==1)
+bys idh_ch: egen pnc_ch = max(pnc_ci)
 
-* Adultos mayores 
-gen mayor64_ci = (edad > 64 & edad !=.)
-bys idh_ch: egen mayor64_ch = max(mayor64_ci)
+******Otros programas sociales******
+
+*Monto recibido por otros programas
+forvalues y=3/8 {
+	egen ing_f125_`y' = rowtotal (g148_2_1 g148_2_2 g148_2_3) if f125 ==`y'  
+}
+
+egen ing_otrot_ci = rowtotal (ing_f125_3 ing_f125_5 ing_f125_6 ing_f125_7 ing_f125_8)
+drop ing_f125_3 ing_f125_4 ing_f125_5 ing_f125_6 ing_f125_7 ing_f125_8
+bys idh_ch: egen ing_otrot_ch = sum(ing_otrot_ci)
+
+*Personas que perciben otros programas
+gen potrot_ci = 0 
+replace potrot_ci = 1  if (f125==3 | f125==5 | f125==6 | f125==7 | f125==8)
+replace potrot_ci = 1 if ing_otrot_ci != . & ing_otrot_ci > 0 
+replace potrot_ci = . if ing_otrot_ci == .
+bys idh_ch: egen potrot_ch = max(potrot_ci)
+
+bys idh_ch: gen pcasht_ch= (ptmc_ch==1 | pnc_ch==1 | potrot_ch==1)
 
 *ingreso neto del hogar
-gen y_pc = y_hog / nmiembros_ch 
-gen y_pc_net = (y_hog - ing_ptmc -ing_pension) / nmiembros_ch
-
-
-lab def ptmc_ch 1 "Beneficiario PTMC" 0 "No beneficiario PTMC"
-lab val ptmc_ch ptmc_ch
-
-lab def pnc_ci 1 "Beneficiario PNC" 0 "No beneficiario PNC"
-lab val pnc_ci pnc_ci
+gen y_pc_net_ch = (y_hog_ch - ing_ptmc_ch -ing_pnc_ch - ing_otrot_ch) / nmiembros_sph_ch
 
 	
 /*_____________________________________________________________________________________________________*/
@@ -1927,52 +1962,66 @@ do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&Exter
 *  Pobres extremos, pobres moderados, vulnerables y no pobres 
 * con base en ingreso neto (Sin transferencias)
 * y líneas de pobreza internacionales
-gen     grupo_int = 1 if (y_pc_net<lp31_ci)
-replace grupo_int = 2 if (y_pc_net>=lp31_ci & y_pc_net<(lp31_ci*1.6))
-replace grupo_int = 3 if (y_pc_net>=(lp31_ci*1.6) & y_pc_net<(lp31_ci*4))
-replace grupo_int = 4 if (y_pc_net>=(lp31_ci*4) & y_pc_net<.)
+gen     grupo_int = 1 if (y_pc_net_ch<lp31_ci)
+replace grupo_int = 2 if (y_pc_net_ch>=lp31_ci & y_pc_net_ch<(lp31_ci*1.6))
+replace grupo_int = 3 if (y_pc_net_ch>=(lp31_ci*1.6) & y_pc_net_ch<(lp31_ci*4))
+replace grupo_int = 4 if (y_pc_net_ch>=(lp31_ci*4) & y_pc_net_ch<.)
 
 tab grupo_int, gen(gpo_ingneto)
 
-* Crear interacción entre recibirla la PTMC y el gpo de ingreso
-gen ptmc_ingneto1 = 0
-replace ptmc_ingneto1 = 1 if ptmc_ch == 1 & gpo_ingneto1 == 1
+********************************
+*********pcash_coverage_************
+********************************
+forval i =1/4 {
+	gen pcasht_coverage`i' = .
+	replace pcasht_coverage`i' = 0 if grupo_int == `i'
+	replace pcasht_coverage`i' = 1 if grupo_int == `i' & pcasht_ch ==1
+}
 
-gen ptmc_ingneto2 = 0
-replace ptmc_ingneto2 = 1 if ptmc_ch == 1 & gpo_ingneto2 == 1
+********************************
+*********pcash_dist_************
+********************************
 
-gen ptmc_ingneto3 = 0
-replace ptmc_ingneto3 = 1 if ptmc_ch == 1 & gpo_ingneto3 == 1
+forval i =1/4 {
+	gen pcasht_dist`i' = .
+	replace pcasht_dist`i' = 0 if pcasht_ch == 1
+	replace pcasht_dist`i' = 1 if grupo_int == `i' & pcasht_ch ==1
+}
 
-gen ptmc_ingneto4 = 0
-replace ptmc_ingneto4 = 1 if ptmc_ch == 1 & gpo_ingneto4 == 1
-
-lab def grupo_int 1 "Pobre extremo" 2 "Pobre moderado" 3 "Vulnerable" 4 "No pobre"
-lab val grupo_int grupo_int
 
 /*_____________________________________________________________________________________________________*/
 * Verificación de que se encuentren todas las variables armonizadas 
 /*_____________________________________________________________________________________________________*/
 
-order region_BID_c region_c pais_c anio_c mes_c zona_c factor_ch	idh_ch	idp_ci	factor_ci upm_ci estrato_ci sexo_ci edad_ci ///
-afroind_ci afroind_ch afroind_ano_c dis_ci dis_ch relacion_ci civil_ci jefe_ci nconyuges_ch nhijos_ch notropari_ch notronopari_ch nempdom_ch ///
-clasehog_ch nmiembros_ch miembros_ci nmayor21_ch nmenor21_ch nmayor65_ch nmenor6_ch	nmenor1_ch	condocup_ci ///
-categoinac_ci nempleos_ci emp_ci antiguedad_ci desemp_ci cesante_ci durades_ci	pea_ci desalent_ci subemp_ci ///
-tiempoparc_ci categopri_ci categosec_ci rama_ci spublico_ci tamemp_ci cotizando_ci instcot_ci	afiliado_ci ///
-formal_ci tipocontrato_ci ocupa_ci horaspri_ci horastot_ci	pensionsub_ci pension_ci tipopen_ci instpen_ci	ylmpri_ci nrylmpri_ci ///
-tcylmpri_ci ylnmpri_ci ylmsec_ci ylnmsec_ci	ylmotros_ci	ylnmotros_ci ylm_ci	ylnm_ci	ynlm_ci	ynlnm_ci ylm_ch	ylnm_ch	ylmnr_ch  ///
-ynlm_ch	ynlnm_ch ylmhopri_ci ylmho_ci rentaimp_ch autocons_ci autocons_ch nrylmpri_ch tcylmpri_ch remesas_ci remesas_ch	ypen_ci	ypensub_ci ///
-salmm_ci tc_c ipc_c lp19_c lp31_c lp5_c lp_ci lpe_ci aedu_ci eduno_ci edupi_ci edupc_ci	edusi_ci edusc_ci eduui_ci eduuc_ci	edus1i_ci ///
-edus1c_ci edus2i_ci edus2c_ci edupre_ci eduac_ci asiste_ci pqnoasis_ci pqnoasis1_ci	repite_ci repiteult_ci edupub_ci ///
-aguared_ch aguafconsumo_ch aguafuente_ch aguadist_ch aguadisp1_ch aguadisp2_ch aguamala_ch aguamejorada_ch aguatrat_ch aguamide_ch luz_ch luzmide_ch combust_ch	bano_ch banoex_ch des1_ch des2_ch piso_ch  banomejorado_ch  sinbano_ch ///
-pared_ch techo_ch resid_ch dorm_ch cuartos_ch cocina_ch telef_ch refrig_ch freez_ch auto_ch compu_ch internet_ch ///
-vivi1_ch vivi2_ch viviprop_ch vivitit_ch vivialq_ch	vivialqimp_ch migrante_ci migantiguo5_ci migrantelac_ci, first
+order region_BID_c region_c pais_c anio_c mes_c zona_c factor_ch idh_ch	idp_ci factor_ci factor_ch /// Identificación
+	  sexo_ci edad_ci relacion_ci civil_ci jefe_ci nconyuges_ch nhijos_ch notropari_ch notronopari_ch nempdom_ch /// Demográficas
+	  clasehog_ch nmiembros_ch miembros_ci nmayor21_ch nmenor21_ch nmayor65_ch nmenor6_ch nmenor1_ch /// Demográficas
+	  afroind_ci afroind_ch afroind_ano_c dis_ci dis_ch /// Género y diversidad 
+      condocup_ci categoinac_ci emp_ci cesante_ci desemp_ci subemp_ci durades_ci pea_ci nempleos_ci antiguedad_ci desalent_ci  /// Empleo
+	  horaspri_ci horastot_ci tiempoparc_ci categopri_ci categosec_ci rama_ci spublico_ci tamemp_ci cotizando_ci instcot_ci	afiliado_ci /// Empleo
+	  formal_ci tipocontrato_ci ocupa_ci pension_ci	pensionsub_ci tipopen_ci instpen_ci	ylmpri_ci /// Empleo
+	  ylmpri_ci ylnmpri_ci ylmsec_ci ylnmsec_ci ylmotros_ci	ylnmotros_ci  ylm_ci ylnm_ci ynlm_ci ynlnm_ci nrylmpri_ci /// Ingresos individuo
+	  ylm_ch ylnm_ch ylmnr_ch ynlm_ch ynlnm_ch ylmhopri_ci ylmho_ci /// Ingresos del hogar
+	  nrylmpri_ci nrylmpri_ch /// No respuesta de ingresos 
+	  remesas_ci remesas_ch ypen_ci ypensub_ci /// Remesas y pensiones
+      aedu_ci eduui_ci eduuc_ci edupre_ci eduac_ci asiste_ci edupub_ci pqnoasis1_ci asispre_ci /// Educación 
+	  luz_ch luzmide_ch combust_ch piso_ch pared_ch techo_ch resid_ch dorm_ch cuartos_ch cocina_ch telef_ch refrig_ch /// Vivienda 
+	  freez_ch auto_ch compu_ch internet_ch cel_ch vivi1_ch vivi2_ch viviprop_ch vivitit_ch vivialq_ch vivialqimp_ch /// Vivienda
+	  aguared_ch aguafconsumo_ch aguafuente_ch aguadist_ch aguadisp1_ch aguadisp2_ch /// Agua y saneamineto
+	  aguatrat_ch aguamala_ch aguamejorada_ch aguamide_ch bano_ch banoex_ch banomejorado_ch sinbano_ch  /// Agua y saneamineto
+	  migrante_ci migrantiguo5_ci miglac_ci /// Migración
+	  nmiembros_sph_ch  y_hog_ci y_hog_ch y_pc_net_ch ptmc_ci ptmc_ch ing_ptmc_ci /// Protección social
+	  ing_ptmc_ch pnc_elegible_ci  pnc_ci pnc_ch ing_pnc_ci ing_pnc_ch potrot_ci  /// Protección social 
+	  potrot_ch ing_otrot_ci  ing_otrot_ch pcasht_ch  /// Protección social
+	  salmm_ci lp19_c lp31_c lp5_c lp_ci lpe_ci lp365_2017 lp685_2017 tc_c ipc_c, first /// Fuente externa
+
+* afro_ci ind_ci noafroind_ci afro_ch ind_ch noafroind_ch disWG_ci /// Género y diversidad 
 
 
 rename f72_2 codindustria
 rename f71_2 codocupa
 compress
 
-saveold "`base_out'", v(12) replace
+save "`base_out'", replace
 
 log close
