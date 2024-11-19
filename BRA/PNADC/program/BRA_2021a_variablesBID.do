@@ -1529,38 +1529,70 @@ label var miglac_ci "=1 si es migrante proveniente de un pais LAC"
 ******************************
 
 *PTMC: Recibió bolsa familia
-*PNC: Benefício de Prestação Continuada
+*PNC: Benefício de Prestação Continuada (adultos mayores)
+*Otros: Outros programas sociais do governo y Beneficio de Prestação Continuada (discapacidad)
+
+duplicates re  idp_ci idh_ch // no identifican de manera unica
+duplicates drop idh_ch idp_ci, force // se dropean porque en esta base, representan menos del 1% de la muestra (consultar protocolo D.1.1.2 Revisión de bases rax)
+
+**Miembros del hogar (Incluyendo los no parientes)
+gen x=1
+bys idh_ch: egen nmiembros_sph_ch= sum(x)
+
 
 *Ingreso del hogar
-egen ingreso_total = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci), missing
-bys idh_ch: egen y_hog = sum(ingreso_total)
-drop ingreso_total
+egen y_hog_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci), missing
+bys idh_ch: egen y_hog_ch = sum(y_hog_ci)
 
-*PTMC y PNC: montos y beneficiarios 
-gen percibe_ptmc=(v5002a==1)
-gen pnc_ci=(v5001a==1)
-bys idh_ch:egen ptmc_ch=max(percibe_ptmc)
+******PTMC******
+*ingreso por transferencias
+egen ing_ptmc_ci=rowtotal(v5002a2) // valor mensual de bolsa familia
+replace ing_ptmc_ci = . if v5002a2 == .
+bys idh_ch:egen ing_ptmc_ch = sum(ing_ptmc_ci)
 
-gen ptmc=(v5002a2)
-gen pens=v5001a2 
+*Personas y hogares que reciben transferencias
+gen ptmc_ci = 0
+replace ptmc_ci = 1 if v5002a == 1
+replace ptmc_ci = 1 if ing_ptmc_ci != . & ing_ptmc_ci > 0
+bys idh_ch: egen ptmc_ch = max(ptmc_ci)
 
-egen ing_pension=sum(pens), by(idh_ch)
-egen    ing_ptmc=sum(ptmc), by(idh_ch) 
-drop ptmc pens
+******PNC******
+gen pnc_elegible_ci = 0
+replace pnc_elegible_ci =1 if (edad>=65 & edad!=.)
 
-*Ingreso neto del hogar
-egen miembros=sum(1), by(idh_ch) 
-gen y_pc_net=(y_hog-ing_ptmc-ing_pension)/miembros
-drop miembros
+*ingreso por pnc
+egen ing_pnc_ci=rowtotal(v5001a2)
+replace ing_pnc_ci = . if pnc_elegible_ci == 0
+replace ing_pnc_ci = . if v5001a2 == .
+bys idh_ch:egen ing_pnc_ch=sum(ing_pnc_ci)
 
-*Adultos mayores 
-gen mayor64_ci=(edad>64)
+*Personas y hogares que reciben pension no contributiva (PNC)
+gen pnc_ci = (v5001a==1 & pnc_elegible_ci==1)
+bys idh_ch:egen pnc_ch=max(pnc_ci)
 
-lab def ptmc_ch 1 "Beneficiario PTMC" 0 "No beneficiario PTMC"
-lab val ptmc_ch ptmc_ch
+******Otros programas sociales******
+gen disc_elegible_ci = 0
+replace disc_elegible_ci = 1 if (edad<65 & edad!=.)
 
-lab def pnc_ci 1 "Beneficiario PNC" 0 "No beneficiario PNC"
-lab val pnc_ci pnc_ci
+*ingreso por otros programas
+gen ing_disc_ci = v5001a2 if (v5001a==1 & disc_elegible_ci==1)
+egen ing_otrot_ci = rowtotal(v5003a2 ing_disc_ci)
+replace ing_otrot_ci = . if v5001a == .
+bys idh_ch:egen ing_otrot_ch = sum(ing_otrot_ci)
+drop ing_disc_ci
+
+*Personas y hogares que reciben otros programas sociales
+gen potrot_ci=(v5003a==1 | (v5001a==1 & disc_elegible_ci==1))
+bys idh_ch:egen potrot_ch=max(potrot_ci)
+drop disc_elegible_ci 
+
+*Ingreso neto del hogar per cápita
+gen y_pc_net_ch=(y_hog_ch - ing_ptmc_ch - ing_pnc_ch - ing_otrot_ch)/nmiembros_sph_ch
+replace y_pc_net_ch=0 if y_pc_net_ch<0
+
+*Beneficiario por PTMC PNC u Otros
+bys idh_ch: gen pcasht_ch = (ptmc_ch==1|pnc_ch==1| potrot_ch==1)
+
 
 /*_____________________________________________________________________________________________________*/
 * Asignación de etiquetas e inserción de variables externas: tipo de cambio, Indice de Precios al 
@@ -1569,11 +1601,62 @@ lab val pnc_ci pnc_ci
 
 do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&ExternalVars_Harmonized_DataBank.do"
 
+** Grupos de ingreso neto
+gen 	grupo_int = 1 if (y_pc_net_ch<lp31_ci 		& y_pc_net_ch!=.) 								
+replace grupo_int = 2 if (y_pc_net_ch>=lp31_ci 		& y_pc_net_ch<lp31_ci*1.6 	& y_pc_net_ch!=.) 	
+replace grupo_int = 3 if (y_pc_net_ch>=lp31_ci*1.6 	& y_pc_net_ch<lp31_ci*4 	& y_pc_net_ch!=.) 
+replace grupo_int = 4 if (y_pc_net_ch>=lp31_ci*4 	& y_pc_net_ch < .			& y_pc_net_ch!=.) 	
+
+********************************
+*********pcash_coverage_************
+********************************
+forval i =1/4 {
+	gen pcasht_coverage`i' = .
+	replace pcasht_coverage`i' = 0 if grupo_int == `i'
+	replace pcasht_coverage`i' = 1 if grupo_int == `i' & pcasht_ch ==1
+}
+
+********************************
+*********pcash_dist_************
+********************************
+
+forval i =1/4 {
+	gen pcasht_dist`i' = .
+	replace pcasht_dist`i' = 0 if pcasht_ch == 1
+	replace pcasht_dist`i' = 1 if grupo_int == `i' & pcasht_ch ==1
+}
+
+sum nmiembros_sph_ch  y_hog_ci y_hog_ch y_pc_net_ch ptmc_ci ptmc_ch ing_ptmc_ci ing_ptmc_ch pnc_elegible_ci  pnc_ci pnc_ch ing_pnc_ci ing_pnc_ch potrot_ci  potrot_ch ing_otrot_ci  ing_otrot_ch pcasht_ch 
+
 /*_____________________________________________________________________________________________________*/
 * Verificación de que se encuentren todas las variables armonizadas 
 /*_____________________________________________________________________________________________________*/
 
-order region_BID_c region_c pais_c anio_c mes_c zona_c factor_ch	idh_ch	idp_ci	factor_ci upm_ci estrato_ci sexo_ci edad_ci afroind_ci afroind_ch afroind_ano_c dis_ci dis_ch relacion_ci civil_ci jefe_ci nconyuges_ch nhijos_ch notropari_ch notronopari_ch nempdom_ch clasehog_ch nmiembros_ch miembros_ci nmayor21_ch nmenor21_ch nmayor65_ch nmenor6_ch	nmenor1_ch	condocup_ci categoinac_ci nempleos_ci emp_ci antiguedad_ci	desemp_ci cesante_ci durades_ci	pea_ci desalent_ci subemp_ci tiempoparc_ci categopri_ci categosec_ci rama_ci spublico_ci tamemp_ci cotizando_ci instcot_ci	afiliado_ci formal_ci tipocontrato_ci ocupa_ci horaspri_ci horastot_ci	pensionsub_ci pension_ci tipopen_ci instpen_ci	ylmpri_ci nrylmpri_ci tcylmpri_ci ylnmpri_ci ylmsec_ci ylnmsec_ci	ylmotros_ci	ylnmotros_ci ylm_ci	ylnm_ci	ynlm_ci	ynlnm_ci ylm_ch	ylnm_ch	ylmnr_ch ynlm_ch	ynlnm_ch ylmhopri_ci ylmho_ci rentaimp_ch autocons_ci autocons_ch nrylmpri_ch tcylmpri_ch remesas_ci remesas_ch	ypen_ci	ypensub_ci salmm_ci lp_ci lpe_ci aedu_ci eduno_ci edupi_ci edupc_ci	edusi_ci edusc_ci eduui_ci eduuc_ci	edus1i_ci edus1c_ci edus2i_ci edus2c_ci edupre_ci eduac_ci asiste_ci pqnoasis_ci pqnoasis1_ci	repite_ci repiteult_ci edupub_ci  aguared_ch aguafconsumo_ch aguafuente_ch aguadist_ch aguadisp1_ch aguadisp2_ch aguamala_ch aguamejorada_ch aguamide_ch bano_ch banoex_ch banomejorado_ch sinbano_ch aguatrat_ch aguared_ch aguadist_ch aguamala_ch aguamide_ch luz_ch luzmide_ch combust_ch des1_ch des2_ch piso_ch pared_ch techo_ch resid_ch dorm_ch cuartos_ch cocina_ch telef_ch refrig_ch freez_ch auto_ch compu_ch internet_ch cel_ch vivi1_ch vivi2_ch viviprop_ch vivitit_ch vivialq_ch	vivialqimp_ch migrante_ci migantiguo5_ci migrantelac_ci, first
+
+order region_BID_c region_c pais_c anio_c mes_c zona_c factor_ch idh_ch	idp_ci factor_ci factor_ch /// Identificación
+	  sexo_ci edad_ci relacion_ci civil_ci jefe_ci nconyuges_ch nhijos_ch notropari_ch notronopari_ch nempdom_ch /// Demográficas
+	  clasehog_ch nmiembros_ch miembros_ci nmayor21_ch nmenor21_ch nmayor65_ch nmenor6_ch nmenor1_ch /// Demográficas
+	  afroind_ci afroind_ch afroind_ano_c dis_ci dis_ch /// Género y diversidad
+      condocup_ci categoinac_ci emp_ci cesante_ci desemp_ci subemp_ci durades_ci pea_ci nempleos_ci antiguedad_ci desalent_ci /// Empleo
+	  horaspri_ci horastot_ci tiempoparc_ci categopri_ci categosec_ci rama_ci spublico_ci tamemp_ci cotizando_ci instcot_ci	afiliado_ci /// Empleo
+	  formal_ci tipocontrato_ci ocupa_ci pension_ci	pensionsub_ci tipopen_ci instpen_ci	ylmpri_ci /// Empleo
+	  ylmpri_ci ylnmpri_ci ylmsec_ci ylnmsec_ci ylmotros_ci	ylnmotros_ci  ylm_ci ylnm_ci ynlm_ci ynlnm_ci nrylmpri_ci /// Ingresos individuo
+	  ylm_ch ylnm_ch ylmnr_ch ynlm_ch ynlnm_ch ylmhopri_ci ylmho_ci /// Ingresos del hogar
+	  nrylmpri_ci nrylmpri_ch /// No respuesta de ingresos
+	  remesas_ci remesas_ch ypen_ci ypensub_ci /// Remesas y pensiones
+      aedu_ci eduui_ci eduuc_ci edupre_ci eduac_ci asiste_ci edupub_ci pqnoasis1_ci asispre_ci /// Educación
+	  luz_ch luzmide_ch combust_ch piso_ch pared_ch techo_ch resid_ch dorm_ch cuartos_ch cocina_ch telef_ch refrig_ch /// Vivienda
+	  freez_ch auto_ch compu_ch internet_ch cel_ch vivi1_ch vivi2_ch viviprop_ch vivitit_ch vivialq_ch vivialqimp_ch /// Vivienda
+	  aguared_ch aguafconsumo_ch aguafuente_ch aguadist_ch aguadisp1_ch aguadisp2_ch /// Agua y saneamineto
+	  aguatrat_ch aguamala_ch aguamejorada_ch aguamide_ch bano_ch banoex_ch banomejorado_ch sinbano_ch  /// Agua y saneamineto
+	  migrante_ci migrantiguo5_ci miglac_ci /// Migración
+	  nmiembros_sph_ch  y_hog_ci y_hog_ch y_pc_net_ch ptmc_ci ptmc_ch ing_ptmc_ci /// Protección social
+	  ing_ptmc_ch pnc_elegible_ci  pnc_ci pnc_ch ing_pnc_ci ing_pnc_ch potrot_ci /// Protección social
+	  potrot_ch ing_otrot_ci  ing_otrot_ch pcasht_ch /// Protección social
+	  salmm_ci lp19_c lp31_c lp5_c lp_ci lpe_ci lp365_2017 lp685_2017 tc_c ipc_c, first
+
+* afro_ci ind_ci noafroind_ci afro_ch ind_ch noafroind_ch disWG_ci  /// Género y diversidad (Por agregar)
+
 
 /*Homologar nombre del identificador de ocupaciones (isco, ciuo, etc.) y de industrias y dejarlo en base armonizada 
 para análisis de trends (en el marco de estudios sobre el futuro del trabajo)*/
@@ -1582,6 +1665,6 @@ rename v4013 codindustria
 
 compress
 
-saveold "`base_out'", version(12) replace
+save "`base_out'", replace
 
 log close
