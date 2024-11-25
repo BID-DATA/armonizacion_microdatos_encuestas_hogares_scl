@@ -1682,48 +1682,6 @@ label var ybenefdes_ci "Monto de seguro de desempleo"
 	label var migrantelac_ci "=1 si es migrante proveniente de un pais LAC"
 	/* No se puede diferenciar paises LAC de no LAC */
 
-
-******************************
-******    PTMC y PNC     *****
-******************************
-
-* PTMC: Avancemos (a partir de 2019 se añadió "Crecemos")
-* PNC:  Pensionado del régimen no contributivomonto básico
-
-* Ingreso del hogar
-egen ingreso_total = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci), missing
-bys idh_ch: egen yhog = sum(ingreso_total)
-drop ingreso_total
-
-* Monto de PTMC
-gen tmc = a9b if (a9a==1 | a9a==5)
-bys idh_ch: egen ing_ptmc = sum(tmc)
-
-* Beneficiarios PTMC
-gen percibe_ptmc=(a9a==1 | a9a==5)
-bys idh_ch: egen ptmc_ch=max(percibe_ptmc)
-
-replace ing_ptmc=. if yhog==.
-replace ptmc_ch  = 1 if (ing_ptmc>0 & ing_ptmc!=.)
-
-* Beneficiarios PNC
-gen pnc_ci=(a11==6)
-gen ing_pnc = 0
-replace ing_pnc=. if yhog==.
-
-* Adultos mayores
-gen mayor64_ci=(edad_ci>64 & edad_ci!=.)
-
-* Ingreso neto del hogar
-gen y_pc_net = (yhog - ing_ptmc -ing_pnc) / nmiembros_ch
-
-* Etiquetas
-lab def ptmc_ch 1 "Beneficiario PTMC" 0 "No beneficiario PTMC"
-lab val ptmc_ch ptmc_ch
-
-lab def pnc_ci 1 "Beneficiario PNC" 0 "No beneficiario PNC"
-lab val pnc_ci pnc_ci
-
 	************************** 
 	** REGIONES **************
 	**************************
@@ -1748,6 +1706,118 @@ lab val pnc_ci pnc_ci
 
 
 do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&ExternalVars_Harmonized_DataBank.do"
+
+
+**************************************
+*** VARIABLES DE PROTECCION SOCIAL ***
+**************************************
+
+* MIEMBROS DEL HOGAR
+	gen x = 1
+	bys idh_ch: egen nmiembros_sph_ch= sum(x)
+
+* BENEFICIARIOS Y MONTOS
+
+	*****************
+	**** ptmc_ch ****
+	*****************
+	gen 	ing_ptmc_ci = . 
+	replace ing_ptmc_ci = a9b   if a9a == 1 & a9b <= 900000 & a9c != 9 & a9c != .
+	replace ing_ptmc_ci = ing_ptmc_ci / 3  if a9c == 3
+	replace ing_ptmc_ci = ing_ptmc_ci / 12 if a9c == 8
+	
+		gen 	ing_becas_ci = a19b1   if a19a1 == 1
+		replace ing_becas_ci = a19b2   if a19a2 == 1
+		replace ing_becas_ci = a19b3   if a19a3 == 1
+		replace ing_becas_ci = a19b4   if a19a4 == 1 & a19b4 <= 300000 & a19c4 == 1
+		replace ing_becas_ci = a19b4/4 if a19a4 == 1 & a19b4 <= 300000 & a19c4 == 4
+		replace ing_becas_ci = a19b5   if a19a5 == 1
+		replace ing_becas_ci = a19b6   if a19a6 == 1
+	
+	replace ing_ptmc_ci = ing_ptmc_ci + ing_becas_ci
+	bys idh_ch: egen ing_ptmc_ch = sum(ing_ptmc_ci)
+	
+	gen 	ptmc_ci = a9a == 1
+	replace ptmc_ci = 1 if a9a == 5 
+	replace ptmc_ci = 1 if (a19a1 == 1 | a19a2 == 1 | a19a3 == 1 | a19a4 == 1 | a19a5 == 1 | a19a6 == 1)
+	replace ptmc_ci = 1 if ing_ptmc_ci != . & ing_ptmc_ci > 0
+	bys idh_ch: egen ptmc_ch = max(ptmc_ci)
+	
+	*****************
+	**** pnc_ch *****
+	*****************
+	gen pnc_elegible_ci = 0
+	replace pnc_elegible_ci = 1 if edad_ci > 65
+	
+	gen 	ing_pnc_ci = h9e1
+	gen     aguinaldo  = h9p1 / 12
+	replace ing_pnc_ci = ing_pnc_ci + aguinaldo
+	replace ing_pnc_ci = . if h9e == .
+	replace ing_pnc_ci = . if pnc_elegible_ci == 0
+	bys idh_ch: egen ing_pnc_ch = sum(ing_pnc_ci)
+	
+	gen 	pnc_ci = h9e == 1
+	replace pnc_ci = 1 if ing_pnc_ci != . & ing_pnc_ci > 0
+	replace pnc_ci = . if pnc_elegible_ci == 0
+	bys idh_ch: egen pnc_ch = max(pnc_ci)
+	
+	*****************
+	*** otrot_ch ****
+	*****************
+	gen 	ing_otrot_ci = .
+	replace ing_otrot_ci = a9b if a9a == 2 & a9b <= 300000 & a9c != 9 & a9c != .
+	replace ing_otrot_ci = ing_otrot_ci / 4  if a9c == 3
+	replace ing_otrot_ci = ing_otrot_ci / 6  if a9c == 6
+	replace ing_otrot_ci = ing_otrot_ci / 12 if a9c == 8
+	bys idh_ch: egen ing_otrot_ch = sum(ing_otrot_ci)
+	
+	gen 	potrot_ci = a9a == 2
+	replace potrot_ci = 1 if potrot_ci == 0 & ing_otrot_ci != .
+	bys idh_ch: egen potrot_ch = max(potrot_ci)
+	
+	*****************
+	*** pcasht_ch ***
+	*****************
+	egen    ing_pcasht_ch = rowtotal(ing_ptmc_ch ing_pnc_ch ing_otrot_ch)
+	egen 	pcasht_ch = rowtotal(ptmc_ch pnc_ch potrot_ch)
+	replace pcasht_ch = 1 if pcasht_ch > 0
+	
+
+* COBERTURA Y DISTRIBUCION
+	
+	* Ingreso neto del hogar
+	egen 	y_hog_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci), missing
+	replace y_hog_ci = 0 if y_hog_ci < 0
+	gen 	y_pc_ci = y_hog_ci / nmiembros_sph_ch 
+	
+	bys idh_ch: egen y_hog_ch = sum(y_hog_ci), missing
+	gen 	y_pc_net_ch = (y_hog_ch - ing_pcasht_ch) / nmiembros_sph_ch
+	replace y_pc_net_ch = 0 if y_pc_net_ch < 0
+	
+	* Grupos
+	gen     grupo_int = 1 if (y_pc_net_ch <  lp31_ci         & y_pc_net_ch != .)
+	replace grupo_int = 2 if (y_pc_net_ch >= lp31_ci  	     & y_pc_net_ch < (lp31_ci * 1.6) & y_pc_net_ch != .)
+	replace grupo_int = 3 if (y_pc_net_ch >= (lp31_ci * 1.6) & y_pc_net_ch < (lp31_ci * 4)   & y_pc_net_ch != .)
+	replace grupo_int = 4 if (y_pc_net_ch >= (lp31_ci * 4)   & y_pc_net_ch < .               & y_pc_net_ch != .)
+
+	****************************
+	***** pcasht_coverage_ *****
+	****************************
+	forval i = 1/4 {
+		gen 	pcasht_coverage`i' = . 
+		replace pcasht_coverage`i' = 0 if grupo_int == `i'
+		replace pcasht_coverage`i' = 1 if grupo_int == `i' & pcasht_ch == 1
+	}
+		
+	********************
+	*** pcasht_dist_ ***
+	********************
+	forval i = 1/4 {
+		gen 	pcasht_dist`i' = . 
+		replace pcasht_dist`i' = 0 if pcasht_ch == 1
+		replace pcasht_dist`i' = 1 if grupo_int == `i' & pcasht_ch == 1
+	}
+
 
 /*_____________________________________________________________________________________________________*/
 * Verificación de que se encuentren todas las variables armonizadas 
