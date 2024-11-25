@@ -1257,67 +1257,9 @@ gen miglac_ci = .
 label var miglac_ci "=1 si es migrante proveniente de un pais LAC"
 
 
-
-	************************************
-	** VARIABLES DE PROTECCIÓN SOCIAL **
-	************************************
-	
-******************
-***** y_hog ******
-******************
-egen y_hog = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci)
-by idh_ch, sort: replace y_hog = sum(y_hog)
-
-*****************
-***** y_pc ******
-*****************
-gen y_pc = y_hog / miembros_ci
-
-****************
-*** ing_ptmc ***
-****************
-egen ing_ptmc = rowtotal(oih04 oih08 oih09 oih10 oih11 oih13 oih14 oih15), missing
-
-****************
-* ing_pension **
-****************
-egen ing_pension = rowtotal(oih04 oih13 oih14), missing
-
-****************
-*** y_pc_net ***
-****************
-gen y_pc_net = (y_hog - ing_ptmc) / miembros_ci
-
-*******************
-* percibe_ptmc_ci *
-*******************
-gen percibe_ptmc_ci = (ing_ptmc > 0)
-
-*******************
-***** ptmc_ch *****
-*******************
-by idh_ch, sort: gen ptmc_ch = 1 if sum(ing_ptmc > 0)
-
-*******************
-*** mayor64_ci ****
-*******************
-gen mayor64_ci = (edad_ci > 64)
-
-*******************
-** pnc_elegible ***
-*******************
-gen pnc_elegible = (edad_ci > 64)
-
-************
-** pnc_ci **
-************
-gen pnc_ci = .
-
-
-
-	************************************
-	* VARIABLES DE REFERENCIA EXTERNA **
-	************************************
+************************************
+* VARIABLES DE REFERENCIA EXTERNA **
+************************************
 
 *************
 **salmm_ci***
@@ -1326,7 +1268,7 @@ gen pnc_ci = .
 * Acuerdo Ejecutivo No. 001-2021, No.35,636 del 23 de junio del 2021: Acuerda: Artículo 1. Fijar el Ajuste al Salario Mínimo, mismo que entrará en vigencia a partir del uno (01) de julio del dos mil veintiuno (2021)
 gen salmm_ci = 8843.37
 label var salmm_ci "Salario minimo legal"
-	
+
 /*_____________________________________________________________________________________________________*/
 * Asignación de etiquetas e inserción de variables externas: tipo de cambio, Indice de Precios al 
 * Consumidor (2011=100), líneas de pobreza
@@ -1334,6 +1276,97 @@ label var salmm_ci "Salario minimo legal"
 
 
 do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&ExternalVars_Harmonized_DataBank.do"
+
+
+**************************************
+*** VARIABLES DE PROTECCION SOCIAL ***
+**************************************
+
+* MIEMBROS DEL HOGAR
+	gen x = 1
+	bys idh_ch: egen nmiembros_sph_ch= sum(x)
+
+* BENEFICIARIOS Y MONTOS
+
+	*****************
+	**** ptmc_ch ****
+	*****************
+	gen ing_ptmc_ci = . 
+	bys idh_ch: egen ing_ptmc_ch = sum(ing_ptmc_ci)
+	
+	gen 	ptmc_ci = .
+	replace ptmc_ci = 1 if ing_ptmc_ci != . & ing_ptmc_ci > 0
+	bys idh_ch: egen ptmc_ch = max(ptmc_ci)
+	
+	*****************
+	**** pnc_ch *****
+	*****************
+	gen     pnc_elegible_ci = 0
+	replace pnc_elegible_ci = 1 if edad_ci > 64
+	
+	gen 	ing_pnc_ci = oih14
+	replace ing_pnc_ci = . if oih14 == .
+	replace ing_pnc_ci = . if pnc_elegible_ci == 0
+	bys idh_ch: egen ing_pnc_ch = sum(ing_pnc_ci)
+	
+	gen 	pnc_ci = oih14 > 0
+	replace pnc_ci = 1 if ing_pnc_ci != . & ing_pnc_ci > 0
+	replace pnc_ci = . if pnc_elegible_ci == 0
+	bys idh_ch: egen pnc_ch = max(pnc_ci)
+	
+	*****************
+	*** otrot_ch ****
+	*****************
+	gen 	ing_otrot_ci = .
+	bys idh_ch: egen ing_otrot_ch = sum(ing_otrot_ci)
+	
+	gen 	potrot_ci = .
+	replace potrot_ci = 1 if potrot_ci == 0 & ing_otrot_ci != .
+	bys idh_ch: egen potrot_ch = max(potrot_ci)
+	
+	*****************
+	*** pcasht_ch ***
+	*****************
+	egen    ing_pcasht_ch = rowtotal(ing_ptmc_ch ing_pnc_ch ing_otrot_ch)
+	egen 	pcasht_ch = rowtotal(ptmc_ch pnc_ch potrot_ch)
+	replace pcasht_ch = 1 if pcasht_ch > 0
+	
+
+* COBERTURA Y DISTRIBUCION
+	
+	* Ingreso neto del hogar
+	egen 	y_hog_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci), missing
+	replace y_hog_ci = 0 if y_hog_ci < 0
+	gen 	y_pc_ci = y_hog_ci / nmiembros_sph_ch 
+	
+	bys idh_ch: egen y_hog_ch = sum(y_hog_ci), missing
+	gen 	y_pc_net_ch = (y_hog_ch - ing_pcasht_ch) / nmiembros_sph_ch
+	replace y_pc_net_ch = 0 if y_pc_net_ch < 0
+	
+	* Grupos
+	gen     grupo_int = 1 if (y_pc_net_ch <  lp31_ci         & y_pc_net_ch != .)
+	replace grupo_int = 2 if (y_pc_net_ch >= lp31_ci  	     & y_pc_net_ch < (lp31_ci * 1.6) & y_pc_net_ch != .)
+	replace grupo_int = 3 if (y_pc_net_ch >= (lp31_ci * 1.6) & y_pc_net_ch < (lp31_ci * 4)   & y_pc_net_ch != .)
+	replace grupo_int = 4 if (y_pc_net_ch >= (lp31_ci * 4)   & y_pc_net_ch < .               & y_pc_net_ch != .)
+
+	****************************
+	***** pcasht_coverage_ *****
+	****************************
+	forval i = 1/4 {
+		gen 	pcasht_coverage`i' = . 
+		replace pcasht_coverage`i' = 0 if grupo_int == `i'
+		replace pcasht_coverage`i' = 1 if grupo_int == `i' & pcasht_ch == 1
+	}
+		
+	********************
+	*** pcasht_dist_ ***
+	********************
+	forval i = 1/4 {
+		gen 	pcasht_dist`i' = . 
+		replace pcasht_dist`i' = 0 if pcasht_ch == 1
+		replace pcasht_dist`i' = 1 if grupo_int == `i' & pcasht_ch == 1
+	}
+
 
 /*_____________________________________________________________________________________________________*/
 * Verificación de que se encuentren todas las variables armonizadas 
