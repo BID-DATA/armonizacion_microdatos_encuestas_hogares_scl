@@ -1217,9 +1217,10 @@ label var resid_ch "Método de eliminación de residuos"
 ***************
 * dorm_ch     *
 ***************
-recode v27a (99=.)
-recode v29a (99=.)
-gen dorm_ch=v27a+v29a
+
+gen dorm_ch=v27a
+replace dorm_ch=v29a if p10==2 
+recode dorm_ch (-88=.)
 label var dorm_ch "Cantidad de habitaciones que se destinan exclusivamente para dormir"
 
 
