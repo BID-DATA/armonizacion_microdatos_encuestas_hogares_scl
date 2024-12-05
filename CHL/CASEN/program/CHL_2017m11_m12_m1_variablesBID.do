@@ -1288,6 +1288,7 @@ label val pared_ch pared_ch
 gen techo_ch=0 if v6>=5 & v6<=7
 replace techo_ch=1 if v6<5
 replace techo_ch=. if v6==.
+**# Bookmark #1
 label var techo_ch "Materiales de construcción del techo"
 label def techo_ch 0"No permanentes" 1"Permanentes"
 label val techo_ch techo_ch
@@ -1302,8 +1303,10 @@ label var resid_ch "Método de eliminación de residuos"
 ***************
 * dorm_ch     *
 ***************
-recode v27a (99=.)
+
 gen dorm_ch=v27a 
+replace dorm_ch=v30a if v28>1 & v28<.
+recode dorm_ch (99=.)
 label var dorm_ch "Cantidad de habitaciones que se destinan exclusivamente para dormir"
 
 ***************
