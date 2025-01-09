@@ -329,30 +329,30 @@ gen pea_ci=(emp_ci==1 | desemp_ci==1)
 ****************
 * horaspri_ci  * 
 ****************
-gen horaspri_ci= o10
-replace horaspri_ci=. if emp_ci!=1 ``''
-label var horaspri_ci "Horas totales trabajadas en la actividad principal"
+*gen horaspri_ci= o10
+*replace horaspri_ci=. if emp_ci!=1 ``''
+*label var horaspri_ci "Horas totales trabajadas en la actividad principal"
 
 ****************
 * horastot_ci  * 
 ****************
-gen horastot_ci=horaspri_ci /*No existen horas totales solo act princ */
-label var horastot_ci "Horas totales trabajadas en todas las actividades"
+*gen horastot_ci=horaspri_ci /*No existen horas totales solo act princ */
+*label var horastot_ci "Horas totales trabajadas en todas las actividades"
 
 
 ****************
 * subemp_ci    * 
 **************** 
-gen subemp_ci=0
-replace subemp_ci=1 if (horaspri_ci<=30)
-label var subemp_ci "Personas en subempleo por horas"
+*gen subemp_ci=0
+*replace subemp_ci=1 if (horaspri_ci<=30)
+*label var subemp_ci "Personas en subempleo por horas"
  
 ****************
 *tiempoparc_ci * 
 **************** 
-gen tiempoparc_ci=(horaspri_ci<=30)
-replace tiempoparc_ci=. if emp_ci!=1
-label var tiempoparc_c "Personas que trabajan medio tiempo" 
+*gen tiempoparc_ci=(horaspri_ci<=30)
+*replace tiempoparc_ci=. if emp_ci!=1
+*label var tiempoparc_c "Personas que trabajan medio tiempo" 
 
 ****************
 *categopri_ci  * 
@@ -755,14 +755,14 @@ label var ynlnm_ch "Ingreso no laboral no monetario del hogar"
 *****************
 * ymlhopri_ci   *
 *****************
-gen ylmhopri_ci=ylmpri_ci/(horaspri_ci*4.3)
-label var ylmhopri_ci "Salario monetario de la actividad principal" 
+*gen ylmhopri_ci=ylmpri_ci/(horaspri_ci*4.3)
+*label var ylmhopri_ci "Salario monetario de la actividad principal" 
 
 *************
 * ylmho_ci  *
 *************
-gen ylmho_ci=ylm_ci/(horastot_ci*4.3)
-label var ylmho_ci "Salario monetario de todas las actividades" 
+*gen ylmho_ci=ylm_ci/(horastot_ci*4.3)
+*label var ylmho_ci "Salario monetario de todas las actividades" 
 
 ****************
 * rentaimp_ch  * 
