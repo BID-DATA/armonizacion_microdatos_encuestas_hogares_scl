@@ -6,7 +6,7 @@ global ruta = "${surveysFolder}"
 
 local PAIS CHL
 local ENCUESTA CASEN
-local ANO "2022"
+local ANO "2020"
 local ronda m11_m12_m1
 
 local log_file = "$ruta\harmonized\\`PAIS'\\`ENCUESTA'\log\\`PAIS'_`ANO'`ronda'_variablesBID.log"
@@ -29,7 +29,7 @@ use `base_in', clear
 		***VARIABLES DEL IDENTIFICACION***
 		*********************************/
 		
-	****************
+	*********ta *******
 	* region_BID_c *
 	****************
 	
@@ -54,8 +54,7 @@ gen region_BID_c=4
 	12"Magallanes y de la Antártica Chilena"        ///
 	13"Metropolitana de Santiago"                   ///
 	14"Los Ríos"                                    /// 
-	15"Arica y Parinacota"							/// 
-	16 "Ñuble"
+	15"Arica y Parinacota"
    label value region_c region_c
    label var region_c "division politico-administrativa, region"
    
@@ -76,13 +75,13 @@ label var idh_ch "ID del hogar"
 *************
 * idp_ci    *
 *************
-gen idp_ci=id_persona
+gen idp_ci=o
 label variable idp_ci "ID de la persona en el hogar"
 
 *************
 * zona_c    *
 *************
-gen zona_c=area
+gen zona_c=zona
 recode zona_c (2=0)
 label variable zona_c "Zona urbana vs. rural"
 label define zona_c 1 "Urbana" 0 "Rural"
@@ -97,7 +96,7 @@ label variable pais_c "Pais"
 *************
 * anio_c    *
 *************
-gen anio_c=2022
+gen anio_c=2020
 label variable anio_c "Anio de la encuesta"
 
 *************
@@ -387,7 +386,7 @@ label variable categosec_ci "Categoria ocupacional trabajo secundario"
 * segsoc_ci    * 
 **************** 
 *Se toma afilición a pensiones
-gen segsoc_ci= (o31==1 | inrange(o32,1,5))
+gen segsoc_ci= (o31==1 | inrange(o32,1,5) | o33a==1 | o36 == 1)
 label var segsoc_ci "Personas que tienen seguro social"
 
 ****************
@@ -416,10 +415,6 @@ label var spublico_ci "Personas que trabajan en el sector público"
 * Utiliza CIUO-88
 capture drop ocupa_ci
 gen ocupa_ci=.
-
-** LA ENCUESTA 2022 NO INCLUYE EL CIUO-88, Juan C Perdomo 20/09/2023
-
-/*
 replace ocupa_ci=1 if (oficio4_88>=2111 & oficio4_88<=3480) & emp_ci==1
 replace ocupa_ci=2 if (oficio4_88>=1110 & oficio4_88<=1319) & emp_ci==1
 replace ocupa_ci=3 if (oficio4_88>=4110 & oficio4_88<=4223) & emp_ci==1
@@ -435,7 +430,7 @@ label define ocupa_ci  4 "comerciantes y vendedores" 5 "en servicios" 6 "trabaja
 label define ocupa_ci  7 "obreros no agricolas, conductores de maq y ss de transporte", add
 label define ocupa_ci  8 "FFAA" 9 "Otras ", add
 label value ocupa_ci ocupa_ci
-*/
+
 
 ****************
 * rama_ci      * 
@@ -670,7 +665,7 @@ label var ylnm_ci "Ingreso laboral NO monetario total"
 **************** 
 
 /* La variable de la base ya ha sido mensualizada
-foreach var of varlist yah1 yah2 yrut yre3 yre3 yac2 yids ydon ydim yotr{
+foreach var of varlist yah1 yah2 yrut yre2 yre3 yac2 yids ydon ydim yotr{
 gen `var'_m = `var'/12
 }
 */
@@ -681,7 +676,7 @@ gen dividendo = yah2
 
 gen util = yrut
 
-egen arriendo = rsum(yre1 yama  yre3   yre3), missing  
+egen arriendo = rsum(yre1 yama  yre2   yre3), missing  
 
 gen autocons = yac2
 
@@ -824,8 +819,8 @@ label var remesas_ch "Remesas mensuales del hogar"
 ***************
 ***asiste_ci*** 
 *************** 
-gen asiste_ci=(e3==1)
-replace asiste_ci=. if e3==.
+gen asiste_ci=(e2==1)
+replace asiste_ci=. if e2==.
 label var asiste_ci "Personas que actualmente asisten a centros de enseñanza"
 
 
@@ -839,18 +834,18 @@ gen aedu_ci = .
 replace aedu_ci = 0              if e6a >= 1 & e6a <= 4    /*Nunca asistió, sala cuna. jardin infantil, prekinder/kinder */
 
 * Para aquellos que asisten actualmente
-replace aedu_ci = e6b      if inrange(e6a, 6, 7) & e3 == 1 /*Preparatoria  (Sist. antiguo) y Básica (Sist. nuevo) */
-replace aedu_ci = e6b + 6 - 1  if inrange(e6a, 8, 10) & e3 == 1  /*Humanidades (Sist. antiguo) Técnica, Comercial, Industrial o Normalista (Sist. antiguo) */
-replace aedu_ci = e6b + 8 - 1   if inrange(e6a, 9, 11) & e3 == 1 /*Educación Media Científico Humanística (Sist. nuevo) Educación Media Técnica Profesional (Sist. nuevo)*/           
-replace aedu_ci = e6b + 12 - 1    if e6a >= 12 & e6a <= 15  & e3 == 1 /*Tecnico nivel superior completo o incompleto, profesional completo o incompleto*/
-replace aedu_ci = e6b + 16 - 1  if inrange(e6a, 16, 17) & e3 == 1   /*Posgrado*/
+replace aedu_ci = e6b      if inrange(e6a, 6, 7) & e2 == 1 /*Preparatoria  (Sist. antiguo) y Básica (Sist. nuevo) */
+replace aedu_ci = e6b + 6 - 1  if inrange(e6a, 8, 10) & e2 == 1  /*Humanidades (Sist. antiguo) Técnica, Comercial, Industrial o Normalista (Sist. antiguo) */
+replace aedu_ci = e6b + 8 - 1   if inrange(e6a, 9, 11) & e2 == 1 /*Educación Media Científico Humanística (Sist. nuevo) Educación Media Técnica Profesional (Sist. nuevo)*/           
+replace aedu_ci = e6b + 12 - 1    if e6a >= 12 & e6a <= 15  & e2 == 1 /*Tecnico nivel superior completo o incompleto, profesional completo o incompleto*/
+replace aedu_ci = e6b + 16 - 1  if inrange(e6a, 16, 17) & e2 == 1   /*Posgrado*/
 
 * Para aquellos que no asisten actualmente
-replace aedu_ci = e6b      if inrange(e6a, 6, 7) & e3 == 2 /*Preparatoria  (Sist. antiguo) y Básica (Sist. nuevo) */
-replace aedu_ci = e6b + 6  if inrange(e6a, 8, 10) & e3 == 2 /*Humanidades (Sist. antiguo) Técnica, Comercial, Industrial o Normalista (Sist. antiguo) */
-replace aedu_ci = e6b + 8  if inrange(e6a, 9, 11) & e3 == 2/*Educación Media Científico Humanística (Sist. nuevo) Educación Media Técnica Profesional (Sist. nuevo)*/           
-replace aedu_ci = e6b + 12 if e6a >= 12 & e6a <= 15 & e3 == 2  /*Tecnico nivel superior completo o incompleto, profesional completo o incompleto*/
-replace aedu_ci = e6b + 16 if inrange(e6a, 16, 17) & e3 == 2   /*Posgrado*/
+replace aedu_ci = e6b      if inrange(e6a, 6, 7) & e2 == 2 /*Preparatoria  (Sist. antiguo) y Básica (Sist. nuevo) */
+replace aedu_ci = e6b + 6  if inrange(e6a, 8, 10) & e2 == 2 /*Humanidades (Sist. antiguo) Técnica, Comercial, Industrial o Normalista (Sist. antiguo) */
+replace aedu_ci = e6b + 8  if inrange(e6a, 9, 11) & e2 == 2/*Educación Media Científico Humanística (Sist. nuevo) Educación Media Técnica Profesional (Sist. nuevo)*/           
+replace aedu_ci = e6b + 12 if e6a >= 12 & e6a <= 15 & e2 == 2  /*Tecnico nivel superior completo o incompleto, profesional completo o incompleto*/
+replace aedu_ci = e6b + 16 if inrange(e6a, 16, 17) & e2 == 2   /*Posgrado*/
 
 **imputando anios perdidos
 
@@ -963,7 +958,7 @@ label variable edupre_ci "Educacion preescolar"
 ****************
 ***asispre_ci***
 ****************
-gen asispre_ci=(e3==1 & e6a==4) // Asiste a Prekínder / Kínder
+gen asispre_ci=(e2==1 & e6a==4) // Asiste a Prekínder / Kínder
 la var asispre_ci "Asiste a educacion prescolar"
 
 **************
@@ -1219,9 +1214,9 @@ label var resid_ch "Método de eliminación de residuos"
 ***************
 * dorm_ch     *
 ***************
-recode v27a (99=.)
-recode v29a (99=.)
-gen dorm_ch=v27a+v29a
+recode v27 (99=.)
+recode v29 (99=.)
+gen dorm_ch=v27+v29
 label var dorm_ch "Cantidad de habitaciones que se destinan exclusivamente para dormir"
 
 
@@ -1402,7 +1397,7 @@ label var afiliado_ci "Afiliado a la Seguridad Social"
 ****************
 *tipopen_ci*****
 ****************
-egen vejez=rsum(y28_1b y28_1c), m
+egen vejez=rsum(y28_1a y28_1b y28_1c), m
 egen invalidez=rsum(y28_1d y28_1e y28_1f), m
 gen montepio=y28_1g 
 gen orfandad=y28_1h 
@@ -1426,10 +1421,8 @@ label var tipopen_ci "Tipo de pension - variable original de cada pais"
 ****************
 *instpen_ci*****
 ****************
-gen instpen_ci=.
+gen instpen_ci=y28_3a
 label var instpen_ci "Institucion proveedora de la pension - variable original de cada pais" 
-
-* EN BASE 2022 SE ELIMINÍ LA VARIABLE y28_3a, Juan C Perdomo 20/09/23
 
 ****************
 *instcot_ci*****
@@ -1504,11 +1497,10 @@ label var ypen_ci "Valor de la pension contributiva"
 ***************
 *pensionsub_ci*
 ***************
-gen auxpens=.
-gen pensionsub_ci=.
+egen auxpens=rsum(y28_2amonto  y28_2dmonto), missing
+gen pensionsub_ci=1 if auxpens>0 & auxpens!=.
+recode pensionsub_ci .=0 
 label var pensionsub_ci "1=recibe pension subsidiada / no contributiva"
-
-* EN BASE 2022 SE ELIMINARON LAS VARIABLES y28_2amonto Y y28_2dmonto
 
 *****************
 **ypensub_ci*
@@ -1655,15 +1647,14 @@ lab val atencion_ci atencion_ci
 	*** migantiguo5_ci ***
 	**********************
 	
-	gen migantiguo5_ci=(migrante_ci==1 & inlist(r2,3)) if migrante_ci!=. & r2!=. & r2!=9 & r2!=-88
+	gen migantiguo5_ci=(migrante_ci==1 & inlist(r2,2,3)) if migrante_ci!=. & r2!=. & r2!=9 & r2!=1
 	label var migantiguo5_ci "=1 si es migrante antiguo (5 anos o mas)"
-	
-
+		
 	**********************
 	*** migrantelac_ci ***
 	**********************
 	
-	gen migrantelac_ci=(inlist(r1b_pais_esp_cod,406,408,409,412,413,414,416,417,418,420,501,502,503,505,506,508,509,512,513) & migrante_ci==1) if migrante_ci!=. & r1b_pais_esp_cod!=999 & r1b_pais_esp_cod!=888
+	gen migrantelac_ci=(inlist(r1b_p_cod,406,408,409,412,413,414,416,417,418,420,501,502,503,505,506,508,509,512,513) & migrante_ci==1) if migrante_ci!=. & r1b_p_cod!=999 & r1b_p_cod!=888
 	label var migrantelac_ci "=1 si es migrante proveniente de un pais LAC"
 	
 	**********************
@@ -1679,20 +1670,15 @@ lab val atencion_ci atencion_ci
 	*** miglac_ci ***
 	**********************
 	
-	gen miglac_ci= 1 if inlist(r1b_pais_esp_cod,406,408,409,412,413,414,416,417,418,420,501,502,503,505,506,508,509,512,513) & migrante_ci == 1
+	gen miglac_ci= 1 if inlist(r1b_p_cod,406,408,409,412,413,414,416,417,418,420,501,502,503,505,506,508,509,512,513) & migrante_ci == 1
 	replace miglac_ci = 0 if miglac_ci != 1 & migrante_ci == 1
 	label var miglac_ci "=1 si es migrante proveniente de un pais LAC"
 
 ***************************************************************
 *** VARIABLES NO INCLUIDAS EN LA ENCUESTA TOMADAS COMO M.V. ***
 ***************************************************************
-	gen dis_ci  = . 
-	replace dis_ci = 1 if inrange(h7a,2,4) | inrange(h7b,2,4) | inrange(h7c,2,4) | inrange(h7d,2,4) | inrange(h7e,2,4) | inrange(h7f,2,4)
-	replace dis_ci = 0 if h7a==1 & h7b==1 & h7c==1 & h7d==1 & h7e==1 & h7f==1
-
-	egen dis_ch = sum(dis_ci), by(idh_ch) 
-	replace dis_ch = 1 if (dis_ch > 0)
-
+gen dis_ch =. // No está la pregunta en la encuesta 2020
+gen dis_ci =. // No está la pregunta en la encuesta 2020
 gen antiguedad_ci=. // No está la pregunta en la encuesta 2020
 gen durades_ci=. // No está la pregunta en la encuesta 2020
 gen desalent_ci=. // No está la pregunta en la encuesta 2020
@@ -1730,10 +1716,6 @@ gen desalent_ci=. // No está la pregunta en la encuesta 2020
 	**************************
 		
    gen ine02=.   
-
-   ** EN BASE 2022 NO ESTÁ LA VARIABLE provincia, Juan C Perdomo 20/09/23
-   
-   /*
    replace ine02=11 if provincia==11			/*Iquique*/
    replace ine02=14 if provincia==14			/*Tamarugal*/
    replace ine02=21 if provincia==21			/*Antofagasta*/
@@ -1792,7 +1774,7 @@ gen desalent_ci=. // No está la pregunta en la encuesta 2020
 	label define ine02 11"Iquique" 14"Tamarugal" 21"Antofagasta" 22"El Loa" 23"Tocopilla" 31"Copiapó" 32"Chañaral" 33"Huasco" 41"Elqui" 42"Choapa" 43"Limarí" 51"Valparaíso" 53"Los Andes" 54"Petorca" 55"Quillota" 56"San Antonio" 57"San Felipe" 58"Marga Marga" 61"Cachapoal" 62"Cardenal Caro" 63"Colchagua" 71"Talca" 72"Cauquenes" 73"Curicó" 74"Linares" 81"Concepción" 82"Arauco" 83"Bio Bío" 84"Ñuble" 91"Cautín" 92"Malleco" 101"Llanquihue" 102"Chiloé" 103"Osorno" 104"Palena" 111"Cohaique" 112"Aisén" 113"Capitán Prat" 114"General Carrera" 121"Magallanes" 122"Antártica" 123"Tierra del Fuego" 124"Última Esperanza" 131"Santiago" 132"Cordillera" 133"Chacabuco" 134"Maipo" 135"Melipilla" 136"Talagante" 141"Valdivia" 142"Ranco" 151"Arica" 152"Parinatoca" 161"Diguillin" 162"Itata" 163"Punilla"
 	label value ine02 ine02
 	label var ine02 " Segunda division politico-administrativa, Provincia"			
-	*/
+	
 	
 /*_____________________________________________________________________________________________________*/
 * Asignación de etiquetas e inserción de variables externas: tipo de cambio, Indice de Precios al 
@@ -1822,7 +1804,7 @@ vivi1_ch vivi2_ch viviprop_ch vivitit_ch vivialq_ch	vivialqimp_ch migrante_ci mi
 /*Homologar nombre del identificador de ocupaciones (isco, ciuo, etc.) y de industrias y dejarlo en base armonizada 
 para análisis de trends (en el marco de estudios sobre el futuro del trabajo) */
 rename rama4 codindustria
-rename oficio4_08 codocupa
+rename oficio4_88 codocupa
 compress
 
 *Versión 12 no acepta labels con más de 79 caracteres
