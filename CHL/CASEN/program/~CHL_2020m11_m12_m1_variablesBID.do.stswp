@@ -29,6 +29,7 @@ use `base_in', clear
 		***VARIABLES DEL IDENTIFICACION***
 		*********************************/
 		
+
 	****************
 	* region_BID_c *
 	****************
@@ -329,8 +330,9 @@ gen pea_ci=(emp_ci==1 | desemp_ci==1)
 ****************
 * horaspri_ci  * 
 ****************
+
 gen horaspri_ci= o10
-replace horaspri_ci=. if emp_ci!=1 ``''
+replace horaspri_ci=. if emp_ci!=1 ``''q
 label var horaspri_ci "Horas totales trabajadas en la actividad principal"
 
 ****************
@@ -1397,6 +1399,7 @@ label var afiliado_ci "Afiliado a la Seguridad Social"
 ****************
 *tipopen_ci*****
 ****************
+
 gen vejez=1 if (y28_1a == 1) | (y28_1c == 1)
 gen invalidez=1 if (y28_1d == 1) | (y28_1f == 1)
 gen montepio=1 if y28_1g==1
@@ -1418,9 +1421,11 @@ label define  t 1 "Jubilacion" 2 "Pension invalidez" 3 "Pension viudez" 4 "Orfan
 label value tipopen_ci t
 label var tipopen_ci "Tipo de pension - variable original de cada pais"
 
+
 ****************
 *instpen_ci*****
 ****************
+
 gen instpen_ci=.
 replace instpen_ci = y28_3c if vejez == 1
 replace instpen_ci = y28_3f if invalidez == 1
@@ -1486,6 +1491,7 @@ label var tamemp_ci "# empleados en la empresa segun rangos-OECD"
 *************
 **pension_ci*
 *************
+
 egen auxpen=rsum(vejez invalidez montepio orfandad otros), m
 gen pension_ci=1 if auxpen>0 & auxpen!=.
 recode pension_ci .=0
