@@ -1113,18 +1113,27 @@ replace edus2i_ci=. if aedu_ci==.
 g byte edus2c_ci=(aedu_ci==11)
 replace edus2c_ci=. if aedu_ci==.
 
-******************************
-*	eduui_ci 
-******************************
-g byte eduui_ci=(aedu_ci>11 & aedu_ci<15) 
-replace eduui_ci=. if aedu_ci==.
-la var eduui_ci "Universitaria o Terciaria Incompleta"
-******************************
-*	eduuc_ci 
-******************************
-g byte eduuc_ci=aedu_ci>14
-replace eduuc_ci=. if aedu_ci==.
-la var eduuc_ci "Universitaria o Terciaria Completa"
+**************
+***eduui_ci***
+**************
+gen eduui_ci = ((p03a03 == 5)&  inrange(p03a05b, 103, 499)) 
+replace eduui_ci = . if aedu_ci == .
+lab var eduui_ci "Superior Incompleto"
+
+**************
+***eduuc_ci***
+**************
+gen eduuc_ci = (((p03a03 == 5) & inrange(p03a05b, 500, 7100))| inlist(p03a03, 6, 7))
+replace eduuc_ci = . if aedu_ci == .
+lab var eduuc_ci "Superior Completo"
+
+**************
+***eduac_ci***
+**************
+gen eduac_ci = (inrange(p03a05b, 2000, 7100))
+replace eduac_ci = . if (p03a05b == . |  p03a05b <= 499)
+label variable eduac_ci "Superior universitario vs superior no universitario"
+
 ******************************
 *	edupre_ci 
 ******************************
@@ -1136,11 +1145,7 @@ label variable edupre_ci "Educacion preescolar"
 g byte asispre_ci = 0
 replace asispre_ci = 1 if p03a03 == 1 & p03a02 == 1
 la var asispre_ci "Asiste a Educacion preescolar"
-**************
-***eduac_ci***
-**************
-gen byte eduac_ci=. // esta disponible solo para los con titulo
-label variable eduac_ci "Superior universitario vs superior no universitario"
+
 
 ******************************
 *	asiste_ci: 

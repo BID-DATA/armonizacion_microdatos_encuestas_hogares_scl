@@ -1095,16 +1095,24 @@ label variable edus2c_ci "2do ciclo de la secundaria completo"
 **************
 ***eduui_ci***
 **************
-gen byte eduui_ci=(aedu_ci>12 & aedu_ci<16)
-replace eduui_ci=. if aedu_ci==.
-label variable eduui_ci "Universitaria incompleta"
+gen eduui_ci = (inrange(ed0504, 2001, 2406) & ed06c == 14)
+replace eduui_ci = . if aedu_ci == .
+lab var eduui_ci "Superior Incompleto"
 
-***************
-***eduuc_ci****
-***************
-gen byte eduuc_ci=(aedu_ci>=16)
-replace eduuc_ci=. if aedu_ci==.
-label variable eduuc_ci "Universitaria completa o mas"
+**************
+***eduuc_ci***
+**************
+gen eduuc_ci = (inrange(ed06c, 1, 13))
+replace eduuc_ci = . if aedu_ci == .
+lab var eduuc_ci "Superior Completo"
+
+**************
+***eduac_ci***
+**************
+gen eduac_ci = .
+replace eduac_ci = 1 if inrange(ed0504, 2101, 2406)
+replace eduac_ci = 0 if inrange(ed0504, 2001, 2004)
+label variable eduac_ci "Superior universitario vs superior no universitario"
 
 ***************
 ***edupre_ci***
@@ -1118,16 +1126,6 @@ label variable edupre_ci "Educacion preescolar"
 gen byte asispre_ci=(ed08==1)
 label variable asispre_ci "Asistencia a Educacion preescolar" 
 
-**************
-***eduac_ci***
-**************
-gen byte eduac_ci=. 
-replace eduac_ci=1 if nivgra>=2400 & nivgra<=2499 | nivgra>=2200 & nivgra<=2299 // profesionalización docente
-replace eduac_ci=0 if nivgra>=2000 & nivgra<=2099 // tecnica superior
-replace eduac_ci=0 if nivgra>=2100 & nivgra<=2199 // formacion docente
-replace eduac_ci=0 if nivgra>=2300 & nivgra<=2399 // formacion militar
-label variable eduac_ci "Superior universitario vs superior no universitario"
-		
 ***************
 ***asiste_ci***
 ***************
@@ -1606,31 +1604,67 @@ label var miglac_ci "=1 si es migrante proveniente de un pais LAC"
 ********************************
 *PTMC:  Ingresos del estado monetario tekoporã deflactados 
 *PNC: 	 Ingresos del estado monetario adulto mayor deflactados
+*Otros: Pytyvõ (programa covid-19 para trabajadores informales)
 
 *Ingreso del hogar
-egen ingreso_total = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci), missing
-bys idh_ch: egen y_hog = sum(ingreso_total)
+egen y_hog_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci), missing
+bys idh_ch: egen y_hog_ch = sum(y_hog_ci)
+
+**Miembros del hogar (Incluyendo los no parientes)
+gen x=1
+bys idh_ch: egen nmiembros_sph_ch= sum(x)
+
+********************************
+*************PTMC***************
 
 *Personas que reciben transferencias monetarias condicionadas
-gen transf = e01ide
-bys idh_ch: egen ing_ptmc=sum(transf)
-gen ptmc_ci  = (ing_ptmc>0 & ing_ptmc!=.)
-bys idh_ch: egen ptmc_ch=max(ptmc_ci)
+egen ing_ptmc_ci=rowtotal(e01ide) // valor mensual de tekopora
+replace ing_ptmc_ci=. if e01ide==.
+bys idh_ch: egen ing_ptmc_ch = sum(ing_ptmc_ci)
 
-*Adultos mayores 
-gen mayor64_ci=(edad>64 & edad!=.)
-bys idh_ch: egen ing_pension  = sum(e01kde)
-gen pnc_ci  = (ing_pension>0 & ing_pension!=.)
+*Personas y hogares que reciben ptmc
+gen ptmc_ci = 0
+replace ptmc_ci = 1 if ing_ptmc_ci != . & ing_ptmc_ci > 0
+bys idh_ch: egen ptmc_ch = max(ptmc_ci)
 
-*Ingreso neto del hogar
-gen y_pc     = y_hog / nmiembros_ch 
-gen y_pc_net = (y_hog - ing_ptmc -ing_pension) / nmiembros_ch
+********************************
+*************PNC****************
 
-lab def ptmc_ch 1 "Beneficiario PTMC" 0 "No beneficiario PTMC"
-lab val ptmc_ch ptmc_ch
+gen pnc_elegible_ci = 0
+replace pnc_elegible_ci =1 if (edad>=65 & edad!=.)
 
-lab def pnc_ci 1 "Beneficiario PNC" 0 "No beneficiario PNC"
-lab val pnc_ci pnc_ci
+*ingreso por pnc
+egen ing_pnc_ci=rowtotal(e01kde) // Ingreso mensual del Estado (Monetario: Adulto Mayor) 
+replace ing_pnc_ci = . if pnc_elegible_ci == 0
+replace ing_pnc_ci = . if e01kde == .
+bys idh_ch:egen ing_pnc_ch=sum(ing_pnc_ci)
+
+*Personas y hogares que reciben pension no contributiva (PNC)
+gen pnc_ci = (ing_pnc_ci>0 & pnc_elegible_ci==1)
+bys idh_ch:egen pnc_ch=max(pnc_ci)
+
+*********************************
+*************Otros programas*****
+
+*Personas que reciben otros programas sociales
+gen potrot_ci= (e02d1== 1)  
+
+*ingreso por otros programas
+gen ing_otrot_ci = ingrepytyvõde/12 if potrot_ci ==1 //valores son imputados, deflactados, hasta 4 pagos
+bys idh_ch:egen ing_otrot_ch = sum(ing_otrot_ci)
+
+* hogares que reciben otros programas sociales
+replace potrot_ci = 1 if ing_otrot_ci != . & ing_otrot_ci > 0
+bys idh_ch:egen potrot_ch=max(potrot_ci)
+
+*Ingreso per cápita del hogar
+gen y_pc= y_hog_ch / nmiembros_sph_ch // ingreso del hogar per cápita
+
+gen y_pc_net_ch=(y_hog_ch - ing_ptmc_ch - ing_pnc_ch - ing_otrot_ch)/nmiembros_sph_ch
+replace y_pc_net_ch=0 if y_pc_net_ch<0
+
+*Beneficiario por PTMC PNC u Otros
+bys idh_ch: gen pcasht_ch = (ptmc_ch==1|pnc_ch==1| potrot_ch==1)
 
 /*_____________________________________________________________________________________________________*/
 * Asignación de etiquetas e inserción de variables externas: tipo de cambio, Indice de Precios al 
@@ -1644,26 +1678,31 @@ do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&Exter
 *Pobres extremos, pobres moderados, vulnerables y no pobres 
 *con base en ingreso neto (Sin transferencias)
 *y líneas de pobreza internacionales
-gen     grupo_int = 1 if (y_pc_net<lp31_ci)
-replace grupo_int = 2 if (y_pc_net>=lp31_ci & y_pc_net<(lp31_ci*1.6))
-replace grupo_int = 3 if (y_pc_net>=(lp31_ci*1.6) & y_pc_net<(lp31_ci*4))
-replace grupo_int = 4 if (y_pc_net>=(lp31_ci*4) & y_pc_net<.)
+** Grupos de ingreso neto
+gen 	grupo_int = 1 if (y_pc_net_ch<lp31_ci 		& y_pc_net_ch!=.) 								
+replace grupo_int = 2 if (y_pc_net_ch>=lp31_ci 		& y_pc_net_ch<lp31_ci*1.6 	& y_pc_net_ch!=.) 	
+replace grupo_int = 3 if (y_pc_net_ch>=lp31_ci*1.6 	& y_pc_net_ch<lp31_ci*4 	& y_pc_net_ch!=.) 
+replace grupo_int = 4 if (y_pc_net_ch>=lp31_ci*4 	& y_pc_net_ch < .			& y_pc_net_ch!=.) 	
 
-tab grupo_int, gen(gpo_ingneto)
+********************************
+*********pcash_coverage_************
+********************************
+forval i =1/4 {
+	gen pcasht_coverage`i' = .
+	replace pcasht_coverage`i' = 0 if grupo_int == `i'
+	replace pcasht_coverage`i' = 1 if grupo_int == `i' & pcasht_ch ==1
+}
 
-*Crear interacción entre recibirla la PTMC y el gpo de ingreso
-gen ptmc_ingneto1 = 0
-replace ptmc_ingneto1 = 1 if ptmc_ch == 1 & gpo_ingneto1 == 1
+********************************
+*********pcash_dist_************
+********************************
 
-gen ptmc_ingneto2 = 0
-replace ptmc_ingneto2 = 1 if ptmc_ch == 1 & gpo_ingneto2 == 1
-
-gen ptmc_ingneto3 = 0
-replace ptmc_ingneto3 = 1 if ptmc_ch == 1 & gpo_ingneto3 == 1
-
-gen ptmc_ingneto4 = 0
-replace ptmc_ingneto4 = 1 if ptmc_ch == 1 & gpo_ingneto4 == 1
-
+forval i =1/4 {
+	gen pcasht_dist`i' = .
+	replace pcasht_dist`i' = 0 if pcasht_ch == 1
+	replace pcasht_dist`i' = 1 if grupo_int == `i' & pcasht_ch ==1
+}
+	
 lab def grupo_int 1 "Pobre extremo" 2 "Pobre moderado" 3 "Vulnerable" 4 "No pobre"
 lab val grupo_int grupo_int
 
@@ -1671,19 +1710,29 @@ lab val grupo_int grupo_int
 * Verificación de que se encuentren todas las variables armonizadas 
 /*_____________________________________________________________________________________________________*/
 
-order region_BID_c region_c pais_c anio_c mes_c zona_c factor_ch	idh_ch	idp_ci	factor_ci upm_ci estrato_ci sexo_ci edad_ci ///
-afroind_ci afroind_ch afroind_ano_c dis_ci dis_ch relacion_ci civil_ci jefe_ci nconyuges_ch nhijos_ch notropari_ch notronopari_ch nempdom_ch ///
-clasehog_ch nmiembros_ch miembros_ci nmayor21_ch nmenor21_ch nmayor65_ch nmenor6_ch	nmenor1_ch	condocup_ci ///
-categoinac_ci nempleos_ci emp_ci antiguedad_ci	desemp_ci cesante_ci durades_ci	pea_ci desalent_ci subemp_ci ///
-tiempoparc_ci categopri_ci categosec_ci rama_ci spublico_ci tamemp_ci cotizando_ci instcot_ci	afiliado_ci ///
-formal_ci tipocontrato_ci ocupa_ci horaspri_ci horastot_ci	pensionsub_ci pension_ci tipopen_ci instpen_ci	ylmpri_ci nrylmpri_ci ///
-tcylmpri_ci ylnmpri_ci ylmsec_ci ylnmsec_ci	ylmotros_ci	ylnmotros_ci ylm_ci	ylnm_ci	ynlm_ci	ynlnm_ci ylm_ch	ylnm_ch	ylmnr_ch  ///
-ynlm_ch	ynlnm_ch ylmhopri_ci ylmho_ci rentaimp_ch autocons_ci autocons_ch nrylmpri_ch tcylmpri_ch remesas_ci remesas_ch	ypen_ci	ypensub_ci ///
-salmm_ci tc_c ipc_c lp19_c lp31_c lp5_c lp_ci lpe_ci aedu_ci eduno_ci edupi_ci edupc_ci	edusi_ci edusc_ci eduui_ci eduuc_ci	edus1i_ci ///
-edus1c_ci edus2i_ci edus2c_ci edupre_ci eduac_ci asiste_ci pqnoasis_ci pqnoasis1_ci	repite_ci repiteult_ci edupub_ci ///
-aguared_ch aguafconsumo_ch aguafuente_ch aguadist_ch aguadisp1_ch aguadisp2_ch aguamala_ch aguamejorada_ch aguamide_ch bano_ch banoex_ch banomejorado_ch sinbano_ch aguatrat_ch luz_ch luzmide_ch combust_ch des1_ch des2_ch piso_ch ///
-pared_ch techo_ch resid_ch dorm_ch cuartos_ch cocina_ch telef_ch refrig_ch freez_ch auto_ch compu_ch internet_ch cel_ch ///
-vivi1_ch vivi2_ch viviprop_ch vivitit_ch vivialq_ch	vivialqimp_ch migrante_ci migantiguo5_ci migrantelac_ci, first
+order region_BID_c region_c pais_c anio_c mes_c zona_c factor_ch idh_ch	idp_ci factor_ci factor_ch /// Identificación
+	  sexo_ci edad_ci relacion_ci civil_ci jefe_ci nconyuges_ch nhijos_ch notropari_ch notronopari_ch nempdom_ch /// Demográficas
+	  clasehog_ch nmiembros_ch miembros_ci nmayor21_ch nmenor21_ch nmayor65_ch nmenor6_ch nmenor1_ch /// Demográficas
+	  afroind_ci afroind_ch afroind_ano_c dis_ci dis_ch /// Género y diversidad 
+      condocup_ci categoinac_ci emp_ci cesante_ci desemp_ci subemp_ci durades_ci pea_ci nempleos_ci antiguedad_ci desalent_ci  /// Empleo
+	  horaspri_ci horastot_ci tiempoparc_ci categopri_ci categosec_ci rama_ci spublico_ci tamemp_ci cotizando_ci instcot_ci	afiliado_ci /// Empleo
+	  formal_ci tipocontrato_ci ocupa_ci pension_ci	pensionsub_ci tipopen_ci instpen_ci	ylmpri_ci /// Empleo
+	  ylmpri_ci ylnmpri_ci ylmsec_ci ylnmsec_ci ylmotros_ci	ylnmotros_ci  ylm_ci ylnm_ci ynlm_ci ynlnm_ci nrylmpri_ci /// Ingresos individuo
+	  ylm_ch ylnm_ch ylmnr_ch ynlm_ch ynlnm_ch ylmhopri_ci ylmho_ci /// Ingresos del hogar
+	  nrylmpri_ci nrylmpri_ch /// No respuesta de ingresos 
+	  remesas_ci remesas_ch ypen_ci ypensub_ci /// Remesas y pensiones
+      aedu_ci eduui_ci eduuc_ci edupre_ci eduac_ci asiste_ci edupub_ci pqnoasis1_ci asispre_ci /// Educación 
+	  luz_ch luzmide_ch combust_ch piso_ch pared_ch techo_ch resid_ch dorm_ch cuartos_ch cocina_ch telef_ch refrig_ch /// Vivienda 
+	  freez_ch auto_ch compu_ch internet_ch cel_ch vivi1_ch vivi2_ch viviprop_ch vivitit_ch vivialq_ch vivialqimp_ch /// Vivienda
+	  aguared_ch aguafconsumo_ch aguafuente_ch aguadist_ch aguadisp1_ch aguadisp2_ch /// Agua y saneamineto
+	  aguatrat_ch aguamala_ch aguamejorada_ch aguamide_ch bano_ch banoex_ch banomejorado_ch sinbano_ch  /// Agua y saneamineto
+	  migrante_ci migrantiguo5_ci miglac_ci /// Migración
+	  nmiembros_sph_ch  y_hog_ci y_hog_ch y_pc_net_ch ptmc_ci ptmc_ch ing_ptmc_ci /// Protección social
+	  ing_ptmc_ch pnc_elegible_ci  pnc_ci pnc_ch ing_pnc_ci ing_pnc_ch potrot_ci  /// Protección social 
+	  potrot_ch ing_otrot_ci  ing_otrot_ch pcasht_ch  /// Protección social
+	  salmm_ci lp19_c lp31_c lp5_c lp_ci lpe_ci lp365_2017 lp685_2017 tc_c ipc_c, first /// Fuente externa
+
+	  *	  afro_ci ind_ci noafroind_ci afro_ch ind_ch noafroind_ch disWG_ci /// Género y diversidad 
 
 /*Homologar nombre del identificador de ocupaciones (isco, ciuo, etc.) y de industrias y dejarlo en base armonizada 
 para análisis de trends (en el marco de estudios sobre el futuro del trabajo)*/
@@ -1699,6 +1748,6 @@ local shortlabel = substr(`"`longlabel'"',1,79)
 label var `i' `"`shortlabel'"'
 }
 
-saveold "`base_out'", version(12) replace
+save "`base_out'", replace
 
 log close

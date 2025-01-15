@@ -35,9 +35,8 @@ País: Jamaica
 Encuesta: LFS
 Round: Abril, 2001
 Autores:
-Versión 2013: Mayra Sáenz
-Última versión: Mayra Sáenz - Email: mayras@iadb.org, saenzmayra.a@gmail.com
-Fecha última modificación: 19 de Agosto de 2013
+Versión 2013: Mayra Sáenz - Email: mayras@iadb.org, saenzmayra.a@gmail.com
+Fecha última modificación: 09 de julio de 2024
 
 							SCL/LMK - IADB
 ****************************************************************************/
@@ -117,14 +116,15 @@ label var factor_ch "Factor de expansion del hogar"
 **************************
 * identificador del hogar*
 **************************
-
-ren  hhold idh_ch
+*ren  hhold idh_ch // 2024: la mayoria tiene el mismo número = 1. No están todas las variables necesarias para identificar a los hogares. Se intentará conseguir la base raw nuevamente.
+gen idh_ch = .
 
 ****************************
 * identificador de persona *
 ****************************
+*ren indiv idp_ci  // 2024: no hay una variable con identificadores únicos. Existen muchos duplicados. En el momento de calcular los indicadores, la muestra se reduce. Se intentó usar el identificador del merge, pero el problema persiste. Por ese motivo se decidió crear un nuevo identificador único por persona. Se intentará conseguir la base raw nuevamente.
+gen idp_ci = _n
 
-ren indiv idp_ci
 
 *************** 
 ******upm_ci*****

@@ -591,6 +591,7 @@ label var desalent_ci "Trabajadores desalentados"
 Se agrupa variable en el 2022
 2022: P05E01A Horas trabajadas en la semana (trabajo principal)*/
 gen horaspri_ci=p05e01a if emp_ci==1
+replace horaspri_ci=0 if p05e01a==999
 replace horaspri_ci=. if emp_ci==0
 label var horaspri_ci "Horas trabajadas semanalmente en el trabajo principal"
 
@@ -606,8 +607,9 @@ P04D16 en este segundo trabajo cuántas horas trabaja habitualmente a la semana
 P05C27B	Cantidad de horas extras trabajadas
 P05E01B	Horas trabajadas en la semana (segundo trabajo)
 */
+gen horassec_ci=p05e01b if p05e01b!=999
 g hsext=p05c27b/4.3
-egen horastot_ci=rsum(horaspri_ci p05e01b) if emp_ci==1, missing /*adding secondary employment and extra time*/
+egen horastot_ci=rsum(horaspri_ci horassec_ci) if emp_ci==1, missing 
 label var horastot_ci "Horas trabajadas semanalmente en todos los empleos"
 
 ******************************
@@ -1299,19 +1301,26 @@ g byte edus2c_ci=(aedu_ci==11)
 replace edus2c_ci=. if aedu_ci==.
 la var edus2c_ci "2do ciclo de Educacion Secundaria Incompleto"
 
-******************************
-*	eduui_ci 
-******************************
-g byte eduui_ci=(aedu_ci>11 & aedu_ci<15) 
-replace eduui_ci=. if aedu_ci==.
-la var eduui_ci "Universitaria o Terciaria Incompleta"
+**************
+***eduui_ci***
+**************
+gen eduui_ci = (((p04a04a == 5 & p04a05a == 4) | p04a05a == 5) &  inrange(p04a06, 101, 499)) 
+replace eduui_ci = . if aedu_ci == .
+lab var eduui_ci "Superior Incompleto"
 
-******************************
-*	eduuc_ci 
-******************************
-g byte eduuc_ci=aedu_ci>14
-replace eduuc_ci=. if aedu_ci==.
-la var eduuc_ci "Universitaria o Terciaria Completa"
+**************
+***eduuc_ci***
+**************
+gen eduuc_ci = ((p04a05a == 5 & inrange(p04a06, 500, 7100)) | inlist(p04a05a, 6, 7) | inlist(p04a04a, 6, 7))
+replace eduuc_ci = . if aedu_ci == .
+lab var eduuc_ci "Superior Completo"
+
+**************
+***eduac_ci***
+************** 
+gen eduac_ci = (inrange(p04a06, 2000, 7100))
+replace eduac_ci = . if (p04a06 == . |  p04a06 <= 499)
+label variable eduac_ci "Superior universitario vs superior no universitario"
 
 ******************************
 *	edupre_ci 
@@ -1325,12 +1334,6 @@ label variable edupre_ci "Educacion preescolar"
 * 2021 p03a04a y 2022 p04a04a
 g byte asispre_ci=p04a04a==1
 la var asispre_ci "Asiste a Educacion preescolar"
-
-**************
-***eduac_ci***
-**************
-gen byte eduac_ci=. // esta disponible solo para los con titulo
-label variable eduac_ci "Superior universitario vs superior no universitario"
 
 ******************************
 *	pqnoasis_ci 

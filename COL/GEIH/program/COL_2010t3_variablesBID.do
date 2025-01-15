@@ -1007,18 +1007,18 @@ la var edusc_ci "Secundaria completa"
 ***eduui_ci***
 **************
 
-/* Se restringe por maximo nivel de titulacion alcanzado */
-g byte eduui_ci = (aedu_ci > 11 & p6220 < 3)
+g byte eduui_ci = (p6210 == 6 & inlist(p6220, 2, 6)) 
 replace eduui_ci = . if aedu_ci == .
 label variable eduui_ci "Superior incompleto"
+
 
 ***************
 ***eduuc_ci***
 ***************
 
-gen byte eduuc_ci = (aedu_ci > 11 & p6220 > 2)
+g byte eduuc_ci = (p6210 == 6 & inlist(p6220, 3, 4, 5))
 replace eduuc_ci = . if aedu_ci == .
-la var eduuc_ci "Superior completo"
+label variable eduuc_ci "Superior completo"
 
 ***************
 ***edus1i_ci***
@@ -1070,9 +1070,9 @@ la var asispre_ci "Asiste a educación prescolar"
 ***eduac_ci***
 **************
 
-/* No se puede calcular ya que solo tenemos la diferenciacion para los 
-que finalizaron cada nivel. */
-gen byte eduac_ci=.
+gen byte eduac_ci = .
+replace eduac_ci = 1 if (p6210 == 6 & inlist(p6220, 4, 5))
+replace eduac_ci = 0 if p6210 == 6 & p6220 == 3
 label variable eduac_ci "Superior universitario vs superior no universitario"
 
 ***************
@@ -1256,6 +1256,7 @@ gen aguatrat_ch = 9
 ***luz_ch***
 ************
 gen luz_ch=p4030s1==1 
+replace luz_ch=. if p4030s1==.
 label var luz_ch  "La principal fuente de iluminación es electricidad"
 
 ****************

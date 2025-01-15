@@ -885,17 +885,24 @@ label var edusc_ci "Secundaria Completa"
 **************
 ***eduui_ci***
 **************
-gen eduui_ci=(aedu_ci>=12 & r217==2) // mayor o igual a 12 anios de estudio y titulo de bachiller general
-replace eduui_ci=1 if aedu_ci>=13 & (r217==3 | r217==.) // mas de 12 anios de estudio, bachiller tecnico o perdido
-replace eduui_ci=. if aedu_ci==.
-label var eduui_ci "Universitaria o Terciaria Incompleta"
+gen eduui_ci = (inlist(r204, 4, 5)) | (inlist(r215a, 4, 5) & inlist(r217, 1, 2, 3))
+replace eduui_ci = . if aedu_ci == .
+lab var eduui_ci "Superior Incompleto"
 
 **************
 ***eduuc_ci***
 **************
-gen eduuc_ci=(aedu_ci>12 & r217>=4 & r217<=9) // mas de 12 anios de estudio pero con titulo terciario; incluye profesorado
-replace eduuc_ci=. if aedu_ci==.
-label var eduuc_ci "Universitaria o Terciaria Completa"
+gen eduuc_ci = inlist(r215a, 4, 5) & (inrange(r217, 4, 9))
+replace eduuc_ci = . if aedu_ci == .
+lab var eduuc_ci "Superior Completo"
+
+**************
+***eduac_ci***
+**************
+gen eduac_ci = .
+replace eduac_ci = 1 if r204 == 4 | r215a == 4
+replace eduac_ci = 0 if r204 == 5 | r215a == 5
+label variable eduac_ci "Superior universitario vs superior no universitario"
 
 ***************
 ***edus1i_ci***
@@ -939,14 +946,6 @@ label var edupre_ci "Educacion preescolar"
 *Agregada por Iván Bornacelly - 01/23/2017
 g asispre_ci=(r203==1 & r204==1) // no consideramos menores de 3 años (r201a)
 la var asispre_ci "Asiste a educacion prescolar"
-	
-**************
-***eduac_ci***
-**************
-gen eduac_ci=.
-replace eduac_ci=1 if r215a==4
-replace eduac_ci=0 if r215a==5
-label variable eduac_ci "Superior universitario vs superior no universitario"
 
 ***************
 ***asiste_ci***
@@ -1191,8 +1190,8 @@ label val piso_ch piso_ch
 **************
 ***pared_ch***
 **************
-gen pared_ch=0 		if r303==2 | r303==3 |r303==5 |r303==6 |r303==7 
-replace pared_ch=1 	if r303==1 | r303==4
+gen pared_ch=0 		if r303==2 | r303==5 |r303==6 |r303==7 
+replace pared_ch=1 	if r303==1 | r303==4 | r303==3 
 replace pared_ch=2 	if r303==8
 replace pared_ch=. 	if r303==.
 label var pared_ch "Materiales de construcción de las paredes"

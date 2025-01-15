@@ -583,17 +583,15 @@ label var instpen_ci "Institución que otorga la pensión o jubilación"
 *************************************
 * INGRESO MONETARIO MENSUAL LABORAL *
 *************************************
-*Nota MGD 01/15: El ingreso se reporta por rangos establecidos en la encuesta, no es variable continua.
-*Earnings denota ingresos de todas las fuentes pero se asume que es el de la actividad principal
-gen ylmpri_ci=      ((1+200)/2) if earngs==1 & emp_ci==1
-replace ylmpri_ci=((200+299)/2) if earngs==2 & emp_ci==1
-replace ylmpri_ci=((300+399)/2) if earngs==3 & emp_ci==1
-replace ylmpri_ci=((400+499)/2) if earngs==4 & emp_ci==1
-replace ylmpri_ci=((500+599)/2) if earngs==5 & emp_ci==1
-replace ylmpri_ci=((600+699)/2) if earngs==6 & emp_ci==1
-replace ylmpri_ci=((700+799)/2) if earngs==7 & emp_ci==1
-replace ylmpri_ci=((800+899)/2) if earngs==8 & emp_ci==1
-replace ylmpri_ci=((900+999)/2) if earngs==9 & emp_ci==1
+gen ylmpri_ci=      ((1+323.9)/2) if earngs==1 & emp_ci==1
+replace ylmpri_ci=((324.9+501.97)/2) if earngs==2 & emp_ci==1
+replace ylmpri_ci=((502.97+680.04)/2) if earngs==3 & emp_ci==1
+replace ylmpri_ci=((681.04+858.11)/2) if earngs==4 & emp_ci==1
+replace ylmpri_ci=((859.11+1036.19)/2) if earngs==5 & emp_ci==1
+replace ylmpri_ci=((1037.19+1240.5)/2) if earngs==6 & emp_ci==1
+replace ylmpri_ci=((1241.5+6507.83)/2) if earngs==7 & emp_ci==1
+replace ylmpri_ci=((6509.83+11775.15)/2) if earngs==8 & emp_ci==1
+replace ylmpri_ci=((11776.15+22305.8)/2) if earngs==9 & emp_ci==1
 label var ylmpri_ci "Monto mensual de ingreso laboral de la actividad principal"
 
 *******************
@@ -1198,6 +1196,7 @@ do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&Exter
 
 order region_BID_c region_c pais_c anio_c mes_c zona_c factor_ch	idh_ch	idp_ci	factor_ci sexo_ci edad_ci ///
 afroind_ci afroind_ch afroind_ano_c dis_ci dis_ch relacion_ci civil_ci jefe_ci nconyuges_ch nhijos_ch notropari_ch notronopari_ch nempdom_ch ///
+migrante_ci migrantiguo5_ci ///
 clasehog_ch nmiembros_ch miembros_ci nmayor21_ch nmenor21_ch nmayor65_ch nmenor6_ch	nmenor1_ch	condocup_ci ///
 categoinac_ci nempleos_ci emp_ci antiguedad_ci	desemp_ci cesante_ci durades_ci	pea_ci desalent_ci subemp_ci ///
 tiempoparc_ci categopri_ci categosec_ci rama_ci spublico_ci tamemp_ci cotizando_ci instcot_ci	afiliado_ci ///

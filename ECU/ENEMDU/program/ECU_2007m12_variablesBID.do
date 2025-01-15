@@ -997,16 +997,24 @@ replace formal_ci=0 if formal_ci==. & (condocup_ci==1 | condocup_ci==2) */
 	**************
 	***eduui_ci***
 	**************
-	gen eduui_ci = (p12a == 2 & nivinst == 8) | (p12a == 2 & nivinst == 9)
-	replace eduui_ci = . if aedu_ci == . 
+	gen byte eduui_ci = (inlist(p10a, 8, 9) & p12a == 2)
+	replace eduui_ci = . if aedu_ci == .
 	label variable eduui_ci "Superior incompleto"
-
+	
 	***************
 	***eduuc_ci***
 	***************
- 	gen byte eduuc_ci = (p12a == 1 & nivinst == 8) | (p12a == 1 & nivinst == 9) | (nivinst == 10)
-	replace eduuc_ci = . if aedu_ci == . 
+	gen byte eduuc_ci = ((inlist(p10a, 8, 9) & p12a == 1) | p10a == 10)
+	replace eduuc_ci = . if aedu_ci == .
 	label variable eduuc_ci "Superior completo"
+    
+	**************
+	***eduac_ci***
+	**************
+	gen eduac_ci = . 
+	replace eduac_ci = 1 if inlist(p10a, 9, 10)
+	replace eduac_ci = 0 if nivinst == 8
+	label variable eduac_ci "Superior universitario vs superior no universitario"
 
 	***************
 	***edus1i_ci***
@@ -1049,14 +1057,6 @@ replace formal_ci=0 if formal_ci==. & (condocup_ci==1 | condocup_ci==2) */
 	g asispre_ci=.
 	la var asispre_ci "Asiste a educacion prescolar"
 	
-	**************
-	***eduac_ci***
-	**************
-	gen eduac_ci=.
-	replace eduac_ci = 1 if p10a == 9 | p10a == 10 
-	replace eduac_ci = 0 if p10a == 8
-	label variable eduac_ci "Superior universitario vs superior no universitario"
-
 	***************
 	***asiste_ci***
 	***************

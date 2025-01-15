@@ -970,16 +970,24 @@ label var tcylmpri_ci "Identificador de top-code del ingreso de la actividad pri
 	**************
 	***eduui_ci***
 	**************
-	gen eduui_ci = (pe10a1 == 2 & nivinst == 8) | (pe10a1 == 2 & nivinst == 9)
-	replace eduui_ci = . if aedu_ci == . 
+	gen byte eduui_ci = (inlist(nivinst, 8, 9) & pe10a1 == 2)
+	replace eduui_ci = . if aedu_ci == .
 	label variable eduui_ci "Superior incompleto"
-
+	
 	***************
 	***eduuc_ci***
 	***************
- 	gen byte eduuc_ci = (pe10a1 == 1 & nivinst == 8) | (pe10a1 == 1 & nivinst == 9) | (nivinst == 10)
-	replace eduuc_ci = . if aedu_ci == . 
+	gen byte eduuc_ci = ((inlist(nivinst, 8, 9) & pe10a1 == 1) | nivinst == 10)
+	replace eduuc_ci = . if aedu_ci == .
 	label variable eduuc_ci "Superior completo"
+    
+	**************
+	***eduac_ci***
+	**************
+	gen eduac_ci = . 
+	replace eduac_ci = 1 if inlist(nivinst, 9, 10)
+	replace eduac_ci = 0 if nivinst == 8
+	label variable eduac_ci "Superior universitario vs superior no universitario"
 	
 	***************
 	***edus1i_ci***
@@ -1020,14 +1028,6 @@ label var tcylmpri_ci "Identificador de top-code del ingreso de la actividad pri
 	***************	
 	g asispre_ci=.
 	la var asispre_ci "Asiste a educacion prescolar"
-
-	**************
-	***eduac_ci***
-	**************
-	gen eduac_ci=.
-	replace eduac_ci = 1 if nivinst == 9 | nivinst == 10 
-	replace eduac_ci = 0 if nivinst == 8
-	label variable eduac_ci "Superior universitario vs superior no universitario"
 
 	***************
 	***asiste_ci***

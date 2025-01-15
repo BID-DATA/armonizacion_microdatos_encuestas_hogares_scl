@@ -790,17 +790,24 @@ label var edusc_ci "Secundaria Completa"
 **************
 ***eduui_ci***
 **************
-gen eduui_ci = (aedu_ci == 12 | aedu_ci >= 12 & r219 == 2) // 12 anios de estudio o mas y título de bachiller
-replace eduui_ci = 1 if aedu_ci >= 13 & inlist(r219, 1, .) // mas de 12 anios de estudio, perdido.
+gen eduui_ci = (inlist(r204, 4, 5)) | (inlist(r217a, 4, 5) & inlist(r219, 1, 2))
 replace eduui_ci = . if aedu_ci == .
-label var eduui_ci "Universitaria o Terciaria Incompleta"
+lab var eduui_ci "Superior Incompleto"
 
 **************
 ***eduuc_ci***
 **************
-gen eduuc_ci=(aedu_ci > 12 & (r219 >= 3 & r219 <= 11)) // mas de 12 anios de estudio pero con titulo terciario; incluye profesorado
-replace eduuc_ci=. if aedu_ci==.
-label var eduuc_ci "Universitaria o Terciaria Completa"
+gen eduuc_ci = inlist(r217a, 4, 5) & (inrange(r219, 3, 9) | r219 == 11)
+replace eduuc_ci = . if aedu_ci == .
+lab var eduuc_ci "Superior Completo"
+
+**************
+***eduac_ci***
+**************
+gen eduac_ci = .
+replace eduac_ci = 1 if r204 == 4 | r217a == 4
+replace eduac_ci = 0 if r204 == 5 | r217a == 5
+label variable eduac_ci "Superior universitario vs superior no universitario"
 
 ***************
 ***edus1i_ci***
@@ -842,15 +849,7 @@ label var edupre_ci "Educacion preescolar"
 *Agregada por Iván Bornacelly - 01/23/2017
 g asispre_ci = (r203 == 1 & r204 == 1) // no consideramos menores de 3 años (r201a)
 la var asispre_ci "Asiste a educacion prescolar"
-	
-	
-**************
-***eduac_ci***
-**************
-gen eduac_ci = .
-replace eduac_ci = 1 if r217a == 4
-replace eduac_ci = 0 if r217a == 5
-label variable eduac_ci "Superior universitario vs superior no universitario"
+
 
 ***************
 ***asiste_ci***
@@ -1068,8 +1067,8 @@ replace piso_ch=2 if r304==6
 *	pared_ch
 ******************************
 g pared_ch=.
-replace pared_ch=0 if r303==2 | r303==3 | r303==5| r303==6 | r303==7 |r303==8
-replace pared_ch=1 if r303==1 | r303==4 
+replace pared_ch=0 if r303==2 | r303==5| r303==6 | r303==7 |r303==8
+replace pared_ch=1 if r303==1 | r303==4 | r303==3 
 replace pared_ch=2 if r303==9
 ******************************
 *	techo_ch

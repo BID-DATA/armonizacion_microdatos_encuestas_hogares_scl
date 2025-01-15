@@ -13,7 +13,7 @@ set more off
  
 
 
-global ruta = "\\Sdssrv03\surveys"
+global ruta = "${surveysFolder}"
 
 local PAIS NIC
 local ENCUESTA EMNV
@@ -110,7 +110,7 @@ gen mes_c= .
 ***************
 ***factor_ci***
 ***************
-gen factor_ci=peso2
+gen factor_ci=peso3
 label variable factor_ci "Factor de expansion del individuo"
 //Nota: se utiliza el mismo factor para hogares e individuos para hacerlo homogeneo con los otros países
 
@@ -1073,16 +1073,25 @@ label variable edusc_ci "Secundaria completa"
 **************
 ***eduui_ci***
 **************
-gen eduui_ci = (aedu_ci > 11 & aedu_ci < 16) 
-replace eduui_ci = . if aedu_ci == . 
-label variable eduui_ci "Superior incompleto"
+
+gen eduui_ci = ((inlist(s4p12a, 7 , 8, 9) & s4p13 == 2 & s4p14 != 3) | inlist(s4p17a, 7, 8, 9))
+replace eduui_ci = . if aedu_ci == .
+lab var eduui_ci "Superior Incompleto"
 
 **************
 ***eduuc_ci***
 **************
-gen eduuc_ci = (aedu_ci >= 16)
+gen eduuc_ci = ((inlist(s4p12a, 7 , 8, 9) & s4p13 == 2 & s4p14 == 3) | inlist(s4p17a, 10, 11, 12, 13) | (inlist(s4p12a, 10, 11)))
 replace eduuc_ci = . if aedu_ci == .
-label variable eduuc_ci "Superior completo"
+lab var eduuc_ci "Superior Completo"
+
+**************
+***eduac_ci***
+**************
+gen eduac_ci = .
+replace eduac_ci = 1 if (inlist(s4p12a, 8, 9, 10 ,11) | inlist(s4p17a, 7, 9, 10, 11, 12, 13))
+replace eduac_ci = 0 if (inlist(s4p12a, 7) | s4p17a == 8)
+label variable eduac_ci "Superior universitario vs superior no universitario"
 
 ***************
 ***edus1i_ci***
@@ -1129,14 +1138,6 @@ label var pqnoasis_ci "Razones para no asistir"
 ***************
 gen byte asispre_ci = (s4p1 == 3 & s4p2 == 1)
 label variable asispre_ci "Asistencia a Educacion preescolar"
-
-**************
-***eduac_ci***
-**************
-gen eduac_ci = .
-replace eduac_ci = 1 if inlist(s4p12a, 9, 10 ,11) // Universitario, Maestría, Doctorado
-replace eduac_ci = 0 if inlist(s4p12a, 7, 8) // Técnico Superior, Formación docente
-label variable eduac_ci "Superior universitario vs superior no universitario"
 
 ***************
 ***asiste_ci***

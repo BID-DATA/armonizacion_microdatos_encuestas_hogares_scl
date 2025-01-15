@@ -19,14 +19,14 @@ local ENCUESTA LFS
 local ANO "2000"
 local ronda m4 
 
-local log_file = "$ruta\harmonized\\`PAIS'\\`ENCUESTA'\log\\`PAIS'_`ANO'`ronda'_variablesBID.log"
+*local log_file = "$ruta\harmonized\\`PAIS'\\`ENCUESTA'\log\\`PAIS'_`ANO'`ronda'_variablesBID.log"
 *local base_in  = "$ruta\survey\\`PAIS'\\`ENCUESTA'\\`ANO'\\`ronda'\data_orig\\`PAIS'_`ANO'`ronda'.dta"
 local base_in  = "$ruta\survey\\`PAIS'\\`ENCUESTA'\\`ANO'\\`ronda'\data_merge\\`PAIS'_`ANO'`ronda'.dta"
 local base_out = "$ruta\harmonized\\`PAIS'\\`ENCUESTA'\data_arm\\`PAIS'_`ANO'`ronda'_BID.dta"
 
 
-capture log close
-log using "`log_file'", replace 
+*capture log close
+*log using "`log_file'", replace 
 
 
 /***************************************************************************
@@ -37,7 +37,7 @@ Round: Abril, 2000
 Autores:
 Versión 2013: Mayra Sáenz
 Última versión: Mayra Sáenz - Email: mayras@iadb.org, saenzmayra.a@gmail.com
-Fecha última modificación: 19 de Agosto de 2013
+Fecha última modificación: 09 de julio de 2024
 
 							SCL/LMK - IADB
 ****************************************************************************/
@@ -117,14 +117,14 @@ label var factor_ch "Factor de expansion del hogar"
 **************************
 * identificador del hogar*
 **************************
-
-ren  hhold idh_ch
+*ren  hhold idh_ch // 2024: la mayoria tiene el mismo número = 1. No están todas las variables necesarias para identificar a los hogares. Se intentará conseguir la base raw nuevamente.
+gen idh_ch = .
 
 ****************************
 * identificador de persona *
 ****************************
-
-ren indiv idp_ci
+*ren indiv idp_ci  // 2024: no hay una variable con identificadores únicos. Existen muchos duplicados. En el momento de calcular los indicadores y eliminar los duplicados, la muestra se reduce de 20 907 registros a 8 801 registros. Se intentó usar el identificador del merge, pero el problema persiste. Por ese motivo se decidió crear un nuevo identificador único por persona. Se intentará conseguir la base raw nuevamente.
+gen idp_ci = _n
 
 
 ***************************
@@ -1535,4 +1535,4 @@ compress
 saveold "`base_out'", replace
 
 
-log close
+*log close

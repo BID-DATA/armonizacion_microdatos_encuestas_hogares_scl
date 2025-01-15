@@ -1244,7 +1244,7 @@ label var auto_ch "El hogar posee automovil particular"
 *****************
 gen internet_ch=.
 replace internet_ch=1 if internet==1
-replace internet_ch=0 if internet==0
+replace internet_ch=0 if internet==2 | computer==2
 label var internet_ch "El hogar posee conexión a Internet"
 
 

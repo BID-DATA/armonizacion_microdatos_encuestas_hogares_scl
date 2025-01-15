@@ -760,20 +760,28 @@ label var edusi_ci "Secundaria incompleta"
 gen edusc_ci = (aedu_ci == 11)
 replace edusc_ci = . if aedu_ci == .
 label var edusc_ci "Secundaria Completa"
+
 **************
 ***eduui_ci***
 **************
-gen eduui_ci = (aedu_ci == 12 | aedu_ci >= 12 & r219 == 2) // 12 anios de estudio o mas y título de bachiller
-replace eduui_ci = 1 if aedu_ci >= 13 & inlist(r219, 1,  .) // mas de 12 anios de estudio, perdido.
+gen eduui_ci = (inlist(r204, 4, 5)) | (inlist(r217a, 4, 5) & inlist(r219, 1, 2))
 replace eduui_ci = . if aedu_ci == .
-label var eduui_ci "Universitaria o Terciaria Incompleta"
+lab var eduui_ci "Superior Incompleto"
 
 **************
 ***eduuc_ci***
 **************
-gen eduuc_ci=(aedu_ci > 12 & (r219 >= 3 & r219 <= 11)) // mas de 12 anios de estudio pero con titulo terciario; incluye profesorado
-replace eduuc_ci=. if aedu_ci==.
-label var eduuc_ci "Universitaria o Terciaria Completa"
+gen eduuc_ci = inlist(r217a, 4, 5) & (inrange(r219, 3, 9) | r219 == 11)
+replace eduuc_ci = . if aedu_ci == .
+lab var eduuc_ci "Superior Completo"
+
+**************
+***eduac_ci***
+**************
+gen eduac_ci = .
+replace eduac_ci = 1 if r204 == 4 | r217a == 4
+replace eduac_ci = 0 if r204 == 5 | r217a == 5
+label variable eduac_ci "Superior universitario vs superior no universitario"
 
 ***************
 ***edus1i_ci***
@@ -816,15 +824,6 @@ label var edupre_ci "Educacion preescolar"
 g asispre_ci = (r203 == 1 & r204 == 1) // no consideramos menores de 3 años (r201a)
 la var asispre_ci "Asiste a educacion prescolar"
 		
-**************
-***eduac_ci***
-**************
-gen eduac_ci = .
-replace eduac_ci = 1 if r217a == 4
-replace eduac_ci = 0 if r217a == 5
-label variable eduac_ci "Superior universitario vs superior no universitario"
-
-
 ***************
 ***asiste_ci***
 ***************
@@ -1072,7 +1071,7 @@ recode r304 (5=0 "Dirt floor")(1/4=1 "Permanent materials")(6=2 "Other materials
 ******************************
 *	pared_ch
 ******************************
-recode r303 (2 3 5/8=0 "Non-permanent materials")(1 4 =1 "Permanent materials")(9=2 "Other materials"),g (pared_ch)
+recode r303 (2 5/8=0 "Non-permanent materials")(1 3 4 =1 "Permanent materials")(9=2 "Other materials"),g (pared_ch)
 
 ******************************
 *	techo_ch

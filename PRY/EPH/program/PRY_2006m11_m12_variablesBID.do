@@ -1212,16 +1212,24 @@ label variable edus2c_ci "2do ciclo de la secundaria completo"
 **************
 ***eduui_ci***
 **************
-gen byte eduui_ci = (aedu_ci > 12 & aedu_ci < 16)
+gen eduui_ci = (inrange(ed54, 1101, 1406) & ed06 == 11)
 replace eduui_ci = . if aedu_ci == .
-label variable eduui_ci "Universitaria incompleta"
+lab var eduui_ci "Superior Incompleto"
 
-***************
-***eduuc_ci****
-*************** 
-gen byte eduuc_ci = (aedu_ci >= 16)
+**************
+***eduuc_ci***
+**************
+gen eduuc_ci = (inrange(ed06, 1, 10))
 replace eduuc_ci = . if aedu_ci == .
-label variable eduuc_ci "Universitaria completa o mas"
+lab var eduuc_ci "Superior Completo"
+
+**************
+***eduac_ci***
+**************
+gen eduac_ci = .
+replace eduac_ci = 1 if inrange(ed54, 1201, 1406)
+replace eduac_ci = 0 if inrange(ed54, 1101, 1104)
+label variable eduac_ci "Superior universitario vs superior no universitario"
 
 ***************
 ***edupre_ci***
@@ -1235,14 +1243,6 @@ label variable edupre_ci "Educacion preescolar"
 gen byte asispre_ci = (ed08 == 2)
 label variable asispre_ci "Asistencia a Educacion preescolar" 
 
-**************
-***eduac_ci***
-**************
-gen byte eduac_ci=. 
-replace eduac_ci = 1 if (nivgra >= 1400 & nivgra <= 1499) // Universitario
-replace eduac_ci = 0 if (nivgra >= 1100 & nivgra <= 1399) // Superior no universitario, formación docente formación militar
-label variable eduac_ci "Superior universitario vs superior no universitario"
-		
 ***************
 ***asiste_ci***
 ***************

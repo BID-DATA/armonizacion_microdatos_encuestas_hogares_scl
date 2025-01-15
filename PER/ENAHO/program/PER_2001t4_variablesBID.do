@@ -1708,8 +1708,8 @@ gen piso_ch=0 if p103==6
 replace piso_ch=1 if p103>=1 & p103<=5
 replace piso_ch=2 if p103==7
 
-gen pared_ch=0 if p102==3 | p102==4 | p102==7
-replace pared_ch=1 if p102==1 | p102==2 | p102==5 | p102==6
+gen pared_ch=0 if  p102==4 
+replace pared_ch=1 if p102==1 | p102==2 | p102==5 | p102==6 | p102==3 | p102==7
 replace pared_ch=2 if p102==8
 
 gen techo_ch=0 if p103a>=5 & p103a<=7
@@ -1808,6 +1808,12 @@ gen vivialqimp_ch= vivialqimp
 	replace miglac_ci = . if migrante_ci == 0
 	label var miglac_ci "=1 si es migrante proveniente de un pais LAC"
 	** Fuente: Los codigos de paises se obtiene del censo de peru (redatam)
+
+	
+gen aguared_ch =.
+gen luz_ch =. 
+gen luzmide_ch=.
+gen combust_ch =.
 
 /*_____________________________________________________________________________________________________*/
 * Asignación de etiquetas e inserción de variables externas: tipo de cambio, Indice de Precios al 

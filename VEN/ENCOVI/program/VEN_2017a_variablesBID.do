@@ -410,10 +410,10 @@ label var afiliado_ci "Afiliado a la Seguridad Social"
 ****************
 *cotizando_ci***
 ****************
-*Las preguntas relacionadas con pensiones son respondidas por personas a partir de los 40 años pp61, pp61ss, pp61ep 
+*Las preguntas relacionadas con pensiones cambian en esta encuesta y están relacionadas a la pregunta de seguro social como parte del trabajo, tmhp47ss == 4 significa seguro social obligatorio
 
 gen cotizando_ci=0     if condocup_ci==1 | condocup_ci==2 
-replace cotizando_ci=1 if (pmhp611 ==1 | pmhp612==2 | pmhp613==3 | pmhp614==4) & cotizando_ci==0
+replace cotizando_ci=1 if tmhp47ss == 4 & cotizando_ci==0
 label var cotizando_ci "Cotizante a la Seguridad Social"
 
 ****************
@@ -882,12 +882,6 @@ label variable aedu_ci "Años de Educacion"
 //emhp28s contaings grades approved in semesters, this applies for TSU, universitario and posgrado, that's the reason
 //why they're multiplied by 0.5
 
-**para los que tienen missing en el regimen de estudio
-replace aedu_ci=0  if emhp28n==3 & aedu_ci==.              // Primaria
-replace aedu_ci=6  if emhp28n==4 & aedu_ci==.              // Media
-replace aedu_ci=11 if (emhp28n==5 | emhp28n==6) & aedu_ci==. // Técnico (TSU) | Universitario
-replace aedu_ci=16 if emhp28n==7 & aedu_ci==. // Posgrado
-
 replace aedu_ci=floor(aedu_ci) // redondear la variable
 
 **************
@@ -930,19 +924,29 @@ gen edusc_ci=(aedu_ci==11)
 replace edusc=. if aedu_ci==.
 label var edusc_ci "1 = personas que han completado el nivel secundario"
 					
+
 **************
 ***eduui_ci***
 **************
-gen eduui_ci=(aedu_ci>11 & aedu_ci<14)
+gen eduui_ci = inlist(emhp28n, 5, 6) & emhp29 == 1 | inlist(emhp28n, 5, 6) &  emhp31 != 1
 replace eduui_ci=. if aedu_ci==.
 label var eduui_ci "1 = personas que no han completado el nivel universitario o superior"
 
 ***************
 ***eduuc_ci***
 ***************
-gen byte eduuc_ci=(aedu_ci>=14)
+gen byte eduuc_ci = (inlist(emhp28n, 5, 6) &  emhp31 == 1) | emhp28n == 7
 replace eduuc_ci=. if aedu_ci==.
 label var eduuc_ci "1 = personas que han completado el nivel universitario o superior"
+
+**************
+***eduac_ci***
+**************
+gen eduac_ci=.
+replace eduac_ci = 1 if inlist(emhp28n, 6, 7)
+replace eduac_ci = 0 if emhp28n == 5
+label var eduac_ci "Educacion terciaria académica versus educación terciaria no-académica "
+
 
 ***************
 ***edus1i_ci***
@@ -972,11 +976,6 @@ gen edus2c_ci=(aedu_ci==11)
 replace edus2c_ci=. if aedu_ci==.
 label variable edus2c_ci "2do ciclo de la secundaria completo"
 
-**************
-***eduac_ci***
-**************
-gen eduac_ci=.
-label var eduac_ci "Educacion terciaria académica versus educación terciaria no-académica "
 
 ***************
 ***asispre_ci**

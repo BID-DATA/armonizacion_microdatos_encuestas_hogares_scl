@@ -1232,7 +1232,8 @@ label var edus2c_ci "2do ciclo de Educacion Secundaria Completo"
 ******************************
 *	eduui_ci
 ******************************
-gen byte eduui_ci=(aedu_ci>12 & aedu_ci<16) & (nivelaprob==7 | nivelaprob==5)
+gen byte eduui_ci=(aedu_ci>12 & aedu_ci<16) & (nivelaprob==5)
+replace eduui_ci = 1 if (aedu_ci>12 & aedu_ci<17) & (nivelaprob==7)
 replace eduui_ci=1 if (aedu_ci>12 & aedu_ci<15 & nivelaprob==6 & (antec_esc==2 | antec_esc==3)) 
 replace eduui_ci=. if aedu_ci==.
 label var eduui_ci "Universitaria o Terciaria Incompleta"
@@ -1240,8 +1241,9 @@ label var eduui_ci "Universitaria o Terciaria Incompleta"
 ******************************
 *	eduuc_ci
 ******************************
-gen byte eduuc_ci=(aedu_ci>=16) & (nivelaprob==7 | nivelaprob==5)
-replace eduui_ci=1 if (aedu_ci>=15  & nivelaprob==6 & (antec_esc==2 | antec_esc==3)) 
+gen byte eduuc_ci=(aedu_ci>=16) & (nivelaprob==5)
+replace eduuc_ci = 1 if (aedu_ci>=17) & (nivelaprob==7)
+replace eduuc_ci=1 if (aedu_ci>=15  & nivelaprob==6 & (antec_esc==2 | antec_esc==3)) 
 replace eduuc_ci=1 if nivelaprob==8 | nivelaprob==9
 replace eduuc_ci=. if aedu_ci==.
 label var eduuc_ci "Universitaria o Terciaria Completa"
@@ -1770,7 +1772,7 @@ ren servicios servicios_orig
 *		Beneficio de otros programas para adultos mayores (P045)
 
 * Ingreso del hogar
-egen ingreso_total = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci), missing
+egen ingreso_total_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci), missing
 bys idh_ch: egen y_hog = sum(ingreso_total)
 
 gen ptmc_ci=(P101>0 | P102>0 | P103>0) 
@@ -1790,7 +1792,7 @@ replace ing_ptmc=0 if ing_ptmc==.
 replace ing_pension=0 if ing_pension==.
 
 * Adultos mayores 
-gen mayor64_ci=(edad_ci>64 & edad_ci<.)
+gen elegiblePS_ci=(edad_ci>64 & edad_ci<.)
 
 * Ingreso per cápita
 gen y_pc     = y_hog / nmiembros_ch 

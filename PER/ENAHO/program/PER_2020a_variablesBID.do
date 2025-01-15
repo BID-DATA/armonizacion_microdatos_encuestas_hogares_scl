@@ -1599,19 +1599,24 @@ label variable edus2c_ci "2do ciclo de la secundaria completo"
 **************
 ***eduui_ci***
 **************
-
-gen byte eduui_ci=aedu_ci>=12 & (p301a==7 | p301a==9)
-replace eduui_ci=. if aedu_ci==.
+gen byte eduui_ci = inlist(p301a, 7, 9)
+replace eduui_ci = . if aedu_ci == .
 label variable eduui_ci "Universitaria incompleta"
 
 ***************
 ***eduuc_ci***
 ***************
+gen byte eduuc_ci = inlist(p301a, 8, 10, 11)
+replace eduuc_ci = . if aedu_ci == .
+label variable eduuc_ci "Universitaria completa"
 
-gen byte eduuc_ci=(aedu_ci>=12) & (p301a==8 | p301a==10 | p301a==11)
-replace eduuc_ci=. if aedu_ci==.
-label variable eduuc_ci "Universitaria completa o mas"
-
+**************
+***eduac_ci***
+**************
+gen eduac_ci = .
+replace eduac_ci = 1 if inlist(p301a, 9, 10, 11)
+replace eduac_ci = 0 if inlist(p301a, 7, 8)
+label variable eduac_ci "Superior universitario vs superior no universitario"
 
 ***************
 ***edupre_ci***
@@ -1626,14 +1631,6 @@ label variable edupre_ci "Educacion preescolar"
 g asispre_ci= p308a==1  // matriculado en nivel inicial (sin edad)
 replace asispre_ci=0 if p307==2 & p313!=6 // matriculado pero no asiste (y no por vacaciones)
 la var asispre_ci "Asiste a educacion prescolar"
-	
-**************
-***eduac_ci***
-**************
-gen byte eduac_ci=.
-replace eduac_ci=1 if (p301a==9 | p301a==10 | p301a==11)
-replace eduac_ci=0 if (p301a==7 | p301a==8)
-label variable eduac_ci "Superior universitario vs superior no universitario"
 
 ***************
 ***asiste_ci***
@@ -1933,8 +1930,8 @@ p103:el material predominante en los pisos
 	***pared_ch***
 	**************
 	
-gen pared_ch=0 if p102==3 | p102==4
-replace pared_ch=1 if p102==1 | p102==2 | p102==5 | p102==6 | p102==7
+gen pared_ch=0 if p102==4
+replace pared_ch=1 if p102==1 | p102==2 | p102==5 | p102==6 | p102==7 | p102==3 
 replace pared_ch=2 if p102>=8
 
 /*

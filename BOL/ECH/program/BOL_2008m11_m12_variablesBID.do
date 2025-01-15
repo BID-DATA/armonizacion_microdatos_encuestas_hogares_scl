@@ -1618,22 +1618,27 @@ label variable edus2c_ci "2do ciclo de la secundaria completo"
 ***eduui_ci***
 **************
 
-gen byte eduui_ci = (aedu_ci >= 13 & aedu_ci < 17 ) & (s4_03a == 27 | s4_03a == 28) // universitaria
-replace  eduui_ci = 1 if (aedu_ci >= 13 & aedu_ci < 17 ) & s4_03a == 26   // normal
-replace  eduui_ci = 1 if (aedu_ci >= 13 & aedu_ci < 15 ) & (s4_03a >= 32 & s4_03a <= 34)   // tecnicaturas y formacion militar y policial
-replace eduui_ci = . if aedu_ci == .
-label variable eduui_ci "Universitaria incompleta"
+gen byte eduui_ci = (inlist(s4_06a, 26, 27, 28, 32, 34) | (s4_05 == 2 & (inlist(s4_03a, 26, 27, 28, 32, 34)) & s4_14 != 6))
+replace eduui_ci = . if aedu_ci == . 
+label variable eduui_ci "Superior Incompleto"
 
-***************
+**************
 ***eduuc_ci***
-***************
-gen byte eduuc_ci = (aedu_ci >= 17 ) & (s4_03a == 27 | s4_03a == 28) // universitaria
-replace eduuc_ci = 1 if aedu_ci >= 17  & s4_03a == 26 // normal
-replace eduuc_ci = 1 if (aedu_ci >= 13 & aedu_ci >= 15 ) & s4_03a >= 32 & s4_03a <= 34 // tecnicaturas
-replace eduuc_ci = 1 if  s4_03a >= 29 & s4_03a <= 31 // postgrados
+**************
 
-replace eduuc_ci=. if aedu_ci==.
-label variable eduuc_ci "Universitaria completa"
+gen byte eduuc_ci =  ((s4_05 == 2 & ((inlist(s4_03a, 26, 27, 28, 32, 34)) & s4_14 == 6 | inlist(s4_03a, 29, 30, 31)))| inlist(s4_06a, 29, 30, 31))
+replace eduuc_ci = . if aedu_ci == . 
+label variable eduuc_ci "Superior Completo"
+
+**************
+***eduac_ci***
+**************
+
+gen eduac_ci = . 
+replace eduac_ci = 1 if (inlist(s4_03a, 26, 27, 28, 29, 30, 31, 34) | inlist(s4_06a, 26, 27, 28, 29, 30, 31, 34))
+replace eduac_ci = 0 if (inlist(s4_03a, 32) | inlist(s4_06a, 32))
+replace eduac_ci = . if (inlist(s4_06a, 33, 35) & s4_06a >= 24)
+label variable eduac_ci "Superior universitario vs superior no universitario"
 
 ***************
 ***edupre_ci***
@@ -1652,14 +1657,6 @@ label variable edupre_ci "Educacion preescolar"
 	recode asispre_ci (.=0)
 	la var asispre_ci "Asiste a educacion prescolar"
 	
-**************
-***eduac_ci***
-**************
-gen byte eduac_ci = .
-replace eduac_ci = 1 if (s4_03a >= 27 & s4_03a <= 31) // grados
-replace eduac_ci = 0 if (s4_03a >= 32 & s4_03a <= 34) //tecnicaturas
-replace eduac_ci = 0 if (s4_03a == 26 ) // normal
-label variable eduac_ci "Superior universitario vs superior no universitario"
 
 ***************
 ***asiste_ci***

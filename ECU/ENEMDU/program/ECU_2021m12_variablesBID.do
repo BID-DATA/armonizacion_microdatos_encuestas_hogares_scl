@@ -1005,16 +1005,25 @@ label var tcylmpri_ci "Identificador de top-code del ingreso de la actividad pri
 	**************
 	***eduui_ci***
 	**************
-	gen eduui_ci=(p12a==2 & nivinst==9) | (p12a==2 & nivinst==8)
-	replace eduui_ci=. if aedu_ci==. 
+	gen byte eduui_ci = (inlist(p10a, 8, 9) & p12a == 2)
+	replace eduui_ci = . if aedu_ci == .
 	label variable eduui_ci "Superior incompleto"
-
+	
 	***************
 	***eduuc_ci***
 	***************
-	gen byte eduuc_ci= (p12a==1 & nivinst==9) | (p12a==1 & nivinst==8) | (nivinst==10)	
-	replace eduuc_ci=. if aedu_ci==. 
+	gen byte eduuc_ci = ((inlist(p10a, 8, 9) & p12a == 1) | p10a == 10)
+	replace eduuc_ci = . if aedu_ci == .
 	label variable eduuc_ci "Superior completo"
+    
+	**************
+	***eduac_ci***
+	**************
+	gen eduac_ci = . 
+	replace eduac_ci = 1 if inlist(p10a, 9, 10)
+	replace eduac_ci = 0 if nivinst == 8
+	label variable eduac_ci "Superior universitario vs superior no universitario"
+
 
 	***************
 	***edus1i_ci***
@@ -1057,15 +1066,6 @@ label var tcylmpri_ci "Identificador de top-code del ingreso de la actividad pri
 	g asispre_ci=.
 	la var asispre_ci "Asiste a educacion prescolar"
 	
-	**************
-	***eduac_ci***
-	**************
-	gen eduac_ci=.	
-	replace eduac_ci=1 if p10a==9 | p10a==10 
-	replace eduac_ci=0 if p10a==8
-	label variable eduac_ci "Superior universitario vs superior no universitario"
-
-
 	***************
 	***asiste_ci***
 	***************
@@ -1073,6 +1073,23 @@ label var tcylmpri_ci "Identificador de top-code del ingreso de la actividad pri
 	gen asiste_ci=(p07==1)
 	replace asiste_ci=. if p07==.
 	label variable asiste_ci "Asiste actualmente a la escuela"
+	
+	****************
+	***asisedsup_ci***
+	****************
+	*Creación de la variable asistencia a educacion superior por Olga Dulce- 21/08/23
+	gen asisedsup_ci=(p12a==2 & nivinst==8) | (p12a==2 & nivinst==9)
+	replace asisedsup_ci=. if aedu_ci==.
+	label variable eduui_ci "Asiste a educación Terciaria/universitaria"
+
+	****************
+	***aprobedsup_ci***
+	****************
+	*Creación de la variable de aprobación de nivel educación superior por Olga Dulce- 21/08/23
+	gen aprobedsup_ci=(p12a==1 & nivinst==8) | (p12a==1 & nivinst==9)
+	replace asisedsup_ci=. if aedu_ci==.
+	label variable eduui_ci "Aprobación nivel educación Terciaria/universitaria"
+
 
 	**************
 	***pqnoasis_ci***
@@ -1515,36 +1532,6 @@ gen aguatrat_ch =9
 	replace miglac_ci = . if migrante_ci==0
 	label var miglac_ci "=1 si es migrante proveniente de un pais LAC"
 
-******************************
-* Variables SPH - PMTC y PNC *
-******************************
-
-* PTMC: p75 Bono de desarrollo humano (incluye vejez)
-* PNC: p76 Monto que recibió por el bono de desarrollo humano
-
-* Ingreso del hogar
-egen ingreso_total = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci), missing
-bys idh_ch: egen y_hog = sum(ingreso_total)
-
-* Ingreso por transferencias
-bys idh_ch: egen ing_ptmc = sum(p76)
-replace ing_ptmc=. if y_hog==.
-
-* Ingreso per capita neto (sin lo recibido por las transferencias)
-gen y_pc_net = (y_hog - ing_ptmc) / nmiembros_ch
-
-* Beneficiarios
-gen percibe_ptmc_ci = (p75==1) // si recibe el bono de desarrollo humano 
-bys idh_ch: egen ptmc_ch=max(percibe_ptmc_ci) 
-replace ptmc_ch = (percibe==1 | (ing_ptmc>0 & ing_ptmc!=.)) 
-
-* Adultos mayores 
-gen mayor64_ci=(edad>64 & edad!=.)
-	
-
-lab def ptmc_ch 1 "Beneficiario PTMC" 0 "No beneficiario PTMC"
-lab val ptmc_ch ptmc_ch
-
 /*_____________________________________________________________________________________________________*/
 * Asignación de etiquetas e inserción de variables externas: tipo de cambio, Indice de Precios al 
 * Consumidor (2011=100), Paridad de Poder Adquisitivo (PPA 2011),  líneas de pobreza
@@ -1552,33 +1539,94 @@ lab val ptmc_ch ptmc_ch
 
 do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&ExternalVars_Harmonized_DataBank.do"
 
-*_____________________________________________________________________________________________________*
 
-*  Pobres extremos, pobres moderados, vulnerables y no pobres 
-* con base en ingreso neto (Sin transferencias)
-* y líneas de pobreza internacionales
-gen     grupo_int = 1 if (y_pc_net<lp31_ci)
-replace grupo_int = 2 if (y_pc_net>=lp31_ci & y_pc_net<(lp31_ci*1.6))
-replace grupo_int = 3 if (y_pc_net>=(lp31_ci*1.6) & y_pc_net<(lp31_ci*4))
-replace grupo_int = 4 if (y_pc_net>=(lp31_ci*4) & y_pc_net<.)
+**************************************
+*** VARIABLES DE PROTECCION SOCIAL ***
+**************************************
 
-tab grupo_int, gen(gpo_ingneto)
+* MIEMBROS DEL HOGAR
+	gen x = 1
+	bys idh_ch: egen nmiembros_sph_ch= sum(x)
 
-* Crear interacción entre recibirla la PTMC y el gpo de ingreso
-gen ptmc_ingneto1 = 0
-replace ptmc_ingneto1 = 1 if ptmc_ch == 1 & gpo_ingneto1 == 1
+* BENEFICIARIOS Y MONTOS
 
-gen ptmc_ingneto2 = 0
-replace ptmc_ingneto2 = 1 if ptmc_ch == 1 & gpo_ingneto2 == 1
+	*****************
+	**** ptmc_ch ****
+	*****************
+	gen 	ing_ptmc_ci = p76
+	bys idh_ch: egen ing_ptmc_ch = sum(ing_ptmc_ci)
+	
+	gen 	ptmc_ci = p75 == 1
+	replace ptmc_ci = 1 if ing_ptmc_ci != . & ing_ptmc_ci > 0
+	bys idh_ch: egen ptmc_ch = max(ptmc_ci)
+	
+	*****************
+	**** pnc_ch *****
+	*****************
+	gen pnc_elegible_ci = 0
+	replace pnc_elegible_ci = 1 if edad_ci > 65
+	
+	gen 	ing_pnc_ci = .
+	bys idh_ch: egen ing_pnc_ch = sum(ing_pnc_ci)
+	
+	gen 	pnc_ci = .
+	replace pnc_ci = 1 if ing_pnc_ci != . & ing_pnc_ci > 0
+	bys idh_ch: egen pnc_ch = max(pnc_ci)
+	
+	*****************
+	*** otrot_ch ****
+	*****************
+	gen 	ing_otrot_ci = p78
+	bys idh_ch: egen ing_otrot_ch = sum(ing_otrot_ci)
+	
+	gen 	potrot_ci = p77 == 1
+	replace potrot_ci = 1 if potrot_ci == 0 & ing_otrot_ci != .
+	bys idh_ch: egen potrot_ch = max(potrot_ci)
+	
+	*****************
+	*** pcasht_ch ***
+	*****************
+	egen    ing_pcasht_ch = rowtotal(ing_ptmc_ch ing_pnc_ch ing_otrot_ch)
+	egen 	pcasht_ch = rowtotal(ptmc_ch pnc_ch potrot_ch)
+	replace pcasht_ch = 1 if pcasht_ch > 0
+	
 
-gen ptmc_ingneto3 = 0
-replace ptmc_ingneto3 = 1 if ptmc_ch == 1 & gpo_ingneto3 == 1
+* COBERTURA Y DISTRIBUCION
+	
+	* Ingreso neto del hogar
+	egen 	y_hog_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci), missing
+	replace y_hog_ci = 0 if y_hog_ci < 0
+	gen 	y_pc_ci = y_hog_ci / nmiembros_sph_ch 
+	
+	bys idh_ch: egen y_hog_ch = sum(y_hog_ci), missing
+	gen 	y_pc_net_ch = (y_hog_ch - ing_pcasht_ch) / nmiembros_sph_ch
+	replace y_pc_net_ch = 0 if y_pc_net_ch < 0
+	
+	* Grupos
+	gen     grupo_int = 1 if (y_pc_net_ch <  lp31_ci         & y_pc_net_ch != .)
+	replace grupo_int = 2 if (y_pc_net_ch >= lp31_ci  	     & y_pc_net_ch < (lp31_ci * 1.6) & y_pc_net_ch != .)
+	replace grupo_int = 3 if (y_pc_net_ch >= (lp31_ci * 1.6) & y_pc_net_ch < (lp31_ci * 4)   & y_pc_net_ch != .)
+	replace grupo_int = 4 if (y_pc_net_ch >= (lp31_ci * 4)   & y_pc_net_ch < .               & y_pc_net_ch != .)
 
-gen ptmc_ingneto4 = 0
-replace ptmc_ingneto4 = 1 if ptmc_ch == 1 & gpo_ingneto4 == 1
-
-lab def grupo_int 1 "Pobre extremo" 2 "Pobre moderado" 3 "Vulnerable" 4 "No pobre"
-lab val grupo_int grupo_int
+	****************************
+	***** pcasht_coverage_ *****
+	****************************
+	forval i = 1/4 {
+		gen 	pcasht_coverage`i' = . 
+		replace pcasht_coverage`i' = 0 if grupo_int == `i'
+		replace pcasht_coverage`i' = 1 if grupo_int == `i' & pcasht_ch == 1
+	}
+		
+	********************
+	*** pcasht_dist_ ***
+	********************
+	forval i = 1/4 {
+		gen 	pcasht_dist`i' = . 
+		replace pcasht_dist`i' = 0 if pcasht_ch == 1
+		replace pcasht_dist`i' = 1 if grupo_int == `i' & pcasht_ch == 1
+	}
+	
+	
 
 /*_____________________________________________________________________________________________________*/
 * Verificación de que se encuentren todas las variables armonizadas 

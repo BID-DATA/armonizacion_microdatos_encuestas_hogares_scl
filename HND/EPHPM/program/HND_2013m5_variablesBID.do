@@ -1262,19 +1262,25 @@ la var edus2c_ci "2do ciclo de Educacion Secundaria Completo"
 **************
 ***eduui_ci*** 
 **************
-g byte eduui_ci = (aedu_ci >= 12 & aedu_ci <= 15) & ed07 == 2 // no finalizó estudios
-replace eduui_ci = 1 if (aedu_ci >= 12 & aedu_ci <= 15) & ed07 == .
+g byte eduui_ci = ((inlist(ed05, 7, 8, 9) & ed07 == 2) | inlist(ed10, 7, 8, 9))
 replace eduui_ci = . if aedu_ci == .
-la var eduui_ci "Universitaria o Terciaria Incompleta"
+la var eduui_ci "Superior Incompleto"
 
 **************
 ***eduuc_ci*** 
 **************
-g byte eduuc_ci = (aedu_ci >= 12 & aedu_ci <= 15) & ed07 == 1
-replace eduuc_ci = 1 if aedu_ci > 15
+g byte eduuc_ci = ((inlist(ed05, 7, 8, 9) & ed07 == 1) | ed05 == 10 | ed10 == 10)
 replace eduuc_ci = . if aedu_ci == .
-la var eduuc_ci "Universitaria o Terciaria Completa"
+la var eduuc_ci "Superior Completo"
 
+**************
+***eduac_ci***
+**************
+gen byte eduac_ci=.
+replace eduac_ci= 1 if inlist(ed05, 9, 10) | inlist(ed10, 9, 10) 
+replace eduac_ci= 0 if inlist(ed05, 7, 8) | inlist(ed10, 7, 8) 
+label variable eduac_ci "Superior universitario vs superior no universitario"
+	
 ***************
 ***edupre_ci***
 ***************
@@ -1315,15 +1321,6 @@ gen edupub_ci=.
 replace edupub_ci = 1 if (ed16 == 1 | ed16 == 2 | ed16 == 3 | ed16 == 4 | ed16 == 8 | ed16 == 11)
 replace edupub_ci = 0 if (ed16 == 5 | ed16 == 6 | ed16 == 7 | ed16 == 9 | ed16 == 10 | ed16 == 12)
 label var edupub_ci "1 = personas que asisten a centros de enseñanza publicos"
-
-
-**************
-***eduac_ci***
-**************
-gen byte eduac_ci=.
-replace eduac_ci= 1 if (ed05 == 9 | ed05 == 10 | ed10 == 9| ed10 == 10) // univ o post-grado
-replace eduac_ci= 0 if (ed05 == 7 | ed05 == 8 ) | (ed10 == 7| ed10 == 8) // tecnico sup o sup no unviersitario
-label variable eduac_ci "Superior universitario vs superior no universitario"
 
 ******************
 ***pqnoasis1_ci***

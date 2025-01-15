@@ -419,9 +419,10 @@ label var afiliado_ci "Afiliado a la Seguridad Social"
 ****************
 *cotizando_ci***
 ****************
+*Las preguntas relacionadas con pensiones cambian en esta encuesta y están relacionadas a la pregunta de si recibe seguro social obligatorio, aporta a la seguridad social o cotiza en un régimen de prestaciones
 
 gen cotizando_ci=0     if condocup_ci==1 | condocup_ci==2 
-replace cotizando_ci=1 if s9q36==1 & cotizando_ci==0
+replace cotizando_ci=1 if (s9q36==1 | s9q20__1==1 | s9q20__2==1) & cotizando_ci==0
  
 label var cotizando_ci "Cotizante a la Seguridad Social"
 
@@ -881,6 +882,9 @@ replace aedu_ci=0         if s7q11==1 | s7q11==2 // Ninguno | Preescolar
 replace aedu_ci=s7q11a    if s7q11==3 /*regimen anterior: basica (1-9 años)*/ | s7q11==5 /*regimen actual: primaria (1-6 años)*/
 replace aedu_ci=s7q11a+9 if s7q11==4 // regimen anterior: media diversificado y profesional (1-3 años)
 replace aedu_ci=s7q11a+6 if s7q11==6 // regimen actual: media (1-6 años)
+replace aedu_ci=s7q11b+9 if (s7q11==4 & s7q11a==. & aedu_ci==.) // regimen anterior: media diversificado y profesional (1-3 años) que computan anios en s7q11b
+replace aedu_ci=s7q11b+6 if (s7q11==6 & s7q11a==. & aedu_ci==.) // regimen actual: media (1-6 años) que computan anios en s7q11b
+
 
 /*
 Explanation:
@@ -899,9 +903,6 @@ replace aedu_ci=16+s7q11b      if s7q11ba==1 & s7q11==9 // Posgrado
 replace aedu_ci=16+s7q11c*0.5  if s7q11ba==2 & s7q11==9 // Posgrado
 replace aedu_ci=16+s7q11d*0.25 if s7q11ba==3 & s7q11==9 // Posgrado
 
-**para los que s7q11<=6 pero tienen missing en s7q11a y valor en s7q11b
-replace aedu_ci=s7q11b+9 if s7q11==4 & s7q11b!=. & s7q11a==. & aedu_ci==. // regimen anterior: media diversificado y profesional (1-3 años)
-replace aedu_ci=s7q11b+6 if s7q11==6 & s7q11b!=. & s7q11a==. & aedu_ci==. // regimen actual: media (1-6 años)
 
 **para los que tienen missing en el regimen de estudio (s7q11ba) pero tienen valor en s7q11b/s7q11c/s7q11d
 replace aedu_ci=11+s7q11b      if (s7q11==7 | s7q11==8) & s7q11b!=. & s7q11ba==. & aedu_ci==. // Técnico (TSU) | Universitario
@@ -912,12 +913,6 @@ replace aedu_ci=16+s7q11b      if s7q11==9 & s7q11b!=. & s7q11ba==. & aedu_ci==.
 replace aedu_ci=16+s7q11c*0.5  if s7q11==9 & s7q11c!=. & s7q11ba==. & aedu_ci==. // Posgrado
 replace aedu_ci=16+s7q11d*0.25 if s7q11==9 & s7q11d!=. & s7q11ba==. & aedu_ci==. // Posgrado
 
-**para los que tienen missing en s7q11b/s7q11c/s7q11d pero no en s7q11ba
-replace aedu_ci=11 if (s7q11==7 | s7q11==8) & s7q11ba!=. & s7q11b==. & s7q11c==. & s7q11d==. & aedu_ci==. // Técnico (TSU) | Universitario
-
-**para los que solo tienen valor en s7q11
-replace aedu_ci=6  if s7q11==4 & s7q11ba==. & s7q11b==. & s7q11c==. & s7q11d==. & aedu_ci==. // regimen anterior: media diversificado y profesional (1-3 años)
-replace aedu_ci=11 if (s7q11==7 | s7q11==8) & s7q11ba==. & s7q11b==. & s7q11c==. & s7q11d==. & aedu_ci==. // Técnico (TSU) | Universitario
 				
 label variable aedu_ci "Años de Educacion"
 
@@ -967,16 +962,25 @@ label var edusc_ci "1 = personas que han completado el nivel secundario"
 **************
 ***eduui_ci***
 **************
-gen eduui_ci=(aedu_ci>11 & aedu_ci<14)
+gen eduui_ci = (inlist(s7q4, 7, 8) | (inlist(s7q11, 7, 8) & s7q13 != 1))
+replace eduui_ci = 0 if (inlist(s7q11, 7, 8) & s7q4 == 9)
 replace eduui_ci=. if aedu_ci==.
 label var eduui_ci "1 = personas que no han completado el nivel universitario o superior"
 
 ***************
 ***eduuc_ci***
 ***************
-gen byte eduuc_ci=(aedu_ci>=14)
+gen byte eduuc_ci = ((inlist(s7q11, 7, 8) &  s7q13 == 1) | s7q4 == 9 | s7q11 == 9)
 replace eduuc_ci=. if aedu_ci==.
 label var eduuc_ci "1 = personas que han completado el nivel universitario o superior"
+
+**************
+***eduac_ci***
+**************
+gen eduac_ci=.
+replace eduac_ci = 1 if inlist(s7q11, 8, 9) | inlist(s7q4, 8, 9)
+replace eduac_ci = 0 if s7q11 == 7 | s7q4 == 7
+label var eduac_ci "Educacion terciaria académica versus educación terciaria no-académica "
 
 ***************
 ***edus1i_ci***
@@ -1005,14 +1009,6 @@ label variable edus2i_ci "2do ciclo de la secundaria incompleto"
 gen edus2c_ci=(aedu_ci==11)
 replace edus2c_ci=. if aedu_ci==.
 label variable edus2c_ci "2do ciclo de la secundaria completo"
-
-**************
-***eduac_ci***
-**************
-gen eduac_ci=.
-replace eduac_ci=1 if (s7q11==8)
-replace eduac_ci=0 if (s7q11==7)
-label var eduac_ci "Educacion terciaria académica versus educación terciaria no-académica "
 
 ***************
 ***asispre_ci**

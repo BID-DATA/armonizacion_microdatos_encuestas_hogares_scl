@@ -1737,8 +1737,8 @@ gen piso_ch=0 if r304==4
 replace piso_ch=1 if r304>=1 & r304<=3
 replace piso_ch=2 if r304==5
 
-gen pared_ch=0 if r303==2 | r303==3 | r303==6 | r303==7
-replace pared_ch=1 if r303==1 | r303==4 | r303==5
+gen pared_ch=0 if r303==2 | r303==6 | r303==7
+replace pared_ch=1 if r303==1 | r303==4 | r303==5  | r303==3
 replace pared_ch=2 if r303==8
 
 gen techo_ch=0 if r302==5 | r302==6

@@ -78,7 +78,7 @@ label value region_BID_c region_BID_c
 	*************
 	****idh_ch***
 	*************
-	gen idh_ch = hhid
+	clonevar idh_ch = hhid
 	label variable idh_ch "ID del hogar"
 	
 	*************
@@ -86,6 +86,8 @@ label value region_BID_c region_BID_c
 	*************
 	gen idp_ci=memberid
 	label variable idp_ci "ID de la persona en el hogar"
+	
+	duplicates re idh_ch idp_ci
 	
 	*************
 	****zona_c***
@@ -300,8 +302,8 @@ label value region_BID_c region_BID_c
 	***************
 gen afroind_ci=. 
 replace afroind_ci = 1 if (q01_07 == 4)
-replace afroind_ci = 2 if (q01_07 == 1 | q01_07 == 3 | q01_07 == 8)
-replace afroind_ci = 3 if (q01_07 == 2 | q01_07 == 5 | q01_07 == 6 | q01_07 == 7 | q01_07 == 9)
+replace afroind_ci = 2 if (q01_07 == 1 | q01_07 == 3 )
+replace afroind_ci = 3 if (q01_07 == 2 | q01_07 == 5 | q01_07 == 6 | q01_07 == 7 | q01_07 == 9 | q01_07 == 8)
 
 	***************
    *** afroind_ch ***

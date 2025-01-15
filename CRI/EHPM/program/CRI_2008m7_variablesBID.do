@@ -1084,35 +1084,24 @@ label variable edus2c_ci "2do ciclo de la secundaria completo"
 **************
 ***eduui_ci***
 **************
-
-/*
-Se toman:
-- hasta dos anios de educación parauniversitaria
-- hasta tres anios de universidad 
-- cuatro anios pero sin título superior
-*/
-
-gen byte eduui_ci = (b08 >= 41 & b08 <= 42) | (b08 >= 51 & b08 <= 53) /// 
-					| (b08 == 54 & b101 < 4)
+gen byte eduui_ci = (b08  >= 41 & b08 <= 59) & (b101 == 0)
 replace eduui_ci = . if aedu_ci == .
-label variable eduui_ci "Superior incompleto"
+label variable eduui_ci "Universitaria incompleta"
 
 ***************
 ***eduuc_ci***
 ***************
-
-/*
-Se toman:
-- tres o 4 anios de parauniversitaria (hay una sola obs con 4)
-- cuatro anios de universitaria y titulo de licenciatura o superior
-- cuatro anios pero sin título superior
-- cinco anios o mas de universitaria,
-*/
-
-gen byte eduuc_ci = (b08 == 43 | (b08 == 54 & b101 > 3)) ///
-					| (b08 >= 55 & b08 < 59)
+gen byte eduuc_ci = ((b08 >= 41 & b08 <= 59) & inlist(b101, 1, 2, 3, 4, 6)) 
 replace eduuc_ci = . if aedu_ci == .
-label variable eduuc_ci "Superior completo"
+label variable eduuc_ci "Universitaria completa"
+
+**************
+***eduac_ci***
+**************
+gen byte eduac_ci = .
+replace eduac_ci = 0 if (b08 >= 41 & b08 <= 43) // Parauniversitario
+replace eduac_ci = 1 if (b08 >= 51 & b08 <= 59) // Universitario
+label variable eduac_ci "Superior universitario vs superior no universitario"
 
 ***************
 ***edupre_ci***
@@ -1128,13 +1117,6 @@ label variable edupre_ci "Educacion preescolar"
 g asispre_ci = (b09 == 1 | b09 == 8)
 la var asispre_ci "Asiste a educacion prescolar"
 
-**************
-***eduac_ci***
-**************
-gen byte eduac_ci = .
-replace eduac_ci = 0 if (b08 >= 41 & b08 <= 43) // Parauniversitario
-replace eduac_ci = 1 if (b08 >= 51 & b08 <= 59) // Universitario
-label variable eduac_ci "Superior universitario vs superior no universitario"
 
 ***************
 ***asiste_ci***

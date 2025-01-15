@@ -173,9 +173,9 @@ label var edad_ci "edad del individuo"
 	***afroind_ci***
 	*************** 
 gen afroind_ci = .
-replace afroind_ci = 1 if inlist(HL6, 3, 4)/* Indigena */
+replace afroind_ci = 1 if inlist(HL6, 3)/* Indigena */
 replace afroind_ci = 2 if inlist(HL6, 1, 2)/* Afro */
-replace afroind_ci = 3 if inlist(HL6, 5, 6, 7)/* Otros */ 
+replace afroind_ci = 3 if inlist(HL6, 4, 5, 6, 7)/* Otros */ 
 
 	***************
 	***afroind_ch***
@@ -931,9 +931,10 @@ gen aedu_ci = .
 
 replace aedu_ci = ED5New 	if ED5New<=12
 replace aedu_ci = 14		if ED5New==13
-replace aedu_ci = 17		if ED5New==14 //3 years of bachelor (Tha programs last between 2/4 years)
-replace aedu_ci = 19		if ED5New==15 //2 years of Masters 
+replace aedu_ci = 16		if ED5New==14 //4 years of bachelor (Tha programs last between 2/4 years)
+replace aedu_ci = 18		if ED5New==15 //2 years of Masters 
 replace aedu_ci = 0 		if ED5New==17 | ED5New==18
+
 
 label var aedu_ci "número de años de educación culminados"
 

@@ -710,11 +710,12 @@ f73	1	Asalariado/a privado/a
 
 */
 
-gen categopri_ci = 1 	if (f73 == 4)
-replace categopri_ci = 2 	if (f73 == 3 | f73 == 9)
-replace categopri_ci = 3 	if (f73 == 1 | f73 == 2 | f73 == 8)
-replace categopri_ci = 4 	if (f73 == 7) 
-replace categopri_ci =. 	if (emp_ci != 1 | f73 == 0)
+gen categopri_ci = .
+replace categopri_ci = 1 if f73 == 4
+replace categopri_ci = 2 if (f73 == 3 | f73 == 9)
+replace categopri_ci = 3 if (f73 == 1 | f73 == 2 | f73 == 8)
+replace categopri_ci = 4 if f73 == 7
+replace categopri_ci = . if (emp_ci != 1 | f73 == 0)
 
 /*
 *Modificación MLO
@@ -740,16 +741,17 @@ f92	1	Asalariado/a privado/a
 
 */
 
-gen categosec_ci = 1 if (f92 == 4)
-replace categosec_ci = 2 if (f92 == 9 | f92 == 3)
-replace categosec_ci = 3 if (f92 == 1 | f92 == 2 | f92 == 8)
-replace categosec_ci = 4 if (f92 == 7) 
-replace categopri_ci =. if (f92 == 0)
+gen categosec_ci = .
+replace categosec_ci = 1 if f92 == 4
+replace categosec_ci = 2 if f92 == 9 | f92 == 3
+replace categosec_ci = 3 if f92 == 1 | f92 == 2 | f92 == 8
+replace categosec_ci = 4 if f92 == 7
+replace categosec_ci = . if f92 == 0
 
 label define categosec_ci 1"Patron" 2"Cuenta propia" 
 label define categosec_ci 3"Empleado" 4" No remunerado", add
 label value categosec_ci categosec_ci
-label variable categosec_ci "Categoria ocupacional trabajo principal"
+label variable categosec_ci "Categoria ocupacional trabajo secundario"
 
 
 *70. Número de empleos
@@ -1437,29 +1439,31 @@ label variable edupre_ci "Tiene educacion preescolar"
 g asispre_ci =.
 la var asispre_ci "Asiste a educacion prescolar"
 
-**************
-***eduui_ci***
-**************
-
-gen byte eduui_ci = (aedu_ci > 12 & e51_8 < 4) & (aedu_ci > 12 & e51_10 < 3) & (aedu_ci > 12 & e51_9 < 4) // magisterio, profesorado, tecnica, universitaria
-replace eduui_ci =. if aedu_ci ==.
-label variable eduui_ci "Superior incompleta"
-
 ***************
 ***eduuc_ci***
 ***************
+ 
+gen eduuc_ci = 0
+replace eduuc_ci=1 if e215_1==1 | e218_1==1 | e221_1==1
+ 
+ 
+**************
+***eduui_ci***
+**************
+gen eduui_ci = 0
+replace eduui_ci=1 if e215_1==2 & (e218_1!=1 & e221_1!=1) 
+replace eduui_ci=1 if e218_1==2 & (e215_1!=1 & e221_1!=1)
+replace eduui_ci=1 if e221_1==2 & (e215_1!=1 & e218_1!=1)
 
-gen byte eduuc_ci = (aedu_ci > 12 & e51_8 >= 4 & e51_8 != 9) | (aedu_ci > 12 & e51_10 >= 3 & e51_10 != 9) | (aedu_ci > 12 & e51_9 >= 4 & e51_9 != 9) // magisterio, tecnica, universitaria
-replace eduuc_ci =. if aedu_ci ==.
-label variable eduuc_ci "Superior completa o mas"
-
+ 
 ***************
 ***eduac_ci****
 ***************
 gen eduac_ci=.
-replace eduac_ci = 0 if (aedu_ci > 12 & e51_8 > 0 & e51_8 != 9) 
-replace eduac_ci = 0 if (aedu_ci > 12 & e51_10 > 0 & e51_10 != 9)
-replace eduac_ci = 1 if (aedu_ci > 12 & e51_9 > 0 & e51_9 != 9)
+replace eduac_ci=0 if e215_1==1 | e221_1==1 & (e218_1!=1)   
+replace eduac_ci=0 if (e215_1==2 | e221_1==2) & (e218_1==0)  
+replace eduac_ci=1 if e218_1==1 
+replace eduac_ci=1 if e218_1==2 & (e215_1!=1 & e221_1!=1) 
 
 *88. Personas que actualmente asisten a centros de ensenanza
 gen byte asiste_ci = (e49 == 3)
@@ -1484,9 +1488,9 @@ gen repiteult_ci=.
 
 *92. Personas que asisten a centros de ensenanza públicos
 
-gen edupub_ci = 1 if (e581 == 1 | e581a == 1) & (asiste_ci == 1)
-replace edupub_ci = 0 if (e581 == 2 | e581 == 3 | e581a == 2) & (asiste_ci == 1)
-replace edupub_ci =. if (asiste_ci != 1)
+gen edupub_ci = .
+replace edupub_ci = 1 if e581 == 1
+replace edupub_ci = 0 if (e581 == 2 | e581 == 3) 
 
 		**********************************
 		**** VARIABLES DE LA VIVIENDA ****

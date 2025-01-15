@@ -885,7 +885,7 @@ replace edupc_ci=. if aedu_ci==.
 **********
 gen edusi_ci=(aedu>=7 & aedu<=11)
 replace edusi_ci=. if aedu_ci==.
-	
+
 **********
 *edusc_ci*
 **********
@@ -895,16 +895,24 @@ replace edusc_ci=. if aedu_ci==.
 **********
 *eduui_ci*
 **********
-gen eduui_ci=(aedu_ci>12 & nivel_ed==5) // nivel superior incompleto
-replace eduui_ci=1 if aedu_ci>12 & aedu_ci<=16 & nivel_ed!=5 & nivel_ed!=6
-replace eduui_ci=. if aedu_ci==.
-	
+gen byte eduui_ci = (ch12 == 6 | ch12 == 7) & ch13 == 2
+replace eduui_ci = . if aedu_ci == . 
+label variable eduui_ci "Superior incompleto"
+
 **********
 *eduuc_ci*
 **********
-gen eduuc_ci=(aedu_ci>12 & nivel_ed==6)
-replace eduuc_ci=1 if aedu_ci>=17 & nivel_ed!=5 & nivel_ed!=6
-replace eduuc_ci=. if aedu_ci==.
+gen byte eduuc_ci = ((ch12 == 6 | ch12 == 7) & ch13 == 1)| ch12 == 8
+replace eduuc_ci = . if aedu_ci == .
+label variable eduui_ci "Superior completo"
+
+**********
+*eduac_ci*
+**********
+gen eduac_ci = 1 if ch12 == 7 | ch12 == 8
+replace eduac_ci = 0 if ch12 == 6
+replace eduac_ci = . if aedu_ci == .
+label variable eduac_ci "Superior universitario vs superior no universitario"
 	
 ***********
 *edus1i_ci*
@@ -945,14 +953,6 @@ gen byte edupre_ci=.
 *Nueva variable incoporada 01/11/2017 por Ivân Bornacelly
 g asispre_ci=(ch10==1 & ch12==1)
 la var asispre_ci "Asiste a educacion prescolar"
-
-**********
-*eduac_ci*
-**********
-gen byte eduac_ci=.
-replace eduac_ci=1 if ch12==7 | ch12==8
-replace eduac_ci=0 if ch12==6
-label variable eduac_ci "Superior universitario vs superior no universitario"	
 
 ***********
 *asiste_ci*
@@ -1424,8 +1424,8 @@ label value categoinac_ci categoinac_ci
 ***********
 *formal_ci*
 ***********
-gen byte formal_ci=1 if cotizando_ci==1 & (condocup_ci==1 | condocup_ci==2)
-recode formal_ci .=0 if (condocup_ci==1 | condocup_ci==2)
+gen byte formal_ci=1 if cotizando_ci==1 & condocup_ci==1
+recode formal_ci .=0 if cotizando_ci==0 & (condocup_ci==1 | condocup_ci==2)
 label var formal_ci "1=afiliado o cotizante / PEA"
 
 ***********
@@ -1455,7 +1455,7 @@ gen instcot_ci=.
 *************
 *migrante_ci*
 *************
-gen migrante_ci=(inlist(ch15,4,5)) if ch15!=. & ch15!=9		/* Categoria Ns./Nr. no se incluye en la variable*/
+gen migrante_ci=(inlist(ch15,4,5)) if ch15!=. & ch15!=9 		/* Categoria Ns./Nr. no se incluye en la variable*/
 label var migrante_ci "=1 si es migrante"
 	
 ****************
@@ -1483,8 +1483,8 @@ label var migrantelac_ci "=1 si es migrante proveniente de un pais LAC"
 *migrantiguo5_ci*
 *****************
 gen migrantiguo5_ci = 1 if inlist(ch16,1,2,3) & migrante_ci==1
-replace migrantiguo5_ci = 0 if inlist(ch16,4,5) & migrante_ci==1
-replace migrantiguo5_ci = . if inlist(ch16,6,9) | migrante_ci==0
+replace migrantiguo5_ci = 0 if inlist(ch16,6,4,5,0) & migrante_ci==1
+replace migrantiguo5_ci = . if inlist(ch16, 9) | migrante_ci==0
 label var migrantiguo5_ci "=1 si es migrante antiguo (5 anos o mas)"
 		
 ***********
