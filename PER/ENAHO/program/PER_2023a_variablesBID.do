@@ -400,8 +400,8 @@ use "`base_in'", clear
 	***afroind_ci**
 	***************
 		gen afroind_ci =. 
-		replace afroind_ci = 1 if afro_ci==1
-		replace afroind_ci = 2 if ind_ci ==1
+		replace afroind_ci = 1 if ind_ci==1
+		replace afroind_ci = 2 if afro_ci==1
 		replace afroind_ci = 3 if noafroind_ci==1
 
 
