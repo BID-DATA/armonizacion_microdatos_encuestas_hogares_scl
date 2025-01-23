@@ -1647,6 +1647,7 @@ replace eduui_ci=1 if e215_1==2 & (e218_1!=1 & e221_1!=1)
 replace eduui_ci=1 if e218_1==2 & (e215_1!=1 & e221_1!=1)
 replace eduui_ci=1 if e221_1==2 & (e215_1!=1 & e218_1!=1)
 
+
 ***************
 ***edupre_ci***
 ***************
