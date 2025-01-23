@@ -1766,15 +1766,6 @@ replace eduuc_ci=1 if (e50_9 > 0 | e50_10 > 0 | e50_11 > 0)
 
  
 ***************
-***eduac_ci****
-***************
-gen eduac_ci=.
-replace eduac_ci=0 if (e52_6_2!=0 | e52_6_2!=0)
-replace eduac_ci=0 if (e50_9 > 0 | e50_11 > 0)
-replace eduac_ci=1 if (e52_5_2!=0 | e52_7_2!=0)
-replace eduac_ci=1 if (e50_10 > 0 | e50_12 > 0)
-
-***************
 ***edupre_ci***
 ***************
 
