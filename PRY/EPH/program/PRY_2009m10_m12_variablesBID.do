@@ -1270,15 +1270,16 @@ label value pqnoasis_ci pqnoasis_ci
 **************
 **Daniela Zuluaga- Enero 2018: Se agrega la variable pqnoasis1_ci cuya sintaxis fue elaborada por Mayra Saenz**
 
-g       pqnoasis1_ci = 1 if pqnoasis_ci == 1 | pqnoasis_ci == 3
-replace pqnoasis1_ci = 2 if pqnoasis_ci == 2
-replace pqnoasis1_ci = 3 if pqnoasis_ci == 11 | pqnoasis_ci == 12 | pqnoasis_ci == 14
-replace pqnoasis1_ci = 4 if pqnoasis_ci == 15
-replace pqnoasis1_ci = 5 if pqnoasis_ci == 13
-replace pqnoasis1_ci = 6 if pqnoasis_ci == 5
-replace pqnoasis1_ci = 7 if pqnoasis_ci == 4
-replace pqnoasis1_ci = 8 if pqnoasis_ci == 6  | pqnoasis_ci == 7  | pqnoasis_ci == 8  | pqnoasis_ci == 9 | pqnoasis_ci == 10 
-replace pqnoasis1_ci = 9 if pqnoasis_ci == 16 | pqnoasis_ci == 17 | pqnoasis_ci == 18
+g       pqnoasis1_ci = 1 if ed10 == 1 | ed10 == 3
+replace pqnoasis1_ci = 2 if ed10 == 2
+replace pqnoasis1_ci = 3 if ed10 == 11 | ed10 == 12 | ed10 == 14
+replace pqnoasis1_ci = 4 if ed10 == 15
+replace pqnoasis1_ci = 5 if ed10 == 13
+replace pqnoasis1_ci = 6 if ed10 == 5
+replace pqnoasis1_ci = 7 if ed10 == 4
+replace pqnoasis1_ci = 8 if ed10 == 6  | ed10 == 7  | ed10 == 8  | ed10 == 9 | ed10 == 10 
+replace pqnoasis1_ci = 9 if ed10 == 16 | ed10 == 17 | ed10 == 18
+replace pqnoasis1_ci = . if ed10 == 99
 
 label define pqnoasis1_ci 1 "Problemas económicos" 2 "Por trabajo" 3 "Problemas familiares o de salud" 4 "Falta de interés" 5	"Quehaceres domésticos/embarazo/cuidado de niños/as" 6 "Terminó sus estudios" 7	"Edad" 8 "Problemas de acceso"  9 "Otros"
 label value  pqnoasis1_ci pqnoasis1_ci
