@@ -1528,6 +1528,18 @@ gen salmm_ci = 1302
 //https://www.gov.br/casacivil/pt-br/assuntos/noticias/2022/dezembro/divulgado-o-valor-do-novo-salario-minimo-para-2023
 label var salmm_ci "Salario minimo legal"
 
+***********
+***lp_ci***
+***********
+*AJAM: En Brasil se consideran pobres aquellas familias con una renta familiar per capita mensual menor a la mitad de un salario mínimo
+* https://educa.ibge.gov.br/jovens/materias-especiais/22544-brasil-atinge-menor-nivel-de-pobreza-em-2023.html
+gen lp_ci = 665 // reales diarios
+
+***********
+*lpe_ci ***
+***********
+* https://educa.ibge.gov.br/jovens/materias-especiais/22544-brasil-atinge-menor-nivel-de-pobreza-em-2023.html
+gen lpe_c i= 209 
 
 /*_____________________________________________________________________________________________________*/
 * Asignación de etiquetas e inserción de variables externas: tipo de cambio, Indice de Precios al 
