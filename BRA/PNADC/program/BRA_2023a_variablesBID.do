@@ -1239,14 +1239,14 @@ label var cel_ch "El hogar tiene servicio telefonico celular"
 **************
 ***vivi1_ch***
 **************
-gen viv1_ch = .
-label var viv1_ch "Tipo de vivienda en la que reside el hogar"
+gen vivi1_ch = .
+label var vivi1_ch "Tipo de vivienda en la que reside el hogar"
 
 **************
 ***vivi2_ch***
 **************
-gen viv2_ch = .
-label var viv2_ch "La vivienda es casa o departamento"
+gen vivi2_ch = .
+label var vivi2_ch "La vivienda es casa o departamento"
 
 *****************
 ***viviprop_ch***
@@ -1377,10 +1377,10 @@ gen migrante_ci = .
 label var migrante_ci "=1 si es migrante"
 	
 ********************
-***migantiguo5_ci***
+***migrantiguo5_ci***
 ********************
-gen migantiguo5_ci = .
-label var migantiguo5_ci "=1 si es migrante antiguo (5 anos o mas)"
+gen migrantiguo5_ci = .
+label var migrantiguo5_ci "=1 si es migrante antiguo (5 anos o mas)"
 
 ***************
 ***miglac_ci***
@@ -1458,7 +1458,7 @@ label var pnc_ci "=1 Recibe pensión no contributiva (adultos mayores)"
 *********pnc_ch*******
 **********************
 bys idh_ch: egen pnc_ch = max(pnc_ci)
-label var pnc_ch "=1 En el hogar hay al menos una persona que recibe pensión no contributiva (adultos mayores)"
+label var pnc_ch "=1 En el hogar hay al menos una persona que recibe pensión no contributiva"
 
 **********************
 ******ing_pnc_ci******
@@ -1539,7 +1539,7 @@ gen lp_ci = 665 // reales diarios
 *lpe_ci ***
 ***********
 * https://educa.ibge.gov.br/jovens/materias-especiais/22544-brasil-atinge-menor-nivel-de-pobreza-em-2023.html
-gen lpe_c i= 209 
+gen lpe_ci = 209 
 
 /*_____________________________________________________________________________________________________*/
 * Asignación de etiquetas e inserción de variables externas: tipo de cambio, Indice de Precios al 
