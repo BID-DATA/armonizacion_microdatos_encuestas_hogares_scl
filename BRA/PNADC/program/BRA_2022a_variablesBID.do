@@ -25,7 +25,7 @@ local base_out = "$ruta\harmonized\\`PAIS'\\`ENCUESTA'\data_arm\\`PAIS'_`ANO'`ro
 capture log close
 log using "`log_file'", replace 
 
-/***************************************************************************
+/**************************************************************************
                  BASES DE DATOS DE ENCUESTA DE HOGARES 
 País: Brasil
 Encuesta: PNADC
@@ -33,10 +33,10 @@ Round: anual 2021
 Autores: Angela Lopez alop@iadb.org
 Alvaro Altamirano alvaroalt@iadb.org - Junio de 2020
 Cesar Lins - Marzo 2021
-Cecilia Giambruno Noviembre 2021
+Cecilia Giambruno Noviembre 2021*/
 
-****************************************************************************/
-****************************************************************************/
+****************************************************************************
+****************************************************************************
 
 use `base_in', clear
 *cd "C:\Users\JILLIEC\OneDrive - Inter-American Development Bank Group\Microsoft Teams Chat Files\Desktop\New folder"
