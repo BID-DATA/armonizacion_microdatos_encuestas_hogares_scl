@@ -239,7 +239,7 @@ label var afiliado_ci "Afiliado a la Seguridad Social"
 	
 label var tipopen_ci "Tipo de pension - variable original de cada pais" 
 label var instpen_ci "Institucion proveedora de la pension - variable original de cada pais" 
-label var instcot_ci "Institucion a la cual cotiza o es afiliado - variable original de cada pais" 
+*label var instcot_ci "Institucion a la cual cotiza o es afiliado - variable original de cada pais" 
 label var pension_ci "=1: Recibe pension contributiva"
 label var pensionsub_ci "=1: recibe pension subsidiada / no contributiva"
 
@@ -256,8 +256,8 @@ label var eduac_ci "Superior universitario vs superior no universitario"
 
 label var asiste_ci "=1 si asiste actualmente a la escuela"						
 
-label var edupub_ci "Asiste a un centro de ensenanza público"
-label var asispre_ci "=1 si asiste actualmente a educación preescolar"	
+*label var edupub_ci "Asiste a un centro de ensenanza público"
+*label var asispre_ci "=1 si asiste actualmente a educación preescolar"	
 label var pqnoasis1_ci "Razones para no asistir a la escuela-variable armonizada"	
 
 *====================================================================================================================================*
