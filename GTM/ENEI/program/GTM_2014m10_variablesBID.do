@@ -1095,6 +1095,7 @@ replace edus2c_ci=. if aedu_ci==.
 g byte eduui_ci=(aedu_ci>11 & aedu_ci<15) 
 replace eduui_ci=. if aedu_ci==.
 la var eduui_ci "Universitaria o Terciaria Incompleta"
+
 ******************************
 *	eduuc_ci 
 ******************************
@@ -1106,6 +1107,7 @@ la var eduuc_ci "Universitaria o Terciaria Completa"
 ***eduac_ci***
 **************
 gen byte eduac_ci=. // esta disponible solo para los con titulo
+replace eduac_ci = . if (p03a06 == . | p03a06 <= 499)
 label variable eduac_ci "Superior universitario vs superior no universitario"
 
 ******************************
