@@ -1089,25 +1089,25 @@ replace edus2i_ci=. if aedu_ci==.
 g byte edus2c_ci=(aedu_ci==11)
 replace edus2c_ci=. if aedu_ci==.
 
-******************************
-*	eduui_ci 
-******************************
-g byte eduui_ci=(aedu_ci>11 & aedu_ci<15) 
-replace eduui_ci=. if aedu_ci==.
-la var eduui_ci "Universitaria o Terciaria Incompleta"
+**************
+***eduui_ci***
+**************
+gen eduui_ci = (((p03a04a == 5 & p03a05a == 4) | p03a05a == 5) &  inrange(p03a06, 103, 499)) 
+replace eduui_ci = . if aedu_ci == .
+lab var eduui_ci "Superior Incompleto"
 
-******************************
-*	eduuc_ci 
-******************************
-g byte eduuc_ci=aedu_ci>14
-replace eduuc_ci=. if aedu_ci==.
-la var eduuc_ci "Universitaria o Terciaria Completa"
+**************
+***eduuc_ci***
+**************
+gen eduuc_ci = ((p03a05a == 5 & inrange(p03a06, 500, 7100)) | inlist(p03a04a, 6, 7) |  inlist(p03a05a, 6, 7))
+replace eduuc_ci = . if aedu_ci == .
+lab var eduuc_ci "Superior Completo"
 
 **************
 ***eduac_ci***
 **************
-gen byte eduac_ci=. // esta disponible solo para los con titulo
-replace eduac_ci = . if (p03a06 == . | p03a06 <= 499)
+gen eduac_ci = (inrange(p03a06, 2000, 7100))
+replace eduac_ci = . if (p03a06 == . |  p03a06 <= 499)
 label variable eduac_ci "Superior universitario vs superior no universitario"
 
 ******************************
