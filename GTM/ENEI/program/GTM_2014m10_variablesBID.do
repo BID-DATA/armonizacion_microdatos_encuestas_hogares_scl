@@ -1101,6 +1101,13 @@ la var eduui_ci "Universitaria o Terciaria Incompleta"
 g byte eduuc_ci=aedu_ci>14
 replace eduuc_ci=. if aedu_ci==.
 la var eduuc_ci "Universitaria o Terciaria Completa"
+
+**************
+***eduac_ci***
+**************
+gen byte eduac_ci=. // esta disponible solo para los con titulo
+label variable eduac_ci "Superior universitario vs superior no universitario"
+
 ******************************
 *	edupre_ci 
 ******************************
@@ -1116,11 +1123,6 @@ Proxy de asistencia p03a04a
 g byte asispre_ci = 0 
 replace asispre_ci = 1 if p03a04a == 1
 la var asispre_ci "Asiste a Educacion preescolar"
-**************
-***eduac_ci***
-**************
-gen byte eduac_ci=. // esta disponible solo para los con titulo
-label variable eduac_ci "Superior universitario vs superior no universitario"
 
 ******************************
 *	asiste_ci: 
