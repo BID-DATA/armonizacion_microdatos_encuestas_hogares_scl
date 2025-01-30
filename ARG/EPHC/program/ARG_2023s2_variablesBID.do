@@ -199,11 +199,15 @@ sort codusu aglomerado nro_hogar trimestre
 egen idh_ch=group(codusu aglomerado nro_hogar trimestre)
 tostring idh_ch, replace
 
+tostring idh_ch, replace
+
 
 ********
 *idp_ci*
 ********
 gen idp_ci=componente
+tostring idp_ci, replace
+
 tostring idp_ci, replace
 
 	
@@ -730,6 +734,8 @@ replace ynlm_ci=. if ynlm_ci<0
 gen ynlnm_ci=.
 egen ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci)
 
+egen ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci)
+
 	
 **********************
 ***HOUSEHOLD INCOME***
@@ -876,21 +882,11 @@ replace aedu_ci=17 if ch12==8 & aedu_ci==. & ch13==1
 */	 
 
 **********
-* Line of code with indicator eduno_ci was deleted**********
-* Line of code with indicator eduno_ci was deleted* Line of code with indicator eduno_ci was deleted	
-**********
-* Line of code with indicator edupi_ci was deleted**********
-* Line of code with indicator edupi_ci was deleted* Line of code with indicator edupi_ci was deleted	
-**********
-* Line of code with indicator edupc_ci was deleted**********
-* Line of code with indicator edupc_ci was deleted* Line of code with indicator edupc_ci was deleted	
-**********
-* Line of code with indicator edusi_ci was deleted**********
-* Line of code with indicator edusi_ci was deleted* Line of code with indicator edusi_ci was deleted
-**********
-* Line of code with indicator edusc_ci was deleted**********
-* Line of code with indicator edusc_ci was deleted* Line of code with indicator edusc_ci was deleted	
-**********
+* Line of code with indicator eduno_ci was deleted* Line of code with indicator eduno_ci was deleted**********
+* Line of code with indicator edupi_ci was deleted* Line of code with indicator edupi_ci was deleted**********
+* Line of code with indicator edupc_ci was deleted* Line of code with indicator edupc_ci was deleted**********
+* Line of code with indicator edusi_ci was deleted* Line of code with indicator edusi_ci was deleted**********
+* Line of code with indicator edusc_ci was deleted* Line of code with indicator edusc_ci was deleted**********
 *eduui_ci*
 **********
 gen byte eduui_ci = (ch12 == 6 | ch12 == 7) & ch13 == 2
@@ -913,18 +909,10 @@ replace eduac_ci = . if aedu_ci == .
 label variable eduac_ci "Superior universitario vs superior no universitario"
 	
 ***********
-* Line of code with indicator edus1i_ci was deleted***********
-* Line of code with indicator edus1i_ci was deleted* Line of code with indicator edus1i_ci was deleted* Line of code with indicator edus1i_ci was deleted	
-***********
-* Line of code with indicator edus1c_ci was deleted***********
-* Line of code with indicator edus1c_ci was deleted* Line of code with indicator edus1c_ci was deleted* Line of code with indicator edus1c_ci was deleted
-***********
-* Line of code with indicator edus2i_ci was deleted***********
-* Line of code with indicator edus2i_ci was deleted* Line of code with indicator edus2i_ci was deleted* Line of code with indicator edus2i_ci was deleted	
-***********
-* Line of code with indicator edus2c_ci was deleted***********
-* Line of code with indicator edus2c_ci was deleted* Line of code with indicator edus2c_ci was deleted* Line of code with indicator edus2c_ci was deleted	
-***********
+* Line of code with indicator edus1i_ci was deleted* Line of code with indicator edus1i_ci was deleted***********
+* Line of code with indicator edus1c_ci was deleted* Line of code with indicator edus1c_ci was deleted***********
+* Line of code with indicator edus2i_ci was deleted* Line of code with indicator edus2i_ci was deleted***********
+* Line of code with indicator edus2c_ci was deleted* Line of code with indicator edus2c_ci was deleted***********
 *edupre_ci*
 ***********
 gen byte edupre_ci=.
@@ -944,20 +932,15 @@ replace asiste_ci=. if ch10==0 | ch10==9
 label variable asiste_ci "Asiste actualmente a la escuela"
 
 *************
-* Line of code with indicator pqnoasis_ci was deleted*************
-* Line of code with indicator pqnoasis_ci was deleted* Line of code with indicator pqnoasis_ci was deleted	
-**************
+* Line of code with indicator pqnoasis_ci was deleted* Line of code with indicator pqnoasis_ci was deleted**************
 *pqnoasis1_ci*
 **************
 **Daniela Zuluaga- Enero 2019: Se agrega la variable pqnoasis1_ci**
 gen pqnoasis1_ci=. 
 
 ***********
-* Line of code with indicator repite_ci was deleted***********
-* Line of code with indicator repite_ci was deleted
-**************
-* Line of code with indicator repiteult was deleted* Line of code with indicator repiteult was deleted***********
-*edupub_ci*
+* Line of code with indicator repite_ci was deleted* Line of code with indicator repite_ci was deleted**************
+* Line of code with indicator repiteult was deleted*edupub_ci*
 ***********
 gen edupub_ci =.
 replace edupub_ci = 1 if ch11==1 & asiste_ci==1
@@ -1484,8 +1467,7 @@ do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&Exter
 /*________________________________________________________________________________________________*/
 
 /* Verificación ¤e que se encuentren todas las variables armonizadas                              */
-/*________________________________________________________________________________________________*/
-order region_BID_c region_c pais_c anio_c mes_c zona_c factor_ch idh_ch	idp_ci factor_ci factor_ch /// Identificación 
+/*________________________________________________________________________________________________*/order region_BID_c region_c pais_c anio_c mes_c zona_c factor_ch idh_ch	idp_ci factor_ci factor_ch /// Identificación 
   sexo_ci edad_ci relacion_ci civil_ci jefe_ci nconyuges_ch nhijos_ch notropari_ch notronopari_ch nempdom_ch /// Demográficas 
   clasehog_ch nmiembros_ch miembros_ci nmayor21_ch nmenor21_ch nmayor65_ch nmenor6_ch nmenor1_ch /// Demográficas 
   condocup_ci categoinac_ci emp_ci cesante_ci desemp_ci subemp_ci durades_ci pea_ci nempleos_ci antiguedad_ci desalent_ci  /// Empleo
@@ -1502,6 +1484,7 @@ order region_BID_c region_c pais_c anio_c mes_c zona_c factor_ch idh_ch	idp_ci f
   aguatrat_ch aguamala_ch aguamejorada_ch aguamide_ch bano_ch banoex_ch banomejorado_ch sinbano_ch  /// Agua y saneamineto
   migrante_ci migrantiguo5_ci miglac_ci /// Migración
   salmm_ci lp19_c lp31_c lp5_c lp_ci lpe_ci lp365_2017 lp685_2017 tc_c ipc_c, first /// Fuente externa 
+  /// the order was created by regex functions, sph variables are excluded /// Fuente externa 
   /// the order was created by regex functions, sph variables are excluded
 
 /*Homologar nombre del identificador de ocupaciones (isco, ciuo, etc.) y dejarlo en base armonizada 
