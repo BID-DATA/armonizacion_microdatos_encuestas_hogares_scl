@@ -115,7 +115,11 @@ gen factor_ch=expr
 ren segmento seg
 ren folio f
 egen idh_ch=group(r p c z seg f)
+tostring idh_ch, replace
+
 gen idp_ci=o
+tostring idp_ci, replace
+
 gen zona_c=z
 replace zona_c=0 if z==2
 gen pais_c="CHL"
@@ -246,14 +250,14 @@ replace clasehog_ch=3 if notropari_ch>0 & notronopari_ch==0 /*Ampliado*/
 replace clasehog_ch=4 if ((nconyuges_ch>0 | nhijos_ch>0 | notropari_ch>0) & (notronopari_ch>0))/*Compuesto (some relatives plus non relative)*/
 replace clasehog_ch=5 if nhijos_ch==0 & nconyuges_ch==0 & notropari_ch==0 & notronopari_ch>0 /*Corresidente*/
 sort idh_ch
-by idh_ch:egen byte nmiembros_ch=sum(relacion_ci>0 & relacion_ci<5) if relacion_ci~=6
-by idh_ch:egen byte nmayor21_ch=sum((relacion_ci>0 & relacion_ci<5) & (edad_ci>=21 & edad_ci<=98))
-by idh_ch:egen byte nmenor21_ch=sum((relacion_ci>0 & relacion_ci<5) & (edad_ci<21))
-by idh_ch:egen byte nmayor65_ch=sum((relacion_ci>0 & relacion_ci<5) & (edad_ci>=65))
-by idh_ch:egen byte nmenor6_ch=sum((relacion_ci>0 & relacion_ci<5) & (edad_ci<6))
-by idh_ch:egen byte nmenor1_ch=sum((relacion_ci>0 & relacion_ci<5) & (edad_ci<1))
+by idh_ch, sort: egen byte nmiembros_ch=sum(relacion_ci>0 & relacion_ci<=5)
+by idh_ch, sort: egen byte nmayor21_ch=sum((relacion_ci>0 & relacion_ci<=5) & (edad_ci>=21 & edad_ci<=98))
+by idh_ch, sort: egen byte nmenor21_ch=sum((relacion_ci>0 & relacion_ci<=5) & (edad_ci<21))
+by idh_ch, sort: egen byte nmayor65_ch=sum((relacion_ci>0 & relacion_ci<=5) & (edad_ci>=65 & edad_ci!=.))
+by idh_ch, sort: egen byte nmenor6_ch=sum((relacion_ci>0 & relacion_ci<=5) & (edad_ci<6))
+by idh_ch, sort: egen byte nmenor1_ch=sum((relacion_ci>0 & relacion_ci<=5) & (edad_ci<1))
 
-gen miembros_ci=(relacion_ci<5)
+gen miembros_ci=(relacion_ci>=1 & relacion_ci<=5)
 label variable miembros_ci "Miembro del hogar"
 
 
@@ -507,6 +511,8 @@ replace ylm2_ci=. if (ylmpri2_ci==. & o30==.) | emp_ci==0
 *gen ylnm_ci=ylnmpri_ci
 gen ylnm_ci=.
 gen ynlnm_ci=.	
+egen ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci)
+
 
 /*
 OLD CODE:
@@ -673,27 +679,16 @@ replace aedu_ci=aedu_ci-1 if aedu_ci!=0 & asiste_ci==1
 
 /*
 OLD CODE:
-gen eduno_ci=(e9==0 | e9==16 | (e9==1 & e8==0))
-gen edupi_ci=((e9==2 & e8>0 & e8<6) | (e9==3 & e8>0 & e8<8))
-gen edupc_ci=((e9==2 & e8==6) | (e9==3 & e8==8))
-gen edus1i_ci=(((e9==5 | e9==7) & (e8>=1 & e8<4)) | ((e9==6 | e9==8) & (e8>=1 & e8<2)))
-gen edus1c_ci=(((e9==5 | e9==7) & e8==4) | ((e9==6 | e9==8) & e8==2))
-gen edus2i_ci=((e9==5 | e9==7) & (e8>4 & e8<6)) | ((e9==6 | e9==8) & (e8>2 & e8<4))
-gen edus2c_ci=((e9==5 | e9==7) & (e8==6)) | ((e9==6 | e9==8) & (e8==4 | e8==5))
-
+* Line of code with indicator edus2c_ci was deleted
 gen eduui_ci=(e9==9 | e9==11 | e9==13) 
 gen eduuc_ci=(e9==10 | e9==12 | e9==14 | e9==15)
-gen edusi_ci=(edus1i_ci==1 | edus1c_ci==1 | edus2i_ci==1)
-gen edusc_ci=edus2c_ci
-*/
+* Line of code with indicator edusc_ci was deleted*/
 
 
 *****************
-***pqnoasis_ci***
-*****************
+* Line of code with indicator pqnoasis_ci was deleted*****************
 *Modificado Mayra Sáenz Junio, 2016: antes se generaba como missing
-gen pqnoasis_ci= e5
-
+* Line of code with indicator pqnoasis_ci was deleted
 **************
 *pqnoasis1_ci*
 **************
@@ -712,88 +707,41 @@ label define pqnoasis1_ci 1 "Problemas económicos" 2 "Por trabajo" 3 "Problemas
 label value  pqnoasis1_ci pqnoasis1_ci
 
 **************
-***eduno_ci***
+* Line of code with indicator eduno_ci was deleted**************
+
+* Line of code with indicator eduno_ci was deleted* Line of code with indicator eduno_ci was deleted* Line of code with indicator eduno_ci was deleted* Line of code with indicator eduno_ci was deleted
 **************
+* Line of code with indicator edupi_ci was deleted**************
 
-gen byte eduno_ci=0
-replace eduno_ci=1 if aedu_ci==0
-replace eduno_ci=. if aedu_ci==.
-label variable eduno_ci "Cero anios de educacion"
-
+* Line of code with indicator edupi_ci was deleted* Line of code with indicator edupi_ci was deleted* Line of code with indicator edupi_ci was deleted* Line of code with indicator edupi_ci was deleted
 **************
-***edupi_ci***
+* Line of code with indicator edupc_ci was deleted**************
+
+* Line of code with indicator edupc_ci was deleted* Line of code with indicator edupc_ci was deleted* Line of code with indicator edupc_ci was deleted* Line of code with indicator edupc_ci was deleted
 **************
+* Line of code with indicator edusi_ci was deleted**************
 
-gen byte edupi_ci=0
-replace edupi_ci=1 if aedu_ci>0 & aedu_ci<6
-replace edupi_ci=. if aedu_ci==.
-label variable edupi_ci "Primaria incompleta"
-
+* Line of code with indicator edusi_ci was deleted* Line of code with indicator edusi_ci was deleted* Line of code with indicator edusi_ci was deleted* Line of code with indicator edusi_ci was deleted
 **************
-***edupc_ci***
-**************
+* Line of code with indicator edusc_ci was deleted**************
 
-gen byte edupc_ci=0
-replace edupc_ci=1 if aedu_ci==6
-replace edupc_ci=. if aedu_ci==.
-label variable edupc_ci "Primaria completa"
-
-**************
-***edusi_ci***
-**************
-
-gen byte edusi_ci=0
-replace edusi_ci=1 if aedu_ci>6 & aedu_ci<12
-replace edusi_ci=. if aedu_ci==.
-label variable edusi_ci "Secundaria incompleta"
-
-**************
-***edusc_ci***
-**************
-
-gen byte edusc_ci=0
-replace edusc_ci=1 if aedu_ci==12
-replace edusc_ci=1  if aedu_ci==13 & e9==8 // hay casos de estudiantes tecnicos secundarios con 13 anios de educacion. no corresponde a terciario, asi que los dejo aca.
-replace edusc_ci=. if aedu_ci==.
-label variable edusc_ci "Secundaria completa"
-
+* Line of code with indicator edusc_ci was deleted* Line of code with indicator edusc_ci was deleted* Line of code with indicator edusc_ci was deleted* Line of code with indicator edusc_ci was deleted* Line of code with indicator edusc_ci was deleted
 ***************
-***edus1i_ci***
+* Line of code with indicator edus1i_ci was deleted***************
+
+* Line of code with indicator edus1i_ci was deleted* Line of code with indicator edus1i_ci was deleted* Line of code with indicator edus1i_ci was deleted* Line of code with indicator edus1i_ci was deleted
 ***************
+* Line of code with indicator edus1c_ci was deleted***************
 
-gen byte edus1i_ci=0
-replace edus1i_ci=1 if aedu_ci>6 & aedu_ci<8 
-replace edus1i_ci=. if aedu_ci==.
-label variable edus1i_ci "1er ciclo de la secundaria incompleto"
-
+* Line of code with indicator edus1c_ci was deleted* Line of code with indicator edus1c_ci was deleted* Line of code with indicator edus1c_ci was deleted* Line of code with indicator edus1c_ci was deleted
 ***************
-***edus1c_ci***
+* Line of code with indicator edus2i_ci was deleted***************
+
+* Line of code with indicator edus2i_ci was deleted* Line of code with indicator edus2i_ci was deleted* Line of code with indicator edus2i_ci was deleted* Line of code with indicator edus2i_ci was deleted
 ***************
+* Line of code with indicator edus2c_ci was deleted***************
 
-gen byte edus1c_ci=0
-replace edus1c_ci=1 if aedu_ci==8
-replace edus1c_ci=. if aedu_ci==.
-label variable edus1c_ci "1er ciclo de la secundaria completo"
-
-***************
-***edus2i_ci***
-***************
-
-gen byte edus2i_ci=0
-replace edus2i_ci=1 if aedu_ci>8 & aedu_ci<12
-replace edus2i_ci=. if aedu_ci==.
-label variable edus2i_ci "2do ciclo de la secundaria incompleto"
-
-***************
-***edus2c_ci***
-***************
-
-gen byte edus2c_ci=0
-replace edus2c_ci=1 if aedu_ci==12
-replace edusc_ci=1  if aedu_ci==13 & e9==8
-replace edus2c_ci=. if aedu_ci==.
-label variable edus2c_ci "2do ciclo de la secundaria completo"
-
+* Line of code with indicator edus2c_ci was deleted* Line of code with indicator edus2c_ci was deleted* Line of code with indicator edus2c_ci was deleted* Line of code with indicator edus2c_ci was deleted
 **************
 ***eduui_ci***
 **************
@@ -835,10 +783,7 @@ replace `var'=. if  aedu_ci==.
 }
 
 
-gen repite_ci=.
-gen repiteult_ci=.
-
-gen edupub_ci=.
+* Line of code with indicator repiteult was deletedgen edupub_ci=.
 
 ***********************
 *** CHILE 2000	    ***
@@ -1720,20 +1665,21 @@ do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&Exter
 /*_____________________________________________________________________________________________________*/
 * Verificación de que se encuentren todas las variables armonizadas 
 /*_____________________________________________________________________________________________________*/
-
-order region_BID_c region_c pais_c anio_c mes_c zona_c factor_ch	idh_ch	idp_ci	factor_ci sexo_ci edad_ci ///
-afroind_ci afroind_ch afroind_ano_c dis_ci dis_ch relacion_ci civil_ci jefe_ci nconyuges_ch nhijos_ch notropari_ch notronopari_ch nempdom_ch ///
-clasehog_ch nmiembros_ch miembros_ci nmayor21_ch nmenor21_ch nmayor65_ch nmenor6_ch	nmenor1_ch	condocup_ci ///
-categoinac_ci nempleos_ci emp_ci antiguedad_ci	desemp_ci cesante_ci durades_ci	pea_ci desalent_ci subemp_ci ///
-tiempoparc_ci categopri_ci categosec_ci rama_ci spublico_ci tamemp_ci cotizando_ci instcot_ci	afiliado_ci ///
-formal_ci tipocontrato_ci ocupa_ci horaspri_ci horastot_ci	pensionsub_ci pension_ci tipopen_ci instpen_ci	ylmpri_ci nrylmpri_ci ///
-tcylmpri_ci ylnmpri_ci ylmsec_ci ylnmsec_ci	ylmotros_ci	ylnmotros_ci ylm_ci	ylnm_ci	ynlm_ci	ynlnm_ci ylm_ch	ylnm_ch	ylmnr_ch  ///
-ynlm_ch	ynlnm_ch ylmhopri_ci ylmho_ci rentaimp_ch autocons_ci autocons_ch nrylmpri_ch tcylmpri_ch remesas_ci remesas_ch	ypen_ci	ypensub_ci ///
-salmm_ci tc_c ipc_c lp19_c lp31_c lp5_c lp_ci lpe_ci aedu_ci eduno_ci edupi_ci edupc_ci	edusi_ci edusc_ci eduui_ci eduuc_ci	edus1i_ci ///
-edus1c_ci edus2i_ci edus2c_ci edupre_ci eduac_ci asiste_ci pqnoasis_ci pqnoasis1_ci	repite_ci repiteult_ci edupub_ci tecnica_ci ///
-aguared_ch aguadist_ch aguamala_ch aguamide_ch luz_ch luzmide_ch combust_ch	bano_ch banoex_ch des1_ch des2_ch piso_ch aguamejorada_ch banomejorado_ch  ///
-pared_ch techo_ch resid_ch dorm_ch cuartos_ch cocina_ch telef_ch refrig_ch freez_ch auto_ch compu_ch internet_ch cel_ch ///
-vivi1_ch vivi2_ch viviprop_ch vivitit_ch vivialq_ch	vivialqimp_ch , first
+order region_BID_c region_c pais_c anio_c mes_c zona_c factor_ch idh_ch	idp_ci factor_ci factor_ch /// Identificación 
+  sexo_ci edad_ci relacion_ci civil_ci jefe_ci nconyuges_ch nhijos_ch notropari_ch notronopari_ch nempdom_ch /// Demográficas 
+  clasehog_ch nmiembros_ch miembros_ci nmayor21_ch nmenor21_ch nmayor65_ch nmenor6_ch nmenor1_ch /// Demográficas 
+  condocup_ci categoinac_ci emp_ci cesante_ci desemp_ci subemp_ci durades_ci pea_ci nempleos_ci antiguedad_ci desalent_ci  /// Empleo
+  horaspri_ci horastot_ci tiempoparc_ci categopri_ci categosec_ci rama_ci spublico_ci tamemp_ci cotizando_ci afiliado_ci /// Empleo 
+  formal_ci tipocontrato_ci ocupa_ci pension_ci	pensionsub_ci tipopen_ci instpen_ci	ylmpri_ci /// Empleo 
+  ylmpri_ci ylnmpri_ci ylmsec_ci ylnmsec_ci ylmotros_ci	ylnmotros_ci  ylm_ci ylnm_ci ynlm_ci ynlnm_ci nrylmpri_ci /// Ingresos individuo 
+  ylm_ch ylnm_ch ylmnr_ch ynlm_ch ynlnm_ch ylmhopri_ci ylmho_ci /// Ingresos del hogar 
+  nrylmpri_ci nrylmpri_ch /// No respuesta de ingresos  
+  remesas_ci remesas_ch ypen_ci ypensub_ci /// Remesas y pensiones
+  aedu_ci eduui_ci eduuc_ci edupre_ci eduac_ci asiste_ci pqnoasis1_ci /// Educación
+  luz_ch luzmide_ch combust_ch piso_ch pared_ch techo_ch resid_ch dorm_ch cuartos_ch cocina_ch telef_ch refrig_ch /// Vivienda
+  freez_ch auto_ch compu_ch internet_ch cel_ch vivi1_ch vivi2_ch viviprop_ch vivitit_ch vivialq_ch vivialqimp_ch /// Vivienda
+  salmm_ci lp19_c lp31_c lp5_c lp_ci lpe_ci lp365_2017 lp685_2017 tc_c ipc_c, first /// Fuente externa 
+  /// the order was created by regex functions, sph variables are excluded
 
 rename o9 codindustria
 rename o8 codocupa
