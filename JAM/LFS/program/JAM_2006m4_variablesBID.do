@@ -125,13 +125,13 @@ label value region_BID_c region_BID_c
 * identificador del hogar*
 **************************
 
-ren  hhid idh_ch
+gen  idh_ch = hhid
 
 ****************************
 * identificador de persona *
 ****************************
 
-ren ind idp_ci
+gen idp_ci = ind
 
 
 ***************************
