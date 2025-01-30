@@ -113,9 +113,13 @@ gen upm_ci =.
 
 *9. Identificador del hogar
 tostring id , gen(idh_ch)
+tostring idh_ch, replace
+
 
 *10. Identificador de persona
 egen idp_ci = concat(idh_ch nper)
+tostring idp_ci, replace
+
 
 *11. Factor de expansión del hogar: 
 gen factor_ch = w_ano 
@@ -265,49 +269,49 @@ label value clasehog_ch clasehog_ch
 ***nmiembros_ch***
 ******************
 
-by idh_ch, sort: egen nmiembros_ch=sum(relacion_ci>=1 & relacion_ci<=4)
+by idh_ch, sort: egen byte nmiembros_ch=sum(relacion_ci>0 & relacion_ci<=5)
 label variable nmiembros_ch "Numero de familiares en el hogar"
 
 *****************
 ***nmayor21_ch***
 *****************
 
-by idh_ch, sort: egen nmayor21_ch=sum((relacion_ci>=1 & relacion_ci<=4) & edad_ci>=21)
+by idh_ch, sort: egen byte nmayor21_ch=sum((relacion_ci>0 & relacion_ci<=5) & (edad_ci>=21 & edad_ci<=98))
 label variable nmayor21_ch "Numero de familiares mayores a 21 anios"
 
 *****************
 ***nmenor21_ch***
 *****************
 
-by idh_ch, sort: egen nmenor21_ch=sum((relacion_ci>=1 & relacion_ci<=4) & edad_ci<21)
+by idh_ch, sort: egen byte nmenor21_ch=sum((relacion_ci>0 & relacion_ci<=5) & (edad_ci<21))
 label variable nmenor21_ch "Numero de familiares menores a 21 anios"
 
 *****************
 ***nmayor65_ch***
 *****************
 
-by idh_ch, sort: egen nmayor65_ch=sum((relacion_ci>=1 & relacion_ci<=4) & edad_ci>=65)
+by idh_ch, sort: egen byte nmayor65_ch=sum((relacion_ci>0 & relacion_ci<=5) & (edad_ci>=65 & edad_ci!=.))
 label variable nmayor65_ch "Numero de familiares mayores a 65 anios"
 
 ****************
 ***nmenor6_ch***
 ****************
 
-by idh_ch, sort: egen nmenor6_ch=sum((relacion_ci>=1 & relacion_ci<=4) & edad_ci<6)
+by idh_ch, sort: egen byte nmenor6_ch=sum((relacion_ci>0 & relacion_ci<=5) & (edad_ci<6))
 label variable nmenor6_ch "Numero de familiares menores a 6 anios"
 
 ****************
 ***nmenor1_ch***
 ****************
 
-by idh_ch, sort: egen nmenor1_ch=sum((relacion_ci>=1 & relacion_ci<=4) & edad_ci<1)
+by idh_ch, sort: egen byte nmenor1_ch=sum((relacion_ci>0 & relacion_ci<=5) & (edad_ci<1))
 label variable nmenor1_ch "Numero de familiares menores a 1 anio"
 
 ****************
 ***miembros_ci***
 ****************
 
-gen miembros_ci=(relacion_ci<5)
+gen miembros_ci=(relacion_ci>=1 & relacion_ci<=5)
 label variable miembros_ci "Miembro del hogar" 
 									
 
@@ -913,6 +917,8 @@ egen ynlm_ci = rsum(inghog transf g148_1_1 g148_1_2  g148_1_3 g148_1_5  g148_1_6
 
 gen ynlnm_ci= (h156_1/npermax)
 label var ynlnm_ci "Ingreso no laboral no monetario" 
+egen ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci)
+
 
 *41. Identificador de los hogares en donde alguno de los miembros no sabe/No responde el ingreso de
 *la actividad principal.
@@ -1204,8 +1210,7 @@ la var asispre_ci "Asiste a educacion prescolar"
 gen byte asiste_ci = (e49 == 3)
 *89. Razones para no asistir a la escuela
 * Se genera como mising porque no hay para todas las preguntas. 
-gen pqnoasis_ci=.
-
+* Line of code with indicator pqnoasis_ci was deleted
 gen  pqnoasis1_ci=.
 	
 *92. Personas que asisten a centros de ensenanza públicos
@@ -1240,10 +1245,8 @@ replace eduac_ci=1 if e218_1==1
 replace eduac_ci=1 if e218_1==2 & (e215_1!=1 & e221_1!=1)  
 
 ***************
-***repite_ci****
-***************
-gen repite_ci=.
-
+* Line of code with indicator repite_ci was deleted***************
+* Line of code with indicator repite_ci was deleted
 
 		**********************************
 		**** VARIABLES DE LA VIVIENDA ****
@@ -1615,24 +1618,24 @@ lab val grupo_int grupo_int
 /*_____________________________________________________________________________________________________*/
 
 * Ordenar variables en el orden especificado
-
-order region_BID_c region_c pais_c anio_c mes_c zona_c ///
-    factor_ch idh_ch idp_ci factor_ci sexo_ci edad_ci relacion_ci civil_ci jefe_ci ///
-    nconyuges_ch nhijos_ch notropari_ch notronopari_ch nempdom_ch clasehog_ch nmiembros_ch miembros_ci ///
-    nmayor21_ch nmenor21_ch nmayor65_ch nmenor6_ch nmenor1_ch afroind_ci afroind_ch afroind_ano_c dis_ci dis_ch ///
-    condocup_ci categoinac_ci nempleos_ci emp_ci antiguedad_ci desemp_ci cesante_ci durades_ci pea_ci desalent_ci ///
-    subemp_ci tiempoparc_ci categopri_ci categosec_ci rama_ci spublico_ci tamemp_ci cotizando_ci instcot_ci afiliado_ci ///
-    formal_ci tipocontrato_ci ocupa_ci horaspri_ci horastot_ci pensionsub_ci pension_ci tipopen_ci instpen_ci ylmpri_ci ///
-    nrylmpri_ci tcylmpri_ci ylnmpri_ci ylmsec_ci ylnmsec_ci ylmotros_ci ylnmotros_ci ylm_ci ylnm_ci ynlm_ci ynlnm_ci ylm_ch ///
-    ylnm_ch ylmnr_ch ynlm_ch ynlnm_ch ylmhopri_ci ylmho_ci autocons_ci autocons_ch nrylmpri_ch tcylmpri_ch remesas_ci ///
-    remesas_ch ypen_ci ypensub_ci salmm_ci tc_c ipc_c lp19_ci lp31_ci lp5_ci lp_ci lpe_ci ppp_wdi aedu_ci ///
-    eduui_ci eduuc_ci edupre_ci eduac_ci asiste_ci pqnoasis_ci ///
-    pqnoasis1_ci repite_ci  edupub_ci asispre_ci luz_ch luzmide_ch combust_ch bano_ch banoex_ch des1_ch des2_ch piso_ch ///
-    pared_ch techo_ch resid_ch dorm_ch cuartos_ch cocina_ch telef_ch refrig_ch freez_ch auto_ch compu_ch internet_ch cel_ch vivi1_ch ///
-    vivi2_ch viviprop_ch vivitit_ch vivialq_ch vivialqimp_ch aguared_ch aguafconsumo_ch aguafuente_ch aguadist_ch aguadisp1_ch ///
-    aguadisp2_ch aguamala_ch aguamejorada_ch aguamide_ch bano_ch banoex_ch banomejorado_ch sinbano_ch aguatrat_ch migrante_ci ///
-    miglac_ci migrantiguo5_ci y_hog y_pc y_pc y_pc_net ing_ptmc ing_ptmc ptmc_ci ptmc_ch ///
-    mayor64_ci pnc_ci ing_pension, first
+order region_BID_c region_c pais_c anio_c mes_c zona_c factor_ch idh_ch	idp_ci factor_ci factor_ch /// Identificación 
+  sexo_ci edad_ci relacion_ci civil_ci jefe_ci nconyuges_ch nhijos_ch notropari_ch notronopari_ch nempdom_ch /// Demográficas 
+  clasehog_ch nmiembros_ch miembros_ci nmayor21_ch nmenor21_ch nmayor65_ch nmenor6_ch nmenor1_ch /// Demográficas 
+  condocup_ci categoinac_ci emp_ci cesante_ci desemp_ci subemp_ci durades_ci pea_ci nempleos_ci antiguedad_ci desalent_ci  /// Empleo
+  horaspri_ci horastot_ci tiempoparc_ci categopri_ci categosec_ci rama_ci spublico_ci tamemp_ci cotizando_ci instcot_ci	afiliado_ci /// Empleo 
+  formal_ci tipocontrato_ci ocupa_ci pension_ci	pensionsub_ci tipopen_ci instpen_ci	ylmpri_ci /// Empleo 
+  ylmpri_ci ylnmpri_ci ylmsec_ci ylnmsec_ci ylmotros_ci	ylnmotros_ci  ylm_ci ylnm_ci ynlm_ci ynlnm_ci nrylmpri_ci /// Ingresos individuo 
+  ylm_ch ylnm_ch ylmnr_ch ynlm_ch ynlnm_ch ylmhopri_ci ylmho_ci /// Ingresos del hogar 
+  nrylmpri_ci nrylmpri_ch /// No respuesta de ingresos  
+  remesas_ci remesas_ch ypen_ci ypensub_ci /// Remesas y pensiones
+  aedu_ci eduui_ci eduuc_ci edupre_ci eduac_ci asiste_ci edupub_ci pqnoasis1_ci asispre_ci /// Educación
+  luz_ch luzmide_ch combust_ch piso_ch pared_ch techo_ch resid_ch dorm_ch cuartos_ch cocina_ch telef_ch refrig_ch /// Vivienda
+  freez_ch auto_ch compu_ch internet_ch cel_ch vivi1_ch vivi2_ch viviprop_ch vivitit_ch vivialq_ch vivialqimp_ch /// Vivienda
+  aguared_ch aguafconsumo_ch aguafuente_ch aguadist_ch aguadisp1_ch aguadisp2_ch /// Agua y saneamineto
+  aguatrat_ch aguamala_ch aguamejorada_ch aguamide_ch bano_ch banoex_ch banomejorado_ch sinbano_ch  /// Agua y saneamineto
+  migrante_ci migrantiguo5_ci miglac_ci /// Migración
+  salmm_ci lp19_c lp31_c lp5_c lp_ci lpe_ci lp365_2017 lp685_2017 tc_c ipc_c, first /// Fuente externa 
+  /// the order was created by regex functions, sph variables are excluded
 
 
 
