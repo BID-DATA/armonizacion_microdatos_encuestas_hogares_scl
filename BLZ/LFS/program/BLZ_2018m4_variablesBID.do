@@ -102,6 +102,8 @@ label var pais_c "Acrónimo del país"
 ******************************
 egen idh_ch = group(HHID)
 label var idh_ch "Identificador Unico del Hogar"
+tostring idh_ch, replace
+
 
 *sort HHID PNUM
 *quietly by HHID PNUM: gen rep = cond(_N == 1, 0, _n)
@@ -111,6 +113,8 @@ label var idh_ch "Identificador Unico del Hogar"
 *******************************
 gen idp_ci = PNUM
 label var idp_ci "Identificador Individual dentro del Hogar"
+tostring idp_ci, replace
+
 
 ************************************
 *  RELACION CON EL JEFE DE HOGAR   *
@@ -136,7 +140,7 @@ label values relacion_ci relacion
 ************************************
 
 * Create a dummy indicating this person's income should NOT be included 
-gen miembros_ci = 0
+gen miembros_ci=(relacion_ci>=1 & relacion_ci<=5)
 replace miembros_ci=1 if (relacion_ci>=1 & relacion_ci<=4)
 label variable miembros_ci "Variable dummy que indica las personas que son miembros del Hogar"
 
@@ -791,6 +795,8 @@ label var ylnm_ci "Ingreso mensual NO laboral otras actividades"
 * INGRESO MENSUAL NO LABORAL NO MONETARIO OTRAS ACTIVIDADES  *
 **************************************************************
 gen ynlnm_ci= .
+egen ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci)
+
 label var ylnm_ci "Ingreso mensual NO laboral NO monetario otras actividades"
 
 ************************************
@@ -939,41 +945,21 @@ replace aedu_ci = 0 		if ED5New==17 | ED5New==18
 label var aedu_ci "número de años de educación culminados"
 
 **************
-** eduno_ci **
+* Line of code with indicator eduno_ci was deleted**************
+* Line of code with indicator eduno_ci was deleted* Line of code with indicator eduno_ci was deleted* Line of code with indicator eduno_ci was deleted
 **************
-gen eduno_ci = (aedu_ci == 0)
-replace eduno_ci = . if aedu_ci == . 
-label var eduno_ci "No tiene ningún nivel de instrucción"
-
-**************
-** edupi_ci **
-**************
-gen edupi_ci = (aedu_ci > 0 & aedu_ci < 6)
-replace edupi_ci = . if aedu_ci == .
-label var edupi_ci "No ha completado la educación primaria"
-
+* Line of code with indicator edupi_ci was deleted**************
+* Line of code with indicator edupi_ci was deleted* Line of code with indicator edupi_ci was deleted* Line of code with indicator edupi_ci was deleted
 ***************
-** edupc_ci  **
-***************
+* Line of code with indicator edupc_ci was deleted***************
 //Revisar este tema: https://www.moecst.gov.bz/education-sectors/primary-education/ 
-gen edupc_ci = (aedu_ci == 6)
-replace edupc_ci = . if aedu_ci == .
-label var edupc_ci "Ha completado la educación primaria"
-
+* Line of code with indicator edupc_ci was deleted* Line of code with indicator edupc_ci was deleted* Line of code with indicator edupc_ci was deleted
 **************
-** edusi_ci **
+* Line of code with indicator edusi_ci was deleted**************
+* Line of code with indicator edusi_ci was deleted* Line of code with indicator edusi_ci was deleted* Line of code with indicator edusi_ci was deleted
 **************
-gen edusi_ci = (aedu_ci > 6 & aedu_ci < 12)
-replace edusi_ci = . if aedu_ci == . 
-label var edusi_ci "No ha completado la educación secundaria"
-
-**************
-** edusc_ci **
-**************
-gen edusc_ci = (aedu_ci == 12)
-replace edusc_ci = . if aedu_ci == .
-label var edusc_ci "Ha completado la educación secundaria"
-
+* Line of code with indicator edusc_ci was deleted**************
+* Line of code with indicator edusc_ci was deleted* Line of code with indicator edusc_ci was deleted* Line of code with indicator edusc_ci was deleted
 **************
 ** eduui_ci **
 **************
@@ -990,33 +976,17 @@ replace eduuc_ci = . if aedu_ci == .
 label var eduuc_ci "Ha completado la educación terciaria"
 
 ***************
-** edus1i_ci **
+* Line of code with indicator edus1i_ci was deleted***************
+* Line of code with indicator edus1i_ci was deleted* Line of code with indicator edus1i_ci was deleted* Line of code with indicator edus1i_ci was deleted
 ***************
-gen edus1i_ci = (aedu_ci > 6 & aedu_ci < 10)
-replace edus1i_ci = . if aedu_ci == . 
-label var edus1i_ci "No ha completado el primer ciclo de la secundaria"
-
+* Line of code with indicator edus1c_ci was deleted***************
+* Line of code with indicator edus1c_ci was deleted* Line of code with indicator edus1c_ci was deleted* Line of code with indicator edus1c_ci was deleted
 ***************
-** edus1c_ci **
+* Line of code with indicator edus2i_ci was deleted***************
+* Line of code with indicator edus2i_ci was deleted* Line of code with indicator edus2i_ci was deleted* Line of code with indicator edus2i_ci was deleted
 ***************
-gen edus1c_ci = (aedu_ci == 10)
-replace edus1c_ci = . if aedu_ci == . 
-label var edus1c_ci "Ha completado el primer ciclo de la secundaria"
-
-***************
-** edus2i_ci **
-***************
-gen edus2i_ci = (aedu_ci == 11)
-replace edus2i_ci = . if aedu_ci == .
-label var edus2i_ci "No ha completado el segundo ciclo de la secundaria"
-
-***************
-** edus2c_ci **
-***************
-gen edus2c_ci = (aedu_ci == 12)
-replace edus2c_ci = . if aedu_ci == .
-label var edus2c_ci "Ha completado el segundo ciclo de la secundaria"
-
+* Line of code with indicator edus2c_ci was deleted***************
+* Line of code with indicator edus2c_ci was deleted* Line of code with indicator edus2c_ci was deleted* Line of code with indicator edus2c_ci was deleted
 ***************
 ** edupre_ci **
 ***************
@@ -1048,14 +1018,10 @@ label var asiste_ci "Asiste a algún centro de enseñanza"
 
 
 *****************
-** pqnoasis_ci **
-*****************
-gen pqnoasis_ci=.
-/*
-label var pqnoasis_ci "Porque no asiste a algún centro de enseñanza"
-label define pqnoasis 1"Muy joven" 2"Razones financieras" 3"Trabaja en casa o negocio familiar" 4"Distancia a la escuela/transporte" 5"Enfermedad/inhabilidad" 6"falta de especio en la escuela" 7"Otra" 9"NS/NR"  
-label values pqnoasis_ci pqnoasis
-*/
+* Line of code with indicator pqnoasis_ci was deleted*****************
+* Line of code with indicator pqnoasis_ci was deleted/*
+* Line of code with indicator pqnoasis_ci was deletedlabel define pqnoasis 1"Muy joven" 2"Razones financieras" 3"Trabaja en casa o negocio familiar" 4"Distancia a la escuela/transporte" 5"Enfermedad/inhabilidad" 6"falta de especio en la escuela" 7"Otra" 9"NS/NR"  
+* Line of code with indicator pqnoasis_ci was deleted*/
 
 
 ******************
@@ -1065,18 +1031,10 @@ label values pqnoasis_ci pqnoasis
 gen pqnoasis1_ci=.
 
 ***************
-** repite_ci **
-***************
-gen repite_ci=.
-label var repite_ci "Ha repetido algún año o grado"
-
+* Line of code with indicator repite_ci was deleted***************
+* Line of code with indicator repite_ci was deleted* Line of code with indicator repite_ci was deleted
 ******************
-** repiteult_ci **
-******************
-gen repiteult_ci=.
-label var repiteult_ci "Ha repetido el último grado"
-
-**************
+* Line of code with indicator repiteult was deleted* Line of code with indicator repiteult was deleted**************
 ** edupub_ci **
 ***************
 gen edupub_ci=.
@@ -1463,20 +1421,24 @@ do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&Exter
 /*_____________________________________________________________________________________________________*/
 * Verificación de que se encuentren todas las variables armonizadas 
 /*_____________________________________________________________________________________________________*/
-
-order region_BID_c region_c pais_c anio_c mes_c zona_c factor_ch	idh_ch	idp_ci	factor_ci sexo_ci edad_ci ///
-afroind_ci afroind_ch afroind_ano_c dis_ci dis_ch relacion_ci civil_ci jefe_ci nconyuges_ch nhijos_ch notropari_ch notronopari_ch nempdom_ch ///
-clasehog_ch nmiembros_ch miembros_ci nmayor21_ch nmenor21_ch nmayor65_ch nmenor6_ch	nmenor1_ch	condocup_ci ///
-categoinac_ci nempleos_ci emp_ci antiguedad_ci	desemp_ci cesante_ci durades_ci	pea_ci desalent_ci subemp_ci ///
-tiempoparc_ci categopri_ci categosec_ci rama_ci spublico_ci tamemp_ci cotizando_ci instcot_ci	afiliado_ci ///
-formal_ci tipocontrato_ci ocupa_ci horaspri_ci horastot_ci	pensionsub_ci pension_ci tipopen_ci instpen_ci	ylmpri_ci nrylmpri_ci ///
-tcylmpri_ci ylnmpri_ci ylmsec_ci ylnmsec_ci	ylmotros_ci	ylnmotros_ci ylm_ci	ylnm_ci	ynlm_ci	ynlnm_ci ylm_ch	ylnm_ch	ylmnr_ch  ///
-ynlm_ch	ynlnm_ch ylmhopri_ci ylmho_ci rentaimp_ch autocons_ci autocons_ch nrylmpri_ch tcylmpri_ch remesas_ci remesas_ch	ypen_ci	ypensub_ci ///
-salmm_ci tc_c ipc_c lp19_c lp31_c lp5_c lp_ci lpe_ci aedu_ci eduno_ci edupi_ci edupc_ci	edusi_ci edusc_ci eduui_ci eduuc_ci	edus1i_ci ///
-edus1c_ci edus2i_ci edus2c_ci edupre_ci eduac_ci asiste_ci pqnoasis_ci pqnoasis1_ci	repite_ci repiteult_ci edupub_ci ///
-aguared_ch aguadist_ch aguamala_ch aguamide_ch luz_ch luzmide_ch combust_ch	bano_ch banoex_ch des1_ch des2_ch piso_ch aguamejorada_ch banomejorado_ch ///
-pared_ch techo_ch resid_ch dorm_ch cuartos_ch cocina_ch telef_ch refrig_ch freez_ch auto_ch compu_ch internet_ch cel_ch ///
-vivi1_ch vivi2_ch viviprop_ch vivitit_ch vivialq_ch	vivialqimp_ch , first
+order region_BID_c region_c pais_c anio_c mes_c zona_c factor_ch idh_ch	idp_ci factor_ci factor_ch /// Identificación 
+  sexo_ci edad_ci relacion_ci civil_ci jefe_ci nconyuges_ch nhijos_ch notropari_ch notronopari_ch nempdom_ch /// Demográficas 
+  clasehog_ch nmiembros_ch miembros_ci nmayor21_ch nmenor21_ch nmayor65_ch nmenor6_ch nmenor1_ch /// Demográficas 
+  condocup_ci categoinac_ci emp_ci cesante_ci desemp_ci subemp_ci durades_ci pea_ci nempleos_ci antiguedad_ci desalent_ci  /// Empleo
+  horaspri_ci horastot_ci tiempoparc_ci categopri_ci categosec_ci rama_ci spublico_ci tamemp_ci cotizando_ci instcot_ci	afiliado_ci /// Empleo 
+  formal_ci tipocontrato_ci ocupa_ci pension_ci	pensionsub_ci tipopen_ci instpen_ci	ylmpri_ci /// Empleo 
+  ylmpri_ci ylnmpri_ci ylmsec_ci ylnmsec_ci ylmotros_ci	ylnmotros_ci  ylm_ci ylnm_ci ynlm_ci ynlnm_ci nrylmpri_ci /// Ingresos individuo 
+  ylm_ch ylnm_ch ylmnr_ch ynlm_ch ynlnm_ch ylmhopri_ci ylmho_ci /// Ingresos del hogar 
+  nrylmpri_ci nrylmpri_ch /// No respuesta de ingresos  
+  remesas_ci remesas_ch ypen_ci ypensub_ci /// Remesas y pensiones
+  aedu_ci eduui_ci eduuc_ci edupre_ci eduac_ci asiste_ci edupub_ci pqnoasis1_ci asispre_ci /// Educación
+  luz_ch luzmide_ch combust_ch piso_ch pared_ch techo_ch resid_ch dorm_ch cuartos_ch cocina_ch telef_ch refrig_ch /// Vivienda
+  freez_ch auto_ch compu_ch internet_ch cel_ch vivi1_ch vivi2_ch viviprop_ch vivitit_ch vivialq_ch vivialqimp_ch /// Vivienda
+  aguared_ch aguafconsumo_ch aguafuente_ch aguadist_ch aguadisp1_ch aguadisp2_ch /// Agua y saneamineto
+  aguatrat_ch aguamala_ch aguamejorada_ch aguamide_ch bano_ch banoex_ch banomejorado_ch sinbano_ch  /// Agua y saneamineto
+  migrante_ci migrantiguo5_ci miglac_ci /// Migración
+  salmm_ci lp19_c lp31_c lp5_c lp_ci lpe_ci lp365_2017 lp685_2017 tc_c ipc_c, first /// Fuente externa 
+  /// the order was created by regex functions, sph variables are excluded
 
 gen codindustria=.
 gen codocupa=.
