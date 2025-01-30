@@ -453,14 +453,13 @@ replace dis_ch = 1 if (dis_ch > 0)
 ****condocup_ci*
 ****************
 
-gen condocup_ci=.
-replace condocup_ci=1 if ocu500==1
-replace condocup_ci=2 if ocu500==2
-replace condocup_ci=3 if condocup_ci!=1 & condocup_ci!=2
-replace condocup_ci=4 if edad_ci<14
-label define condocup_ci 1"ocupados" 2"desocupados" 3"inactivos" 4"menor de PET"
-label value condocup_ci condocup_ci
-label var condocup_ci "Condicion de ocupacion utilizando definicion del pais"
+gen condocup_ci = .
+replace condocup_ci = 1 if ocu500 == 1
+replace condocup_ci = 2 if ocu500 == 2 | ocu500 == 3
+replace condocup_ci = 3 if missing(condocup_ci)
+replace condocup_ci = 4 if ocu500 == 4
+label define condocup_ci 1 "ocupados" 2 "desocupados" 3 "inactivos" 4 "menor de PET"
+label values condocup_ci condocup_ci
 
 * MGD 06/06/2014: Se conserva la generacion de condocup_ci con la variable creada ya que coincide con series externas, 
 * al hacerla considerando la definicion con variables originales, no coincide la serie.
@@ -478,16 +477,10 @@ recode condocup_ci1 .=4 if edad_ci<14
 ****************
 *afiliado_ci****
 ****************
-gen afiliado_ci=0     if condocup_ci==1 | condocup_ci==2 
-*replace afiliado_ci=1 if (p558a1==1 | p558a2==1 | p558a3==1 | p558a4==1) & afiliado_ci==0 
-replace afiliado_ci=1 if (p558a1==1 | p558a2==2 | p558a3==3 | p558a4==4) & afiliado_ci==0 
+gen afiliado_ci = (p558a1 == 1 | p558a2 == 1 | p558a3 == 1 | p558a4 == 1)
 label var afiliado_ci "Afiliado a la Seguridad Social"
 
-* Formalidad sin restringir a PEA
-gen afiliado_ci1=0     if condocup_ci>=1 & condocup_ci<=3
-*replace afiliado_ci=1 if (p558a1==1 | p558a2==1 | p558a3==1 | p558a4==1) & afiliado_ci==0 
-replace afiliado_ci1=1 if (p558a1==1 | p558a2==2 | p558a3==3 | p558a4==4) & afiliado_ci1==0 
-label var afiliado_ci1 "Afiliado a la Seguridad Social"
+
 
 ****************
 *tipopen_ci*****
@@ -503,11 +496,7 @@ label var instcot_ci "institución a la cual cotiza"
 *cotizando_ci***
 ****************
 *Agregado por SGR. Julio 2020
-replace p524b1=. if p524b1==999999
-replace p538b1=. if p538b1==999999
-
-gen cotizando_ci=0     if condocup_ci==1 | condocup_ci==2
-replace cotizando_ci=1 if ((p524b1>0 & p524b1!=.) | (p538b1>0 & p538b1!=.)) & cotizando_ci==0 /*a ocupados subordinados: empleados u obreros*/
+gen cotizando_ci = ((p419a1 <= 2 | p419a2 <= 2 | p419a3 <= 2 | p419a4 <= 2 | p419a5 <= 2) & condocup_ci == 1)
 label var cotizando_ci "Cotizante a la Seguridad Social"
 
 * Formalidad sin restringir a PEA
@@ -670,9 +659,7 @@ gen pea_ci=(emp_ci==1 | desemp_ci==1)
 *************
 ***formal_ci***
 *************
-gen formal_ci=(cotizando_ci==1)
-* Formalidad sin restringir a PEA
-gen formal_1=(cotizando_ci1==1)
+gen formal_ci= (afiliado_ci == 1 | cotizando_ci == 1)
 
 *****************
 ***desalent_ci***
