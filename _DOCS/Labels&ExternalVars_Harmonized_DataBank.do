@@ -257,7 +257,7 @@ label var eduac_ci "Superior universitario vs superior no universitario"
 label var asiste_ci "=1 si asiste actualmente a la escuela"						
 
 label var edupub_ci "Asiste a un centro de ensenanza público"
-label var asispre_ci "=1 si asiste actualmente a educación preescolar"	
+*label var asispre_ci "=1 si asiste actualmente a educación preescolar"	
 label var pqnoasis1_ci "Razones para no asistir a la escuela-variable armonizada"	
 
 *====================================================================================================================================*
