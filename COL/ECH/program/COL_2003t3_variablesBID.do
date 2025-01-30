@@ -21,7 +21,7 @@ local ronda t3
 local log_file = "$ruta\harmonized\\`PAIS'\\`ENCUESTA'\log\\`PAIS'_`ANO'`ronda'_variablesBID.log"
 local base_in  = "$ruta\survey\\`PAIS'\\`ENCUESTA'\\`ANO'\\`ronda'\data_merge\\`PAIS'_`ANO'`ronda'.dta"
 local base_out = "$ruta\harmonized\\`PAIS'\\`ENCUESTA'\data_arm\\`PAIS'_`ANO'`ronda'_BID.dta"
-                        
+                      
 capture log close
 log using "`log_file'", replace 
 
@@ -73,6 +73,47 @@ label define region_c       ///
 label value region_c region_c
 label var region_c "division politico-administrativa, departamento"
 
+
+***************
+***  ine01  ***
+***************
+gen ine01=real(dpto)
+label define ine01          /// 
+	5  "Antioquia"	        ///
+	8  "Atlantico"	        ///
+	11 "Bogota, D.C"	    ///
+	13 "Bolivar" 	        ///
+	15 "Boyacá"	            ///
+	17 "Caldas"	            ///
+	18 "Caquetá"	        ///
+	19 "Cauca"	            ///
+	20 "Cesar"	            ///
+	23 "Córdoba"	        ///
+	25 "Cundinamarca"       ///
+	27 "Chocó"	            ///
+	41 "Huila"	            ///
+	44 "La Guajira"	        ///
+	47 "Magdalena"	        ///
+	50 "Meta"	            ///
+	52 "Narino"	            ///
+	54 "Norte de Santander"	///
+	63 "Quindío"	        ///
+	66 "Risaralda"	        ///
+	68 "Santander"	        ///
+	70 "Sucre"	            ///
+	73 "Tolima"	            ///
+	76 "Valle del Cauca"	///
+	81 "Arauca"	            ///
+	85 "Casanare"	        ///
+	86 "Putumayo"	        ///
+	91 "Amazonas"	        ///
+	94 "Guainía"	        ///	
+	95 "Guaviare"	        ///	
+	97 "Vaupés" 	        ///		
+	99 "Vichada"
+label value ine01 ine01
+label var ine01 "division politico-administrativa, departamento"
+
 ************
 * Region_BID *
 ************
@@ -81,7 +122,6 @@ label var region_BID_c "Regiones BID"
 label define region_BID_c 1 "Centroamérica_(CID)" 2 "Caribe_(CCB)" 3 "Andinos_(CAN)" 4 "Cono_Sur_(CSC)"
 label value region_BID_c region_BID_c
 
-*
 ***************
 ***factor_ch***
 ***************
@@ -105,7 +145,6 @@ label variable idp_ci "ID de la persona en el hogar"
 **********
 ***zona***
 **********
-*
 destring clase, replace
 gen byte zona_c=0 if clase==2
 replace zona_c=1  if clase==1
@@ -139,6 +178,18 @@ label value mes_c mes_c
 ***************
 gen factor_ci=fex_c  
 label variable factor_ci "Factor de expansion del individuo"
+
+***************
+***upm_ci***
+***************
+gen upm_ci=.
+label variable upm_ci "Unidad Primaria de Muestreo"
+
+***************
+***estrato_ci***
+***************
+gen estrato_ci=.
+label variable estrato_ci "Estrato"
 
 		****************************
 		***VARIABLES DEMOGRAFICAS***
@@ -302,6 +353,42 @@ label variable nmenor1_ch "Numero de familiares menores a 1 anio"
 gen miembros_ci=(relacion_ci>=1 & relacion_ci<=4)
 label variable miembros_ci "Miembro del hogar"
 
+
+		*******************************
+		*** VARIABLES DE DIVERSIDAD ***
+		*******************************
+****************
+***afroind_ci***
+****************
+gen afroind_ci=. 
+label var afroind_ci "Raza o etnia del individuo"
+
+***************
+***afroind_ch***
+***************
+gen afroind_ch  = .
+label var afroind_ch "Raza/etnia del hogar en base a raza/etnia del jefe de hogar"
+
+*******************
+***afroind_ano_c***
+*******************
+gen afroind_ano_c=2006
+label var afroind_ano_c "Año Cambio de Metodología Medición Raza/Etnicidad"
+
+*******************
+***dis_ci***
+*******************
+gen dis_ci=. 
+label var dis_ci "Personas con discapacidad"
+
+*******************
+***dis_ch***
+*******************
+gen dis_ch=. 
+lab var dis_ch "Hogares con miembros con discapacidad"
+
+
+
 		************************************
 		*** VARIABLES DEL MERCADO LABORAL***
 		************************************
@@ -313,9 +400,9 @@ gen condocup_ci=.
 replace condocup_ci=1 if oc==1
 replace condocup_ci=2 if des==1
 replace condocup_ci=3 if ina==1
-replace condocup_ci=4 if edad_ci<12
+replace condocup_ci=4 if edad_ci<10
 label var condocup_ci "Condicion de ocupación de acuerdo a def de cada pais"
-label define condocup_ci 1 "Ocupado" 2 "Desocupado" 3 "Inactivo" 4 "Menor de PET" 
+label define condocup_ci 1 "Ocupado" 2 "Desocupado" 3 "Inactivo" 4 "Menor que 10" 
 label value condocup_ci condocup_ci
 
 /************************************************************************************************************
@@ -931,91 +1018,99 @@ label var aedu_ci "Anios de educacion aprobados"
 **************
 ***eduno_ci***
 **************
-gen byte eduno_ci=0
-replace eduno_ci=1 if aedu_ci==0
-label variable eduno_ci "Sin educacion"
+	g byte eduno_ci = aedu_ci == 0
+	replace eduno_ci=. if aedu_ci==.
+	la var eduno_ci "Sin educación"
 
 **************
 ***edupi_ci***
 **************
-gen byte edupi_ci=0
-replace edupi_ci=1 if (aedu_ci>=1 & aedu_ci<5) 
-label variable edupi_ci "Primaria incompleta"
+	g byte edupi_ci = (aedu_ci >= 1 & aedu_ci < 5) 
+	replace edupi_ci=. if aedu_ci==.
+	la var edupi_ci "Primaria incompleta"
 
 **************
 ***edupc_ci***
 **************
-gen byte edupc_ci=0
-replace edupc_ci=1 if aedu_ci==5 
-label variable edupc_ci "Primaria completa"
+	g byte edupc_ci = aedu_ci == 5 
+	replace edupc_ci=. if aedu_ci==.
+	la var edupc_ci "Primaria completa"
 
 **************
 ***edusi_ci***
 **************
-gen byte edusi_ci=0
-replace edusi_ci=1 if (aedu_ci>=6 & aedu_ci<11) 
-label variable edusi_ci "Secundaria incompleta"
-
+	gen byte edusi_ci=0
+	replace edusi_ci=1 if (aedu_ci>=6 & aedu_ci<11) 
+	replace edusi_ci=. if aedu_ci==.
+	label variable edusi_ci "Secundaria incompleta"
+	
 **************
 ***edusc_ci***
 **************
-gen byte edusc_ci=0
-replace edusc_ci=1 if (aedu_ci>=11 & aedu_ci<=13) & NIVEL==3 
-label variable edusc_ci "Secundaria completa"
+**************
+	g byte edusc_ci = (aedu_ci==11) 
+	replace edusc_ci=. if aedu_ci==.
+	la var edusc_ci "Secundaria completa"
 
 **************
 ***eduui_ci***
 **************
 *Y.L - > Para la educación superior no es posible saber cuantos anios dura el ciclo esta es una aprox.
-gen byte eduui_ci=(aedu_ci>11 & aedu_ci<16)
-label variable eduui_ci "Superior incompleto"
+	gen byte eduui_ci=(aedu_ci>11 & aedu_ci<16)
+	replace eduui_ci=. if aedu_ci==.
+	label variable eduui_ci "Superior incompleto"
 
 ***************
 ***eduuc_ci***
 ***************
 *Y.L. -> Para la educación superior no es posible saber cuantos anios dura el ciclo esta es una aprox.
-gen byte eduuc_ci= (aedu_ci>=16 & aedu_ci!=.)
-label variable eduuc_ci "Superior completo"
+	gen byte eduuc_ci= (aedu_ci>=16 & aedu_ci!=.)
+	replace eduuc_ci=. if aedu_ci==.
+	label variable eduuc_ci "Superior completo"
 
 ***************
 ***edus1i_ci***
 ***************
-gen byte edus1i_ci=0
-replace edus1i_ci=1 if (aedu_ci>=6 & aedu_ci<9)
-label variable edus1i_ci "1er ciclo de la secundaria incompleto"
+	gen byte edus1i_ci=0
+	replace edus1i_ci=1 if (aedu_ci>=6 & aedu_ci<9)
+	replace edus1i_ci=. if aedu_ci==.
+	label variable edus1i_ci "1er ciclo de la secundaria incompleto"
 
 ***************
 ***edus1c_ci***
 ***************
-gen byte edus1c_ci=0
-replace edus1c_ci=1 if aedu_ci==9
-label variable edus1c_ci "1er ciclo de la secundaria completo"
+	g byte edus1c_ci = aedu_ci == 9
+	replace edus1c_ci=. if aedu_ci==.
+	la var edus1c_ci "1er ciclo de la secundaria completo"
 
 ***************
 ***edus2i_ci***
 ***************
-gen byte edus2i_ci=0
-replace edus2i_ci=1 if aedu_ci==10 
-label variable edus2i_ci "2do ciclo de la secundaria incompleto"
-
+	g byte edus2i_ci = aedu_ci == 10 
+	replace edus2i_ci=. if aedu_ci==.
+	la var edus2i_ci "2do ciclo de la secundaria incompleto"
+	
 ***************
 ***edus2c_ci***
 ***************
-
-gen byte edus2c_ci=0
-replace edus2c_ci=1 if (aedu_ci>=11 & aedu_ci<=13) 
-label variable edus2c_ci "2do ciclo de la secundaria completo"
-
-local var = "eduno edupi edupc edusi edusc edusc eduui eduuc edus1i edus1c edus2i edus2c"
-foreach x of local var {
-replace `x'_ci=. if aedu_ci==.
-}
-
+	g byte edus2c_ci = (aedu_ci == 11)
+	replace edus2c_ci=. if aedu_ci==.
+	la var edus2c_ci "2do ciclo de la secundaria completo"
+	
 ***************
 ***edupre_ci***
 ***************
-gen byte edupre_ci=(p10==201)
-label variable edupre_ci "Educacion preescolar"
+	g byte edupre_ci =.
+	la var edupre_ci "Educación preescolar"
+
+***************
+***asispre_ci**
+***************
+* p8 =Asiste a la escuela, colegio o universidad?
+	destring p8, replace
+	destring p10n, replace
+	g asispre_ci= (p8==1 & p10n==2 & p10u<2)
+	la var asispre_ci "Asiste a educación prescolar"
 
 **************
 ***eduac_ci***
@@ -1043,7 +1138,7 @@ label var pqnoasis "Razones para no asistir a la escuela"
 **************
 **Daniela Zuluaga- Enero 2018: Se agrega la variable pqnoasis1_ci cuya sintaxis fue elaborada por Mayra Saenz**
 
-g       pqnoasis1_ci = .
+g pqnoasis1_ci = .
 
 ***************
 ***repite_ci***
@@ -1093,7 +1188,7 @@ gen aguafuente_ch =.
 *************
 *aguadist_ch*
 *************
-gen aguadist_ch=0
+gen aguadist_ch=.
 
 
 **************
@@ -1351,7 +1446,47 @@ label var vivialqimp_ch "Alquiler mensual imputado"
 gen  tcylmpri_ci =.
 gen tcylmpri_ch=.
 gen pqnoasis_ci=.
+gen benefdes_ci=.
+gen ybenefdes_ci=.
 
+
+******************************
+*** VARIABLES DE MIGRACION ***
+******************************
+
+	*******************
+	*** migrante_ci ***
+	*******************
+	gen migrante_ci=.
+	label var migrante_ci "=1 si es migrante"
+	
+	**********************
+	*** migantiguo5_ci ***
+	**********************
+	gen migantiguo5_ci=.
+	label var migantiguo5_ci "=1 si es migrante antiguo (5 anos o mas)"
+		
+	**********************
+	*** migrantelac_ci ***
+	**********************	
+	gen migrantelac_ci=.
+	label var migrantelac_ci "=1 si es migrante proveniente de un pais LAC"
+	
+	**********************
+	*** migrantiguo5_ci ***
+	**********************	
+	gen migrantiguo5_ci=.
+	label var migrantiguo5_ci "=1 si es migrante antiguo (5 anos o mas)"
+		
+	**********************
+	*** miglac_ci ***
+	**********************
+	
+	gen miglac_ci=.
+	label var miglac_ci "=1 si es migrante proveniente de un pais LAC"
+
+
+	
 /*_____________________________________________________________________________________________________*/
 * Asignación de etiquetas e inserción de variables externas: tipo de cambio, Indice de Precios al 
 * Consumidor (2011=100), Paridad de Poder Adquisitivo (PPA 2011),  líneas de pobreza
