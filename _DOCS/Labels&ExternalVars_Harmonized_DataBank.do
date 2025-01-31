@@ -32,29 +32,29 @@ label var lp685_2017 "Línea de pobreza USD 6.85 día en moneda local a precios 
 *====================================================================================================================================*
 *                                                         VARIABLES DE IDENTIFICACION                                                *
 *====================================================================================================================================*
-cap label var region_BID_c "Regiones BID"
-	cap label define region_BID_c 1 "Centroamérica_(CID)" 2 "Caribe_(CCB)" 3 "Andinos_(CAN)" 4 "Cono_Sur_(CSC)", add modify
-	cap label value region_BID_c region_BID_c
+label var region_BID_c "Regiones BID"
+	label define region_BID_c 1 "Centroamérica_(CID)" 2 "Caribe_(CCB)" 3 "Andinos_(CAN)" 4 "Cono_Sur_(CSC)", add modify
+	label value region_BID_c region_BID_c
 
-cap label var factor_ci "Factor de expansion del individuo"
-cap label var factor_ch "Factor de expansion del hogar"
+label var factor_ci "Factor de expansion del individuo"
+label var factor_ch "Factor de expansion del hogar"
 
-cap label var idh_ch "ID del hogar"
-cap label var idp_ci "ID de la persona en el hogar"
+label var idh_ch "ID del hogar"
+label var idp_ci "ID de la persona en el hogar"
 
 *label var region_c "Regiones especifica de cada país"
 
-cap label var zona_c "Zona del pais"
-	cap label define zona_c 1 "urbana" 0 "rural", add modify
-	cap label value zona_c zona_c
+label var zona_c "Zona del pais"
+	label define zona_c 1 "urbana" 0 "rural", add modify
+	label value zona_c zona_c
 
 	
-cap label var pais_c "Nombre del País"
-cap label var anio_c "Anio de la encuesta" 
+label var pais_c "Nombre del País"
+label var anio_c "Anio de la encuesta" 
 *label var semestre_c "Semestre de la encuesta" /* No existe en todas las encuestas*/
-cap label var mes_c "Mes de la encuesta" 
-cap label define mes_c 1 "Enero" 2 "Febrero" 3 "Marzo" 4 "Abril" 5 "Mayo" 6 "Junio" 7 "Julio" 8 "Agosto" 9 "Septiembre" 10 "Octubre" 11 "Noviembre" 12 "Diciembre", add modify 
-cap label value mes_c mes_c
+label var mes_c "Mes de la encuesta" 
+label define mes_c 1 "Enero" 2 "Febrero" 3 "Marzo" 4 "Abril" 5 "Mayo" 6 "Junio" 7 "Julio" 8 "Agosto" 9 "Septiembre" 10 "Octubre" 11 "Noviembre" 12 "Diciembre", add modify 
+label value mes_c mes_c
 
 *====================================================================================================================================*
 *                                                          VARIABLES DEMOGRAFICAS                                                    *
