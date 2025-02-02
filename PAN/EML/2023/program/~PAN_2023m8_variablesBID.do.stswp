@@ -1139,8 +1139,6 @@ ing_ptmc_ch pnc_elegible_ci pnc_ci pnc_ch ing_pnc_ci ing_pnc_ch potrot_ci potrot
 salmm_ci lp19_c lp31_c lp5_c lp_ci lpe_ci lp365_2017 lp685_2017 tc_c ipc_c, first /// Fuente externa  
 
 
-clonevar codocupa=p26reco
-clonevar codindustria=p28reco
 compress
 
 foreach i of varlist _all {
