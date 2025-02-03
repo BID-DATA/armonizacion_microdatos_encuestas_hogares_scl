@@ -318,7 +318,7 @@ gen ind_jefe= ind_ci  if relacion_ci==1
 egen ind_ch  = min(ind_jefe), by(idh_ch) 
 drop ind_jefe
 
-gen afroind_ano_c=2017
+gen afroind_ano_c=2019
 ** cambia la encuesta pero la pregunta es la misma 
 
 
@@ -341,20 +341,37 @@ egen afroind_ch  = min(afroind_jefe), by(idh_ch)
 
 drop afroind_jefe
 
+
 	*******************
 	*** dis_ci ***
 	*******************
-gen dis_ci=.
-gen disWG_ci=.
-** Las preguntas realizadas no cumplen con criterio WG
+destring  p4z1_cami p4z2_usarb p4z3_habl p4z4_enten p4z5_cuid p4z6_ver p4z7_oir, replace
+gen dis_ci= 1 if ((p4z1_cami>1 & p4z1_cami!=.) | (p4z2_usarb>1 & p4z2_usarb!=.) | (p4z3_habl>1 & p4z3_habl!=.) | (p4z4_enten>1 & p4z4_enten!=.) | (p4z5_cuid>1 & p4z5_cuid!=.) | (p4z6_ver>1 & p4z6_ver!=.) | (p4z7_oir>1 & p4z7_oir!=.))
+replace dis_ci=0 if p4z1_cami==1 & p4z2_usarb==1 & p4z3_habl==1 & p4z4_enten==1 & p4z5_cuid==1 & p4z6_ver==1 & p4z7_oir==1
 
-destring p4q, replace
-gen PAN_dis_ci= 0 if p4q==2
-replace PAN_dis_ci=1 if p4q==1
+**disWG_ci 
+gen disWG_ci = .  // Inicializa con missing
+replace disWG_ci = 1 if (p4z1_cami > 2 & p4z1_cami != .) | ///
+                      (p4z2_usarb > 2 & p4z2_usarb != .) | ///
+                      (p4z3_habl > 2 & p4z3_habl != .) | ///
+                      (p4z4_enten > 2 & p4z4_enten != .) | ///
+                      (p4z5_cuid > 2 & p4z5_cuid != .) | ///
+                      (p4z6_ver > 2 & p4z6_ver != .) | ///
+                      (p4z7_oir > 2 & p4z7_oir != .)  
+replace disWG_ci = 0 if (p4z1_cami <= 2 & p4z1_cami != .) & ///
+                      (p4z2_usarb <= 2 & p4z2_usarb != .) & ///
+                      (p4z3_habl <= 2 & p4z3_habl != .) & ///
+                      (p4z4_enten <= 2 & p4z4_enten != .) & ///
+                      (p4z5_cuid <= 2 & p4z5_cuid != .) & ///
+                      (p4z6_ver <= 2 & p4z6_ver != .) & ///
+                      (p4z7_oir <= 2 & p4z7_oir != .)  
 
-gen dis_ch=.
 
-
+	*******************
+	*** dis_ch ***
+	*******************
+egen dis_ch = max(dis_ci), by(idh_ch)
+ 
 ******************************************************************************
 *	LABOR MARKET
 ******************************************************************************
@@ -1057,10 +1074,10 @@ egen y_hog_ci  = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci), missing
 bys idh_ch: egen y_hog_ch  = sum(y_hog_ci)
 
 **Programas Seleccionados: Transferencia monetaria condicionada; SENAPAN; Beca Universal
-gen ptmc_ci = (p56_g1 != . | p56_g2 != . | p56_f2 != .)
+gen ptmc_ci = (p56_g1 != . | p56_g2 != . | p56_f1 != .| p56_f2 != .)
 bys idh_ch: egen ptmc_ch = max(ptmc_ci)
 
-egen ing_ptmc_ci= rowtotal(p56_g2 p56_g2 p56_f2), m
+egen ing_ptmc_ci= rowtotal(p56_g2 p56_g2 p56_f1 p56_f2), m
 bys idh_ch: egen ing_ptmc_ch= sum(ing_ptmc_ci)
 
 
@@ -1087,20 +1104,29 @@ gen pcasht_ch = (ptmc_ch==1 | pnc_ch==1 | potrot_ch==1)
 
 ** Referencia externa *** 
 
-gen salmm_ci = .
-gen lp19_ci = .
-gen lp31_ci = .
-gen lp5_ci = .
-gen lp_ci = .
-gen lpe_ci = .
-gen lp365_2017 = .
-gen lp685_2017 = .
-gen lp14_2017 = .
-gen lp81_2017 = .
-gen tc_c = .
-gen ipc_c = .
+* Fuente oficial desagrega a multiples niveles https://www.gacetaoficial.gob.pa/pdfTemp/29446_C/89257.pdf
+** LMK sugiere tomar de referencia valor nacional en prensa:https://ndmarketingdigital.com/cuanto-es-el-salario-minimo-en-panama-en-el-2023/
+gen salmm_ci= 850 
+label var salmm_ci "Salario minimo legal"
 
-	
+
+*********
+*lp_ci***
+*********
+*** https://www.mef.gob.pa/wp-content/uploads/2024/10/Pobreza-y-distribucion-del-ingreso-de-los-hogares-Anos-2022-y-2023.pdf
+
+gen lp_ci = 113.03 if zona_c==0
+replace lp_ci =149.96 if zona_c==1
+
+label var lp_ci "Linea de pobreza oficial del pais (mensual)"
+
+*********
+*lpe_ci***
+*********
+gen lpe_ci =64.54 if zona_c==0
+replace lpe_ci =75.84 if zona_c==1
+label var lpe_ci "Linea de indigencia oficial del pais (mensual)"
+
 /*_____________________________________________________________________________________________________*/
 * Asignación de etiquetas e inserción de variables externas: tipo de cambio, Indice de Precios al 
 * Consumidor (2011=100), líneas de pobreza
@@ -1138,9 +1164,6 @@ nmiembros_sph_ch y_hog_ci y_hog_ch y_pc_net_ch ptmc_ci ptmc_ch ing_ptmc_ci /// P
 ing_ptmc_ch pnc_elegible_ci pnc_ci pnc_ch ing_pnc_ci ing_pnc_ch potrot_ci potrot_ch ing_otrot_ci ing_otrot_ch pcasht_ch /// Protección social  
 salmm_ci lp19_c lp31_c lp5_c lp_ci lpe_ci lp365_2017 lp685_2017 tc_c ipc_c, first /// Fuente externa  
 
-
-clonevar codocupa=p26reco
-clonevar codindustria=p28reco
 compress
 
 foreach i of varlist _all {
