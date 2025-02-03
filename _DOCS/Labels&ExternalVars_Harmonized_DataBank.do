@@ -6,28 +6,42 @@
 *====================================================================================================================================*
 global ruta = "${surveysFolder}"
 capture drop _merge
-merge m:1 pais_c anio_c using "$ruta\general_documentation\data_externa\poverty\International_Poverty_Lines\5_International_Poverty_Lines_LAC_long_PPP17",   keepusing (lp19_2011 lp31_2011 lp5_2011 lp365_2017 lp685_2017 ppp_2011 ppp_2017 cpi_2011 cpi_2017 tc_wdi ppp_wdi)
+merge m:1 pais_c anio_c using "$ruta\general_documentation\data_externa\poverty\International_Poverty_Lines\5_International_Poverty_Lines_LAC_long_PPP17", keepusing (lp19_2011 lp31_2011 lp5_2011 lp365_2017 lp685_2017 lp14_2017 lp81_2017 ppp_2011 ppp_2017 cpi cpi2011 cpi2017 cpi_2011 cpi_2017 tc_wdi ppp_wdi)
 
 drop if _merge ==2
 
 g tc_c     = tc_wdi
-g ipc_c    = cpi_2011
-*g ppa_c    = ppp_wdi2011
-g lp19_ci  = lp19_2011 
-g lp31_ci  = lp31_2011 
-g lp5_ci   = lp5_2011
+g ppp_c    = ppp_wdi
 
-drop ppp_2011 cpi_2011 lp19_2011 lp31_2011 lp5_2011 tc_wdi _merge
+g cpi_c    = cpi
+g ratio_cpi2011 = cpi_2011
+g ratio_cpi2017 = cpi_2017
+
+drop tc_wdi ppp_wdi cpi_2011 cpi_2017 _merge
 
 *====================================================================================================================================*
 *                                                         VARIABLES DE LÍNEAS DE POBREZA                                              *
 *====================================================================================================================================*
+label var tc_c     "Tipo de cambio oficial (año de la encuesta)"
+label var ppp_c    "Poder de paridad adquisitivo (año de la encuesta)"
+label var ppp_2011 "Poder de paridad adquisitivo (PPP) 2011"
+label var ppp_2017 "Poder de paridad adquisitivo (PPP) 2017"
 
-label var ppp_wdi "Purchasing Power Parity Factor (PPP)"
-label var ppp_2017 "Purchasing Power Parity Factor (PPP) 2017"
-label var cpi_2017 "Consumer Price Index 2017"
-label var lp365_2017 "Línea de pobreza USD 3.65 día en moneda local a precios corrientes a PPA 2017"
-label var lp685_2017 "Línea de pobreza USD 6.85 día en moneda local a precios corrientes a PPA 2017"
+label var cpi_c   "Índice de precios al consumidor (año de la encuesta)"
+label var cpi2011 "Índice de precios al consumidor (2011)"
+label var cpi2017 "Índice de precios al consumidor (2017)"
+
+label var ratio_cpi2011 "Tasa de índice de precios al consumidor (CPI_actual/CPI_2011)"
+label var ratio_cpi2017 "Tasa de índice de precios al consumidor (CPI_actual/CPI_2017)"
+
+label var lp19_2011 "Línea de pobreza extrema (WB) USD 1.9 per capita, PPP 2011"
+label var lp31_2011 "Línea de pobreza extrema USD 3.1 per capita, PPP 2011"
+label var lp5_2011  "Línea de pobreza moderada USD 5 per capita, PPP 2011"
+
+label var lp365_2017 "Línea de pobreza extrema USD 3.1 per capita, moneda local PPP 2017"
+label var lp685_2017 "Línea de pobreza moderada USD 6.85 per capita, moneda local PPP 2017"
+label var lp14_2017  "Línea de vulnerabilidad USD 14.15 per capita, moneda local PPP 2017"
+label var lp81_2017  "Línea de clase media USD 81.22 per capita, moneda local PPP 2017"
 
 *====================================================================================================================================*
 *                                                         VARIABLES DE IDENTIFICACION                                                *
