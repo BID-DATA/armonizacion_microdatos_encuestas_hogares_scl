@@ -1136,10 +1136,7 @@ egen ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci)
 	***************
 * Line of code with indicator edus2c_ci was deleted	***************
 * Line of code with indicator edus2c_ci was deleted* Line of code with indicator edus2c_ci was deleted* Line of code with indicator edus2c_ci was deleted
-	local var = "eduno edupi edupc edusi edusc edusc eduui eduuc edus1i edus1c edus2i edus2c"
-	foreach x of local var {
-	replace `x'_ci=. if aedu_ci==.
-	}
+	
 
 	***************
 	***edupre_ci***
