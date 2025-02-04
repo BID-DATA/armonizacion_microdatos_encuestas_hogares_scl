@@ -1410,7 +1410,7 @@ do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&Exter
   /// the order was created by regex functions, sph variables are excluded /// Fuente externa 
   /// the order was created by regex functions, sph variables are excluded
 
-foreach var of varlist  lp19_ci lp31_ci lp5_ci {
+foreach var of varlist  lp19_2011 lp31_2011 lp5_2011 {
 
 		
 		format `var' %18.4f
