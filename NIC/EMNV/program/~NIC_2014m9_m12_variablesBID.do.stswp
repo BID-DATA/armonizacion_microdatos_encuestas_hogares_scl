@@ -40,10 +40,12 @@ Fecha última modificación: 09 de noviembre de 2016
 
 							SCL/LMK - IADB
 ****************************************************************************/
-/***************************************************************************
+***************************************************************************
 Detalle de procesamientos o modificaciones anteriores:
 
-****************************************************************************/
+****************************************************************************
+*/
+
 use `base_in', clear
 
 ************
@@ -311,13 +313,13 @@ drop buscotrab
 */
 
 * Alternativa 2 con variables originales tomando en cuenta la definicion de armonizacion MGD 06/05/2014
-gen condocup_ci=.
+gen condocup_ci = .
 *2014, 10 Modificacion MLO (desactivo la opcion si contesta ninguno en p2)
 *replace condocup_ci=1 if s5p1==1 | (s5p2>=1 & s5p2<=10) | (s5p4>=1 & s5p4<=4) | (s5p3==1 & s5p6<4)
-replace condocup_ci=1 if s5p1==1 | (s5p2>=1 & s5p2<10) | (s5p4>=1 & s5p4<=4) | s5p4==7 | s5p4==8 | s5p5==1 | (s5p3==1 & (s5p6<4 & s5p6!=.))
-replace condocup_ci=2 if condocup_ci!=1 & s5p7==1 & s5p11==1
-recode condocup_ci .=3 if edad_ci>=10
-recode condocup_ci .=4 if edad_ci<10
+replace condocup_ci = 1 if s5p1 == 1 | (s5p4 >= 1 & s5p4 <= 4) | s5p4 == 7 | s5p4 == 8 | s5p5 == 1 | (s5p3 == 1 & (s5p6 < 4 & s5p6! = .))
+replace condocup_ci = 2 if condocup_ci! = 1 & s5p7 == 1 & s5p11 == 1
+recode condocup_ci . = 3 if edad_ci >= 10
+recode condocup_ci . = 4 if edad_ci < 10
 label define condocup_ci 1"ocupados" 2"desocupados" 3"inactivos" 4"menor que 14"
 label value condocup_ci condocup_ci
 label var condocup_ci "Condicion de ocupacion utilizando definicion del pais"
@@ -343,15 +345,14 @@ replace pea_ci=1 if emp_ci==1 |desemp_ci==1
 ****************
 *afiliado_ci****
 ****************
-gen afiliado_ci=.
+gen afiliado_ci = .
 label var afiliado_ci "Afiliado a la Seguridad Social"
 *Nota: seguridad social comprende solo los que en el futuro me ofrecen una pension.
 
 ****************
 *cotizando_ci***
 ****************
-gen cotizando_ci=0     if condocup_ci==1 | condocup_ci==2 
-replace cotizando_ci=1 if (s5p28a==1) & cotizando_ci==0 
+gen cotizando_ci = (s5p28a == 1) 
 label var cotizando_ci "Cotizante a la Seguridad Social"
 
 ****************
@@ -433,6 +434,7 @@ label var lpe_ci "Linea de indigencia oficial del pais"
 /************************************************************************************************************
 * 3. Creación de nuevas variables de SS and LMK a incorporar en Armonizadas
 ************************************************************************************************************/
+*/
 
 ** Ultimo cambio MGD 04/29/2014
 gen rama_ci=.
@@ -674,8 +676,8 @@ label define categoinac_ci 1 "jubilados o pensionados" 2 "Estudiantes" 3 "Quehac
 *Modificación Mayra Sáenz - Septiembre 2014
 *Afiliado y cotizando están como missing values.
 * MGD 2017: cotizando si tiene valor
-gen byte formal_ci=cotizando_ci
-label var formal_ci "1=afiliado o cotizante / PEA"
+gen formal_ci = (afiliado_ci == 1 | cotizando_ci == 1)
+label var formal_ci "1=afiliado o cotizante"
 
 
 ************************************************************************

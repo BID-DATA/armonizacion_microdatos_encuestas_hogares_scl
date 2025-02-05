@@ -1465,9 +1465,7 @@ keep if sexo_ci!=.
 	*** migrante_ci ***
 	*******************
 	
-	gen migrante_ci=inlist(i_h03a,2,3,4) if i_h03a!=. & i_h03a!=-9
-	label var migrante_ci "=1 si es migrante"
-	
+	gen migrante_ci= .
 	**********************
 	*** migantiguo5_ci ***
 	**********************
