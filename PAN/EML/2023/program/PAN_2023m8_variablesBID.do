@@ -943,10 +943,16 @@ gen vivi2_ch=.
 
 destring v1a_tenenc, replace
 gen viviprop_ch=.
-replace viviprop_ch=0 if v1a_tenenc==1
-replace viviprop_ch=1 if v1a_tenenc==3
-replace viviprop_ch=2 if v1a_tenenc==2
-replace viviprop_ch=3 if v1a_tenenc>=4 & v1a_tenenc<=6 
+/*
+0 Alquilada 
+1  Propia y totalmente pagada        
+2  Propia y en proceso de pago
+3  Ocupada (propia de facto)
+*/
+replace viviprop_ch=0 if v1a_tenenc==1     //1 alquilada
+replace viviprop_ch=1 if v1a_tenenc==3     //3 propia
+replace viviprop_ch=2 if v1a_tenenc==2   // 2 hipoteca
+replace viviprop_ch=3 if v1a_tenenc==4  // 4 cedida
 
 gen vivitit_ch=.
 
@@ -1058,9 +1064,10 @@ gen aguatrat_ch =.
 	*** miglac_ci ***
 	**********************
 	
-gen miglac_ci = inlist(p5a_codigo, 107, 211, 212, 213, 214, 217, 218, 232, 233, 234, 235, 242, 243, 244, 249, 311, 312, 313, 314, 321, 331, 333, 341, 343, 351, 353, 361, 381)  
-replace miglac_ci = 0 if miglac_ci == . & migrante_ci == 1  
-label var miglac_ci "=1 si es migrante proveniente de un país LAC"  
+	gen miglac_ci = inlist(p5a_codigo, 107, 211, 212, 213, 214, 217, 218, 232, 233, 234, 235, 242, 243, 244, 249, 311, 312, 313, 314, 321, 331, 333, 341, 343, 351, 353, 361, 381)  
+	replace miglac_ci = 0 if miglac_ci ==. & migrante_ci == 1  
+	replace miglac_ci = . if p5a_codigo ==1
+	label var miglac_ci "=1 si es migrante proveniente de un país LAC"  
 
 
 *** Proteccion Social *** 
