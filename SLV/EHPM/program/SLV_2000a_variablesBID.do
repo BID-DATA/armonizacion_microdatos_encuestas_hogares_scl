@@ -519,8 +519,7 @@ gen desalent_ci=(emp_ci==0 & busco==2 & (pqnobus==1 | pqnobus==3))
 *****************
 ***horaspri_ci***
 *****************
-destring hrshab, generate (hrshabi)
-replace hrshabi=. if idh_ch==14615 & idp_ci==1 
+destring hrshab, generate (hrshabi) 
 /*Ajuste porque esta persona tiene un 99 en hrshabi y sino se hace missing cuando no corresponde*/
 
 gen horaspri_ci=horastra if trabajo==1
