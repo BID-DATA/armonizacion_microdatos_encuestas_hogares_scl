@@ -124,14 +124,13 @@ tostring idh_ch, replace
 *************
 ****idp_ci****
 **************
-tostring idh_ch, gen (aux_idh_ch)
 tostring r101, gen (aux_r101)
-gen idp_ci= aux_idh_ch + aux_r101
+gen idp_ci= idh_ch + aux_r101
 destring idp_ci, replace
 label variable idp_ci "ID de la persona en el hogar"
 tostring idp_ci, replace
 
-drop aux_idh_ch aux_r101
+drop aux_r101
 
 **********
 ***zona***
