@@ -268,14 +268,8 @@ egen byte nmenor21_ch=sum((relacion_ci>0 & relacion_ci<=5) & (edad_ci<21)), by(i
 egen byte nmayor65_ch=sum((relacion_ci>0 & relacion_ci<=5) & (edad_ci>=65)), by(idh_ch)
 egen byte nmenor6_ch=sum((relacion_ci>0 & relacion_ci<=5) & (edad_ci<6)), by(idh_ch)
 egen byte nmenor1_ch=sum((relacion_ci>0 & relacion_ci<=5) & (edad_ci<1)), by(idh_ch)
-*/
-*2014, 01 Modificacion MLO segun docuemnto metodologico
-egen byte nmiembros_ch=sum(relacion_ci>0 & relacion_ci<5), by (idh_ch)
-egen byte nmayor21_ch=sum((relacion_ci>0 & relacion_ci<5) & (edad_ci>=21 & edad_ci<=98)), by(idh_ch)
-egen byte nmenor21_ch=sum((relacion_ci>0 & relacion_ci<5) & (edad_ci<21)), by(idh_ch)
-egen byte nmayor65_ch=sum((relacion_ci>0 & relacion_ci<5) & (edad_ci>=65)), by(idh_ch)
-egen byte nmenor6_ch=sum((relacion_ci>0 & relacion_ci<5) & (edad_ci<6)), by(idh_ch)
-egen byte nmenor1_ch=sum((relacion_ci>0 & relacion_ci<5) & (edad_ci<1)), by(idh_ch)
+
+
 /***********
 miembros_ci
 ************/
