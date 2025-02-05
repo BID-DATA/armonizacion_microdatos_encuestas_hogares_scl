@@ -339,8 +339,12 @@ replace afroind_ci=3 if p4d_indige==11 & p4f_afrod==8
 gen afroind_jefe= afroind_ci if relacion_ci==1
 egen afroind_ch  = min(afroind_jefe), by(idh_ch) 
 
+	***************
+	*** noafroind_ch ***
+	***************
+gen noafroind_ch = 0
+replace noafroind_ch = 1 if (ind_ci == 0 | afro_ci == 0) & jefe_ci == 1
 drop afroind_jefe
-
 
 	*******************
 	*** dis_ci ***
@@ -1042,13 +1046,12 @@ gen aguatrat_ch =.
 	label var migrante_ci "=1 si es migrante"
 	
 	**********************
-	*** migantiguo5_ci ***
+	*** migrantiguo5_ci ***
 	**********************
-	
 	destring p5b_anio, replace
-	gen migantiguo5_ci=1 if migrante_ci==1 & p5b_anio<=2018
-	replace migantiguo5_ci=0 if migrante_ci==1 & p5b_anio>2018
-	label var migantiguo5_ci "=1 si es migrante antiguo (5 anos o mas)"
+	gen migrantiguo5_ci=1 if migrante_ci==1 & p5b_anio>=2018
+	replace migrantiguo5_ci=0 if migrante_ci==1 & p5b_anio<2018
+	label var migrantiguo5_ci "=1 si es migrante antiguo (5 anos o mas)"
 		
 		
 	**********************
