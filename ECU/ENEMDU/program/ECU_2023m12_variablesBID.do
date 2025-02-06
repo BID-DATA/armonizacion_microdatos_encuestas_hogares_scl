@@ -1474,7 +1474,7 @@ gen aguatrat_ch =9
 
 	* Variables incluidas por SCL/MIG Fernando Morales
 	
-	* Se eliminan variables migrantelac_ci y migrantiguo5_ci de acuerdo con propuesta en 
+	* Se eliminan variables migrantelac_ci y migantiguo5_ci de acuerdo con propuesta en 
 	* Documentación de armonización de microdatos de encuestas de Hogares ** Pablo Cortés
 
 	*******************
@@ -1490,8 +1490,8 @@ gen aguatrat_ch =9
 	
 	*No es posible calcular la variable
 	 
-	gen migantiguo5_ci=.
-	label var migantiguo5_ci "=1 si es migrante antiguo (5 anos o mas)"
+	gen migrantiguo5_ci=.
+	label var migrantiguo5_ci "=1 si es migrante antiguo (5 anos o mas)"
 		
 
 	**********************
