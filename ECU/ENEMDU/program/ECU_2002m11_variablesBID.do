@@ -1355,27 +1355,7 @@ replace aguamejorada_ch = 1 if aguafuente_ch<=7
 gen aguamide_ch=.
 label var aguamide_ch "Usan medidor para pagar consumo de agua"
 
-*****************
-*bano_ch         *  Altered
-*****************
-gen bano_ch=.
 
-***************
-***banoex_ch***
-***************
-gen banoex_ch=9
-label var banoex_ch "El servicio sanitario es exclusivo del hogar"
-
-*****************
-*banomejorado_ch*  Altered
-*****************
-gen banomejorado_ch=.
-
-************
-*sinbano_ch*
-************
-gen sinbano_ch = .
-*label var sinbano_ch "= 0 si tiene baño en la vivienda o dentro del terreno"
 
 *************
 *aguatrat_ch*
