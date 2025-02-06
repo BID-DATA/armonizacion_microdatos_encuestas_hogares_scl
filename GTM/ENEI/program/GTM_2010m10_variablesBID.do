@@ -1584,8 +1584,8 @@ recode antiguedad_ci .=0
 	*** migantiguo5_ci ***
 	**********************
 	
-	gen migantiguo5_ci=.
-	label var migantiguo5_ci "=1 si es migrante antiguo (5 anos o mas)"
+	gen migrantiguo5_ci=.
+	label var migrantiguo5_ci "=1 si es migrante antiguo (5 anos o mas)"
 		
 	**********************
 	*** migrantelac_ci ***
