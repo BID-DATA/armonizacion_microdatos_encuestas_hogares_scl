@@ -328,7 +328,6 @@ label value clasehog_ch clasehog_ch
 
 * 2014, 01, MLO modificado segun documento metodologico (los huespedes quedan fuera del hogar)
 by idh_ch, sort: egen byte nmiembros_ch=sum(relacion_ci>0 & relacion_ci<=5)
-by idh_ch, sort: egen byte nmiembros_ch=sum(relacion_ci>0 & relacion_ci<=5)
 label variable nmiembros_ch "Numero de familiares en el hogar"
 
 *****************
