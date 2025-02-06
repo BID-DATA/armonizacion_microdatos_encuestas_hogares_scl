@@ -1237,10 +1237,6 @@ label variable eduuc_ci "Universitaria incompleta o mas"
 ***************
 * Line of code with indicator edus2c_ci was deleted***************
 * Line of code with indicator edus2c_ci was deleted* Line of code with indicator edus2c_ci was deleted* Line of code with indicator edus2c_ci was deleted
-local var = "eduno edupi edupc edusi edusc edusc eduui eduuc edus1i edus1c edus2i edus2c"
-foreach x of local var {
-replace `x'_ci=. if aedu_ci==.
-}
 
 ***************
 ***edupre_ci***
@@ -1297,7 +1293,14 @@ label variable asiste_ci "Asiste actualmente a la escuela"
 **************
 **Daniela Zuluaga- Enero 2018: Se agrega la variable pqnoasis1_ci cuya sintaxis fue elaborada por Mayra Saenz**
 
-* Line of code with indicator pqnoasis_ci was deleted* Line of code with indicator pqnoasis_ci was deleted* Line of code with indicator pqnoasis_ci was deleted* Line of code with indicator pqnoasis_ci was deleted* Line of code with indicator pqnoasis_ci was deleted* Line of code with indicator pqnoasis_ci was deleted* Line of code with indicator pqnoasis_ci was deleted* Line of code with indicator pqnoasis_ci was deleted
+g       pqnoasis1_ci = 1 if p03a08==5
+replace pqnoasis1_ci= 2 if  p03a08==6
+replace pqnoasis1_ci= 3 if  p03a08==13 | p03a08==1
+replace pqnoasis1_ci= 4 if  p03a08==7
+replace pqnoasis1_ci= 5 if  p03a08==3 | p03a08==9
+replace pqnoasis1_ci= 6 if  p03a08==12
+replace pqnoasis1_ci= 8 if  p03a08==11 
+replace pqnoasis1_ci= 9 if  p03a08==98 | p03a08==10 | p03a08==8 | p03a08==4 | p03a08==2
 label define pqnoasis1_ci 1 "Problemas económicos" 2 "Por trabajo" 3 "Problemas familiares o de salud" 4 "Falta de interés" 5	"Quehaceres domésticos/embarazo/cuidado de niños/as" 6 "Terminó sus estudios" 7	"Edad" 8 "Problemas de acceso"  9 "Otros"
 label value  pqnoasis1_ci pqnoasis1_ci
 
