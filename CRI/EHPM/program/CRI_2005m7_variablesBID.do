@@ -867,7 +867,6 @@ gen ylnmpri_ci=.
 gen ylnmsec_ci=.
 gen ylnm_ci=.
 gen ynlnm_ci=.
-egen ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci)
 
 gen autocons_ci=.
 gen remesas_ci=.
@@ -889,6 +888,7 @@ replace ynlm_ci=. if otrosingme==99999999
 replace ynlm_ci=. if ingtothog==99999999
 replace ynlm_ci=0 if ingtothog==0
 
+egen ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci)
 
 ************************
 *** HOUSEHOLD INCOME ***
@@ -1061,12 +1061,6 @@ gen byte eduuc_ci=0
 replace eduuc_ci=1 if (b08>=55 & b08<=58)
 label variable eduuc_ci "Superior completo"
 
-
-
-local var = "eduno edupi edupc edusi edusc edusc eduui eduuc edus1i edus1c edus2i edus2c"
-foreach x of local var {
-replace `x'_ci=. if aedu_ci==.
-}
 
 
 ***************
