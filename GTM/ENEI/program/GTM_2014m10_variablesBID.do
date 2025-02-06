@@ -423,7 +423,7 @@ label value condocup_ci condocup_ci
 * MGR: Modifico serie en base a correcciones Laura Castrillo: delimitar la condición de edad para que no tome los missing en caso que existan
 gen condocup_ci = .
 replace condocup_ci = 1 if p04a02 == 1 | p04a03 == 1 | p04a04 == 1 | p04a05 == 1
-replace condocup_ci = 2 if (p04a03 == 2 | & p04a04 == 2 | p04a05 == 2) & (p04a02 == 2 | p04b01 == 1 | p04b02 == 1)
+replace condocup_ci = 2 if (p04a03 == 2 | p04a04 == 2 | p04a05 == 2) & (p04a02 == 2 | p04b01 == 1 | p04b02 == 1)
 replace condocup_ci = 3 if condocup_ci == .
 replace condocup_ci = 4 if edad < 7
 label var condocup_ci "Condicion de ocupación de acuerdo a def de cada pais"
