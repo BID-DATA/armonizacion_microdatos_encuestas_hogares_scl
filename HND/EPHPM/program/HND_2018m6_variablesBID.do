@@ -1282,8 +1282,15 @@ label var edupub_ci "1 = personas que asisten a centros de enseñanza publicos"
 ******************
 ***pqnoasis1_ci***
 ******************
-*DZ Noviembre 2017: Se agrega la variable pqnoasis1_ci cuya sintaxis fue elaborada por Mayra Saenz
-* Line of code with indicator pqnoasis_ci was deleted* Line of code with indicator pqnoasis_ci was deleted* Line of code with indicator pqnoasis_ci was deleted* Line of code with indicator pqnoasis_ci was deleted* Line of code with indicator pqnoasis_ci was deleted* Line of code with indicator pqnoasis_ci was deleted* Line of code with indicator pqnoasis_ci was deleted* Line of code with indicator pqnoasis_ci was deleted* Line of code with indicator pqnoasis_ci was deleted
+g pqnoasis1_ci = 1 if cp406 == 7
+replace pqnoasis1_ci = 2 if cp406 == 11
+replace pqnoasis1_ci = 3 if cp406 == 6
+replace pqnoasis1_ci = 4 if cp406 == 3
+replace pqnoasis1_ci = 5 if cp406 == 4 | cp406 == 10
+replace pqnoasis1_ci = 6 if cp406 == 2
+replace pqnoasis1_ci = 7 if cp406 == 8 | cp406 == 9
+replace pqnoasis1_ci = 8 if cp406 == 5
+replace pqnoasis1_ci = 9 if cp406 == 1 | cp406 == 12
 label define pqnoasis1_ci 1 "Problemas económicos" 2 "Por trabajo" 3 "Problemas familiares o de salud" 4 "Falta de interés" 5	"Quehaceres domésticos/embarazo/cuidado de niños/as" 6 "Terminó sus estudios" 7	"Edad" 8 "Problemas de acceso"  9 "Otros"
 label value  pqnoasis1_ci pqnoasis1_ci
 
