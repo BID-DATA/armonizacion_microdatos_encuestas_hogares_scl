@@ -1759,7 +1759,7 @@ label variable eduuc_ci "Universitaria completa"
 gen eduac_ci = . 
 replace eduac_ci = 1 if (inlist(s03a_02a, 71, 72, 73, 74, 75, 76, 78, 79) | inlist( s03a_05a, 71, 72, 73, 74, 75, 76, 78, 79))
 replace eduac_ci = 0 if (s03a_02a == 76) | (s03a_05a == 76)
-replace eduac_ci = . if inlist(s05a_06a, 77, 81) & s05a_02a >= 71
+replace eduac_ci = . if aedu_ci == .
 label variable eduac_ci "Superior universitario vs superior no universitario"
 
 ***************
