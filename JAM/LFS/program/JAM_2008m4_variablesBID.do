@@ -487,10 +487,6 @@ gen ynlnm_ci=.
 label var ynlnm_ci "Ingreso no laboral no monetario"
 egen ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci)
 
-egen ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci)
-
-
-
 **********************************************************************
 *Identificador de los hogares en donde alguno de los miembros no sabe*
 *	       no responde el ingreso de la actividad principal          *

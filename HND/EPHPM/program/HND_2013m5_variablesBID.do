@@ -109,12 +109,11 @@ label var factor_ch "Factor de Expansion del Hogar"
 ********
 
 *gen idh_ch=hogar
-tostring idh_ch, replace
 
 *Al crear de la forma tradicional se generan hogares de 52 miembros en lugar de 16 miembros como lo indica la variable.
 
 rename hogar idh_ch
-
+tostring idh_ch, replace
 
 ********
 *idp_ci*
@@ -1284,7 +1283,15 @@ label var edupub_ci "1 = personas que asisten a centros de enseñanza publicos"
 ******************
 **DZ Noviembre 2017: Se agrega la variable pqnoasis1_ci cuya sintaxis fue elaborada por Mayra Saenz**
 
-* Line of code with indicator pqnoasis_ci was deleted* Line of code with indicator pqnoasis_ci was deleted* Line of code with indicator pqnoasis_ci was deleted* Line of code with indicator pqnoasis_ci was deleted* Line of code with indicator pqnoasis_ci was deleted* Line of code with indicator pqnoasis_ci was deleted* Line of code with indicator pqnoasis_ci was deleted* Line of code with indicator pqnoasis_ci was deleted* Line of code with indicator pqnoasis_ci was deleted
+g       pqnoasis1_ci = 1 if ed04==7
+replace pqnoasis1_ci = 2 if ed04==11
+replace pqnoasis1_ci = 3 if ed04==6
+replace pqnoasis1_ci = 4 if ed04==3
+replace pqnoasis1_ci = 5 if ed04==4 | ed04==10
+replace pqnoasis1_ci = 6 if ed04==2
+replace pqnoasis1_ci = 7 if ed04==8 | ed04==9
+replace pqnoasis1_ci = 8 if ed04==5
+replace pqnoasis1_ci = 9 if ed04==1 | ed04==12
 label define pqnoasis1_ci 1 "Problemas económicos" 2 "Por trabajo" 3 "Problemas familiares o de salud" 4 "Falta de interés" 5	"Quehaceres domésticos/embarazo/cuidado de niños/as" 6 "Terminó sus estudios" 7	"Edad" 8 "Problemas de acceso"  9 "Otros"
 label value  pqnoasis1_ci pqnoasis1_ci
 
