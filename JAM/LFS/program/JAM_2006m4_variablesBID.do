@@ -22,7 +22,7 @@ local ronda m4
 local log_file = "$ruta\harmonized\\`pais'\\`encuesta'\log\\`pais'_`ano'`ronda'_variablesbid.log"
 local base_in  = "$ruta\survey\\`pais'\\`encuesta'\\`ano'\\`ronda'\data_orig\\`pais'_`ano'`ronda'.dta"
 *local base_in  = "$ruta\survey\\`pais'\\`encuesta'\\`ano'\\`ronda'\data_merge\\`pais'_`ano'`ronda'.dta"
-local base_out = "$ruta\harmonized\\`pais'\\`encuesta'\data_arm\\`pais'_`ano'`ronda'_bid.dta"
+local base_out = "$ruta\harmonized\\`pais'\\`encuesta'\data_arm\\`pais'_`ano'`ronda'_BID.dta"
 
 
 capture log close
