@@ -608,7 +608,6 @@ label var ylnm_ci "Ingreso laboral no monetario total"
 *******************************************************
 gen ynlnm_ci=.
 label var ynlnm_ci "Ingreso no laboral no monetario"
-egen ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci)
 
 ***********************************************************
 *** Ingreso no laboral no monetario del Hogar.
@@ -648,6 +647,8 @@ egen ynlm_ci=rsum(ynlme ynlmd), missing
 label var ynlm_ci "Ingreso no laboral monetario(mes)"
 
 drop jub pension alqui loter becas agro otroy ayfam ynlme ynlmd ynlme1 ynlmd1 aguin
+
+egen ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci)
 
 ******************************
 *	nrylmpri_ch
