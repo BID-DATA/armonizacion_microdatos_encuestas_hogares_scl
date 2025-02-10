@@ -984,16 +984,16 @@ label var eduuc_ci "1 = personas que han completado el nivel universitario o sup
 
 
 * Line of code with indicator edus1i_ci was deletedreplace edus1i=0 if edusi==1 | edusc==1 
-replace edus1i=1 if edusi==1 & (P07B27A==4 & (P07B27B==1 | P07B27B==2))
+*replace edus1i=1 if edusi==1 & (P07B27A==4 & (P07B27B==1 | P07B27B==2))
 * Line of code with indicator edus1i_ci was deleted
 * Line of code with indicator edus1c_ci was deletedreplace edus1c=0 if edusi==1 | edusc==1 
-replace edus1c=1 if edusi==1 & (P07B27A==4 & P07B27B==3)
+* replace edus1c=1 if edusi==1 & (P07B27A==4 & P07B27B==3)
 * Line of code with indicator edus1c_ci was deleted
 * Line of code with indicator edus2i_ci was deletedreplace edus2i=0 if edusi==1 | edusc==1 
-replace edus2i=1 if edusi==1 & (P07B27A==4 & (P07B27B==4 | P07B27B==5)) 
+* replace edus2i=1 if edusi==1 & (P07B27A==4 & (P07B27B==4 | P07B27B==5)) 
 * Line of code with indicator edus2i_ci was deleted
 * Line of code with indicator edus2c_ci was deletedreplace edus2c=0 if edusi==1 
-replace edus2c=1 if edusc==1
+* replace edus2c=1 if edusc==1
 * Line of code with indicator edus2c_ci was deleted
 gen eduac_ci=.
 label var eduac_ci "Educacion terciaria académica versus educación terciaria no-académica "
@@ -1015,7 +1015,12 @@ label var asiste_ci "Personas que actualmente asisten a centros de enseñanza"
 **************
 **Daniela Zuluaga- Enero 2018: Se agrega la variable pqnoasis1_ci cuya sintaxis fue elaborada por Mayra Saenz**
 
-* Line of code with indicator pqnoasis_ci was deleted* Line of code with indicator pqnoasis_ci was deleted* Line of code with indicator pqnoasis_ci was deleted* Line of code with indicator pqnoasis_ci was deleted* Line of code with indicator pqnoasis_ci was deleted* Line of code with indicator pqnoasis_ci was deleted
+g       pqnoasis1_ci = 1 if P07B25 ==6
+replace pqnoasis1_ci= 2 if  P07B25 ==7
+replace pqnoasis1_ci= 3 if  P07B25 ==1 | P07B25 ==3
+replace pqnoasis1_ci= 4 if  P07B25 ==8
+replace pqnoasis1_ci= 5 if  P07B25 ==4 | P07B25 ==10
+replace pqnoasis1_ci= 9 if  P07B25 ==12 | P07B25 ==11 | P07B25 ==10 | P07B25 ==9 | P07B25 ==2 | P07B25 ==5
 label define pqnoasis1_ci 1 "Problemas económicos" 2 "Por trabajo" 3 "Problemas familiares o de salud" 4 "Falta de interés" 5	"Quehaceres domésticos/embarazo/cuidado de niños/as" 6 "Terminó sus estudios" 7	"Edad" 8 "Problemas de acceso"  9 "Otros"
 label value  pqnoasis1_ci pqnoasis1_ci
 
