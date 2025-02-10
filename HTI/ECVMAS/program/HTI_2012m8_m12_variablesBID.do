@@ -71,7 +71,7 @@ label variable factor_ch "Factor de expansion del hogar"
 gen idh_ch=hh_id2new 
 sort idh*
 label variable idh_ch "ID del hogar"
-tostring idh_ch, replace
+
 
 
 ****************************
@@ -80,8 +80,6 @@ tostring idh_ch, replace
 sort hh_id2new i_id3
 egen idp_ci=group(idh_ch i_id3)
 label variable idp_ci "ID de la persona en el hogar"
-tostring idp_ci, replace
-
 
 ***************************
 * Zona urbana o zona rural*
@@ -1457,6 +1455,9 @@ keep if sexo_ci!=.
 	gen miglac_ci=inlist(i_h03a,2) if i_h03a!=. & i_h03a!=-9
 	label var miglac_ci "=1 si es migrante proveniente de un pais LAC"
 
+tostring idh_ch, replace
+tostring idp_ci, replace
+	
 /*_____________________________________________________________________________________________________*/
 * Asignación de etiquetas e inserción de variables externas: tipo de cambio, Indice de Precios al 
 * Consumidor (2011=100), líneas de pobreza
