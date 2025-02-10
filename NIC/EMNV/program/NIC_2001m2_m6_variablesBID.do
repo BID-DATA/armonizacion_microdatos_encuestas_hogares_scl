@@ -13,7 +13,7 @@ set more off
  
 
 
-global ruta = "\\Sdssrv03\surveys"
+global ruta = "${surveysFolder}"
 
 local PAIS NIC
 local ENCUESTA EMNV
@@ -249,7 +249,7 @@ by idh_ch, sort: egen byte nmenor21_ch=sum((relacion_ci>0 & relacion_ci<=5) & (e
 by idh_ch, sort: egen byte nmayor65_ch=sum((relacion_ci>0 & relacion_ci<=5) & (edad_ci>=65 & edad_ci!=.))
 by idh_ch, sort: egen byte nmenor6_ch=sum((relacion_ci>0 & relacion_ci<=5) & (edad_ci<6))
 by idh_ch, sort: egen byte nmenor1_ch=sum((relacion_ci>0 & relacion_ci<=5) & (edad_ci<1))
-este año, se pregunto si existen pensionistas en la casa, que tecnicamente son "otros no parientes", pero que en la practica
+/*este año, se pregunto si existen pensionistas en la casa, que tecnicamente son "otros no parientes", pero que en la practica
 no deben ser incluídos en las variables de hogar (eg: _ch)*/
 
 ****************

@@ -104,8 +104,8 @@ tostring idh_ch, replace
 
 
 
-replace p1=1 if p1==3 & idh_ch==8236
-replace p1=1 if p1==2 & idh_ch==8237
+replace p1=1 if p1==3 & idh_ch=="8236"
+replace p1=1 if p1==2 & idh_ch=="8237"
 *************
 ****idp_ci****
 **************
@@ -748,7 +748,6 @@ gen ylnm_ci=ylnmpri_ci
 *******************************************************
 gen ynlnm_ci=.
 label var ynlnm_ci "Ingreso no laboral no monetario"
-egen ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci)
 
 ***********************************************************
 *** Ingreso no laboral no monetario del Hogar.
@@ -792,6 +791,9 @@ egen ynlm_ci=rsum(ynlme ynlmd), missing
 replace ynlm_ci=. if ynlme==. & ynlmd==.
 
 drop jub alqui loter becas agro otroy ayfam agui ynlme ynlmd ynlme1 ynlmd1
+
+egen ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci)
+
 ************************
 *** HOUSEHOLD INCOME ***
 ************************

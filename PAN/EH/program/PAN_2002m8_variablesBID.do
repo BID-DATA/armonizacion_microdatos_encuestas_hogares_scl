@@ -728,7 +728,6 @@ gen ylnm_ci=ylnmpri_ci
 *******************************************************
 gen ynlnm_ci=.
 label var ynlnm_ci "Ingreso no laboral no monetario"
-egen ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci)
 
 
 ***********************************************************
@@ -774,6 +773,8 @@ egen ynlm_ci=rsum(ynlme ynlmd), missing
 replace ynlm_ci=. if ynlme==. & ynlmd==.
 
 drop jub alqui loter becas agro otroy ayfam agui ynlme ynlmd ynlme1 ynlmd1
+
+egen ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci)
 
 ************************
 *** HOUSEHOLD INCOME ***

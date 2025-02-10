@@ -505,7 +505,6 @@ replace ynlm_ci=Q325B/12 if Q325BP==7
 *******************************************************
 gen ynlnm_ci=.
 label var ynlnm_ci "Ingreso no laboral no monetario"
-egen ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci)
 
 egen ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci)
 

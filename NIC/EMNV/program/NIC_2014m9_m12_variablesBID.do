@@ -13,7 +13,7 @@ set more off
  
 
 
-global ruta = "\\Sdssrv03\surveys"
+global ruta = "${surveysFolder}"
 
 local PAIS NIC
 local ENCUESTA EMNV
@@ -39,12 +39,12 @@ Email: mayras@iadb.org, saenzmayra.a@gmail.com
 Fecha última modificación: 09 de noviembre de 2016
 
 							SCL/LMK - IADB
-****************************************************************************/
+***************************************************************************
 ***************************************************************************
 Detalle de procesamientos o modificaciones anteriores:
 
-****************************************************************************
-*/
+****************************************************************************/
+
 
 use `base_in', clear
 

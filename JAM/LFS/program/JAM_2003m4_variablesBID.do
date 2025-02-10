@@ -10,7 +10,6 @@ set more off
  * El servidor contiene las bases de datos MECOVI.
  *________________________________________________________________________________________________________________*
  
-global surveysFolder "\\sapidbshares.file.core.windows.net\idbshares\SURVEYS"
 global ruta = "${surveysFolder}"
 
 

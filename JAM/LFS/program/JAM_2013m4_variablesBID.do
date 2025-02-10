@@ -98,7 +98,7 @@ ren  rfact factor_ch
 egen idh_ch = group(par const ed dwell hh)
 tostring idh_ch, replace
 
-tostring idh_ch, replace
+
 
 sort idh*
 
@@ -108,12 +108,9 @@ sort idh*
 
 * Corrección en sintáxis MGR: de la manera generada no identifica al individuo dentro del hogar
 *egen idp_ci = group(par const ed dwell hh ind)
-tostring idp_ci, replace
-
-tostring idp_ci, replace
 
 gen idp_ci = ind
-
+tostring idp_ci, replace
 ***************************
 * Zona urbana o zona rural*
 ***************************
