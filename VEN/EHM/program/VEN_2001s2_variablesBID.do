@@ -1056,17 +1056,6 @@ gen edupub_ci=.
 label var edupub_ci "1 = personas que asisten a centros de enseñanza publicos"
 
 **************
-***pqnoasis***
-**************
-* Line of code with indicator pqnoasis_ci was deletedreplace pqnoasis=pp28 if pp28>0
-label variable pqnoasis "Razones para no asistir a centros de enseñanza"
-label define pqnoasis 1 "Culmino sus estudios" 2 "No hay grado o agnos superiores" 3 "No hay cupo, escuela distante, desordenes estudiantiles, inasistencia de maestros o profesores" /*
-*/ 4 "falta de recursos economicos" 5 "esta trabajando" 6 "asiste a un curso de capacitacion" 7 "no quiere estudiar" 8 "enfermedad o defecto fisico" /*
-*/ 9 "problemas de conducta o de aprendizaje" 10 "cambio de residencia" 11 "edad mayor que la regular" 12 "tiene que ayudar en la casa" /*
-*/ 13 "edad menor que la regular" 14 "va a tener un hijo o se caso" 15 "otros"
-* Line of code with indicator pqnoasis_ci was deleted
-**Daniela Zuluaga- Enero 2018: Se agrega la variable pqnoasis1_ci cuya sintaxis fue elaborada por Mayra Saenz**
-**************
 *pqnoasis1_ci*
 **************
 g       pqnoasis1_ci = 1 if pp28 ==4
