@@ -969,15 +969,18 @@ replace edupub_ci=1 if emhp32==2
 replace edupub_ci=0 if emhp32==1
 label var edupub_ci "1 = personas que asisten a centros de enseñanza publicos"
 
-
-******************
-***pqnoasis1_ci***
-******************
-**Daniela Zuluaga- Enero 2018: Se agrega la variable pqnoasis1_ci cuya sintaxis fue elaborada por Mayra Saenz**
-
-* Line of code with indicator pqnoasis_ci was deleted* Line of code with indicator pqnoasis_ci was deleted* Line of code with indicator pqnoasis_ci was deleted* Line of code with indicator pqnoasis_ci was deleted* Line of code with indicator pqnoasis_ci was deleted* Line of code with indicator pqnoasis_ci was deleted* Line of code with indicator pqnoasis_ci was deleted* Line of code with indicator pqnoasis_ci was deleted
-*label define pqnoasis1_ci 1 "Problemas económicos" 2 "Por trabajo" 3 "Problemas familiares o de salud" 4 "Falta de interés" 5 "Quehaceres domésticos/embarazo/cuidado de niños/as" 6 "Terminó sus estudios" 7 "Edad" 8 "Problemas de acceso"  9 "Otros"
-*label value  pqnoasis1_ci pqnoasis1_ci
+**************
+*pqnoasis1_ci*
+**************
+gen byte pqnoasis1_ci=.
+replace pqnoasis1_ci = 1 if emhp31 ==5 & emhp31==6
+replace pqnoasis1_ci = 2 if emhp31==8
+replace pqnoasis1_ci = 3 if emhp31 ==7  
+replace pqnoasis1_ci = 4 if emhp31 ==14 | emhp31==9
+replace pqnoasis1_ci = 5 if emhp31 ==13 | emhp31==12
+replace pqnoasis1_ci = 6 if emhp31 ==1
+replace pqnoasis1_ci = 8 if emhp31==2  
+replace pqnoasis1_ci = 9 if emhp31 ==15 | emhp31==11 | emhp31==10 | emhp31==4 | emhp31==3
 
 ********************************************
 ***Variables de Infraestructura del hogar***
