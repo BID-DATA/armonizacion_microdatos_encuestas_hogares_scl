@@ -1610,12 +1610,7 @@ replace aguamejorada_ch = 1 if aguafuente_ch<=7
 *****************
 gen aguamide_ch = .
 
-****************
-***aguared_ch***
-****************
-gen aguared_ch=1 if (r313==1 | r313==2)
-replace aguared_ch=0 if (r313==3 | r313==4)
-label var aguared_ch "Acceso a fuente de agua por red"
+
 
 
 gen luz_ch=(r312==1 | r312==2)
