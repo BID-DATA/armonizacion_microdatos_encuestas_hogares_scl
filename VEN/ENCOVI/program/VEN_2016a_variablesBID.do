@@ -950,19 +950,20 @@ replace edupub_ci = 1 if ep35 == 2
 replace edupub_ci = 0 if ep35 == 1
 label var edupub_ci "1 = personas que asisten a centros de enseñanza publicos"
 
-**************
-***pqnoasis***
-**************
-* Line of code with indicator pqnoasis_ci was deletedreplace pqnoasis = ep34 if ep34>0 & ep34<98
-* Line of code with indicator pqnoasis_ci was deleted* Line of code with indicator pqnoasis_ci was deleted* Line of code with indicator pqnoasis_ci was deleted
+
 **************
 *pqnoasis1_ci*
 **************
-**Daniela Zuluaga- Enero 2018: Se agrega la variable pqnoasis1_ci cuya sintaxis fue elaborada por Mayra Saenz**
+gen byte pqnoasis1_ci=.
+replace pqnoasis1_ci = 1 if ep34 ==5 & ep34==6
+replace pqnoasis1_ci = 2 if ep34==8
+replace pqnoasis1_ci = 3 if ep34 ==7  
+replace pqnoasis1_ci = 4 if ep34 ==14 | ep34==9
+replace pqnoasis1_ci = 5 if ep34 ==13 | ep34==12
+replace pqnoasis1_ci = 6 if ep34 ==1
+replace pqnoasis1_ci = 8 if ep34==2  
+replace pqnoasis1_ci = 9 if ep34 ==15 | ep34==11 | ep34==10 | ep34==4 | ep34==3
 
-* Line of code with indicator pqnoasis_ci was deleted* Line of code with indicator pqnoasis_ci was deleted* Line of code with indicator pqnoasis_ci was deleted* Line of code with indicator pqnoasis_ci was deleted* Line of code with indicator pqnoasis_ci was deleted* Line of code with indicator pqnoasis_ci was deleted* Line of code with indicator pqnoasis_ci was deleted* Line of code with indicator pqnoasis_ci was deleted
-label define pqnoasis1_ci 1 "Problemas económicos" 2 "Por trabajo" 3 "Problemas familiares o de salud" 4 "Falta de interés" 5	"Quehaceres domésticos/embarazo/cuidado de niños/as" 6 "Terminó sus estudios" 7	"Edad" 8 "Problemas de acceso"  9 "Otros"
-label value  pqnoasis1_ci pqnoasis1_ci
 
 ********************************************
 ***Variables de Infraestructura del hogar***
@@ -1373,7 +1374,7 @@ do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&Exter
 * Verificación de que se encuentren todas las variables armonizadas 
 /*_____________________________________________________________________________________________________*/
 
-    order region_BID_c region_c pais_c anio_c mes_c zona_c factor_ch idh_ch	idp_ci factor_ci factor_ch /// Identificación 
+  cap  order region_BID_c region_c pais_c anio_c mes_c zona_c factor_ch idh_ch	idp_ci factor_ci factor_ch /// Identificación 
   sexo_ci edad_ci relacion_ci civil_ci jefe_ci nconyuges_ch nhijos_ch notropari_ch notronopari_ch nempdom_ch /// Demográficas 
   clasehog_ch nmiembros_ch miembros_ci nmayor21_ch nmenor21_ch nmayor65_ch nmenor6_ch nmenor1_ch /// Demográficas 
   condocup_ci categoinac_ci emp_ci cesante_ci desemp_ci subemp_ci durades_ci pea_ci nempleos_ci antiguedad_ci desalent_ci  /// Empleo

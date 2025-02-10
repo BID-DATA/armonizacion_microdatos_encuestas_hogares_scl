@@ -333,6 +333,8 @@ gen pea_ci=(emp_ci==1 | desemp_ci==1)
 ****************
 * horaspri_ci  * 
 ****************
+/*no se encontró o10 o10. �Cu�ntas horas trabaja habitualmente por semana en su trabajo, negocio o ac...
+
 gen horaspri_ci= o10
 replace horaspri_ci=. if emp_ci!=1 ``''
 label var horaspri_ci "Horas totales trabajadas en la actividad principal"
@@ -357,7 +359,7 @@ label var subemp_ci "Personas en subempleo por horas"
 gen tiempoparc_ci=(horaspri_ci<=30)
 replace tiempoparc_ci=. if emp_ci!=1
 label var tiempoparc_c "Personas que trabajan medio tiempo" 
-
+*/
 ****************
 *categopri_ci  * 
 **************** 
@@ -761,14 +763,14 @@ label var ynlnm_ch "Ingreso no laboral no monetario del hogar"
 *****************
 * ymlhopri_ci   *
 *****************
-gen ylmhopri_ci=ylmpri_ci/(horaspri_ci*4.3)
-label var ylmhopri_ci "Salario monetario de la actividad principal" 
+*gen ylmhopri_ci=ylmpri_ci/(horaspri_ci*4.3)
+*label var ylmhopri_ci "Salario monetario de la actividad principal" 
 
 *************
 * ylmho_ci  *
 *************
-gen ylmho_ci=ylm_ci/(horastot_ci*4.3)
-label var ylmho_ci "Salario monetario de todas las actividades" 
+*gen ylmho_ci=ylm_ci/(horastot_ci*4.3)
+*label var ylmho_ci "Salario monetario de todas las actividades" 
 
 ****************
 * rentaimp_ch  * 
@@ -1745,7 +1747,7 @@ do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&Exter
 * Verificación de que se encuentren todas las variables armonizadas 
 /*_____________________________________________________________________________________________________*/
 
-    order region_BID_c region_c pais_c anio_c mes_c zona_c factor_ch idh_ch	idp_ci factor_ci factor_ch /// Identificación 
+    cap order region_BID_c region_c pais_c anio_c mes_c zona_c factor_ch idh_ch	idp_ci factor_ci factor_ch /// Identificación 
   sexo_ci edad_ci relacion_ci civil_ci jefe_ci nconyuges_ch nhijos_ch notropari_ch notronopari_ch nempdom_ch /// Demográficas 
   clasehog_ch nmiembros_ch miembros_ci nmayor21_ch nmenor21_ch nmayor65_ch nmenor6_ch nmenor1_ch /// Demográficas 
   condocup_ci categoinac_ci emp_ci cesante_ci desemp_ci subemp_ci durades_ci pea_ci nempleos_ci antiguedad_ci desalent_ci  /// Empleo

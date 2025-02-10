@@ -80,6 +80,11 @@ gen ine01= district
 g region_c=.
 
 ***************
+*    mes_c    *
+***************
+gen mes_c =.
+
+***************
 *    ZONA     *
 ***************
 gen byte zona_c=1 if urbrur==1 | urbrur==2 | urbrur==3 | urbrur==4 /* Urbana */
@@ -87,11 +92,6 @@ replace zona_c=0 if urbrur==5 /* Rural */
 label variable zona_c "Zona geográfica"
 label define zona_c 0 "Rural" 1 "Urbana"
 label value zona_c zona_c
-
-***********
-*  PAIS   *
-***********
-g mes_c=.
 
 ***********
 *  PAIS   *

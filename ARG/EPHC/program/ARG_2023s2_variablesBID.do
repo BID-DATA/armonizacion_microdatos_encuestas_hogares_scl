@@ -734,9 +734,7 @@ replace ynlm_ci=. if ynlm_ci<0
 gen ynlnm_ci=.
 egen ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci)
 
-egen ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci)
 
-	
 **********************
 ***HOUSEHOLD INCOME***
 **********************

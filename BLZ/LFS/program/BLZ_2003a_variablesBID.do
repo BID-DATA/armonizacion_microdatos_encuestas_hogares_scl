@@ -100,6 +100,10 @@ label define ine01  ///
            6 "Toledo"
 label value ine01 ine01
 
+***************
+*    mes_c    *
+***************
+gen mes_c =.
 
 ***************
 *    ZONA     *

@@ -511,7 +511,6 @@ replace ylm2_ci=. if (ylmpri2_ci==. & o30==.) | emp_ci==0
 *gen ylnm_ci=ylnmpri_ci
 gen ylnm_ci=.
 gen ynlnm_ci=.	
-egen ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci)
 
 
 /*
@@ -1450,6 +1449,8 @@ gen region_c=.
 
 *YL -> elimino var comp para que no genere problemas al SOCIOMETERO (esta var no es necesaria)
 drop comp
+
+egen ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci)
 
 *******************
 *** SALUD  ***

@@ -13,8 +13,8 @@ El servidor contiene las bases de datos MECOVI.
 
 ssc install elabel
  
-global in = "${surveysFolder}\survey\BOL\ECH\2022\m11\data_orig\"
-global out = "${surveysFolder}\survey\BOL\ECH\2022\m11\data_merge\"
+global in = "${surveysFolder}\survey\BOL\ECH\2022\m10_m12\data_orig\"
+global out = "${surveysFolder}\survey\BOL\ECH\2022\m10_m12\data_merge\"
 
 
 /* 
@@ -313,4 +313,4 @@ merge m:1 folio using "$in\eh2022_vivienda_reshape.dta", force
 drop _merge
 
 compress
-save "$out\BOL_2022m11.dta", replace
+save "$out\BOL_2022m10_m12.dta", replace
