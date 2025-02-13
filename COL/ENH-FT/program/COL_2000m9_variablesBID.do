@@ -168,8 +168,7 @@ tostring idp_ci, replace
 **********
 ***zona***
 **********
-gen byte zona_c=1 if base =="ca"
-replace  zona_c=0 if base =="re"
+gen byte zona_c=.
 label variable zona_c "Zona del pais"
 label define zona_c 1 "Urbana" 0 "Rural"
 label value zona_c zona_ci
@@ -326,7 +325,6 @@ replace clasehog_ch=5 if nhijos_ch==0 & nconyuges_ch==0 & notropari_ch==0 & notr
 ***nmiembros_ch***
 ******************
 * 2014, 01, MLO modificado segun documento metodologico
-by idh_ch, sort: egen byte nmiembros_ch=sum(relacion_ci>0 & relacion_ci<=5)
 by idh_ch, sort: egen byte nmiembros_ch=sum(relacion_ci>0 & relacion_ci<=5)
 label variable nmiembros_ch "Numero de miembros del hogar"
 
