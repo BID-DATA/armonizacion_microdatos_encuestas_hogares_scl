@@ -1776,7 +1776,7 @@ p103:el material predominante en los pisos
 	**************
 	
 gen pared_ch=0 if  p102==4 
-replace pared_ch=1 if p102==1 | p102==2 | p102==5 | p102==6 |  p102==7 | p102==3 |
+replace pared_ch=1 if p102==1 | p102==2 | p102==5 | p102==6 |  p102==7 | p102==3
 replace pared_ch=2 if p102>=8
 
 /*
