@@ -230,14 +230,8 @@ cap label var ypen_ci "Monto de ingreso por pension contributiva"
 cap label var ypensub_ci "Monto de ingreso por pension subsidiada / no contributiva"
 
 * LINEAS DE POBREZA y OTRAS VARIABLES EXTERNAS DE REFERENCIA
-capture label var lp19_ci  "Línea de pobreza USD1.9 día en moneda local a precios corrientes a PPA 2011"
-capture label var lp31_ci  "Línea de pobreza USD3.1 día en moneda local a precios corrientes a PPA 2011"
-capture label var lp5_ci "Línea de pobreza USD5 por día en moneda local a precios corrientes a PPA 2011"
-capture label var tc_c "Tasa de cambio LCU/USD Fuente: WB/WDI"
-capture label var ipc_c "Índice de precios al consumidor base 2011=100 Fuente: IMF/WEO"
-capture label var ppa_c "Factor de conversión Paridad de Poder Adquisitivo PPA LCU/USD 2011 Fuente: WB/WDI"
-*label var lp_ci "Linea de pobreza oficial del pais en moneda local a precios corrientes"
-*label var lpe_ci "Linea de indigencia oficial del pais en moneda local a precios corrientes"
+cap label var lp_ci "Linea de pobreza oficial del pais en moneda local a precios corrientes"
+cap label var lpe_ci "Linea de indigencia oficial del pais en moneda local a precios corrientes"
 cap label var salmm_ci "Salario minimo legal a precios corrientes"
 
 
