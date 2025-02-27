@@ -1338,15 +1338,19 @@ label define exam 1 "none" 2 "CXC basic, JSC 5 SSC" 3 "CXC Gen, GCE 'O' 1-2" 4 "
 label value exam exam
 label var exam "Highest (academic) examination"
 
+/*
+* Line of code with indicator eduno_ci was deleted
+* Line of code with indicator eduno_ci was deleted
+* Line of code with indicator edupi_ci was deleted
+* Line of code with indicator edupi_ci was deleted
 
-**********
-* Line of code with indicator eduno_ci was deleted* Line of code with indicator eduno_ci was deleted
-**********
-* Line of code with indicator edupi_ci was deleted* Line of code with indicator edupi_ci was deleted
-**********
-* Line of code with indicator edupc_ci was deleted* Line of code with indicator edupc_ci was deleted**********
-* Line of code with indicator edusi_ci was deleted* Line of code with indicator edusi_ci was deleted**********
-* Line of code with indicator edusc_ci was deleted/*
+
+* Line of code with indicator edupc_ci was deleted
+* Line of code with indicator edupc_ci was deleted
+* Line of code with indicator edusi_ci was deleted
+* Line of code with indicator edusi_ci was deleted
+* Line of code with indicator edusc_ci was deleted
+
 Para el caso de Jamaica, tendrán secundaria completa los que tengan más de once años de educación
 pero que NO declaren tener título universitario (serían los de terciaria completa). Además. que
 hayan rendido los exámenes de culminación de secundaria ya sea cualquiera de las ordinarias CXC gen, GCE 'O'
@@ -1356,11 +1360,13 @@ A PESAR DE QUE ESTA SINTAXIS ES MAS PRECISA, AL HACER UN TAB NO COINCIDE CON EL 
 DE AÑOS DE ESCOLARIDAD.
 
 * Line of code with indicator edusc_ci was deleted* Line of code with indicator edusc_ci was deleted
-**********
-* Line of code with indicator edus1i_ci was deleted* Line of code with indicator edus1i_ci was deleted***********
-* Line of code with indicator edus1c_ci was deleted* Line of code with indicator edus1c_ci was deleted***********
-* Line of code with indicator edus2i_ci was deleted* Line of code with indicator edus2i_ci was deleted***********
+
+* Line of code with indicator edus1i_ci was deleted* Line of code with indicator edus1i_ci was deleted
+* Line of code with indicator edus1c_ci was deleted* Line of code with indicator edus1c_ci was deleted
+* Line of code with indicator edus2i_ci was deleted* Line of code with indicator edus2i_ci was deleted
 * Line of code with indicator edus2c_ci was deleted* Line of code with indicator edus2c_ci was deleted
+*/
+
 **********
 *eduui_ci*
 **********
@@ -1804,7 +1810,7 @@ clonevar codindustria = q39m
 compress
 
 
-saveold "`base_out'", replace
+save "`base_out'", replace
 
 
 log close
