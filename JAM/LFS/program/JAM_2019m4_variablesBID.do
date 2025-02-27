@@ -213,58 +213,43 @@ gen jefe_ci=(relacion_ci==1)
 ***nconyuges_ch***
 ******************
 
-by idh_ch, sort: egen nconyuges_ch=sum(relacion_ci==2)
-label variable nconyuges_ch "Numero de conyuges"
+gen nconyuges_ch=.
+ 
 
 ***************
 ***nhijos_ch***
 ***************
 
-by idh_ch, sort: egen nhijos_ch=sum(relacion_ci==3)
-label variable nhijos_ch "Numero de hijos"
+gen nhijos_ch=.
+ 
 
 ******************
 ***notropari_ch***
 ******************
 
-by idh_ch, sort: egen notropari_ch=sum(relacion_ci==4)
-label variable notropari_ch "Numero de otros familiares"
+gen notropari_ch=.
+
 
 ********************
 ***notronopari_ch***
 ********************
 
-by idh_ch, sort: egen notronopari_ch=sum(relacion_ci==5)
-label variable notronopari_ch "Numero de no familiares"
+gen notronopari_ch=.
+
 
 
 ****************
 ***nempdom_ch***
 ****************
 
-by idh_ch, sort: egen nempdom_ch=sum(relacion_ci==6)
-label variable nempdom_ch "Numero de empleados domesticos"
+gen nempdom_ch=.
+
 
 *****************
 ***clasehog_ch***
 *****************
 
-gen byte clasehog_ch=0
-**** unipersonal
-replace clasehog_ch=1 if nhijos_ch==0 & nconyuges_ch==0 & notropari_ch==0 & notronopari_ch==0
-**** nuclear   (child with or without spouse but without other relatives)
-replace clasehog_ch=2 if (nhijos_ch>0| nconyuges_ch>0) & (notropari_ch==0 & notronopari_ch==0)
-**** ampliado
-replace clasehog_ch=3 if ((clasehog_ch ==2 & notropari_ch>0) & notronopari_ch==0) |(notropari_ch>0 & notronopari_ch==0) 
-**** compuesto  (some relatives plus non relative)
-replace clasehog_ch=4 if ((nconyuges_ch>0 | nhijos_ch>0 | notropari_ch>0) & (notronopari_ch>0))
-**** corresidente
-replace clasehog_ch=5 if nhijos_ch==0 & nconyuges_ch==0 & notropari_ch==0 & notronopari_ch>0
-
-label variable clasehog_ch "Tipo de hogar"
-label define clasehog_ch 1 " Unipersonal" 2 "Nuclear" 3 "Ampliado" 
-label define clasehog_ch 4 "Compuesto" 5 " Corresidente", add
-label value clasehog_ch clasehog_ch
+gen byte clasehog_ch=.
 
 ******************
 ***nmiembros_ch***

@@ -272,58 +272,44 @@ label variable jefe_ci "Jefe de hogar"
 ***nconyuges_ch***
 ******************
 
-by idh_ch, sort: egen nconyuges_ch=sum(relacion_ci==2)
-label variable nconyuges_ch "Número de conyuges"
+gen nconyuges_ch=.
+ 
 
 ***************
 ***nhijos_ch***
 ***************
 
-by idh_ch, sort: egen nhijos_ch=sum(relacion_ci==3)
-label variable nhijos_ch "Número de hijos"
+gen nhijos_ch=.
+ 
 
 ******************
 ***notropari_ch***
 ******************
 
-by idh_ch, sort: egen notropari_ch=sum(relacion_ci==4)
-label variable notropari_ch "Número de otros familiares"
+gen notropari_ch=.
+
 
 ********************
 ***notronopari_ch***
 ********************
 
-by idh_ch, sort: egen notronopari_ch=sum(relacion_ci==5)
-label variable notronopari_ch "Número de no familiares"
+gen notronopari_ch=.
+
 
 
 ****************
 ***nempdom_ch***
 ****************
 
-by idh_ch, sort: egen nempdom_ch=sum(relacion_ci==6)
-label variable nempdom_ch "Número de empleados domésticos"
+gen nempdom_ch=.
+
 
 *****************
 ***clasehog_ch***
 *****************
 
-gen byte clasehog_ch=0
-**** unipersonal
-replace clasehog_ch=1 if nhijos_ch==0 & nconyuges_ch==0 & notropari_ch==0 & notronopari_ch==0
-**** nuclear   (child with or without spouse but without other relatives)
-replace clasehog_ch=2 if (nhijos_ch>0| nconyuges_ch>0) & (notropari_ch==0 & notronopari_ch==0)
-**** ampliado
-replace clasehog_ch=3 if ((clasehog_ch ==2 & notropari_ch>0) & notronopari_ch==0) |(notropari_ch>0 & notronopari_ch==0) 
-**** compuesto  (some relatives plus non relative)
-replace clasehog_ch=4 if ((nconyuges_ch>0 | nhijos_ch>0 | notropari_ch>0) & (notronopari_ch>0))
-**** corresidente
-replace clasehog_ch=5 if nhijos_ch==0 & nconyuges_ch==0 & notropari_ch==0 & notronopari_ch>0
+gen byte clasehog_ch=.
 
-label variable clasehog_ch "tipo de hogar"
-label define clasehog_ch 1 " unipersonal" 2 "nuclear" 3 "ampliado" 
-label define clasehog_ch 4 "compuesto" 5 " corresidente", add
-label value clasehog_ch clasehog_ch
 
 ******************
 ***nmiembros_ch***

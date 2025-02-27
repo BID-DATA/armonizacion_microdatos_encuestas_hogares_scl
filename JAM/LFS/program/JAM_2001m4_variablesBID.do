@@ -239,58 +239,43 @@ gen jefe_ci=(relacion_ci==1)
 ***nconyuges_ch***
 ******************
 
-by idh_ch, sort: egen nconyuges_ch=sum(relacion_ci==2)
-label variable nconyuges_ch "numero de conyuges"
+gen nconyuges_ch=.
+ 
 
 ***************
 ***nhijos_ch***
 ***************
 
-by idh_ch, sort: egen nhijos_ch=sum(relacion_ci==3)
-label variable nhijos_ch "numero de hijos"
+gen nhijos_ch=.
+ 
 
 ******************
 ***notropari_ch***
 ******************
 
-by idh_ch, sort: egen notropari_ch=sum(relacion_ci==4)
-label variable notropari_ch "numero de otros familiares"
+gen notropari_ch=.
+
 
 ********************
 ***notronopari_ch***
 ********************
 
-by idh_ch, sort: egen notronopari_ch=sum(relacion_ci==5)
-label variable notronopari_ch "numero de no familiares"
+gen notronopari_ch=.
+
 
 
 ****************
 ***nempdom_ch***
 ****************
 
-by idh_ch, sort: egen nempdom_ch=sum(relacion_ci==6)
-label variable nempdom_ch "numero de empleados domesticos"
+gen nempdom_ch=.
+
 
 *****************
 ***clasehog_ch***
 *****************
 
-gen byte clasehog_ch=0
-**** unipersonal
-replace clasehog_ch=1 if nhijos_ch==0 & nconyuges_ch==0 & notropari_ch==0 & notronopari_ch==0
-**** nuclear   (child with or without spouse but without other relatives)
-replace clasehog_ch=2 if (nhijos_ch>0| nconyuges_ch>0) & (notropari_ch==0 & notronopari_ch==0)
-**** ampliado
-replace clasehog_ch=3 if ((clasehog_ch ==2 & notropari_ch>0) & notronopari_ch==0) |(notropari_ch>0 & notronopari_ch==0) 
-**** compuesto  (some relatives plus non relative)
-replace clasehog_ch=4 if ((nconyuges_ch>0 | nhijos_ch>0 | notropari_ch>0) & (notronopari_ch>0))
-**** corresidente
-replace clasehog_ch=5 if nhijos_ch==0 & nconyuges_ch==0 & notropari_ch==0 & notronopari_ch>0
-
-label variable clasehog_ch "tipo de hogar"
-label define clasehog_ch 1 " unipersonal" 2 "nuclear" 3 "ampliado" 
-label define clasehog_ch 4 "compuesto" 5 " corresidente", add
-label value clasehog_ch clasehog_ch
+gen byte clasehog_ch=.
 
 ******************
 ***nmiembros_ch***
@@ -998,9 +983,7 @@ replace aedu_ci= 11 if q321 == 6 | q422== 6 | q515==6
 replace aedu_ci= 12 if q321 == 7 | q422== 7 | q515==7
 replace aedu_ci= 13 if q321 == 8 | q422== 8 | q515==8
 
-**********
-* Line of code with indicator eduno_ci was deleted* Line of code with indicator eduno_ci was deleted
-**********
+
 * Line of code with indicator edupi_ci was deleted* Line of code with indicator edupi_ci was deleted
 **********
 * Line of code with indicator edupc_ci was deleted* Line of code with indicator edupc_ci was deleted**********
@@ -1020,6 +1003,8 @@ DE AÑOS DE ESCOLARIDAD.
 * Line of code with indicator edus1c_ci was deleted* Line of code with indicator edus1c_ci was deleted***********
 * Line of code with indicator edus2i_ci was deleted* Line of code with indicator edus2i_ci was deleted***********
 * Line of code with indicator edus2c_ci was deleted* Line of code with indicator edus2c_ci was deleted
+*/
+
 **********
 *eduui_ci*
 **********
