@@ -273,22 +273,7 @@ gen nempdom_ch=.
 ***clasehog_ch***
 *****************
 
-gen byte clasehog_ch=0
-**** unipersonal
-replace clasehog_ch=1 if nhijos_ch==0 & nconyuges_ch==0 & notropari_ch==0 & notronopari_ch==0
-**** nuclear   (child with or without spouse but without other relatives)
-replace clasehog_ch=2 if (nhijos_ch>0| nconyuges_ch>0) & (notropari_ch==0 & notronopari_ch==0)
-**** ampliado
-replace clasehog_ch=3 if ((clasehog_ch ==2 & notropari_ch>0) & notronopari_ch==0) |(notropari_ch>0 & notronopari_ch==0) 
-**** compuesto  (some relatives plus non relative)
-replace clasehog_ch=4 if ((nconyuges_ch>0 | nhijos_ch>0 | notropari_ch>0) & (notronopari_ch>0))
-**** corresidente
-replace clasehog_ch=5 if nhijos_ch==0 & nconyuges_ch==0 & notropari_ch==0 & notronopari_ch>0
-
-label variable clasehog_ch "tipo de hogar"
-label define clasehog_ch 1 " unipersonal" 2 "nuclear" 3 "ampliado" 
-label define clasehog_ch 4 "compuesto" 5 " corresidente", add
-label value clasehog_ch clasehog_ch
+gen byte clasehog_ch=.
 
 ******************
 ***nmiembros_ch***
@@ -1026,7 +1011,8 @@ replace aedu_ci= 13 if q321 == 8 | q422== 8 | q515==8
 **********
 * Line of code with indicator edupc_ci was deleted* Line of code with indicator edupc_ci was deleted**********
 * Line of code with indicator edusi_ci was deleted* Line of code with indicator edusi_ci was deleted**********
-* Line of code with indicator edusc_ci was deleted/*
+* Line of code with indicator edusc_ci was deleted
+/*
 Para el caso de Jamaica, tendrán secundaria completa los que tengan más de once años de educación
 pero que NO declaren tener título universitario (serían los de terciaria completa). Además. que
 hayan rendido los exámenes de culminación de secundaria ya sea cualquiera de las ordinarias CXC gen, GCE 'O'
@@ -1034,13 +1020,14 @@ o las avanzadas GCE 'A' , CAPE. Por otro lado, tendrán cero los que tengan meno
 
 A PESAR DE QUE ESTA SINTAXIS ES MAS PRECISA, AL HACER UN TAB NO COINCIDE CON EL NÙMERO DE CASOS DE LA VARIABLE
 DE AÑOS DE ESCOLARIDAD.
-
+*/
 * Line of code with indicator edusc_ci was deleted* Line of code with indicator edusc_ci was deleted
 **********
 * Line of code with indicator edus1i_ci was deleted* Line of code with indicator edus1i_ci was deleted***********
 * Line of code with indicator edus1c_ci was deleted* Line of code with indicator edus1c_ci was deleted***********
 * Line of code with indicator edus2i_ci was deleted* Line of code with indicator edus2i_ci was deleted***********
 * Line of code with indicator edus2c_ci was deleted* Line of code with indicator edus2c_ci was deleted
+
 **********
 *eduui_ci*
 **********
