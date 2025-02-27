@@ -209,41 +209,42 @@ gen civil_ci=.
 
 gen jefe_ci=(relacion_ci==1)
 
+
 ******************
 ***nconyuges_ch***
 ******************
 
-by idh_ch, sort: egen nconyuges_ch=sum(relacion_ci==2)
-label variable nconyuges_ch "Numero de conyuges"
+gen nconyuges_ch=.
+ 
 
 ***************
 ***nhijos_ch***
 ***************
 
-by idh_ch, sort: egen nhijos_ch=sum(relacion_ci==3)
-label variable nhijos_ch "Numero de hijos"
+gen nhijos_ch=.
+ 
 
 ******************
 ***notropari_ch***
 ******************
 
-by idh_ch, sort: egen notropari_ch=sum(relacion_ci==4)
-label variable notropari_ch "Numero de otros familiares"
+gen notropari_ch=.
+
 
 ********************
 ***notronopari_ch***
 ********************
 
-by idh_ch, sort: egen notronopari_ch=sum(relacion_ci==5)
-label variable notronopari_ch "Numero de no familiares"
+gen notronopari_ch=.
+
 
 
 ****************
 ***nempdom_ch***
 ****************
 
-by idh_ch, sort: egen nempdom_ch=sum(relacion_ci==6)
-label variable nempdom_ch "Numero de empleados domesticos"
+gen nempdom_ch=.
+
 
 *****************
 ***clasehog_ch***
