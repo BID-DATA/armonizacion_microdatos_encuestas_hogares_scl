@@ -308,22 +308,8 @@ gen nempdom_ch=.
 ***clasehog_ch***
 *****************
 
-gen byte clasehog_ch=0
-**** unipersonal
-replace clasehog_ch=1 if nhijos_ch==0 & nconyuges_ch==0 & notropari_ch==0 & notronopari_ch==0
-**** nuclear   (child with or without spouse but without other relatives)
-replace clasehog_ch=2 if (nhijos_ch>0| nconyuges_ch>0) & (notropari_ch==0 & notronopari_ch==0)
-**** ampliado
-replace clasehog_ch=3 if ((clasehog_ch ==2 & notropari_ch>0) & notronopari_ch==0) |(notropari_ch>0 & notronopari_ch==0) 
-**** compuesto  (some relatives plus non relative)
-replace clasehog_ch=4 if ((nconyuges_ch>0 | nhijos_ch>0 | notropari_ch>0) & (notronopari_ch>0))
-**** corresidente
-replace clasehog_ch=5 if nhijos_ch==0 & nconyuges_ch==0 & notropari_ch==0 & notronopari_ch>0
+gen byte clasehog_ch=.
 
-label variable clasehog_ch "tipo de hogar"
-label define clasehog_ch 1 " unipersonal" 2 "nuclear" 3 "ampliado" 
-label define clasehog_ch 4 "compuesto" 5 " corresidente", add
-label value clasehog_ch clasehog_ch
 
 ******************
 ***nmiembros_ch***
