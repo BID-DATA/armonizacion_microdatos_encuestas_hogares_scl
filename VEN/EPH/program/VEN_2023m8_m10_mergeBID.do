@@ -16,7 +16,7 @@ Fecha última modificación: 10MAR2025
 *****************************
 clear
 set more off
-global ruta = "\\sapidbshares.file.core.windows.net\idbrestrictedshares\SCL_DATAFILES_RESTRICTED\"
+global ruta = "${surveysFolderRestricted}"
 local PAIS VEN
 local ENCUESTA EPH
 local ANO "2023"
