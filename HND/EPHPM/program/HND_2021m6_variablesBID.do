@@ -1286,6 +1286,19 @@ gen pnc_ci = .
 * Acuerdo Ejecutivo No. 001-2021, No.35,636 del 23 de junio del 2021: Acuerda: Artículo 1. Fijar el Ajuste al Salario Mínimo, mismo que entrará en vigencia a partir del uno (01) de julio del dos mil veintiuno (2021)
 gen salmm_ci = 8843.37
 label var salmm_ci "Salario minimo legal"
+
+*************
+** lp_ci ***
+*************
+
+gen lp_ci=3829.1 if zona_c==1
+replace lp_ci=1917.4 if zona_c==0
+
+*************
+**lpe_ci***
+*************
+
+gen lpe_ci=.
 	
 /*_____________________________________________________________________________________________________*/
 * Asignación de etiquetas e inserción de variables externas: tipo de cambio, Indice de Precios al 
