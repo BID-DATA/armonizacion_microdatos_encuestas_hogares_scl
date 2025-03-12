@@ -187,23 +187,20 @@ El miembro 5-10 años  |         9 |         9
 *****************
 ***relacion_ci***
 *****************
-* No hay manera de identificar a empleado doméstico
 gen relacion_ci=1 if p35_s3==1
 replace relacion_ci=2 if p35_s3==2
 replace relacion_ci=3 if p35_s3==3 
 replace relacion_ci=4 if p35_s3>=4 & p35_s3<=11
 replace relacion_ci=5 if p35_s3==12
 
-
-
 *****************
 ***civil_ci***
 *****************
 gen civil_ci=.
-replace civil_ci=1 if estado_civil==6
-replace civil_ci=2 if estado_civil==1 | estado_civil==2 
-replace civil_ci=3 if estado_civil==3 | estado_civil==4
-replace civil_ci=4 if estado_civil==5
+replace civil_ci=1 if p40_s3==6
+replace civil_ci=2 if p40_s3==1 | p40_s3==2 
+replace civil_ci=3 if p40_s3==3 | p40_s3==4
+replace civil_ci=4 if p40_s3==5
 label variable civil_ci "Estado civil"
 label define civil_ci 1 "Soltero" 2 "Union formal o informal"
 label define civil_ci 3 "Divorciado o separado" 4 "Viudo" , add
@@ -306,4 +303,6 @@ label variable nmenor6_ch "Numero de familiares menores a 6 anios"
 ****************
 by idh_ch, sort: egen byte nmenor1_ch=sum((relacion_ci>0 & relacion_ci<=5) & (edad_ci<1))
 label variable nmenor1_ch "Numero de familiares menores a 1 anio"
+
+
 
