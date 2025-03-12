@@ -1375,7 +1375,21 @@ gen pea_ci=(emp_ci==1 | desemp_ci==1)
 	gen pnc_ci = . 
 	gen ing_pension = . 
 
+* Fuente externa	
+	
+*************
+** lp_ci ***
+*************
 
+gen lp_ci=4931.9 if zona_c==1
+replace lp_ci=2538.8 if zona_c==0
+
+*************
+**lpe_ci***
+*************
+
+gen lpe_ci=.
+	
 	
 /*_____________________________________________________________________________________________________*/
 * Asignación de etiquetas e inserción de variables externas: tipo de cambio, Indice de Precios al 
