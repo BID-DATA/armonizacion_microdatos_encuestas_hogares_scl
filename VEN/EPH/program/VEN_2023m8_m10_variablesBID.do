@@ -187,23 +187,20 @@ El miembro 5-10 años  |         9 |         9
 *****************
 ***relacion_ci***
 *****************
-* No hay manera de identificar a empleado doméstico
 gen relacion_ci=1 if p35_s3==1
 replace relacion_ci=2 if p35_s3==2
 replace relacion_ci=3 if p35_s3==3 
 replace relacion_ci=4 if p35_s3>=4 & p35_s3<=11
 replace relacion_ci=5 if p35_s3==12
 
-
-
 *****************
 ***civil_ci***
 *****************
 gen civil_ci=.
-replace civil_ci=1 if estado_civil==6
-replace civil_ci=2 if estado_civil==1 | estado_civil==2 
-replace civil_ci=3 if estado_civil==3 | estado_civil==4
-replace civil_ci=4 if estado_civil==5
+replace civil_ci=1 if p40_s3==6
+replace civil_ci=2 if p40_s3==1 | p40_s3==2 
+replace civil_ci=3 if p40_s3==3 | p40_s3==4
+replace civil_ci=4 if p40_s3==5
 label variable civil_ci "Estado civil"
 label define civil_ci 1 "Soltero" 2 "Union formal o informal"
 label define civil_ci 3 "Divorciado o separado" 4 "Viudo" , add
@@ -307,3 +304,112 @@ label variable nmenor6_ch "Numero de familiares menores a 6 anios"
 by idh_ch, sort: egen byte nmenor1_ch=sum((relacion_ci>0 & relacion_ci<=5) & (edad_ci<1))
 label variable nmenor1_ch "Numero de familiares menores a 1 anio"
 
+
+	**********************
+	***** Diversidad *****
+	**********************
+
+************
+* afro_ci  *
+************
+gen byte afro_ci=. 
+replace afro_ci =1 if  inlist(p62_s3,1,2,3)
+replace afro_ci =0 if inlist(p62_s3,4,5,6)
+
+***********
+* ind_ci  *
+***********
+gen byte ind_ci=. 
+replace ind_ci =1 if  inlist(p62_s3,5)
+replace ind_ci =0 if inlist(p62_s3,1,2,3,4,6)
+
+*****************
+* noafroind_ci  *
+*****************
+gen byte noafroind_ci =.  
+replace noafroind_ci =1 if afro_ci==0 & ind_ci==0
+replace noafroind_ci =0 if afro_ci==1 | ind_ci==1
+replace noafroind_ci =. if afro_ci==. | ind_ci==. 
+
+************
+* afro_ch  *
+************
+gen byte afro_jefe = afro_ci if relacion_ci==1
+egen afro_ch  = max(afro_jefe), by(idh_ch) 
+drop afro_jefe
+
+***********
+* ind_ch  *
+***********
+gen byte ind_jefe = ind_ci if relacion_ci==1
+egen ind_ch = max(ind_jefe), by(idh_ch) 
+drop ind_jefe 
+
+*****************
+* noafroind_ch  *
+*****************
+gen byte noafroind_jefe = noafroind_ci if relacion_ci==1
+egen noafroind_ch = max(noafroind_jefe), by(idh_ch) 
+drop noafroind_jefe
+
+*****************
+* afroind_ano_c *
+*****************
+gen afroind_ano_c = 2023
+
+***************
+***afroind_ci***
+***************
+gen byte afroind_ci=. 
+replace afroind_ci=1 if ind_ci==1 
+replace afroind_ci=2 if afro_ci==1
+replace afroind_ci=3 if noafroind_ci== 1
+
+***************
+* afroind_ch  *
+***************
+gen byte afroind_jefe = afroind_ci if jefe_ci==1
+egen afroind_ch = min(afroind_jefe), by(idh_ch) 
+drop afroind_jefe 
+
+**********
+* dis_ci *
+**********
+gen dis_ci =.
+egen discapacidad=rowtotal(p55a_s3 p55b_s3  p55c_s3  p55e_s3  p55f_s3  p55g_s3  p55k_s3), mi
+replace dis_ci = 1 if discapacidad >7
+replace dis_ci =0 if discapacidad ==7
+drop discapacidad
+
+br dis_ci disWG_ci p55a_s3 p55b_s3  p55c_s3  p55e_s3  p55f_s3  p55g_s3  p55k_s3
+
+************
+* disWG_ci *
+************
+drop disWG_ci  
+gen disWG_ci = .
+replace disWG_ci = 0 if (( p55a_s3>= 1 & p55a_s3 <=2 )| ///
+                      ( p55b_s3>= 1 &  p55b_s3 <=2 )| ///
+					  ( p55c_s3>= 1 &  p55c_s3 <=2 )| ///
+					  ( p55e_s3>= 1 &  p55e_s3 <=2 )| ///
+					  ( p55f_s3>= 1 &  p55f_s3 <=2 )| ///
+					  ( p55g_s3>= 1 &  p55g_s3 <=2 )| ///
+					  ( p55k_s3>= 1 &  p55k_s3 <=2 ))					 
+replace disWG_ci = 1 if (( p55a_s3>= 3 &  p55a_s3 <=4 )| ///
+                      ( p55b_s3>= 3 &  p55b_s3 <=4 )| ///
+					  ( p55c_s3>= 3 &  p55c_s3 <=4 )| ///
+					  ( p55e_s3>= 3 &  p55e_s3 <=4 )| ///
+					  ( p55f_s3>= 3 &  p55f_s3 <=4 )| ///
+					  ( p55g_s3>= 3 &  p55g_s3 <=4 )| ///
+					  ( p55k_s3>= 3 &  p55k_s3 <=4 ))
+
+************
+* VEN_dis_ci *
+************
+gen VEN_dis_ci =dis_ci
+
+**********
+* dis_ch *
+**********		
+egen dis_ch  = sum(dis_ci), by(idh_ch) 
+replace dis_ch=1 if dis_ch>=1 & dis_ch!=. 
