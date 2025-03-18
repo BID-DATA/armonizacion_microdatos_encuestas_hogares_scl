@@ -788,6 +788,92 @@ gen ypen_ci =.
 gen ypensub_ci=.
 
 
+	********************
+	***** Educación ****
+	********************
+ 
+*************
+***aedu_ci***
+*************
+/* no se puede armonizar esta variable. Para hacerlo, se necesitaría
+- Último nivel educativo aprobado (ésta es p149_s7 en el EPH)
+- Último año o grado aprobado dentro de ese nivel (esta no está en la EPH)
+*/
+
+***************
+***edupre_ci***
+***************
+*"Tiene Educacion preescolar"
+* p149_s7 ¿Cuál fue el último nivel educativo aprobado?  2 Inicial (preescolar)
+* p136_s7 En caso de asistir a un centro educativo actualmente, ¿qué nivel/grado/semestre/año fue el último que aprobó? 2 Inicial (preescolar)
+gen byte edupre_ci = (p149_s7 ==2)    // |p136_s7==2
+replace edupre_ci=. if (p149_s7 ==.)     //&p136_s7==.
+
+**************
+***eduui_ci***
+**************
+* "Universitaria incompleta"
+gen byte eduui_ci = .
+
+***************
+***eduuc_ci***
+***************
+* "educación técnica, universitaria completa, o posgrado (completa o incompleta)"
+gen byte eduuc_ci = (inlist(p149_s7, 5, 6, 7) | inlist(p136_s7, 5,6, 7))
+replace eduuc_ci = . if (p149_s7 ==.&p136_s7==.)   
+
+**************
+***eduac_ci***
+**************
+*"Superior universitario vs superior no universitario"
+gen byte eduac_ci = 1 if inlist(p149_s7,  6, 7) | inlist(p136_s7, 6, 7) 
+replace eduac_ci = 0 if inlist(p149_s7,  5) | inlist(p136_s7, 5) 
+replace eduac_ci = . if (p149_s7 ==.&p136_s7==.)   
+
+***************
+***asiste_ci***
+***************
+* "Asiste actualmente a la escuela"
+gen byte asiste_ci=.  
+replace asiste_ci = 1 if p135_s7==1
+replace asiste_ci = 0 if p135_s7==2
+
+***************
+***edupub_ci***
+***************
+* Decisión: se colocó "otra Especifique" que son semiprivadas(14 obs) en privada
+gen byte edupub_ci=.
+replace edupub_ci=1 if p138_s7==2 & asiste_ci==1
+replace edupub_ci=0 if p138_s7!=2 & asiste_ci==1
+replace edupub_ci=. if p138_s7==4 & asiste_ci==1
+
+****************
+***asispre_ci***
+****************
+* "Asiste a educacion prescolar"
+gen byte asispre_ci= (p136_s7==2 & asiste_ci==1)  // matriculado en nivel inicial (sin edad)
+replace asispre_ci = . if asiste_ci==.
+
+**************
+*pqnoasis1_ci*
+**************
+gen byte pqnoasis1_ci = 1 if inlist(p141_s7,4,5,8)
+replace pqnoasis1_ci = 3 if inlist(p141_s7,6)
+replace pqnoasis1_ci = 4 if p141_s7==13
+replace pqnoasis1_ci = 5 if inlist(p141_s7,7,12)
+replace pqnoasis1_ci = 8 if inlist(p141_s7,1,2,3)
+replace pqnoasis1_ci = 9 if inlist(p141_s7,9,10,11,14,15)
+
+
+		
+
+
+
+
+
+
+
+
 
 
 
