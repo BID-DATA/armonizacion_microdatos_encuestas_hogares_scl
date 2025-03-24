@@ -858,14 +858,268 @@ replace asispre_ci = . if asiste_ci==.
 *pqnoasis1_ci*
 **************
 gen byte pqnoasis1_ci = 1 if inlist(p141_s7,4,5,8)
-replace pqnoasis1_ci = 3 if inlist(p141_s7,6)
+replace pqnoasis1_ci = 3 if p141_s7==6
 replace pqnoasis1_ci = 4 if p141_s7==13
 replace pqnoasis1_ci = 5 if inlist(p141_s7,7,12)
 replace pqnoasis1_ci = 8 if inlist(p141_s7,1,2,3)
 replace pqnoasis1_ci = 9 if inlist(p141_s7,9,10,11,14,15)
 
 
-		
+
+	********************
+	***** Vivienda  ****
+	********************
+ 		
+************
+***luz_ch***
+************
+gen luz_ch=.
+replace luz_ch=1 if p9_s1==1 
+replace luz_ch=0 if p9_s1==2 
+
+****************
+***luzmide_ch***
+****************
+gen luzmide_ch=.
+replace luzmide_ch=1 if p10_s1==1 
+replace luzmide_ch=0 if p10_s1==2 
+
+****************
+***combust_ch***
+****************
+gen combust_ch=.
+
+*************
+***piso_ch***
+*************
+gen piso_ch=.
+replace piso_ch=0 if p4_s1==3
+replace piso_ch=1 if p4_s1==1 | p4_s1==2 
+replace piso_ch=2 if p4_s1==4  | p4_s1==5
+  
+**************
+***pared_ch***
+**************
+gen pared_ch=.
+replace pared_ch=0 if  p3_s1== 8
+replace pared_ch=1 if  inlist(p3_s1,1,2,3,4)
+replace pared_ch=2 if  inlist(p3_s1,5,6,7)
+
+**************
+***techo_ch***
+**************
+gen techo_ch=.
+
+**************
+***resid_ch***
+**************
+gen resid_ch=.
+*Decisión: En la pregunta de recolección de basura, la opción "Se desecha en cualquier lugar"  no permite distinguir si se desecha en "2 Tirados a un espacio abierto", se coloca en "otros". Para las otras categorías "Se deposita en contenedor colectivo" y "Se deposita en vertedero", se siguió lo utilizando en el encovi 2021
+replace resid_ch=0 if p12_s1==1 
+replace resid_ch=1 if p12_s1==4
+replace resid_ch=3 if inlist(p12_s1,2,3,5)   
+tab resid_ch [iw=factor_ci]
+
+*************
+***dorm_ch***
+*************
+gen dorm_ch=p19_s2
+
+****************
+***cuartos_ch***
+****************
+gen cuartos_ch=.
+	
+***************
+***cocina_ch***
+***************
+gen cocina_ch=.
+replace cocina_ch=1 if p22_s2==1
+replace cocina_ch=0 if p22_s2==2
+
+**************
+***telef_ch***
+**************
+gen telef_ch=.
+
+***************
+***refrig_ch***
+***************
+* En venezuela se conoce como nevera
+* Decisión: La opción "Sí tiene acceso, pero no funciona" se colocó dentro de la categoría "0 el resto"
+gen refrig_ch=.
+replace refrig_ch=1 if p29a_s2==1
+replace refrig_ch=0 if p29a_s2==3|p29a_s2==2
+
+**************
+***freez_ch***
+**************
+gen freez_ch=.
+
+*************
+***auto_ch***
+*************
+gen auto_ch=. 
+replace auto_ch=1 if  p30c_s2==1 
+replace auto_ch=0 if  p30c_s2==0
+
+**************
+***compu_ch***
+**************
+*Nota: la variable p29c_s2 contiene Computadora o Tablet. No se puede distinguir
+gen compu_ch=.
+
+*****************
+***internet_ch***
+*****************
+*Nota: no está la variable p29d_s2 en el dta (d, e, f ...)
+gen internet_ch=.
+
+************
+***cel_ch***
+************
+*Nota: no está la variable p29f_s2 p29e_s2 en el dta (d, e, f ...)
+gen cel_ch=.
+
+**************
+***vivi1_ch***
+**************
+gen vivi1_ch=. 
+replace vivi1_ch=1 if inlist(p2_s1,2,6)
+replace vivi1_ch=2 if inlist(p2_s1,3,4)
+replace vivi1_ch=3 if inlist(p2_s1,1,5,7,8,9)
+
+*************
+***vivi2_ch***
+*************
+gen vivi2_ch=0
+replace vivi2_ch=1 if vivi1_ch==1 | vivi1_ch==2
+replace vivi2_ch=. if vivi1_ch==.
+label var vivi2_ch "La vivienda es casa o departamento"
+
+*****************
+***viviprop_ch***
+*****************
+*Nota: a qué se refiere 7 vivienda indígena. no se incluye en clasificación
+gen viviprop_ch=.
+replace viviprop_ch=0 if p17_s2== 3
+replace viviprop_ch=1 if p17_s2== 1
+replace viviprop_ch=2 if p17_s2== 2
+replace viviprop_ch=3 if p17_s2== 4 | p17_s2== 5
+
+****************
+***vivitit_ch***
+****************
+gen vivitit_ch=.
+
+****************
+***vivialq_ch***
+****************
+g monto_alquiler=.
+
+*******************
+***vivialqimp_ch***
+*******************
+gen vivialqimp_ch=.
+
+
+	*****************
+	*****  WASH  ****
+	*****************
+
+****************
+***aguared_ch***
+****************
+generate aguared_ch =0
+replace aguared_ch = 1 if p6_s1==1
+replace aguared_ch = . if p6_s1==.
+	
+*****************
+*aguafconsumo_ch*
+*****************
+gen aguafconsumo_ch = 0
+
+*****************
+*aguafuente_ch*
+*****************
+gen aguafuente_ch=.
+replace aguafuente_ch = 1 if p6_s1==1
+replace aguafuente_ch= 2 if p6_s1==2
+replace aguafuente_ch = 6 if p6_s1==3
+replace aguafuente_ch = 10 if p6_s1 ==4 |p6_s1 ==5
+
+*************
+*aguadist_ch*
+*************
+gen aguadist_ch=0
+
+**************
+*aguadisp1_ch*
+**************
+gen aguadisp1_ch=9
+
+**************
+*aguadisp2_ch*
+**************
+*Nota:  abrir categoria "2 Algunos días de la semana"  para poder clasificar 
+gen aguadisp2_ch =.
+
+*************
+*aguatrat_ch*
+*************
+gen aguatrat_ch =.
+replace aguatrat_ch = 1 if p21_s2>=1 & p21_s2<=5
+replace aguatrat_ch = 0 if p21_s2==6
+
+*************
+*aguamala_ch* 
+*************
+gen aguamala_ch = 2
+replace aguamala_ch = 0 if aguafuente_ch<=7
+replace aguamala_ch = 1 if aguafuente_ch>7 & aguafuente_ch!=10
+
+*****************
+*aguamejorada_ch*
+*****************
+gen aguamejorada_ch = 2
+replace aguamejorada_ch = 0 if aguafuente_ch>7 & aguafuente_ch!=10
+replace aguamejorada_ch = 1 if aguafuente_ch<=7 
+
+*****************
+***aguamide_ch***
+*****************
+gen aguamide_ch = .
+
+*****************
+*bano_ch        *
+*****************
+gen bano_ch=.
+replace bano_ch=0 if p8_s1==4
+replace bano_ch=1 if p8_s1==1
+replace bano_ch=6 if p8_s1==2|p8_s1==3
+
+***************
+***banoex_ch***
+***************
+gen banoex_ch=9
+
+************
+*sinbano_ch*
+************
+gen sinbano_ch = 3
+replace sinbano_ch = 3 if p8_s1!=4
+replace sinbano_ch = 1 if p8_s1==5
+
+*****************
+*banomejorado_ch* 
+*****************
+gen banomejorado_ch= 2
+replace banomejorado_ch =1 if bano_ch<=3 & bano_ch!=0
+replace banomejorado_ch =0 if (bano_ch ==0 | bano_ch>=4) & bano_ch!=6
+
+
+
+
 
 
 
