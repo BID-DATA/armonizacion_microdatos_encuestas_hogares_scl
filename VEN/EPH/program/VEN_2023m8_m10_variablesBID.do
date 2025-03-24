@@ -495,6 +495,12 @@ gen byte desalent_ci=.
 *****************
 gen byte horaspri_ci=.
 
+*****************
+***horastot_ci ***
+*****************
+gen byte horastot_ci = .
+
+
 *******************
 ***tiempoparc_ci***
 *******************
@@ -799,6 +805,7 @@ gen ypensub_ci=.
 - Último nivel educativo aprobado (ésta es p149_s7 en el EPH)
 - Último año o grado aprobado dentro de ese nivel (esta no está en la EPH)
 */
+gen byte aedu_ci =.
 
 ***************
 ***edupre_ci***
@@ -1015,7 +1022,7 @@ gen vivitit_ch=.
 ****************
 ***vivialq_ch***
 ****************
-g monto_alquiler=.
+gen vivialq_ch=.
 
 *******************
 ***vivialqimp_ch***
@@ -1118,19 +1125,100 @@ replace banomejorado_ch =1 if bano_ch<=3 & bano_ch!=0
 replace banomejorado_ch =0 if (bano_ch ==0 | bano_ch>=4) & bano_ch!=6
 
 
+	********************
+	***** Migración ****
+	********************
+ 		
+*******************
+*** migrante_ci ***
+*******************
+	gen migrante_ci= 0
+	replace migrante_ci=1 if p41_s3!=1 & (p41_s3 !=. | p41_s3 !=16)
+	replace migrante_ci=. if p41_s3==. | p41_s3 == 16 
+	
+**********************
+*** migrantiguo5_ci ***
+**********************
+* p48_s3 En los últimos 5 años ¿migró a otro país y luego regresó?
+	gen migrantiguo5_ci=.
+	replace migrantiguo5_ci=1 if migrante_ci==1 & p48_s3 ==2
+	replace migrantiguo5_ci=0 if migrante_ci==1 & p48_s3 ==1
+
+**********************
+*** migrantelac_ci ***
+**********************
+* Decisión:  5 respuestas de  otro país se colocan no latinos
+* no está la variable p42_s3 en la base dta: Especificación de otro país de nacimiento (campo abierto).
+gen  miglac_ci  =.
+replace  miglac_ci = 1 if (migrante_ci==1 & (p41_s3 >1 & p41_s3<9))
+replace  miglac_ci = 0 if (migrante_ci==1 & (p41_s3 >=9 & p41_s3!=.))
 
 
+	****************************
+	***** Protección social ****
+	****************************
+
+* No se estiman variables de protección social
+
+	*************************
+	***** Fuente externa ****
+	*************************
+
+*************
+**salmm_ci***
+*************
+gen salmm_ci=130
+
+*************
+** lp_ci  ***
+*************
+gen byte lp_ci = .
+
+*************
+** lpe_ci ***
+*************
+gen byte lpe_ci = .
+
+*https://datosmacro.expansion.com/smi/venezuela
+*https://www.moore-venezuela.com/noticias/marzo-2022/aumenta-el-salario-minimo-mensual-a-130,00-desde-e
+* En Gaceta Oficial Nº 6.691 Extraordinario de fecha 15/03/2022	
+/*_______________________
+______________________________________________________________________________*/
+* Asignación de etiquetas e inserción de variables externas: tipo de cambio, Indice de Precios al 
+* Consumidor (2011=100), líneas de pobreza
+/*_____________________________________________________________________________________________________*/
 
 
+do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&ExternalVars_Harmonized_DataBank.do"
+
+/*_____________________________________________________________________________________________________*/
+* Verificación de que se encuentren todas las variables armonizadas 
+/*_____________________________________________________________________________________________________*/
+
+order region_BID_c region_c pais_c anio_c mes_c zona_c factor_ch idh_ch	idp_ci factor_ci factor_ch /// Identificación
+	  sexo_ci edad_ci relacion_ci civil_ci jefe_ci nconyuges_ch nhijos_ch notropari_ch notronopari_ch nempdom_ch /// Demográficas
+	  clasehog_ch nmiembros_ch miembros_ci nmayor21_ch nmenor21_ch nmayor65_ch nmenor6_ch nmenor1_ch /// Demográficas
+	  afroind_ci afroind_ch afroind_ano_c dis_ci dis_ch /// Género y diversidad 
+	  afro_ci ind_ci noafroind_ci afro_ch ind_ch noafroind_ch disWG_ci /// Género y diversidad 
+          condocup_ci categoinac_ci emp_ci cesante_ci desemp_ci subemp_ci durades_ci pea_ci nempleos_ci antiguedad_ci desalent_ci  /// Empleo
+	  horaspri_ci horastot_ci tiempoparc_ci categopri_ci categosec_ci rama_ci spublico_ci tamemp_ci cotizando_ci instcot_ci	afiliado_ci /// Empleo
+	  formal_ci tipocontrato_ci ocupa_ci pension_ci	pensionsub_ci tipopen_ci instpen_ci	ylmpri_ci /// Empleo
+	  ylmpri_ci ylnmpri_ci ylmsec_ci ylnmsec_ci ylmotros_ci	ylnmotros_ci  ylm_ci ylnm_ci ynlm_ci ynlnm_ci nrylmpri_ci /// Ingresos individuo
+	  ylm_ch ylnm_ch ylmnr_ch ynlm_ch ynlnm_ch ylmhopri_ci ylmho_ci /// Ingresos del hogar
+	  nrylmpri_ci nrylmpri_ch /// No respuesta de ingresos 
+	  remesas_ci remesas_ch ypen_ci ypensub_ci /// Remesas y pensiones
+          aedu_ci eduui_ci eduuc_ci edupre_ci eduac_ci asiste_ci edupub_ci pqnoasis1_ci asispre_ci /// Educación 
+	  luz_ch luzmide_ch combust_ch piso_ch pared_ch techo_ch resid_ch dorm_ch cuartos_ch cocina_ch telef_ch refrig_ch /// Vivienda 
+	  freez_ch auto_ch compu_ch internet_ch cel_ch vivi1_ch vivi2_ch viviprop_ch vivitit_ch vivialq_ch vivialqimp_ch /// Vivienda
+	  aguared_ch aguafconsumo_ch aguafuente_ch aguadist_ch aguadisp1_ch aguadisp2_ch /// Agua y saneamineto
+	  aguatrat_ch aguamala_ch aguamejorada_ch aguamide_ch bano_ch banoex_ch banomejorado_ch sinbano_ch  /// Agua y saneamineto
+	  migrante_ci migrantiguo5_ci miglac_ci /// Migración
+ 	  salmm_ci lp19_2011 lp31_2011 lp5_2011 lp_ci lpe_ci lp365_2017 lp685_2017 lp14_2017 lp81_2017 tc_c ratio_cpi2011 ratio_cpi2017 cpi_c cpi2011 cpi2017 ppp_c ppp_2011 ppp_2017, first /// Fuente externa
 
 
+save "`base_out'", replace
 
-
-
-
-
-
-
+log close
 
 
 
