@@ -1307,6 +1307,21 @@ egen ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci)
 	gen pnc_ci = . 
 	gen ing_pension = . 
 	
+* Fuente externa	
+	
+*************
+** lp_ci ***
+*************
+* Sin dato de línea de pobreza para 2022
+
+gen lp_ci=.
+
+*************
+**lpe_ci***
+*************
+
+gen lpe_ci=.
+	
 /*_____________________________________________________________________________________________________*/
 * Asignación de etiquetas e inserción de variables externas: tipo de cambio, Indice de Precios al 
 * Consumidor (2011=100), líneas de pobreza
