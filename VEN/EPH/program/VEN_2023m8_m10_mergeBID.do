@@ -1,3 +1,4 @@
+
 * (Versión Stata 18)
 /***************************************************************************
                  BASES DE DATOS DE ENCUESTA DE HOGARES - SOCIOMETRO 
@@ -14,6 +15,7 @@ Fecha última modificación: 10MAR2025
 *****************************
 * Definir parámetros y ruta *
 *****************************
+
 clear
 set more off
 global ruta = "${surveysFolderRestricted}"
@@ -27,15 +29,21 @@ local base_out = "$ruta\survey\\`PAIS'\\`ENCUESTA'\\`ANO'\\`ronda'\data_merge\\`
 * merge de bases *
 ******************
 
-* individual   6,499 registros
-use "$ruta\survey\VEN\EPH\2023\m8_m10\data_orig\miembros-encoded-pnh-2023.dta", clear
+* individual  13009  registros
+use "$ruta\survey\VEN\EPH\2024\m5_m8\\data_orig\miembros-encoded-pnh-2024.dta", clear
 * hogar 
-merge m:1 id_hogar using  "$ruta\survey\VEN\EPH\2023\m8_m10\data_orig\hogares-encoded-pnh-2023.dta"
-drop _merge
-* ingresos
-merge m:1 id_miembro using  "$ruta\survey\VEN\EPH\2023\m8_m10\data_orig\ingresos-encoded-pnh-2023.dta"
+merge m:1 id_hogar using  "$ruta\survey\VEN\EPH\2024\m5_m8\\data_orig\hogares-encoded-pnh-2024.dta"
 drop _merge
 format id_hogar  %20.0f
+
+generate date = date(fecha_encuesta, "YMD")
+format %td date
+gen year =substr(fecha_encuesta,1,4)
+destring year, replace
+
+* 6496 registros
+keep if year==2023
+
 compress
 save "`base_out'", replace
 
@@ -47,6 +55,9 @@ duplicates report id_hogar id_miembro
 --------------------------------------
    Copies | Observations       Surplus
 ----------+---------------------------
-        1 |         6499             0
---------------------------------------*/
+        1 |         6496             0
+-------------------------------------- */
+
+
+
 

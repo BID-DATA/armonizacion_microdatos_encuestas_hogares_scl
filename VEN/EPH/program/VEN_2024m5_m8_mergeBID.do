@@ -3,9 +3,9 @@
                  BASES DE DATOS DE ENCUESTA DE HOGARES - SOCIOMETRO 
 País: 
 Encuesta: EPH
-Round: m8_m10
+Round: m5_m8
 Autores: Jillie Chang
-Fecha última modificación: 10MAR2025
+Fecha última modificación: 27MAR2025
 
 							SCL/SCL - IADB
 ****************************************************************************/
@@ -27,7 +27,7 @@ local base_out = "$ruta\survey\\`PAIS'\\`ENCUESTA'\\`ANO'\\`ronda'\data_merge\\`
 * merge de bases *
 ******************
 
-* individual   6,499 registros
+* individual   13009 registros
 use "$ruta\survey\VEN\EPH\2024\m5_m8\data_orig\miembros-encoded-pnh-2024.dta", clear
 * hogar 
 merge m:1 id_hogar using  "$ruta\survey\VEN\EPH\2024\m5_m8\data_orig\hogares-encoded-pnh-2024.dta"

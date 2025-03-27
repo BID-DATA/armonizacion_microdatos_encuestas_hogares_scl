@@ -107,7 +107,7 @@ gen str pais_c="VEN"
 **********
 ***anio***
 **********
-gen anio_c=2021
+gen anio_c=2023
 
 *********
 ***mes***
@@ -145,12 +145,12 @@ duplicates report idp_ci
 ***************
 ***factor_ci***
 ***************
-gen factor_ci=peso_indiv_ajustado
+gen factor_ci=peso_indiv_ajustado_23
 
 ***************
 ***factor_ch***
 ***************
-gen factor_ch=peso_ajustado
+gen factor_ch=peso_ajustado_23
 
 
 	**********************
@@ -356,11 +356,11 @@ drop afroind_jefe
 **********
 gen dis_ci =.
 egen discapacidad=rowtotal(p55a_s3 p55b_s3  p55c_s3  p55e_s3  p55f_s3  p55g_s3  p55k_s3), mi
-replace dis_ci = 1 if discapacidad >7
+replace dis_ci = 1 if discapacidad >7 & discapacidad!=.
 replace dis_ci =0 if discapacidad ==7
 drop discapacidad
 
-*br dis_ci disWG_ci p55a_s3 p55b_s3  p55c_s3  p55e_s3  p55f_s3  p55g_s3  p55k_s3
+*br dis_ci disWG_ci discapacidad p55a_s3 p55b_s3  p55c_s3  p55e_s3  p55f_s3  p55g_s3  p55k_s3
 
 ************
 * disWG_ci *
@@ -940,9 +940,8 @@ gen cuartos_ch=.
 ***************
 ***cocina_ch***
 ***************
+* en la base del panel compartida en 2024, p22_s2 no tiene la opción NO.
 gen cocina_ch=.
-replace cocina_ch=1 if p22_s2==1
-replace cocina_ch=0 if p22_s2==2
 
 **************
 ***telef_ch***
@@ -1116,6 +1115,7 @@ gen banoex_ch=9
 gen sinbano_ch = 3
 replace sinbano_ch = 3 if p8_s1!=4
 replace sinbano_ch = 1 if p8_s1==5
+replace sinbano_ch = . if p8_s1==.
 
 *****************
 *banomejorado_ch* 
@@ -1123,7 +1123,7 @@ replace sinbano_ch = 1 if p8_s1==5
 gen banomejorado_ch= 2
 replace banomejorado_ch =1 if bano_ch<=3 & bano_ch!=0
 replace banomejorado_ch =0 if (bano_ch ==0 | bano_ch>=4) & bano_ch!=6
-
+replace banomejorado_ch=. if bano_ch==.
 
 	********************
 	***** Migración ****
@@ -1141,17 +1141,41 @@ replace banomejorado_ch =0 if (bano_ch ==0 | bano_ch>=4) & bano_ch!=6
 **********************
 * p48_s3 En los últimos 5 años ¿migró a otro país y luego regresó?
 	gen migrantiguo5_ci=.
-	replace migrantiguo5_ci=1 if migrante_ci==1 & p48_s3 ==2
-	replace migrantiguo5_ci=0 if migrante_ci==1 & p48_s3 ==1
+/*	replace migrantiguo5_ci=1 if migrante_ci==1 & p48_s3 ==2
+	replace migrantiguo5_ci=0 if migrante_ci==1 & p48_s3 ==1*/
 
 **********************
-*** migrantelac_ci ***
+***    miglac_ci   ***
 **********************
 * Decisión:  5 respuestas de  otro país se colocan no latinos
 * no está la variable p42_s3 en la base dta: Especificación de otro país de nacimiento (campo abierto).
 gen  miglac_ci  =.
+/*
 replace  miglac_ci = 1 if (migrante_ci==1 & (p41_s3 >1 & p41_s3<9))
 replace  miglac_ci = 0 if (migrante_ci==1 & (p41_s3 >=9 & p41_s3!=.))
+ tab p41_s3
+2024 
+   ¿En qué país |
+         nació? |      Freq.     Percent        Cum.
+----------------+-----------------------------------
+      Venezuela |        354       96.99       96.99
+       Colombia |          9        2.47       99.45
+       Portugal |          1        0.27       99.73
+          Siria |          1        0.27      100.00
+----------------+-----------------------------------
+          Total |        365      100.00
+2023
+   ¿En qué país |
+         nació? |      Freq.     Percent        Cum.
+----------------+-----------------------------------
+      Venezuela |      1,958       97.90       97.90
+       Colombia |         37        1.85       99.75
+        Ecuador |          1        0.05       99.80
+           Perú |          2        0.10       99.90
+      Otro país |          2        0.10      100.00
+----------------+-----------------------------------
+          Total |      2,000      100.00
+*/
 
 
 	****************************
