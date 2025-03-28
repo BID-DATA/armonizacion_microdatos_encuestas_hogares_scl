@@ -167,22 +167,10 @@ replace sexo_ci=2 if p36_s3==2
 **********
 ***edad***
 **********
-gen byte edad_ci=p38_s3
-replace edad_ci =. if p38_s3==9899
+* variable original p38_s3. variable imputada edad_imp. Se decidió utilizar la original.
+gen byte edad_ci= p38_s3
+replace edad_ci= . if  p38_s3 == 9899
 label variable edad_ci "Edad del individuo"
-*nota no se utiliza variable p39_s3. Preguntar por factor
-/*
-                      |  ¿Cuál es  la edad del
-                      |  miembro Indicó 9899   
-      edad, por favor |  en años
-     seleccione según | cumplidos?
-         corresponda. |      9899 |     Total
-----------------------+-----------+----------
-El menos 5 años       |        12 |        12 
-El miembro 10 años +  |         1 |         1 
-El miembro 5-10 años  |         9 |         9 
-----------------------+-----------+----------
-                Total |        22 |        22 */
 				
 *****************
 ***relacion_ci***
@@ -415,7 +403,7 @@ gen byte condocup_ci=.
 replace condocup_ci=1 if (p105_s5==1 | p105_s5==2)  //ocupados
 replace condocup_ci=2 if (p105_s5==3 | p105_s5==4)   // desocupados
 replace condocup_ci=3 if condocup_ci!=1 & condocup_ci!=2 & edad_ci!=.     //inactivos
-replace condocup_ci=4 if edad_ci<15 & edad_ci!=.    //menor edad
+replace condocup_ci=4 if edad_ci<10 & edad_ci!=.    //menor edad
 
 /*verificar tasa ocupados y desocupados (ocupados y desocupados con relacion a PET)
 gen pet = 1 if (edad_ci>=15 & edad_ci<=64)
@@ -424,13 +412,13 @@ tab condocup_ci if pet==1  [iw=factor_ci]
 
 condocup_ci |      Freq.     Percent        Cum.
 ------------+-----------------------------------
-          1 | 10762664.2       56.57       56.57
-          2 |  1,267,498        6.66       63.23
-          3 |  6,994,989       36.77      100.00
+          1 | 10097909.6       53.29       53.29
+          2 |  1,017,288        5.37       58.66
+          3 |  7,834,766       41.34      100.00
 ------------+-----------------------------------
-      Total | 19025150.9      100.00
+      Total | 18949963.5      100.00
 
-6.66 tasa desocupacion (desocupados/pet) y 56.75 tasa de ocupacion (ocupados/pet) 
+5.36 tasa desocupacion (desocupados/pet) y 53.29 tasa de ocupacion (ocupados/pet) 
 Decisión: se utilizó la edad de 15 años en lugar de */
 
 *****************
@@ -443,7 +431,7 @@ replace categoinac_ci = 3 if (p105_s5==5 & condocup_ci==3)  //3 "Quehaceres dom�
 replace categoinac_ci = 4 if ((categoinac_ci !=1 & categoinac_ci !=2 & categoinac_ci !=3) & condocup_ci==3)  //otros
 label var categoinac_ci "Categoría de inactividad"
 label define categoinac_ci 1 "Jubilados o pensionados" 2 "Estudiantes" 3 "Quehaceres domésticos" 4 "Otros"
-label values categoinac_ci categoinac_ci
+label values categoinac_ci categoinac_ci	
 
 ************
 ***emp_ci***
@@ -529,11 +517,13 @@ gen byte tiempoparc_ci=.
 Decisión: Se consultó a SPL sobre la categoría 7. Se colocó en otra clasificación		   
 		   */
 gen byte categopri_ci=.
-replace categopri_ci=0 if p112_s5==7 & condocup_ci==1   //otra
+*replace categopri_ci=0 if p112_s5==7 & condocup_ci==1   //otra
 replace categopri_ci=1 if p112_s5==5 & condocup_ci==1   //patron empleador
 replace categopri_ci=2 if (p112_s5==10 | p112_s5==6 | p112_s5==9)  & condocup_ci==1  //cuenta propia
-replace categopri_ci=3 if (p112_s5>=1 & p112_s5<=4)   & condocup_ci==1   //empleado asalariado
+replace categopri_ci=3 if ((p112_s5>=1 & p112_s5<=4)|p112_s5==7)   & condocup_ci==1   //empleado asalariado
 replace categopri_ci=4 if p112_s5==8 & condocup_ci==1	
+tab categopri_ci
+tab p112_s5
 
 ******************
 ***categosec_ci***
@@ -978,14 +968,16 @@ gen compu_ch=.
 *****************
 ***internet_ch***
 *****************
-*Nota: no está la variable p29d_s2 en el dta (d, e, f ...)
-gen internet_ch=.
+gen internet_ch=. 
+replace internet_ch=1 if  p29d_s2==1 
+replace internet_ch=0 if  p29d_s2>=2 &p29d_s2<=3
 
 ************
 ***cel_ch***
 ************
-*Nota: no está la variable p29f_s2 p29e_s2 en el dta (d, e, f ...)
-gen cel_ch=.
+gen cel_ch=. 
+replace cel_ch=1 if  p29f_s2==1 
+replace cel_ch=0 if  p29f_s2>=2 &p29f_s2<=3
 
 **************
 ***vivi1_ch***
@@ -1067,7 +1059,7 @@ gen byte aguadisp1_ch=9
 **************
 *aguadisp2_ch*
 **************
-*Nota:  abrir categoria "2 Algunos días de la semana"  para poder clasificar 
+*Nota:  abrir categoria "2 Algunos días de la semana"  de de p7_s1 para poder clasificar 
 gen byte aguadisp2_ch =.
 
 *************
@@ -1139,10 +1131,7 @@ replace migrante_ci=. if p41_s3==. | p41_s3 == 16
 **********************
 *** migrantiguo5_ci ***
 **********************
-* p48_s3 En los últimos 5 años ¿migró a otro país y luego regresó? 1 Sí 2 No
 gen byte migrantiguo5_ci=.
-/*	replace migrantiguo5_ci=1 if migrante_ci==1 & p48_s3 ==2
-	replace migrantiguo5_ci=0 if migrante_ci==1 & p48_s3 ==1*/
 
 **********************
 ***   miglac_ci    ***
@@ -1163,19 +1152,7 @@ replace  miglac_ci = 0 if (migrante_ci==1 & (p41_s3 >=9 & p41_s3!=.))
        Portugal |          1        0.27       99.73
           Siria |          1        0.27      100.00
 ----------------+-----------------------------------
-          Total |        365      100.00
-2023
-   ¿En qué país |
-         nació? |      Freq.     Percent        Cum.
-----------------+-----------------------------------
-      Venezuela |      1,958       97.90       97.90
-       Colombia |         37        1.85       99.75
-        Ecuador |          1        0.05       99.80
-           Perú |          2        0.10       99.90
-      Otro país |          2        0.10      100.00
-----------------+-----------------------------------
-          Total |      2,000      100.00
-*/
+          Total |        365      100.00*/
 
 	****************************
 	***** Protección social ****
@@ -1186,7 +1163,8 @@ replace  miglac_ci = 0 if (migrante_ci==1 & (p41_s3 >=9 & p41_s3!=.))
 **************************
 gen x = 1
 bys idh_ch: egen nmiembros_sph_ch= sum(x)	
-	
+drop x
+
 *****************
 **** y_hog_ci ***
 *****************
@@ -1228,10 +1206,9 @@ bys idh_ch: egen ing_ptmc_ch = sum(ing_ptmc_ci)
 ************************
 *** pnc_elegible_ci  ***
 ************************
-gen     pnc_elegible_ci = 0
+gen pnc_elegible_ci = 0
 replace pnc_elegible_ci = 1 if edad_ci > 54 & sexo_ci == 2
 replace pnc_elegible_ci = 1 if edad_ci > 59 & sexo_ci == 1
-* ver tema de missing
 
 **************
 *** pnc_ci ***
@@ -1260,25 +1237,6 @@ gen ing_pnc_ch =.
 *** potrot_ci   ***
 *******************
 gen potrot_ci =.
-/* 
-* los que se benefician de bolsas cajas CLAP y no reciben benficios de eso por estar en patria roja
-no se están contando
-replace potrot_ci= 1 if p200_s10 ==1 
-replace potrot_ci= 0 if p200_s10 ==2
-tab p200_s10 p196_s10, mi
-    En los |
- últimos 6 |
-    meses, |
-       ¿ha |   Sobre los programas sociales
- adquirido |     promovidos por el estado
-Bolsas-Caj |    venezolano, ¿usted ha reci
-  as CLAP? |        Sí         No          . |     Total
------------+---------------------------------+----------
-        Sí |     1,570      1,175          0 |     2,745 
-        No |       399      1,931          0 |     2,330 
-         . |         0          0      1,438 |     1,438 
------------+---------------------------------+----------
-     Total |     1,969      3,106      1,438 |     6,513 */
 	
 *******************
 *** potrot_ch  ***
@@ -1308,6 +1266,9 @@ bys idh_ch: gen pcasht_ch = (ptmc_ch==1|pnc_ch==1| potrot_ch==1)
 **salmm_ci***
 *************
 gen salmm_ci=130
+*https://datosmacro.expansion.com/smi/venezuela
+*https://www.moore-venezuela.com/noticias/marzo-2022/aumenta-el-salario-minimo-mensual-a-130,00-desde-e
+* En Gaceta Oficial Nº 6.691 Extraordinario de fecha 15/03/2022	
 
 *************
 ** lp_ci  ***
@@ -1320,9 +1281,7 @@ gen byte lp_ci = .
 gen byte lpe_ci = .
 
 
-*https://datosmacro.expansion.com/smi/venezuela
-*https://www.moore-venezuela.com/noticias/marzo-2022/aumenta-el-salario-minimo-mensual-a-130,00-desde-e
-* En Gaceta Oficial Nº 6.691 Extraordinario de fecha 15/03/2022	
+
 /*_______________________
 ______________________________________________________________________________*/
 * Asignación de etiquetas e inserción de variables externas: tipo de cambio, Indice de Precios al 
