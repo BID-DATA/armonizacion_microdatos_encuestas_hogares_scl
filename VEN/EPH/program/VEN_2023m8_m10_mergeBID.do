@@ -30,9 +30,9 @@ local base_out = "$ruta\survey\\`PAIS'\\`ENCUESTA'\\`ANO'\\`ronda'\data_merge\\`
 ******************
 
 * individual  13009  registros
-use "$ruta\survey\VEN\EPH\2024\m5_m8\\data_orig\miembros-encoded-pnh-2024.dta", clear
+use "$ruta\survey\VEN\EPH\2023\m8_m10\\data_orig\miembros-encoded-pnh-2024.dta", clear
 * hogar 
-merge m:1 id_hogar using  "$ruta\survey\VEN\EPH\2024\m5_m8\\data_orig\hogares-encoded-pnh-2024.dta"
+merge m:1 id_hogar using  "$ruta\survey\VEN\EPH\2023\m8_m10\\data_orig\hogares-encoded-pnh-2024.dta"
 drop _merge
 format id_hogar  %20.0f
 

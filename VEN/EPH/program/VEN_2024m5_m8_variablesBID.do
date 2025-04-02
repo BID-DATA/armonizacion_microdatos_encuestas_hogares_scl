@@ -107,7 +107,7 @@ gen str pais_c="VEN"
 **********
 ***anio***
 **********
-gen byte anio_c=2024
+gen anio_c=2024
 
 *********
 ***mes***
@@ -167,9 +167,7 @@ replace sexo_ci=2 if p36_s3==2
 **********
 ***edad***
 **********
-* variable original p38_s3. variable imputada edad_imp. Se decidió utilizar la original.
-gen byte edad_ci= p38_s3
-replace edad_ci= . if  p38_s3 == 9899
+gen edad_ci = edad_imp
 label variable edad_ci "Edad del individuo"
 				
 *****************
@@ -829,10 +827,10 @@ replace eduac_ci = . if (p149_s7 ==.&p136_s7==.)
 ***************
 ***asiste_ci***
 ***************
-* "Asiste actualmente a la escuela"
-gen byte asiste_ci=.  
-replace asiste_ci = 1 if p135_s7==1
-replace asiste_ci = 0 if p135_s7==2
+* " p135_s7 Asiste actualmente a la escuela" ¿Asiste actualmente, en calidad de estudiante, a algún establecimiento de educación inicial, primaria, secundaria o universitaria?
+gen byte asiste_ci=0 
+replace asiste_ci = 1 if (p135_s7==1 & (p136_s7>2 & p136_s7<=8))
+replace asiste_ci = . if p135_s7==. 
 
 ***************
 ***edupub_ci***
@@ -847,19 +845,20 @@ replace edupub_ci=. if p138_s7==4 & asiste_ci==1
 ***asispre_ci***
 ****************
 * "Asiste a educacion prescolar"
-gen byte asispre_ci= (p136_s7==2 & asiste_ci==1)  // matriculado en nivel inicial (sin edad)
-replace asispre_ci = . if asiste_ci==.
+gen byte asispre_ci= .
 
 **************
 *pqnoasis1_ci*
 **************
-gen byte pqnoasis1_ci = 1 if inlist(p141_s7,4,5,8)
-replace pqnoasis1_ci = 3 if p141_s7==6
-replace pqnoasis1_ci = 4 if p141_s7==13
-replace pqnoasis1_ci = 5 if inlist(p141_s7,7,12)
-replace pqnoasis1_ci = 8 if inlist(p141_s7,1,2,3)
-replace pqnoasis1_ci = 9 if inlist(p141_s7,9,10,11,14,15)
-
+gen byte pqnoasis1_ci =.
+replace pqnoasis1_ci = 1 if inlist(p147_s7,5,6,12)  //1	problemas económicos
+replace pqnoasis1_ci = 3 if inlist(p147_s7,8)    //2	por trabajo
+replace pqnoasis1_ci = 3 if p147_s7==7   //3	problemas familiares o de salud
+replace pqnoasis1_ci = 4 if p147_s7== 15  //4	falta de interés
+replace pqnoasis1_ci = 5 if inlist(p147_s7,13) // 5	quehaceres domésticos/embarazo/cuidadoniño
+replace pqnoasis1_ci = 7 if inlist(p147_s7,1)    //7	edad
+replace pqnoasis1_ci = 8 if inlist(p147_s7,2,3) //8	problemas de acceso
+replace pqnoasis1_ci = 9 if inlist(p147_s7,4,9,10,11,12,14,16) //9	otros
 
 
 	********************
@@ -1136,23 +1135,12 @@ gen byte migrantiguo5_ci=.
 **********************
 ***   miglac_ci    ***
 **********************
-* Decisión:  5 respuestas de  otro país se colocan no latinos
 * no está la variable p42_s3 en la base dta: Especificación de otro país de nacimiento (campo abierto).
 gen byte miglac_ci  =.
 /*
 replace  miglac_ci = 1 if (migrante_ci==1 & (p41_s3 >1 & p41_s3<9))
 replace  miglac_ci = 0 if (migrante_ci==1 & (p41_s3 >=9 & p41_s3!=.))
- tab p41_s3
-2024 
-   ¿En qué país |
-         nació? |      Freq.     Percent        Cum.
-----------------+-----------------------------------
-      Venezuela |        354       96.99       96.99
-       Colombia |          9        2.47       99.45
-       Portugal |          1        0.27       99.73
-          Siria |          1        0.27      100.00
-----------------+-----------------------------------
-          Total |        365      100.00*/
+ tab p41_s3*/
 
 	****************************
 	***** Protección social ****
@@ -1213,10 +1201,9 @@ replace pnc_elegible_ci = 1 if edad_ci > 59 & sexo_ci == 1
 **************
 *** pnc_ci ***
 **************
-*  Gran Misión Hogares de la Patria
 gen byte  pnc_ci = .
-replace pnc_ci = 1 if p197_1_s10 ==1
-replace pnc_ci = 0 if p197_1_s10 ==0
+replace pnc_ci = 1 if (p197_9_s10==1 | p197_13_s10==1)
+replace pnc_ci = 0 if (p197_9_s10==0 & p197_13_s10==0 )
 
 **************
 *** pnc_ch ***
@@ -1236,8 +1223,10 @@ gen ing_pnc_ch =.
 *******************
 *** potrot_ci   ***
 *******************
-gen potrot_ci =.
-	
+gen potrot_ci = .
+replace potrot_ci = 1 if (ptmc_ci==1 & pnc_ci ==0)
+replace potrot_ci = 0 if (ptmc_ci==1 & pnc_ci ==1)
+
 *******************
 *** potrot_ch  ***
 *******************
