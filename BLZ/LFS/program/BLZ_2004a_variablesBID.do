@@ -968,6 +968,11 @@ replace edupre_ci=1 if yrscompl>=1
 replace edupre_ci=0 if yrscompl==0 
 label var edupre_ci "Ha completado educación preescolar"
 
+***************
+** asispre_ci **
+***************
+gen asispre_ci = . 
+label var asispre_ci "Ha completado educación preescolar"
 
 ************************************************
 *  HA COMPLETADO EDUCACION TERCIARIA ACADEMICA *
