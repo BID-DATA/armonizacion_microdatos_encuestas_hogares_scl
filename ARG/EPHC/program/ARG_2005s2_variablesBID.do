@@ -1243,6 +1243,14 @@ replace rama_ci = 9 if (pp04b_cod>=75 & pp04b_cod<=95) |(pp04b_cod>=7501 &  pp04
 
 	gen byte edupre_ci=.
 	label variable edupre_ci "Educacion preescolar"
+	
+	************
+	*asispre_ci*
+	************
+
+	gen asispre_ci=(ch10==1 & ch12==1)
+	la var asispre_ci "Asiste a educacion prescolar"
+
 
 
 	**********
