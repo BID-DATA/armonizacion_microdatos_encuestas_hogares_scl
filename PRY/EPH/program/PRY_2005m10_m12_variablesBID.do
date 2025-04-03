@@ -1274,9 +1274,8 @@ label variable edupre_ci "Educacion preescolar"
 ***************
 ***asis_pre***
 ***************
-
-gen byte asispre_ci=. /* Por que no se construyo esta variable si tenemos la informacion??? */
-label variable edupre_ci "Asistencia a Educacion preescolar"
+gen byte asispre_ci = (ed08 == 2)
+label variable asispre_ci "Asistencia a Educacion preescolar" 
 
 
 **************

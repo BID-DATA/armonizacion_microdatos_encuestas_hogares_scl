@@ -1267,6 +1267,12 @@ replace `x'_ci=. if aedu_ci==.
 gen byte edupre_ci= .
 label variable edupre_ci "Educacion preescolar"
 
+******************************
+*	asispre_ci:
+******************************
+g byte asispre_ci = 0 
+replace asispre_ci = 1 if p03a09a == 1 & p03a07==1
+la var asispre_ci "Asiste a Educacion preescolar"
 
 **************
 ***eduac_ci***

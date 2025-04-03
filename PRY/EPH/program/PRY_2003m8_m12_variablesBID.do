@@ -1197,6 +1197,11 @@ label variable eduuc_ci "Universitaria incompleta o mas"
 gen byte edupre_ci=.
 label variable edupre_ci "Educacion preescolar"
 
+***************
+***asis_pre***
+***************
+gen byte asispre_ci = .
+label variable asispre_ci "Asistencia a Educacion preescolar" 
 
 **************
 ***eduac_ci***

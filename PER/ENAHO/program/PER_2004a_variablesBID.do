@@ -1532,6 +1532,14 @@ replace edupre_ci=. if p301a==99
 replace edupre_ci=. if p212==. | aedu_ci==.
 label variable edupre_ci "Educacion preescolar"
 
+****************
+***asispre_ci***
+****************
+
+g asispre_ci=.
+replace asispre_ci=1 if p307==1 & p308a==1 & p208a>=4
+recode asispre_ci (.=0)
+la var asispre_ci "Asiste a educacion prescolar"
 
 **************
 ***eduac_ci***

@@ -1332,8 +1332,8 @@ gen asiste_ci=(e9==1)
 ****************
 ***asispre_ci***
 ****************
-* Agregada por Iván Bornacelly - 01/23/2017
-	g asispre_ci=.	
+gen byte asispre_ci = (e11_1 > 0)
+la var asispre_ci "Asiste a educacion prescolar"
 
 /*(Melisa,mmorales, May 2009: 'asiste_ci' should be changed
 gen asiste_ci=(e9==1)
@@ -1352,8 +1352,15 @@ g       pqnoasis1_ci =.
 
 gen repite_ci=.
 gen repiteult_ci=.
-gen edupub_ci=(e14==1)
 label var  aedu_ci "Anios de Educacion"
+
+*****************
+****edupub_ci****
+*****************
+
+gen edupub_ci=.
+replace edupub_ci = 1 if (e14 == 1 & e9==1)
+replace edupub_ci = 0 if (e14 == 2 & e9==1)
 
 ****************
 ***tecnica_ci **

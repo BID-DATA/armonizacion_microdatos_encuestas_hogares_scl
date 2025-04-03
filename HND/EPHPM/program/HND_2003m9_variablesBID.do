@@ -1234,6 +1234,12 @@ replace edupre_ci=1 if ((p05a==2 | p04a==3) & aedu_ci ~=.)
 replace edupre_ci=0 if (edupre_ci~=1 & aedu_ci ~=.)
 la var edupre_ci "Asiste a Educacion preescolar"
 
+***************
+***asispre_ci***
+***************
+g asispre_ci=.
+la var asispre_ci "Asiste a educacion prescolar"	
+	
 ******************************
 *	pqnoasis 
 ******************************
