@@ -1357,6 +1357,14 @@ replace `x'_ci=. if aedu_ci==.
 gen byte edupre_ci= (ult_nivel_alcanzado==1)
 label variable edupre_ci "Educacion preescolar"
 
+****************
+***asispre_ci***
+****************
+g asispre_ci=.
+replace asispre_ci=1 if se_matriculo==1
+recode asispre_ci (.=0)
+la var asispre_ci "Asiste a educacion prescolar"	
+label variable asispre_ci "Asistencia a Educacion preescolar"
 
 **************
 ***eduac_ci***

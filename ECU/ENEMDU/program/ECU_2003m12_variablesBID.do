@@ -1131,6 +1131,12 @@ label var tcylmpri_ci "Identificador de top-code del ingreso de la actividad pri
 	gen edupre_ci=.
 	label variable edupre_ci "Educacion preescolar"
 
+	***************
+	***asispre_ci***
+	***************	
+	g asispre_ci=.
+	la var asispre_ci "Asiste a educacion prescolar"
+
 	**************
 	***eduac_ci***
 	**************

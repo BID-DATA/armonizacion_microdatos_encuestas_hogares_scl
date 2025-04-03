@@ -1840,6 +1840,14 @@ gen byte edupre_ci=(a3_02a==13)
 replace edupre_ci=. if aedu_ci==.
 label variable edupre_ci "Educacion preescolar"
 
+***************
+***asispre_ci***
+***************
+g asispre_ci=.	
+replace asispre_ci=1 if a3_05a==13
+recode asispre_ci (.=0)
+la var asispre_ci "Asiste a educacion prescolar"
+
 
 **************
 ***eduac_ci***
