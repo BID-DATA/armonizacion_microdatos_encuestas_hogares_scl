@@ -623,6 +623,12 @@ label var ynlm_ci "Ingreso no laboral monetario"
 gen ynlnm_ci=.
 label var ynlnm_ci "Ingreso no laboral no monetario" 
 
+****************
+*   ytot_ci    * 
+**************** 
+egen ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci)
+*bys idh_ch:  egen  ytot_ch=sum(ytot_ci)
+*sum ytot_ch
 
 ****************
 * nrylmpri_ch  * 
@@ -755,6 +761,7 @@ replace antiguedad_ci=(60+119)/2 if q3_40==4
 replace antiguedad_ci=(120+132)/2 if q3_40==5
 label var antiguedad_ci "Antiguedad en la actividad actual en años"
 replace antiguedad_ci=. if  emp_ci!=1 | antiguedad_ci>edad_ci
+
 
 		************************
 		* VARIABLES EDUCATIVAS *
