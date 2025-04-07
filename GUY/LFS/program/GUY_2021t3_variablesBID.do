@@ -493,10 +493,6 @@ label val ramasec_ci ramasec_ci
 		***INGRESOS***
 		**************
 
-****************
-* ylmpri_ci    * 
-****************
-
 * sustituir variables con la media cuando no declaran un valor puntual.
 foreach v of varlist q6_01 q6_06 q6_11 q6_12 q6_13  {
 	decode `v'b, gen(_`v'b)
@@ -513,9 +509,12 @@ foreach v of varlist q6_01 q6_06 q6_11 q6_12 q6_13  {
 	drop _min* _max*  _q6_*
 }
 
+****************
+* ylmpri_ci    * 
+****************
 foreach var of varlist q6_01 q6_06 q6_04a q6_04b q6_04c q6_04d q6_04e q6_04f{
-	replace `var'=. if `var'<0
-	cap replace `var' = _mean`var'b if _mean`var'b>0  // se imputa con la media q6_01 q6_06
+	cap replace `var' = _mean`var'b if `var'==-1   // se imputa con la media q6_01 q6_06
+	cap replace `var'=. if `var'<0
 }
 
 cap drop  ylmpri_ci
@@ -527,7 +526,6 @@ label var ylmpri_ci "Ingreso laboral monetario actividad principal"
 ****************
 * ylnmpri_ci   * 
 **************** 
-
 foreach var of varlist q6_05a-q6_05i{
 replace `var'=. if `var'<0
 }
@@ -604,8 +602,8 @@ replace q6_21 = q6_21/12
 replace q6_22 = q6_22/12
 
 foreach var of varlist q6_11 q6_12 q6_13 q6_14 q6_15 q6_16 q6_17 q6_18 q6_19 q6_20a q6_20b q6_21 q6_22  q6_24a q6_24b{
-replace `var'=. if `var'<0
-cap replace `var' = _mean`var'b if _mean`var'b>0  // se imputa con la media q6_11 q6_12 q6_13
+	cap replace `var' = _mean`var'b if `var'==-1  // se imputa con la media q6_11 q6_12 q6_13
+	cap replace `var'=. if `var'<0
 }
 
 
