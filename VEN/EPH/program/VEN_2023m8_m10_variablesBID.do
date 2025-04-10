@@ -115,6 +115,7 @@ gen anio_c=2023
 generate date_ = date(fecha_encuesta, "YMD")
 format date_ %tdnn/dd/YY
 gen byte mes_c =month(date_)
+replace mes_c =8 if mes_c ==6   // la encuesta se realizó desde agosto. son 4 casos.
 drop date_
 
 **********
