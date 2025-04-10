@@ -112,7 +112,10 @@ gen anio_c=2023
 *********
 ***mes***
 *********
-gen mes_c=.
+generate date_ = date(fecha_encuesta, "YMD")
+format date_ %tdnn/dd/YY
+gen byte mes_c =month(date_)
+drop date_
 
 **********
 ***zona***
