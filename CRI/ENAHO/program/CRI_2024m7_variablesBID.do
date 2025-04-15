@@ -24,7 +24,7 @@ local base_in  = "$ruta\survey\\`PAIS'\\`ENCUESTA'\\`ANO'\\`ronda'\data_merge\\`
 local base_out = "$ruta\harmonized\\`PAIS'\\`ENCUESTA'\data_arm\\`PAIS'_`ANO'`ronda'_BID.dta"
 
 capture log close
-log using "`log_file'", replace
+log using "log_file"
 
 /***************************************************************************
                  BASES DE DATOS DE ENCUESTA DE HOGARES - SOCIOMETRO 
@@ -48,7 +48,7 @@ rename *, lower
 **********
 * anio_c *
 **********
-gen anio_c=2023
+gen anio_c=2024
 label variable anio_c "Anio de la encuesta"
 
 *********
@@ -1044,7 +1044,6 @@ replace aedu_ci=18 if a14==71 | a14==101
 replace aedu_ci=19 if a14==72 | a14==102 
 replace aedu_ci=20 if a14==73 | a14==103 
 replace aedu_ci=21 if a14==74 | a14==104 
-
 replace aedu_ci=22 if a14==111
 replace aedu_ci=23 if a14==112
 replace aedu_ci=24 if a14==113
@@ -1110,7 +1109,8 @@ replace eduui_ci=1 if (a14>=51 & a14<=53) // hasta tres anios de universidad
 replace eduui_ci=1 if (a14==54 & a16b<=3) // cuatro anios pero sin titulo superior
 replace eduui_ci=. if aedu_ci==. 
 label variable eduui_ci "Superior incompleto"
-
+//nota: qué pasa con personas con mas de cuatro anios de educ universitaria pero sin titulo
+//tab a16b if (a14>=53 & a14<=59) & a16b<=3
 ********************************************************************************************************************************
 ***EDUUC_CI: Personas que han completado la educacion universitaria o terciaria
 ********************************************************************************************************************************
@@ -1156,10 +1156,10 @@ label variable asiste_ci "Asiste actualmente a la escuela"
 ********************************************************************************************************************************
 ***PQNOASIS_CI: Razones para no asistir a la escuela
 ********************************************************************************************************************************
-* Line of code with indicator pqnoasis_ci was deleted* Line of code with indicator pqnoasis_ci was deleted4  "tiene que ayudar en oficios domésticos  " 5  "no puede pagar los estudios  " 6  "problemas de acceso al sistema escolar" ///
+/* Line of code with indicator pqnoasis_ci was deleted* Line of code with indicator pqnoasis_ci was deleted4  "tiene que ayudar en oficios domésticos  " 5  "no puede pagar los estudios  " 6  "problemas de acceso al sistema escolar" ///
 7  "le cuesta el estudio" 8  "no está interesado en el aprendizaje formal" 9  "embarazo o matrimonio" 10  "enfermedad o discapacidad" ///
 11  "no tiene edad" 12  "falta ganar pruebas del mep; exámenes de admisión.  " 13  "otro" 99  "ignorado"
-
+*/
 * Line of code with indicator pqnoasis_ci was deleted* Line of code with indicator pqnoasis_ci was deleted
 ******************
 ***pqnoasis1_ci***
@@ -1368,13 +1368,11 @@ label var luzmide_ch  "Hogar usa un medidor para pagar por su consumo de electri
            1 Electricidad
            2 Gas
            3 Leña o carbón
-           4 Otro
-           9 Ignorado
-
+         
 */
 gen combust_ch=.
 replace combust_ch=1 if  v16==1 | v16==2
-replace combust_ch=0 if  v16==3 | v16==4
+replace combust_ch=0 if  v16==3 
 label var combust_ch "Combustible principal del hogar es gas o electricidad"
 
 ***********
@@ -1665,8 +1663,8 @@ lab val pnc_ci pnc_ci
 /*
 En años anteriores se usaba el promedio de los 4 salarios genéricos + salarios agrícolas. En 2023 se realizó la consulta a LMK y se decidió colocar el salario mínimo genérico del "trabajador en ocupación no calificada"
 del Departamento de Salarios Minimos de Costa Rica. Utilizar la información oficial del Gobierno, que suele ser publicada en un PDF como este
-https://www.mtss.go.cr/temas-laborales/salarios/Documentos-Salarios/lista_salarios_2023_ps.pdf. Se buscó una fuente externa para comparar el valor. Se encontró que según Cepal el valor era 358 609. Este valor es cercano al encontrado según el criterio señalado por LMK*/
-gen salmm_ci= 352164.91
+https://www.mtss.go.cr/temas-laborales/salarios/Documentos-Salarios/lista_salarios_2024.pdf. Se buscó una fuente externa para comparar el valor.*/
+gen salmm_ci= 358609.5
 label var salmm_ci "Salario minimo legal"
 
 ***********

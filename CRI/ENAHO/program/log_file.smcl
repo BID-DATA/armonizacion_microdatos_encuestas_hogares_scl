@@ -1,0 +1,3793 @@
+{smcl}
+{com}{sf}{ul off}{txt}{.-}
+      name:  {res}<unnamed>
+       {txt}log:  {res}C:\Users\macarenak\OneDrive - Inter-American Development Bank Group\Documents\GitHub\armonizacion_microdatos_encuestas_hogares_scl\CRI\ENAHO\program\log_file.smcl
+  {txt}log type:  {res}smcl
+ {txt}opened on:  {res} 8 Apr 2025, 14:31:21
+{txt}
+{com}. 
+{txt}end of do-file
+
+{com}. do "C:\Users\MACARE~1\AppData\Local\Temp\STD71ec_000000.tmp"
+{txt}
+{com}. rename *, lower
+{res}{txt}
+{com}. 
+{txt}end of do-file
+
+{com}. do "C:\Users\MACARE~1\AppData\Local\Temp\STD71ec_000000.tmp"
+{txt}
+{com}. rename *, lower
+{res}{txt}  (all {it:newnames}=={it:oldnames})
+
+{com}. 
+{txt}end of do-file
+
+{com}. do "C:\Users\MACARE~1\AppData\Local\Temp\STD71ec_000000.tmp"
+{txt}
+{com}. gen anio_c=2024
+{txt}
+{com}. label variable anio_c "Anio de la encuesta"
+{txt}
+{com}. 
+{txt}end of do-file
+
+{com}. do "C:\Users\MACARE~1\AppData\Local\Temp\STD71ec_000000.tmp"
+{txt}
+{com}. gen mes_c=7
+{txt}
+{com}. label variable mes_c "Mes de la encuesta"
+{txt}
+{com}. label define mes_c 7 "Julio" 
+{txt}
+{com}. label value mes_c mes_c
+{txt}
+{com}. 
+{txt}end of do-file
+
+{com}. do "C:\Users\MACARE~1\AppData\Local\Temp\STD71ec_000000.tmp"
+{txt}
+{com}. gen str3 pais_c="CRI"
+{txt}
+{com}. label variable pais_c "Pais"
+{txt}
+{com}. 
+{txt}end of do-file
+
+{com}. do "C:\Users\MACARE~1\AppData\Local\Temp\STD71ec_000000.tmp"
+{txt}
+{com}. gen region_BID_c=.
+{txt}(30,846 missing values generated)
+
+{com}. replace region_BID_c=1 
+{txt}(30,846 real changes made)
+
+{com}. label var region_BID_c "Regiones BID"
+{txt}
+{com}. label define region_BID_c 1 "Centroamérica_(CID)" 2 "Caribe_(CCB)" 3 "Andinos_(CAN)" 4 "Cono_Sur_(CSC)"
+{txt}
+{com}. label value region_BID_c region_BID_c
+{txt}
+{com}. 
+{txt}end of do-file
+
+{com}. tab region
+
+       {txt}Región de {c |}
+   planificación {c |}      Freq.     Percent        Cum.
+{hline 17}{c +}{hline 35}
+         Central {c |}{res}     17,836       57.82       57.82
+{txt}       Chorotega {c |}{res}      2,617        8.48       66.31
+{txt}Pacífico Central {c |}{res}      2,161        7.01       73.31
+{txt}          Brunca {c |}{res}      2,597        8.42       81.73
+{txt}   Huetar Caribe {c |}{res}      3,140       10.18       91.91
+{txt}    Huetar Norte {c |}{res}      2,495        8.09      100.00
+{txt}{hline 17}{c +}{hline 35}
+           Total {c |}{res}     30,846      100.00
+
+{com}. do "C:\Users\MACARE~1\AppData\Local\Temp\STD71ec_000000.tmp"
+{txt}
+{com}. gen region_c=region
+{txt}
+{com}. label define region_c  ///
+>                1 "Central" ///
+>            2 "Chorotega" ///
+>            3 "Pacífico central" ///
+>            4 "Brunca" ///
+>            5 "Huetar Atlántica" ///
+>            6 "Huetar Norte"
+{txt}
+{com}. label value region_c region_c
+{txt}
+{com}. label var region_c "División política, region de planificacion"
+{txt}
+{com}. 
+{txt}end of do-file
+
+{com}. do "C:\Users\MACARE~1\AppData\Local\Temp\STD71ec_000000.tmp"
+{txt}
+{com}. gen zona_c=0 if zona==2
+{txt}(21,389 missing values generated)
+
+{com}. replace zona_c=1 if zona==1
+{txt}(21,389 real changes made)
+
+{com}. label variable zona_c "Zona del pais"
+{txt}
+{com}. label define zona_c 1 "Urbana" 0 "Rural"
+{txt}
+{com}. label value zona_c zona_c
+{txt}
+{com}. 
+{txt}end of do-file
+
+{com}. do "C:\Users\MACARE~1\AppData\Local\Temp\STD71ec_000000.tmp"
+{txt}
+{com}. gen estrato_ci =.
+{txt}(30,846 missing values generated)
+
+{com}. label variable estrato_ci "estrato"
+{txt}
+{com}. 
+{txt}end of do-file
+
+{com}. do "C:\Users\MACARE~1\AppData\Local\Temp\STD71ec_000000.tmp"
+{txt}
+{com}. gen upm =.
+{txt}(30,846 missing values generated)
+
+{com}. label variable upm "unidad primaria de muestreo"
+{txt}
+{com}. 
+{txt}end of do-file
+
+{com}. do "C:\Users\MACARE~1\AppData\Local\Temp\STD71ec_000000.tmp"
+{txt}
+{com}. sort nro_vivienda hogar
+{txt}
+{com}. 
+{txt}end of do-file
+
+{com}. do "C:\Users\MACARE~1\AppData\Local\Temp\STD71ec_000000.tmp"
+{txt}
+{com}. egen idh_ch = concat(nro_vivienda hogar)
+{txt}
+{com}. label var idh_ch "ID del hogar"
+{txt}
+{com}. tostring idh_ch, replace
+{txt}idh_ch already string; no {res}replace
+{txt}
+{com}. 
+{txt}end of do-file
+
+{com}. sum linea
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+{space 7}linea {c |}{res}     30,846     2.32578    1.382066          1         15
+
+{com}. do "C:\Users\MACARE~1\AppData\Local\Temp\STD71ec_000000.tmp"
+{txt}
+{com}. sort nro_vivienda hogar linea
+{txt}
+{com}. egen idp_ci = concat(nro_vivienda hogar linea) 
+{txt}
+{com}. label var idp_ci "ID de la persona en el hogar"
+{txt}
+{com}. tostring idp_ci, replace
+{txt}idp_ci already string; no {res}replace
+{txt}
+{com}. 
+{txt}end of do-file
+
+{com}. do "C:\Users\MACARE~1\AppData\Local\Temp\STD71ec_000000.tmp"
+{txt}
+{com}. duplicates report idh_ch idp_ci
+
+{p 0 4}{txt}Duplicates in terms of {res} idh_ch idp_ci{p_end}
+
+{txt}{hline 10}{c TT}{hline 27}
+   Copies {c |} Observations       Surplus
+{hline 10}{c +}{hline 27}
+        1 {c |}        {res}30846             0
+{txt}{hline 10}{c BT}{hline 27}
+
+{com}. 
+{txt}end of do-file
+
+{com}. do "C:\Users\MACARE~1\AppData\Local\Temp\STD71ec_000000.tmp"
+{txt}
+{com}. gen factor_ch=factor
+{txt}
+{com}. label var factor_ch "Factor de expansion del hogar"
+{txt}
+{com}. 
+{txt}end of do-file
+
+{com}. do "C:\Users\MACARE~1\AppData\Local\Temp\STD71ec_000000.tmp"
+{txt}
+{com}. gen factor_ci=factor
+{txt}
+{com}. label variable factor_ci "Factor de expansion del individuo"
+{txt}
+{com}. 
+{txt}end of do-file
+
+{com}. tab a4
+
+       {txt}Sexo {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+     Hombre {c |}{res}     14,735       47.77       47.77
+{txt}      Mujer {c |}{res}     16,111       52.23      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}     30,846      100.00
+
+{com}. tab a4, nolab
+
+       {txt}Sexo {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+          1 {c |}{res}     14,735       47.77       47.77
+{txt}          2 {c |}{res}     16,111       52.23      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}     30,846      100.00
+
+{com}. do "C:\Users\MACARE~1\AppData\Local\Temp\STD71ec_000000.tmp"
+{txt}
+{com}. gen sexo_ci=a4
+{txt}
+{com}. label define sexo_ci 1 "Hombre" 2 "Mujer"
+{txt}
+{com}. label value sexo_ci sexo_ci
+{txt}
+{com}. 
+{txt}end of do-file
+
+{com}. tab a5
+
+                              {txt}Edad {c |}      Freq.     Percent        Cum.
+{hline 35}{c +}{hline 35}
+                    Menos de 1 año {c |}{res}        220        0.71        0.71
+{txt}                                 1 {c |}{res}        242        0.78        1.50
+{txt}                                 2 {c |}{res}        278        0.90        2.40
+{txt}                                 3 {c |}{res}        290        0.94        3.34
+{txt}                                 4 {c |}{res}        338        1.10        4.43
+{txt}                                 5 {c |}{res}        354        1.15        5.58
+{txt}                                 6 {c |}{res}        356        1.15        6.74
+{txt}                                 7 {c |}{res}        407        1.32        8.06
+{txt}                                 8 {c |}{res}        403        1.31        9.36
+{txt}                                 9 {c |}{res}        375        1.22       10.58
+{txt}                                10 {c |}{res}        402        1.30       11.88
+{txt}                                11 {c |}{res}        416        1.35       13.23
+{txt}                                12 {c |}{res}        454        1.47       14.70
+{txt}                                13 {c |}{res}        427        1.38       16.09
+{txt}                                14 {c |}{res}        438        1.42       17.51
+{txt}                                15 {c |}{res}        454        1.47       18.98
+{txt}                                16 {c |}{res}        473        1.53       20.51
+{txt}                                17 {c |}{res}        492        1.60       22.11
+{txt}                                18 {c |}{res}        446        1.45       23.55
+{txt}                                19 {c |}{res}        406        1.32       24.87
+{txt}                                20 {c |}{res}        418        1.36       26.22
+{txt}                                21 {c |}{res}        406        1.32       27.54
+{txt}                                22 {c |}{res}        449        1.46       29.00
+{txt}                                23 {c |}{res}        485        1.57       30.57
+{txt}                                24 {c |}{res}        459        1.49       32.06
+{txt}                                25 {c |}{res}        457        1.48       33.54
+{txt}                                26 {c |}{res}        408        1.32       34.86
+{txt}                                27 {c |}{res}        437        1.42       36.28
+{txt}                                28 {c |}{res}        405        1.31       37.59
+{txt}                                29 {c |}{res}        405        1.31       38.90
+{txt}                                30 {c |}{res}        447        1.45       40.35
+{txt}                                31 {c |}{res}        380        1.23       41.58
+{txt}                                32 {c |}{res}        442        1.43       43.02
+{txt}                                33 {c |}{res}        400        1.30       44.31
+{txt}                                34 {c |}{res}        447        1.45       45.76
+{txt}                                35 {c |}{res}        404        1.31       47.07
+{txt}                                36 {c |}{res}        429        1.39       48.46
+{txt}                                37 {c |}{res}        391        1.27       49.73
+{txt}                                38 {c |}{res}        455        1.48       51.21
+{txt}                                39 {c |}{res}        447        1.45       52.66
+{txt}                                40 {c |}{res}        494        1.60       54.26
+{txt}                                41 {c |}{res}        359        1.16       55.42
+{txt}                                42 {c |}{res}        487        1.58       57.00
+{txt}                                43 {c |}{res}        431        1.40       58.40
+{txt}                                44 {c |}{res}        407        1.32       59.72
+{txt}                                45 {c |}{res}        413        1.34       61.05
+{txt}                                46 {c |}{res}        373        1.21       62.26
+{txt}                                47 {c |}{res}        375        1.22       63.48
+{txt}                                48 {c |}{res}        325        1.05       64.53
+{txt}                                49 {c |}{res}        361        1.17       65.70
+{txt}                                50 {c |}{res}        408        1.32       67.03
+{txt}                                51 {c |}{res}        373        1.21       68.24
+{txt}                                52 {c |}{res}        426        1.38       69.62
+{txt}                                53 {c |}{res}        455        1.48       71.09
+{txt}                                54 {c |}{res}        397        1.29       72.38
+{txt}                                55 {c |}{res}        404        1.31       73.69
+{txt}                                56 {c |}{res}        415        1.35       75.03
+{txt}                                57 {c |}{res}        360        1.17       76.20
+{txt}                                58 {c |}{res}        436        1.41       77.61
+{txt}                                59 {c |}{res}        368        1.19       78.81
+{txt}                                60 {c |}{res}        412        1.34       80.14
+{txt}                                61 {c |}{res}        321        1.04       81.18
+{txt}                                62 {c |}{res}        440        1.43       82.61
+{txt}                                63 {c |}{res}        405        1.31       83.92
+{txt}                                64 {c |}{res}        395        1.28       85.20
+{txt}                                65 {c |}{res}        400        1.30       86.50
+{txt}                                66 {c |}{res}        278        0.90       87.40
+{txt}                                67 {c |}{res}        335        1.09       88.49
+{txt}                                68 {c |}{res}        312        1.01       89.50
+{txt}                                69 {c |}{res}        280        0.91       90.41
+{txt}                                70 {c |}{res}        286        0.93       91.33
+{txt}                                71 {c |}{res}        201        0.65       91.99
+{txt}                                72 {c |}{res}        250        0.81       92.80
+{txt}                                73 {c |}{res}        234        0.76       93.56
+{txt}                                74 {c |}{res}        200        0.65       94.20
+{txt}                                75 {c |}{res}        202        0.65       94.86
+{txt}                                76 {c |}{res}        139        0.45       95.31
+{txt}                                77 {c |}{res}        159        0.52       95.82
+{txt}                                78 {c |}{res}        148        0.48       96.30
+{txt}                                79 {c |}{res}        137        0.44       96.75
+{txt}                                80 {c |}{res}        123        0.40       97.15
+{txt}                                81 {c |}{res}        109        0.35       97.50
+{txt}                                82 {c |}{res}        117        0.38       97.88
+{txt}                                83 {c |}{res}         85        0.28       98.16
+{txt}                                84 {c |}{res}         89        0.29       98.44
+{txt}                                85 {c |}{res}         75        0.24       98.69
+{txt}                                86 {c |}{res}         70        0.23       98.91
+{txt}                                87 {c |}{res}         53        0.17       99.09
+{txt}                                88 {c |}{res}         59        0.19       99.28
+{txt}                                89 {c |}{res}         49        0.16       99.44
+{txt}                                90 {c |}{res}         30        0.10       99.53
+{txt}                                91 {c |}{res}         22        0.07       99.60
+{txt}                                92 {c |}{res}         36        0.12       99.72
+{txt}                                93 {c |}{res}         19        0.06       99.78
+{txt}                                94 {c |}{res}         21        0.07       99.85
+{txt}                                95 {c |}{res}         12        0.04       99.89
+{txt}                                96 {c |}{res}         11        0.04       99.93
+{txt}                     97 años o más {c |}{res}         23        0.07      100.00
+{txt}{hline 35}{c +}{hline 35}
+                             Total {c |}{res}     30,846      100.00
+
+{com}. do "C:\Users\MACARE~1\AppData\Local\Temp\STD71ec_000000.tmp"
+{txt}
+{com}. gen edad_ci=a5
+{txt}
+{com}. label variable edad_ci "Edad del individuo"
+{txt}
+{com}. 
+{txt}end of do-file
+
+{com}. tab a3
+
+          {txt}Relación de parentesco {c |}      Freq.     Percent        Cum.
+{hline 33}{c +}{hline 35}
+                     Jefe o jefa {c |}{res}     10,579       34.30       34.30
+{txt}        Esposo(a) o compañera(o) {c |}{res}      5,623       18.23       52.53
+{txt}                         Hijo(a) {c |}{res}     10,500       34.04       86.57
+{txt}                     Hijastro(a) {c |}{res}        452        1.47       88.03
+{txt}                    Yerno, nuera {c |}{res}        253        0.82       88.85
+{txt}                        Nieto(a) {c |}{res}      1,578        5.12       93.97
+{txt}                   Padre o madre {c |}{res}        417        1.35       95.32
+{txt}                       Suegro(a) {c |}{res}        127        0.41       95.73
+{txt}                      Hermano(a) {c |}{res}        530        1.72       97.45
+{txt}                       Cuñado(a) {c |}{res}         86        0.28       97.73
+{txt}                   Otro familiar {c |}{res}        424        1.37       99.10
+{txt}                Otro no familiar {c |}{res}        244        0.79       99.89
+{txt}Servicio doméstico o su familiar {c |}{res}         31        0.10       99.99
+{txt}       Pensionista o su familiar {c |}{res}          2        0.01      100.00
+{txt}{hline 33}{c +}{hline 35}
+                           Total {c |}{res}     30,846      100.00
+
+{com}. tab a3, nolab
+
+   {txt}Relación {c |}
+         de {c |}
+ parentesco {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+          1 {c |}{res}     10,579       34.30       34.30
+{txt}          2 {c |}{res}      5,623       18.23       52.53
+{txt}          3 {c |}{res}     10,500       34.04       86.57
+{txt}          4 {c |}{res}        452        1.47       88.03
+{txt}          5 {c |}{res}        253        0.82       88.85
+{txt}          6 {c |}{res}      1,578        5.12       93.97
+{txt}          7 {c |}{res}        417        1.35       95.32
+{txt}          8 {c |}{res}        127        0.41       95.73
+{txt}          9 {c |}{res}        530        1.72       97.45
+{txt}         10 {c |}{res}         86        0.28       97.73
+{txt}         11 {c |}{res}        424        1.37       99.10
+{txt}         12 {c |}{res}        244        0.79       99.89
+{txt}         13 {c |}{res}         31        0.10       99.99
+{txt}         14 {c |}{res}          2        0.01      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}     30,846      100.00
+
+{com}. do "C:\Users\MACARE~1\AppData\Local\Temp\STD71ec_000000.tmp"
+{txt}
+{com}. gen relacion_ci=1               if a3==1
+{txt}(20,267 missing values generated)
+
+{com}. replace relacion_ci=2   if a3==2
+{txt}(5,623 real changes made)
+
+{com}. replace relacion_ci=3   if a3==3 | a3==4
+{txt}(10,952 real changes made)
+
+{com}. replace relacion_ci=4   if a3>=5 & a3<=11
+{txt}(3,415 real changes made)
+
+{com}. replace relacion_ci=5   if a3==12 | a3==14
+{txt}(246 real changes made)
+
+{com}. replace relacion_ci=6   if a3==13
+{txt}(31 real changes made)
+
+{com}. label variable relacion_ci "Relacion con el jefe del hogar"
+{txt}
+{com}. label define relacion_ci 1 "Jefe/a" 2 "Esposo/a" 3 "Hijo/a" 4 "Otros parientes" 5 "Otros no parientes" 6 "Empleado/a domestico/a"
+{txt}
+{com}. label value relacion_ci relacion_ci
+{txt}
+{com}. tab a3
+
+          {txt}Relación de parentesco {c |}      Freq.     Percent        Cum.
+{hline 33}{c +}{hline 35}
+                     Jefe o jefa {c |}{res}     10,579       34.30       34.30
+{txt}        Esposo(a) o compañera(o) {c |}{res}      5,623       18.23       52.53
+{txt}                         Hijo(a) {c |}{res}     10,500       34.04       86.57
+{txt}                     Hijastro(a) {c |}{res}        452        1.47       88.03
+{txt}                    Yerno, nuera {c |}{res}        253        0.82       88.85
+{txt}                        Nieto(a) {c |}{res}      1,578        5.12       93.97
+{txt}                   Padre o madre {c |}{res}        417        1.35       95.32
+{txt}                       Suegro(a) {c |}{res}        127        0.41       95.73
+{txt}                      Hermano(a) {c |}{res}        530        1.72       97.45
+{txt}                       Cuñado(a) {c |}{res}         86        0.28       97.73
+{txt}                   Otro familiar {c |}{res}        424        1.37       99.10
+{txt}                Otro no familiar {c |}{res}        244        0.79       99.89
+{txt}Servicio doméstico o su familiar {c |}{res}         31        0.10       99.99
+{txt}       Pensionista o su familiar {c |}{res}          2        0.01      100.00
+{txt}{hline 33}{c +}{hline 35}
+                           Total {c |}{res}     30,846      100.00
+{txt}
+{com}. tab relacion_ci
+
+  {txt}Relacion con el jefe {c |}
+             del hogar {c |}      Freq.     Percent        Cum.
+{hline 23}{c +}{hline 35}
+                Jefe/a {c |}{res}     10,579       34.30       34.30
+{txt}              Esposo/a {c |}{res}      5,623       18.23       52.53
+{txt}                Hijo/a {c |}{res}     10,952       35.51       88.03
+{txt}       Otros parientes {c |}{res}      3,415       11.07       99.10
+{txt}    Otros no parientes {c |}{res}        246        0.80       99.90
+{txt}Empleado/a domestico/a {c |}{res}         31        0.10      100.00
+{txt}{hline 23}{c +}{hline 35}
+                 Total {c |}{res}     30,846      100.00
+{txt}
+{com}. 
+{txt}end of do-file
+
+{com}. tab a6
+
+            {txt}Estado conyugal {c |}      Freq.     Percent        Cum.
+{hline 28}{c +}{hline 35}
+           Menor de 10 años {c |}{res}      3,263       10.58       10.58
+{txt}En unión libre o juntado(a) {c |}{res}      4,028       13.06       23.64
+{txt}                  Casado(a) {c |}{res}      7,968       25.83       49.47
+{txt}              Divorciado(a) {c |}{res}      1,339        4.34       53.81
+{txt}                Separado(a) {c |}{res}      1,548        5.02       58.83
+{txt}                   Viudo(a) {c |}{res}      1,284        4.16       62.99
+{txt}                 Soltero(a) {c |}{res}     11,416       37.01      100.00
+{txt}{hline 28}{c +}{hline 35}
+                      Total {c |}{res}     30,846      100.00
+
+{com}. tab a6, nolab
+
+     {txt}Estado {c |}
+   conyugal {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+          0 {c |}{res}      3,263       10.58       10.58
+{txt}          1 {c |}{res}      4,028       13.06       23.64
+{txt}          2 {c |}{res}      7,968       25.83       49.47
+{txt}          3 {c |}{res}      1,339        4.34       53.81
+{txt}          4 {c |}{res}      1,548        5.02       58.83
+{txt}          5 {c |}{res}      1,284        4.16       62.99
+{txt}          6 {c |}{res}     11,416       37.01      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}     30,846      100.00
+
+{com}. do "C:\Users\MACARE~1\AppData\Local\Temp\STD71ec_000000.tmp"
+{txt}
+{com}. gen civil_ci=.
+{txt}(30,846 missing values generated)
+
+{com}. replace civil_ci=1 if a6==6
+{txt}(11,416 real changes made)
+
+{com}. replace civil_ci=2 if a6==1 | a6==2
+{txt}(11,996 real changes made)
+
+{com}. replace civil_ci=3 if a6==3 | a6==4
+{txt}(2,887 real changes made)
+
+{com}. replace civil_ci=4 if a6==5
+{txt}(1,284 real changes made)
+
+{com}. label variable civil_ci "Estado civil"
+{txt}
+{com}. label define civil_ci 1 "Soltero" 2 "Union formal o informal"
+{txt}
+{com}. label define civil_ci 3 "Divorciado o separado" 4 "Viudo" , add
+{txt}
+{com}. label value civil_ci civil_ci
+{txt}
+{com}. 
+{txt}end of do-file
+
+{com}. tab relacion?ci
+
+  {txt}Relacion con el jefe {c |}
+             del hogar {c |}      Freq.     Percent        Cum.
+{hline 23}{c +}{hline 35}
+                Jefe/a {c |}{res}     10,579       34.30       34.30
+{txt}              Esposo/a {c |}{res}      5,623       18.23       52.53
+{txt}                Hijo/a {c |}{res}     10,952       35.51       88.03
+{txt}       Otros parientes {c |}{res}      3,415       11.07       99.10
+{txt}    Otros no parientes {c |}{res}        246        0.80       99.90
+{txt}Empleado/a domestico/a {c |}{res}         31        0.10      100.00
+{txt}{hline 23}{c +}{hline 35}
+                 Total {c |}{res}     30,846      100.00
+
+{com}. do "C:\Users\MACARE~1\AppData\Local\Temp\STD71ec_000000.tmp"
+{txt}
+{com}. gen jefe_ci=(relacion_ci==1)
+{txt}
+{com}. label variable jefe_ci "Jefe de hogar"
+{txt}
+{com}. 
+{txt}end of do-file
+
+{com}. do "C:\Users\MACARE~1\AppData\Local\Temp\STD71ec_000000.tmp"
+{txt}
+{com}. egen nconyuges_ch=sum(relacion_ci==2), by(idh_ch)
+{txt}
+{com}. label variable nconyuges_ch "Numero de conyuges"
+{txt}
+{com}. 
+{txt}end of do-file
+
+{com}. do "C:\Users\MACARE~1\AppData\Local\Temp\STD71ec_000000.tmp"
+{txt}
+{com}. egen nhijos_ch=sum(relacion_ci==3), by(idh_ch)
+{txt}
+{com}. label variable nhijos_ch "Numero de hijos"
+{txt}
+{com}. 
+{txt}end of do-file
+
+{com}. do "C:\Users\MACARE~1\AppData\Local\Temp\STD71ec_000000.tmp"
+{txt}
+{com}. egen notropari_ch=sum(relacion_ci==4), by(idh_ch)
+{txt}
+{com}. label variable notropari_ch "Numero de otros familiares"
+{txt}
+{com}. 
+{txt}end of do-file
+
+{com}. do "C:\Users\MACARE~1\AppData\Local\Temp\STD71ec_000000.tmp"
+{txt}
+{com}. egen notronopari_ch=sum(relacion_ci==5), by(idh_ch)
+{txt}
+{com}. label variable notronopari_ch "Numero de no familiares"
+{txt}
+{com}. 
+. **************
+. * nempdom_ch *
+. **************
+. egen nempdom_ch=sum(relacion_ci==6), by(idh_ch)
+{txt}
+{com}. label variable nempdom_ch "Numero de empleados domesticos"
+{txt}
+{com}. 
+{txt}end of do-file
+
+{com}. do "C:\Users\MACARE~1\AppData\Local\Temp\STD71ec_000000.tmp"
+{txt}
+{com}. gen byte clasehog_ch=0
+{txt}
+{com}. **** unipersonal
+. replace clasehog_ch=1 if nhijos_ch==0 & nconyuges_ch==0 & notropari_ch==0 & notronopari_ch==0
+{txt}(1,730 real changes made)
+
+{com}. **** nuclear   (child with or without spouse but without other relatives)
+. replace clasehog_ch=2 if (nhijos_ch>0| nconyuges_ch>0) & (notropari_ch==0 & notronopari_ch==0)
+{txt}(19,940 real changes made)
+
+{com}. **** ampliado
+. replace clasehog_ch=3 if ((clasehog_ch ==2 & notropari_ch>0) & notronopari_ch==0) |(notropari_ch>0 & notronopari_ch==0) 
+{txt}(8,417 real changes made)
+
+{com}. **** compuesto  (some relatives plus non relative)
+. replace clasehog_ch=4 if ((nconyuges_ch>0 | nhijos_ch>0 | notropari_ch>0) & (notronopari_ch>0))
+{txt}(626 real changes made)
+
+{com}. **** corresidente
+. replace clasehog_ch=5 if nhijos_ch==0 & nconyuges_ch==0 & notropari_ch==0 & notronopari_ch>0
+{txt}(133 real changes made)
+
+{com}. label variable clasehog_ch "Tipo de hogar"
+{txt}
+{com}. label define clasehog_ch 1 " Unipersonal" 2 "Nuclear" 3 "Ampliado" 
+{txt}
+{com}. label define clasehog_ch 4 "Compuesto" 5 " Corresidente", add
+{txt}
+{com}. label value clasehog_ch clasehog_ch
+{txt}
+{com}. 
+{txt}end of do-file
+
+{com}. do "C:\Users\MACARE~1\AppData\Local\Temp\STD71ec_000000.tmp"
+{txt}
+{com}. egen nmiembros_ch=sum(relacion_ci>=1 & relacion_ci<=4), by(idh_ch)
+{txt}
+{com}. label variable nmiembros_ch "Numero de familiares en el hogar"
+{txt}
+{com}. 
+. ***************
+. * miembros_ci *
+. ***************
+. gen miembros_ci=(relacion_ci>=1 & relacion_ci<=5)
+{txt}
+{com}. label variable miembros_ci "Miembro del hogar"
+{txt}
+{com}. 
+. ***************
+. * nmayor21_ch *
+. ***************
+. by idh_ch, sort: egen byte nmayor21_ch=sum((relacion_ci>0 & relacion_ci<=5) & (edad_ci>=21 & edad_ci<=98))
+{txt}
+{com}. label variable nmayor21_ch "Numero de familiares mayores a 21 anios"
+{txt}
+{com}. 
+. ***************
+. * nmenor21_ch *
+. ***************
+. by idh_ch, sort: egen byte nmenor21_ch=sum((relacion_ci>0 & relacion_ci<=5) & (edad_ci<21))
+{txt}
+{com}. label variable nmenor21_ch "Numero de familiares menores a 21 anios"
+{txt}
+{com}. 
+. ***************
+. * nmayor65_ch *
+. ***************
+. by idh_ch, sort: egen byte nmayor65_ch=sum((relacion_ci>0 & relacion_ci<=5) & (edad_ci>=65 & edad_ci!=.))
+{txt}
+{com}. label variable nmayor65_ch "Numero de familiares mayores a 65 anios"
+{txt}
+{com}. 
+. **************
+. * nmenor6_ch *
+. **************
+. by idh_ch, sort: egen byte nmenor6_ch=sum((relacion_ci>0 & relacion_ci<=5) & (edad_ci<6))
+{txt}
+{com}. label variable nmenor6_ch "Numero de familiares menores a 6 anios"
+{txt}
+{com}. 
+. **************
+. * nmenor1_ch *
+. **************
+. by idh_ch, sort: egen byte nmenor1_ch=sum((relacion_ci>0 & relacion_ci<=5) & (edad_ci<1))
+{txt}
+{com}. label variable nmenor1_ch "Numero de familiares menores a 1 anio"
+{txt}
+{com}. 
+{txt}end of do-file
+
+{com}. do "C:\Users\MACARE~1\AppData\Local\Temp\STD71ec_000000.tmp"
+{txt}
+{com}. gen afro_ci=. 
+{txt}(30,846 missing values generated)
+
+{com}. 
+. ***********
+. * ind_ci  *
+. ***********
+. gen ind_ci=. 
+{txt}(30,846 missing values generated)
+
+{com}. 
+. *****************
+. * noafroind_ci  *
+. *****************
+. gen noafroind_ci=. 
+{txt}(30,846 missing values generated)
+
+{com}. 
+. ***************
+. ***afroind_ci***
+. ***************
+. gen afroind_ci=. 
+{txt}(30,846 missing values generated)
+
+{com}. 
+. ************
+. * afro_ch  *
+. ************
+. gen afro_ch=. 
+{txt}(30,846 missing values generated)
+
+{com}. 
+. ***********
+. * ind_ch  *
+. ***********
+. gen ind_ch=. 
+{txt}(30,846 missing values generated)
+
+{com}. 
+. *****************
+. * noafroind_ch  *
+. *****************
+. gen noafroind_ch=. 
+{txt}(30,846 missing values generated)
+
+{com}. 
+. ***************
+. * afroind_ch  *
+. ***************
+. gen afroind_ch=. 
+{txt}(30,846 missing values generated)
+
+{com}. 
+. *****************
+. * afroind_ano_c * 
+. *****************
+. gen afroind_ano_c=.             
+{txt}(30,846 missing values generated)
+
+{com}. 
+{txt}end of do-file
+
+{com}. tab a8a
+
+             {txt}Primera mención de tipo de {c |}
+                           discapacidad {c |}      Freq.     Percent        Cum.
+{hline 40}{c +}{hline 35}
+                       No tiene ninguna {c |}{res}     28,027       90.86       90.86
+{txt}Ver aún con los anteojos o lentes puest {c |}{res}        739        2.40       93.26
+{txt}                                    Oír {c |}{res}        353        1.14       94.40
+{txt}                                 Hablar {c |}{res}        104        0.34       94.74
+{txt}                 Caminar o subir gradas {c |}{res}      1,060        3.44       98.17
+{txt}                Utilizar brazos y manos {c |}{res}        112        0.36       98.54
+{txt}De tipo intelectual (Síndrome de Down,  {c |}{res}        277        0.90       99.44
+{txt}De tipo mental (bipolar, esquizofrenia, {c |}{res}        174        0.56      100.00
+{txt}{hline 40}{c +}{hline 35}
+                                  Total {c |}{res}     30,846      100.00
+
+{com}. tab a8b
+
+             {txt}Segunda mención de tipo de {c |}
+                           discapacidad {c |}      Freq.     Percent        Cum.
+{hline 40}{c +}{hline 35}
+          No tiene segunda discapacidad {c |}{res}     30,192       97.88       97.88
+{txt}                                    Oír {c |}{res}         55        0.18       98.06
+{txt}                                 Hablar {c |}{res}         19        0.06       98.12
+{txt}                 Caminar o subir gradas {c |}{res}        275        0.89       99.01
+{txt}                Utilizar brazos y manos {c |}{res}        197        0.64       99.65
+{txt}De tipo intelectual (Síndrome de Down,  {c |}{res}         47        0.15       99.80
+{txt}De tipo mental (bipolar, esquizofrenia, {c |}{res}         61        0.20      100.00
+{txt}{hline 40}{c +}{hline 35}
+                                  Total {c |}{res}     30,846      100.00
+
+{com}. tab a8a, nolab
+
+    {txt}Primera {c |}
+ mención de {c |}
+    tipo de {c |}
+discapacida {c |}
+          d {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+          0 {c |}{res}     28,027       90.86       90.86
+{txt}          1 {c |}{res}        739        2.40       93.26
+{txt}          2 {c |}{res}        353        1.14       94.40
+{txt}          3 {c |}{res}        104        0.34       94.74
+{txt}          4 {c |}{res}      1,060        3.44       98.17
+{txt}          5 {c |}{res}        112        0.36       98.54
+{txt}          6 {c |}{res}        277        0.90       99.44
+{txt}          7 {c |}{res}        174        0.56      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}     30,846      100.00
+
+{com}. do "C:\Users\MACARE~1\AppData\Local\Temp\STD71ec_000000.tmp"
+{txt}
+{com}. gen dis_ci =.
+{txt}(30,846 missing values generated)
+
+{com}. replace dis_ci = 1 if (a8a >= 1 & a8a <= 5) | (a8b >= 1 & a8b <= 5)
+{txt}(2,368 real changes made)
+
+{com}. replace dis_ci = 0 if (a8a == 0 | a8a == 6 | a8a == 7)
+{txt}(28,478 real changes made)
+
+{com}. 
+{txt}end of do-file
+
+{com}. do "C:\Users\MACARE~1\AppData\Local\Temp\STD71ec_000000.tmp"
+{txt}
+{com}. gen disWG_ci =.
+{txt}(30,846 missing values generated)
+
+{com}. 
+. ************
+. * CRI_dis_ci *
+. ************
+. gen CRI_dis_ci =dis_ci
+{txt}
+{com}. 
+. **********
+. * dis_ch *
+. **********              
+. egen dis_ch  = sum(dis_ci), by(idh_ch) 
+{txt}
+{com}. replace dis_ch=1 if dis_ch>=1 & dis_ch!=. 
+{txt}(1,138 real changes made)
+
+{com}. 
+{txt}end of do-file
+
+{com}. tab b1
+
+ {txt}Trabajó la {c |}
+     semana {c |}
+     pasada {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+         Sí {c |}{res}     12,061       45.06       45.06
+{txt}         No {c |}{res}     14,704       54.94      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}     26,765      100.00
+
+{com}. tab b2
+
+  {txt}Realizó actividad por dinero o algo a {c |}
+        cambio (actividades marginales) {c |}      Freq.     Percent        Cum.
+{hline 40}{c +}{hline 35}
+                     No realizó ninguna {c |}{res}     14,448       98.26       98.26
+{txt}     Participó en labores agropecuarias {c |}{res}         33        0.22       98.48
+{txt}Hizo algo para vender (costuras, manual {c |}{res}         40        0.27       98.76
+{txt}Vendió algún producto (alimentos, joyas {c |}{res}         46        0.31       99.07
+{txt}Cuidó niños, adultos mayores o personas {c |}{res}         14        0.10       99.16
+{txt}Realizó algún servicio doméstico para p {c |}{res}         27        0.18       99.35
+{txt}Realizó algún otro servicio (pintar uña {c |}{res}         15        0.10       99.45
+{txt}Realizó trabajos variados, camarones, c {c |}{res}         80        0.54       99.99
+{txt}Hizo algún otro trabajo recibiendo pago {c |}{res}          1        0.01      100.00
+{txt}{hline 40}{c +}{hline 35}
+                                  Total {c |}{res}     14,704      100.00
+
+{com}. tab b3
+
+  {txt}Ayudó sin {c |}
+    recibir {c |}
+       pago {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+         Sí {c |}{res}         53        0.37        0.37
+{txt}         No {c |}{res}     14,395       99.63      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}     14,448      100.00
+
+{com}. tab b5
+
+                    {txt}Motivos de ausencia {c |}      Freq.     Percent        Cum.
+{hline 40}{c +}{hline 35}
+Vacaciones, incapacidad, huelga, permis {c |}{res}        343       69.86       69.86
+{txt}No llegaron clientes al local u oficina {c |}{res}         18        3.67       73.52
+{txt}Pidió permiso sin goce de sueldo por un {c |}{res}          6        1.22       74.75
+{txt}Enfermedad, vacaciones sin recibir suel {c |}{res}         24        4.89       79.63
+{txt}Suspensión actividad sin ingresos 1 mes {c |}{res}         23        4.68       84.32
+{txt}Permiso, vacaciones o enfermedad sin re {c |}{res}          7        1.43       85.74
+{txt}Suspensión actividades, cierre negocio  {c |}{res}         23        4.68       90.43
+{txt}Nadie le contrató o sólo hace trabajos  {c |}{res}         47        9.57      100.00
+{txt}{hline 40}{c +}{hline 35}
+                                  Total {c |}{res}        491      100.00
+
+{com}. do "C:\Users\MACARE~1\AppData\Local\Temp\STD71ec_000000.tmp"
+{txt}
+{com}. gen condocup_ci=.
+{txt}(30,846 missing values generated)
+
+{com}. replace condocup_ci=1 if b1==1 | (b2 >= 1 & b2 <= 8) | b3==1 | (b5 >= 1 & b5 <= 5) & estabili != 30 /*ocupado frecuente*/
+{txt}(12,784 real changes made)
+
+{com}. replace condocup_ci=1 if b1==1 | (b2 >= 1 & b2 <= 8) | b3==1 | (b5 >= 1 & b5 <= 5) & estabili == 30 /*ocupado estacional*/
+{txt}(0 real changes made)
+
+{com}. replace condocup_ci=2 if (b6== 8 | b6== 9) & ((b7a== 1 | b7b== 2 | b7c== 3 | b7d== 4 | b7e== 5 | b7f==6 | b7g == 7 | b7h ==8 | b7i ==9 | b7j == 10 | b7k== 11) | (b8==1 | b8==2 | b8==3)) & g6==1 /*desempleado cesante*/
+{txt}(677 real changes made)
+
+{com}. replace condocup_ci=2 if (b6== 8 | b6==9 ) & ((b7a== 1 | b7b== 2 | b7c== 3 | b7d== 4 | b7e== 5 | b7f== 6 | b7g== 7 | b7h ==8 | b7i ==9 | b7j== 10 | b7k== 11) | (b8==1 | b8==2 | b8==3)) & g6==2 /*desempleado primera vez*/
+{txt}(319 real changes made)
+
+{com}. recode condocup_ci .=3 if  edad_ci>=12 /*Modificado de 10 a 12 aÃ±os SGR 05/2017*/
+{txt}(12,985 changes made to {bf:condocup_ci})
+
+{com}. replace condocup_ci=4 if  edad_ci<12
+{txt}(4,081 real changes made)
+
+{com}. label var condocup_ci "Condicion de ocupación de acuerdo a def de cada pais"
+{txt}
+{com}. label define condocup_ci 1 "Ocupado" 2 "Desocupado" 3 "Inactivo" 4 "Menor que 12" 
+{txt}
+{com}. label value condocup_ci condocup_ci
+{txt}
+{com}. 
+{txt}end of do-file
+
+{com}. tab raznoacteco
+
+    {txt}Razón para no participar en {c |}
+         actividades económicas {c |}      Freq.     Percent        Cum.
+{hline 32}{c +}{hline 35}
+          Pensionado o jubilado {c |}{res}      3,940       33.76       33.76
+{txt}                       Rentista {c |}{res}        191        1.64       35.40
+{txt}Asistencia a centro de estudios {c |}{res}      2,626       22.50       57.90
+{txt}  Obligaciones del propio hogar {c |}{res}      4,456       38.18       96.08
+{txt}  Con discapacidad o enfermedad {c |}{res}        176        1.51       97.58
+{txt}                    Otro motivo {c |}{res}        282        2.42      100.00
+{txt}{hline 32}{c +}{hline 35}
+                          Total {c |}{res}     11,671      100.00
+
+{com}. do "C:\Users\MACARE~1\AppData\Local\Temp\STD71ec_000000.tmp"
+{txt}
+{com}. gen categoinac_ci = 1 if (raznoacteco == 1 & condocup_ci==3)
+{txt}(26,906 missing values generated)
+
+{com}. replace categoinac_ci = 2 if (raznoacteco == 3 & condocup_ci==3)
+{txt}(2,626 real changes made)
+
+{com}. replace categoinac_ci = 3 if (raznoacteco == 4 & condocup_ci==3)
+{txt}(4,456 real changes made)
+
+{com}. replace categoinac_ci = 4 if  ((categoinac_ci ~=1 & categoinac_ci ~=2 & categoinac_ci ~=3) & condocup_ci==3)
+{txt}(1,963 real changes made)
+
+{com}. label var categoinac_ci "Categoría de inactividad"
+{txt}
+{com}. label define categoinac_ci 1 "jubilados o pensionados" 2 "Estudiantes" 3 "Quehaceres domésticos" 4 "Otros"
+{txt}
+{com}. 
+{txt}end of do-file
+
+{com}. do "C:\Users\MACARE~1\AppData\Local\Temp\STD71ec_000000.tmp"
+{txt}
+{com}. gen byte emp_ci=(condocup_ci==1)
+{txt}
+{com}. label var emp_ci "Ocupado (empleado)"
+{txt}
+{com}. 
+. ***************
+. * nempleos_ci *
+. ***************
+. gen nempleos_ci=.
+{txt}(30,846 missing values generated)
+
+{com}. replace nempleos_ci=1 if emp_ci==1 & c1==1
+{txt}(12,443 real changes made)
+
+{com}. replace nempleos_ci=2 if emp_ci==1 & c1==2
+{txt}(341 real changes made)
+
+{com}. replace nempleos_ci=. if emp_ci==0
+{txt}(0 real changes made)
+
+{com}. label var nempleos_ci "Número de empleos" 
+{txt}
+{com}. 
+{txt}end of do-file
+
+{com}. tab d4a
+
+     {txt}Días en el {c |}
+        negocio {c |}      Freq.     Percent        Cum.
+{hline 16}{c +}{hline 35}
+Menos de un mes {c |}{res}         28      100.00      100.00
+{txt}{hline 16}{c +}{hline 35}
+          Total {c |}{res}         28      100.00
+
+{com}. tab d4b
+
+{txt}Meses en el {c |}
+    negocio {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+      1 mes {c |}{res}         22        8.63        8.63
+{txt}    2 meses {c |}{res}         27       10.59       19.22
+{txt}    3 meses {c |}{res}         38       14.90       34.12
+{txt}    4 meses {c |}{res}         20        7.84       41.96
+{txt}    5 meses {c |}{res}         12        4.71       46.67
+{txt}    6 meses {c |}{res}         61       23.92       70.59
+{txt}    7 meses {c |}{res}         20        7.84       78.43
+{txt}    8 meses {c |}{res}         31       12.16       90.59
+{txt}    9 meses {c |}{res}          8        3.14       93.73
+{txt}   10 meses {c |}{res}          9        3.53       97.25
+{txt}   11 meses {c |}{res}          6        2.35       99.61
+{txt}   Ignorado {c |}{res}          1        0.39      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}        255      100.00
+
+{com}. tab d4c
+
+ {txt}Años en el {c |}
+    negocio {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+          1 {c |}{res}        201        8.19        8.19
+{txt}          2 {c |}{res}        205        8.35       16.54
+{txt}          3 {c |}{res}        198        8.07       24.61
+{txt}          4 {c |}{res}        154        6.28       30.89
+{txt}          5 {c |}{res}        191        7.78       38.67
+{txt}          6 {c |}{res}        101        4.12       42.79
+{txt}          7 {c |}{res}         65        2.65       45.44
+{txt}          8 {c |}{res}         91        3.71       49.14
+{txt}          9 {c |}{res}         16        0.65       49.80
+{txt}         10 {c |}{res}        214        8.72       58.52
+{txt}         11 {c |}{res}         21        0.86       59.37
+{txt}         12 {c |}{res}         52        2.12       61.49
+{txt}         13 {c |}{res}         12        0.49       61.98
+{txt}         14 {c |}{res}         26        1.06       63.04
+{txt}         15 {c |}{res}        135        5.50       68.54
+{txt}         16 {c |}{res}         19        0.77       69.32
+{txt}         17 {c |}{res}         13        0.53       69.85
+{txt}         18 {c |}{res}         33        1.34       71.19
+{txt}         19 {c |}{res}         13        0.53       71.72
+{txt}         20 {c |}{res}        198        8.07       79.79
+{txt}         21 {c |}{res}          3        0.12       79.91
+{txt}         22 {c |}{res}         15        0.61       80.52
+{txt}         23 {c |}{res}         12        0.49       81.01
+{txt}         24 {c |}{res}         21        0.86       81.87
+{txt}         25 {c |}{res}         63        2.57       84.43
+{txt}         26 {c |}{res}          6        0.24       84.68
+{txt}         27 {c |}{res}          8        0.33       85.00
+{txt}         28 {c |}{res}          9        0.37       85.37
+{txt}         29 {c |}{res}          4        0.16       85.53
+{txt}         30 {c |}{res}        152        6.19       91.73
+{txt}         31 {c |}{res}          1        0.04       91.77
+{txt}         32 {c |}{res}         11        0.45       92.22
+{txt}         33 {c |}{res}          6        0.24       92.46
+{txt}         34 {c |}{res}          2        0.08       92.54
+{txt}         35 {c |}{res}         39        1.59       94.13
+{txt}         36 {c |}{res}          4        0.16       94.30
+{txt}         37 {c |}{res}          5        0.20       94.50
+{txt}         38 {c |}{res}          6        0.24       94.74
+{txt}         39 {c |}{res}          5        0.20       94.95
+{txt}         40 {c |}{res}         84        3.42       98.37
+{txt}         41 {c |}{res}          1        0.04       98.41
+{txt}         43 {c |}{res}          3        0.12       98.53
+{txt}         44 {c |}{res}          2        0.08       98.61
+{txt}         45 {c |}{res}         14        0.57       99.19
+{txt}         46 {c |}{res}          2        0.08       99.27
+{txt}         50 {c |}{res}          9        0.37       99.63
+{txt}         51 {c |}{res}          1        0.04       99.67
+{txt}         52 {c |}{res}          1        0.04       99.71
+{txt}         57 {c |}{res}          1        0.04       99.76
+{txt}         60 {c |}{res}          1        0.04       99.80
+{txt}         72 {c |}{res}          1        0.04       99.84
+{txt}   Ignorado {c |}{res}          4        0.16      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}      2,454      100.00
+
+{com}. br da4
+{err}variable {bf}da4{sf} not found
+{txt}{search r(111), local:r(111);}
+
+{com}. br d4a
+
+. tab d4a, nolab
+
+ {txt}Días en el {c |}
+    negocio {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+          0 {c |}{res}         28      100.00      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}         28      100.00
+
+{com}. do "C:\Users\MACARE~1\AppData\Local\Temp\STD71ec_000000.tmp"
+{txt}
+{com}. * Independientes
+. g aux0=d4a
+{txt}(30,818 missing values generated)
+
+{com}. g aux1=d4b*30 if d4b!=99
+{txt}(30,592 missing values generated)
+
+{com}. g aux2=d4c*365 if d4c!=99
+{txt}(28,396 missing values generated)
+
+{com}. egen ind=rsum(aux0 aux1 aux2), m
+{txt}(28,114 missing values generated)
+
+{com}. replace ind=ind/365
+{txt}(2,704 real changes made)
+
+{com}. * Asalariados
+. g aux3=e3a
+{txt}(30,593 missing values generated)
+
+{com}. g aux4=e3b*30 if e3b!=99
+{txt}(29,001 missing values generated)
+
+{com}. g aux5=e3c*365 if e3c!=99
+{txt}(23,185 missing values generated)
+
+{com}. egen asal=rsum(aux3 aux4 aux5), m
+{txt}(21,087 missing values generated)
+
+{com}. replace asal=asal/365
+{txt}(9,506 real changes made)
+
+{com}. * antiguedad
+. egen antiguedad_ci=rsum(ind asal), m
+{txt}(18,355 missing values generated)
+
+{com}. replace antiguedad_ci=. if antiguedad_ci>edad_ci
+{txt}(0 real changes made)
+
+{com}. label var antiguedad_ci "Antiguedad en la actividad actual en anios"
+{txt}
+{com}. 
+{txt}end of do-file
+
+{com}. tab e3a
+
+           {txt}Días {c |}
+  trabajados en {c |}
+     ese empleo {c |}      Freq.     Percent        Cum.
+{hline 16}{c +}{hline 35}
+Menos de un mes {c |}{res}        253      100.00      100.00
+{txt}{hline 16}{c +}{hline 35}
+          Total {c |}{res}        253      100.00
+
+{com}. 
+. tab e3b
+
+      {txt}Meses {c |}
+ trabajados {c |}
+     en ese {c |}
+     empleo {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+      1 mes {c |}{res}        133        7.19        7.19
+{txt}    2 meses {c |}{res}        272       14.69       21.88
+{txt}    3 meses {c |}{res}        266       14.37       36.25
+{txt}    4 meses {c |}{res}        200       10.80       47.06
+{txt}    5 meses {c |}{res}        179        9.67       56.73
+{txt}    6 meses {c |}{res}        302       16.32       73.04
+{txt}    7 meses {c |}{res}        149        8.05       81.09
+{txt}    8 meses {c |}{res}        149        8.05       89.14
+{txt}    9 meses {c |}{res}         80        4.32       93.46
+{txt}   10 meses {c |}{res}         61        3.30       96.76
+{txt}   11 meses {c |}{res}         54        2.92       99.68
+{txt}   Ignorado {c |}{res}          6        0.32      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}      1,851      100.00
+
+{com}. tab e3c
+
+       {txt}Años {c |}
+ trabajados {c |}
+     en ese {c |}
+     empleo {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+          1 {c |}{res}      1,065       13.87       13.87
+{txt}          2 {c |}{res}      1,264       16.47       30.34
+{txt}          3 {c |}{res}        742        9.67       40.01
+{txt}          4 {c |}{res}        479        6.24       46.25
+{txt}          5 {c |}{res}        641        8.35       54.60
+{txt}          6 {c |}{res}        381        4.96       59.56
+{txt}          7 {c |}{res}        268        3.49       63.05
+{txt}          8 {c |}{res}        294        3.83       66.88
+{txt}          9 {c |}{res}        137        1.78       68.67
+{txt}         10 {c |}{res}        416        5.42       74.09
+{txt}         11 {c |}{res}         83        1.08       75.17
+{txt}         12 {c |}{res}        135        1.76       76.93
+{txt}         13 {c |}{res}         86        1.12       78.05
+{txt}         14 {c |}{res}        101        1.32       79.36
+{txt}         15 {c |}{res}        288        3.75       83.12
+{txt}         16 {c |}{res}         95        1.24       84.35
+{txt}         17 {c |}{res}         58        0.76       85.11
+{txt}         18 {c |}{res}         97        1.26       86.37
+{txt}         19 {c |}{res}         41        0.53       86.91
+{txt}         20 {c |}{res}        268        3.49       90.40
+{txt}         21 {c |}{res}         35        0.46       90.85
+{txt}         22 {c |}{res}         51        0.66       91.52
+{txt}         23 {c |}{res}         61        0.79       92.31
+{txt}         24 {c |}{res}         59        0.77       93.08
+{txt}         25 {c |}{res}        112        1.46       94.54
+{txt}         26 {c |}{res}         36        0.47       95.01
+{txt}         27 {c |}{res}         31        0.40       95.41
+{txt}         28 {c |}{res}         29        0.38       95.79
+{txt}         29 {c |}{res}         26        0.34       96.13
+{txt}         30 {c |}{res}        128        1.67       97.80
+{txt}         31 {c |}{res}         16        0.21       98.01
+{txt}         32 {c |}{res}         24        0.31       98.32
+{txt}         33 {c |}{res}         11        0.14       98.46
+{txt}         34 {c |}{res}         14        0.18       98.65
+{txt}         35 {c |}{res}         22        0.29       98.93
+{txt}         36 {c |}{res}         13        0.17       99.10
+{txt}         37 {c |}{res}          8        0.10       99.21
+{txt}         38 {c |}{res}          7        0.09       99.30
+{txt}         39 {c |}{res}          1        0.01       99.31
+{txt}         40 {c |}{res}         23        0.30       99.61
+{txt}         41 {c |}{res}          3        0.04       99.65
+{txt}         42 {c |}{res}          2        0.03       99.67
+{txt}         43 {c |}{res}          2        0.03       99.70
+{txt}         44 {c |}{res}          3        0.04       99.74
+{txt}         45 {c |}{res}          2        0.03       99.77
+{txt}         47 {c |}{res}          2        0.03       99.79
+{txt}         53 {c |}{res}          1        0.01       99.80
+{txt}   Ignorado {c |}{res}         15        0.20      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}      7,676      100.00
+
+{com}. do "C:\Users\MACARE~1\AppData\Local\Temp\STD71ec_000000.tmp"
+{txt}
+{com}. g aux3=e3a
+{err}variable {bf}aux3{sf} already defined
+{txt}{search r(110), local:r(110);}
+
+end of do-file
+
+{search r(110), local:r(110);}
+
+{com}. do "C:\Users\MACARE~1\AppData\Local\Temp\STD71ec_000000.tmp"
+{txt}
+{com}. gen desemp_ci=(condocup_ci==2)
+{txt}
+{com}. label var desemp_ci "Desempleado que buscó empleo en el periodo de referencia"
+{txt}
+{com}. 
+{txt}end of do-file
+
+{com}. tab condocup_ci
+
+{txt}Condicion de {c |}
+   ocupación {c |}
+de acuerdo a {c |}
+ def de cada {c |}
+        pais {c |}      Freq.     Percent        Cum.
+{hline 13}{c +}{hline 35}
+     Ocupado {c |}{res}     12,784       41.44       41.44
+{txt}  Desocupado {c |}{res}        996        3.23       44.67
+{txt}    Inactivo {c |}{res}     12,985       42.10       86.77
+{txt}Menor que 12 {c |}{res}      4,081       13.23      100.00
+{txt}{hline 13}{c +}{hline 35}
+       Total {c |}{res}     30,846      100.00
+
+{com}. do "C:\Users\MACARE~1\AppData\Local\Temp\STD71ec_000000.tmp"
+{txt}
+{com}. * MGD 12/4/2015: condicionado a que este desocupado
+. gen cesante_ci=1 if g6==1 & condocup_ci==2
+{txt}(30,169 missing values generated)
+
+{com}. recode cesante_ci .=0 if condocup_ci==2
+{txt}(319 changes made to {bf:cesante_ci})
+
+{com}. * No todos los desempleados respondieron si han trabajado antes
+. label var cesante_ci "Desocupado - definicion oficial del pais"
+{txt}
+{com}. 
+{txt}end of do-file
+
+{com}. tab g6
+
+         {txt}Ha {c |}
+  trabajado {c |}
+ alguna vez {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+         Sí {c |}{res}        856       66.25       66.25
+{txt}         No {c |}{res}        436       33.75      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}      1,292      100.00
+
+{com}. tab g2
+
+        {txt}Duración del desempleo {c |}      Freq.     Percent        Cum.
+{hline 31}{c +}{hline 35}
+                Un mes o menos {c |}{res}        403       34.56       34.56
+{txt}    Más de un mes a tres meses {c |}{res}        296       25.39       59.95
+{txt}Más de tres meses a seis meses {c |}{res}        147       12.61       72.56
+{txt}    Más de seis meses a un año {c |}{res}        167       14.32       86.88
+{txt}     Más de un año a tres años {c |}{res}        110        9.43       96.31
+{txt}              Más de tres años {c |}{res}         43        3.69      100.00
+{txt}{hline 31}{c +}{hline 35}
+                         Total {c |}{res}      1,166      100.00
+
+{com}. do "C:\Users\MACARE~1\AppData\Local\Temp\STD71ec_000000.tmp"
+{txt}
+{com}. gen durades_ci=.
+{txt}(30,846 missing values generated)
+
+{com}. *un mes o menos
+. replace durades_ci=(1+4.3)/2/4.3 if g2==1
+{txt}(403 real changes made)
+
+{com}. *MÁS de 1 a 3 meses
+. replace durades_ci=(1+3)/2 if g2==2
+{txt}(296 real changes made)
+
+{com}. *MÁS de 3 a 6 meses
+. replace durades_ci=(3+6)/2 if g2==3
+{txt}(147 real changes made)
+
+{com}. *MÁS de 6 a 12 meses
+. replace durades_ci=(6+12)/2 if g2==4
+{txt}(167 real changes made)
+
+{com}. *MÁS de 1 año a 3 años
+. replace durades_ci=(12+36)/2 if g2==5
+{txt}(110 real changes made)
+
+{com}. *MÁS de 3 años
+. replace durades_ci=(36+48)/2 if g2==6
+{txt}(43 real changes made)
+
+{com}. label variable durades_ci "Duracion del desempleo en meses"
+{txt}
+{com}. 
+{txt}end of do-file
+
+{com}. do "C:\Users\MACARE~1\AppData\Local\Temp\STD71ec_000000.tmp"
+{txt}
+{com}. gen pea_ci=0
+{txt}
+{com}. replace pea_ci=1 if emp_ci==1 |desemp_ci==1
+{txt}(13,780 real changes made)
+
+{com}. label var pea_ci "Población Económicamente Activa"
+{txt}
+{com}. 
+{txt}end of do-file
+
+{com}. do "C:\Users\MACARE~1\AppData\Local\Temp\STD71ec_000000.tmp"
+{txt}
+{com}. gen desalent_ci=(emp_ci==0 & (b8==5 | b8==6 |b8==7 |b8==8))
+{txt}
+{com}. replace desalent_ci=. if condact==.
+{txt}(5,400 real changes made, 5,400 to missing)
+
+{com}. label var desalent_ci "Trabajadores desalentados"
+{txt}
+{com}. 
+{txt}end of do-file
+
+{com}. tab b8
+
+   {txt}Razones por las que no buscó trabajo {c |}      Freq.     Percent        Cum.
+{hline 40}{c +}{hline 35}
+                    Ya encontró trabajo {c |}{res}          9        0.11        0.11
+{txt}Espera reinicio de operaciones o reaper {c |}{res}         19        0.24        0.35
+{txt}Espera respuesta de gestiones anteriore {c |}{res}         10        0.13        0.48
+{txt}            No tiene dinero para buscar {c |}{res}         11        0.14        0.61
+{txt}                     Se cansó de buscar {c |}{res}         28        0.35        0.97
+{txt}No le dan trabajo por edad, sexo, raza, {c |}{res}         59        0.74        1.71
+{txt}              No hay trabajo en la zona {c |}{res}         85        1.07        2.77
+{txt}Sabe que en esta época del año no hay t {c |}{res}          4        0.05        2.82
+{txt}        Sólo trabaja cuando se lo piden {c |}{res}         47        0.59        3.41
+{txt}Enfermedad, accidente o discapacidad pe {c |}{res}         44        0.55        3.96
+{txt}           Asiste a centro de enseñanza {c |}{res}      3,132       39.27       43.23
+{txt}          Tiene obligaciones familiares {c |}{res}      2,898       36.33       79.56
+{txt}          Tiene obligaciones personales {c |}{res}        701        8.79       88.35
+{txt}                      No desea trabajar {c |}{res}        919       11.52       99.87
+{txt}                          Otras razones {c |}{res}         10        0.13      100.00
+{txt}{hline 40}{c +}{hline 35}
+                                  Total {c |}{res}      7,976      100.00
+
+{com}. do "C:\Users\MACARE~1\AppData\Local\Temp\STD71ec_000000.tmp"
+{txt}
+{com}. gen desalent_ci=(emp_ci==0 & (b8==5 | b8==6 |b8==7 |b8==8))
+{err}variable {bf}desalent_ci{sf} already defined
+{txt}{search r(110), local:r(110);}
+
+end of do-file
+
+{search r(110), local:r(110);}
+
+{com}. tab c2a1
+
+      {txt}Horas {c |}
+   normales {c |}
+     empleo {c |}
+  principal {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+    Ninguna {c |}{res}        199        1.56        1.56
+{txt}          1 {c |}{res}          4        0.03        1.59
+{txt}          2 {c |}{res}         28        0.22        1.81
+{txt}          3 {c |}{res}         33        0.26        2.07
+{txt}          4 {c |}{res}         47        0.37        2.43
+{txt}          5 {c |}{res}         70        0.55        2.98
+{txt}          6 {c |}{res}         62        0.48        3.47
+{txt}          7 {c |}{res}         20        0.16        3.62
+{txt}          8 {c |}{res}        111        0.87        4.49
+{txt}          9 {c |}{res}         31        0.24        4.73
+{txt}         10 {c |}{res}        135        1.06        5.79
+{txt}         11 {c |}{res}          3        0.02        5.81
+{txt}         12 {c |}{res}        111        0.87        6.68
+{txt}         13 {c |}{res}          4        0.03        6.71
+{txt}         14 {c |}{res}         32        0.25        6.96
+{txt}         15 {c |}{res}        131        1.02        7.99
+{txt}         16 {c |}{res}        103        0.81        8.79
+{txt}         17 {c |}{res}          4        0.03        8.82
+{txt}         18 {c |}{res}         92        0.72        9.54
+{txt}         19 {c |}{res}          1        0.01        9.55
+{txt}         20 {c |}{res}        317        2.48       12.03
+{txt}         21 {c |}{res}         44        0.34       12.37
+{txt}         22 {c |}{res}         13        0.10       12.48
+{txt}         23 {c |}{res}          3        0.02       12.50
+{txt}         24 {c |}{res}        209        1.63       14.13
+{txt}         25 {c |}{res}        170        1.33       15.46
+{txt}         26 {c |}{res}          4        0.03       15.50
+{txt}         27 {c |}{res}         19        0.15       15.64
+{txt}         28 {c |}{res}         50        0.39       16.04
+{txt}         29 {c |}{res}          4        0.03       16.07
+{txt}         30 {c |}{res}        404        3.16       19.23
+{txt}         31 {c |}{res}          2        0.02       19.24
+{txt}         32 {c |}{res}         68        0.53       19.77
+{txt}         33 {c |}{res}          5        0.04       19.81
+{txt}         34 {c |}{res}          6        0.05       19.86
+{txt}         35 {c |}{res}        194        1.52       21.38
+{txt}         36 {c |}{res}        269        2.10       23.48
+{txt}         37 {c |}{res}          6        0.05       23.53
+{txt}         38 {c |}{res}         12        0.09       23.62
+{txt}         39 {c |}{res}         12        0.09       23.72
+{txt}         40 {c |}{res}      2,423       18.95       42.67
+{txt}         41 {c |}{res}          3        0.02       42.69
+{txt}         42 {c |}{res}        144        1.13       43.82
+{txt}         43 {c |}{res}         11        0.09       43.91
+{txt}         44 {c |}{res}         78        0.61       44.52
+{txt}         45 {c |}{res}        467        3.65       48.17
+{txt}         46 {c |}{res}         54        0.42       48.59
+{txt}         47 {c |}{res}         23        0.18       48.77
+{txt}         48 {c |}{res}      3,669       28.70       77.47
+{txt}         49 {c |}{res}         31        0.24       77.71
+{txt}         50 {c |}{res}        598        4.68       82.39
+{txt}         51 {c |}{res}         21        0.16       82.56
+{txt}         52 {c |}{res}         35        0.27       82.83
+{txt}         53 {c |}{res}         13        0.10       82.93
+{txt}         54 {c |}{res}        302        2.36       85.29
+{txt}         55 {c |}{res}        156        1.22       86.51
+{txt}         56 {c |}{res}        161        1.26       87.77
+{txt}         57 {c |}{res}         10        0.08       87.85
+{txt}         58 {c |}{res}         27        0.21       88.06
+{txt}         59 {c |}{res}          4        0.03       88.09
+{txt}         60 {c |}{res}        747        5.84       93.94
+{txt}         61 {c |}{res}          9        0.07       94.01
+{txt}         62 {c |}{res}          4        0.03       94.04
+{txt}         63 {c |}{res}         33        0.26       94.30
+{txt}         64 {c |}{res}         19        0.15       94.45
+{txt}         65 {c |}{res}         26        0.20       94.65
+{txt}         66 {c |}{res}        121        0.95       95.60
+{txt}         67 {c |}{res}          5        0.04       95.64
+{txt}         68 {c |}{res}         10        0.08       95.71
+{txt}         69 {c |}{res}          4        0.03       95.74
+{txt}         70 {c |}{res}        104        0.81       96.56
+{txt}         71 {c |}{res}          1        0.01       96.57
+{txt}         72 {c |}{res}        277        2.17       98.73
+{txt}         74 {c |}{res}          2        0.02       98.75
+{txt}         75 {c |}{res}          8        0.06       98.81
+{txt}         76 {c |}{res}          2        0.02       98.83
+{txt}         77 {c |}{res}         18        0.14       98.97
+{txt}         78 {c |}{res}         15        0.12       99.08
+{txt}         79 {c |}{res}          1        0.01       99.09
+{txt}         80 {c |}{res}         17        0.13       99.23
+{txt}         81 {c |}{res}          1        0.01       99.23
+{txt}         82 {c |}{res}          4        0.03       99.26
+{txt}         84 {c |}{res}         72        0.56       99.83
+{txt}         90 {c |}{res}          2        0.02       99.84
+{txt}         91 {c |}{res}          3        0.02       99.87
+{txt}         95 {c |}{res}          1        0.01       99.87
+{txt}         96 {c |}{res}          5        0.04       99.91
+{txt}         98 {c |}{res}          3        0.02       99.94
+{txt}   Ignorado {c |}{res}          8        0.06      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}     12,784      100.00
+
+{com}. do "C:\Users\MACARE~1\AppData\Local\Temp\STD71ec_000000.tmp"
+{txt}
+{com}. gen horaspri_ci=c2a1 
+{txt}(18,062 missing values generated)
+
+{com}. replace horaspri_ci=. if c2a1==999
+{txt}(8 real changes made, 8 to missing)
+
+{com}. replace horaspri_ci=. if emp_ci==0
+{txt}(0 real changes made)
+
+{com}. label var horaspri_ci "Horas trabajadas semanalmente en el trabajo principal"
+{txt}
+{com}. 
+{txt}end of do-file
+
+{com}. tab c2b1
+
+      {txt}Horas {c |}
+   normales {c |}
+     empleo {c |}
+ secundario {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+    Ninguna {c |}{res}         24        7.04        7.04
+{txt}          2 {c |}{res}          8        2.35        9.38
+{txt}          3 {c |}{res}         15        4.40       13.78
+{txt}          4 {c |}{res}         23        6.74       20.53
+{txt}          5 {c |}{res}         25        7.33       27.86
+{txt}          6 {c |}{res}         29        8.50       36.36
+{txt}          7 {c |}{res}          3        0.88       37.24
+{txt}          8 {c |}{res}         25        7.33       44.57
+{txt}          9 {c |}{res}          4        1.17       45.75
+{txt}         10 {c |}{res}         32        9.38       55.13
+{txt}         12 {c |}{res}         22        6.45       61.58
+{txt}         13 {c |}{res}          1        0.29       61.88
+{txt}         14 {c |}{res}          5        1.47       63.34
+{txt}         15 {c |}{res}         20        5.87       69.21
+{txt}         16 {c |}{res}         12        3.52       72.73
+{txt}         17 {c |}{res}          2        0.59       73.31
+{txt}         18 {c |}{res}          7        2.05       75.37
+{txt}         20 {c |}{res}         31        9.09       84.46
+{txt}         21 {c |}{res}          2        0.59       85.04
+{txt}         22 {c |}{res}          1        0.29       85.34
+{txt}         24 {c |}{res}          5        1.47       86.80
+{txt}         25 {c |}{res}          7        2.05       88.86
+{txt}         28 {c |}{res}          6        1.76       90.62
+{txt}         30 {c |}{res}         13        3.81       94.43
+{txt}         32 {c |}{res}          4        1.17       95.60
+{txt}         34 {c |}{res}          1        0.29       95.89
+{txt}         35 {c |}{res}          8        2.35       98.24
+{txt}         36 {c |}{res}          3        0.88       99.12
+{txt}         38 {c |}{res}          1        0.29       99.41
+{txt}         40 {c |}{res}          1        0.29       99.71
+{txt}         48 {c |}{res}          1        0.29      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}        341      100.00
+
+{com}. do "C:\Users\MACARE~1\AppData\Local\Temp\STD71ec_000000.tmp"
+{txt}
+{com}. gen horassec_ci=c2b1 
+{txt}(30,505 missing values generated)
+
+{com}. replace horassec_ci=. if c2b1==999
+{txt}(0 real changes made)
+
+{com}. replace horassec_ci=. if emp_ci==0
+{txt}(0 real changes made)
+
+{com}. label var horassec_ci "Horas trabajadas semanalmente en el trabajo secundario"
+{txt}
+{com}. * Horas totales trabajadas en todas las actividades
+. egen horastot_ci=rsum(horaspri_ci horassec_ci), missing 
+{txt}(18,070 missing values generated)
+
+{com}. replace horastot_ci=. if horaspri_ci==. & horassec_ci==.
+{txt}(0 real changes made)
+
+{com}. replace horastot_ci=. if emp_ci==0
+{txt}(0 real changes made)
+
+{com}. label var horastot_ci "Horas trabajadas semanalmente en todos los empleos"
+{txt}
+{com}. 
+{txt}end of do-file
+
+{com}. tab c3
+
+   {txt}Deseo de {c |}
+   trabajar {c |}
+  más horas {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+         Sí {c |}{res}      3,057       23.91       23.91
+{txt}         No {c |}{res}      9,727       76.09      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}     12,784      100.00
+
+{com}. do "C:\Users\MACARE~1\AppData\Local\Temp\STD71ec_000000.tmp"
+{txt}
+{com}. gen subemp_ci=0
+{txt}
+{com}. replace subemp_ci=1 if (horaspri_ci<=30 & c3==1 & (c4a==1 | c4a==2)) & emp_ci==1
+{txt}(1,088 real changes made)
+
+{com}. replace subemp_ci=. if emp_ci==0
+{txt}(18,062 real changes made, 18,062 to missing)
+
+{com}. label var subemp_ci "Personas en subempleo por horas"
+{txt}
+{com}. 
+{txt}end of do-file
+
+{com}. do "C:\Users\MACARE~1\AppData\Local\Temp\STD71ec_000000.tmp"
+{txt}
+{com}. gen tiempoparc_ci=(horastot_ci<=30 & c3==2)
+{txt}
+{com}. replace tiempoparc_ci=. if emp_ci==0
+{txt}(18,062 real changes made, 18,062 to missing)
+
+{com}. label var tiempoparc_c "Personas que trabajan medio tiempo" 
+{txt}
+{com}. 
+{txt}end of do-file
+
+{com}. tab c12
+
+   {txt}Posición en el empleo (cuestionario) {c |}      Freq.     Percent        Cum.
+{hline 40}{c +}{hline 35}
+ Un negocio, empresa o actividad propia {c |}{res}      2,814       22.01       22.01
+{txt}Como empleado para un patrón /empresa / {c |}{res}      8,946       69.98       91.99
+{txt} Como empleado(a) de casas particulares {c |}{res}        804        6.29       98.28
+{txt}Como ayuda a un familiar o conocido que {c |}{res}        208        1.63       99.91
+{txt}Como ayuda a familiar o conocido que tr {c |}{res}         12        0.09      100.00
+{txt}{hline 40}{c +}{hline 35}
+                                  Total {c |}{res}     12,784      100.00
+
+{com}. tab d1
+
+     {txt}Negocio contrata {c |}
+ personas asalariadas {c |}      Freq.     Percent        Cum.
+{hline 22}{c +}{hline 35}
+          Sí, siempre {c |}{res}        351       12.39       12.39
+{txt}Sí, pero sólo a veces {c |}{res}        283        9.99       22.39
+{txt} No contrata personal {c |}{res}      2,198       77.61      100.00
+{txt}{hline 22}{c +}{hline 35}
+                Total {c |}{res}      2,832      100.00
+
+{com}. do "C:\Users\MACARE~1\AppData\Local\Temp\STD71ec_000000.tmp"
+{txt}
+{com}. gen categopri_ci=.
+{txt}(30,846 missing values generated)
+
+{com}. replace categopri_ci=1 if c12==1 & (d1==1 | d1==2)
+{txt}(628 real changes made)
+
+{com}. replace categopri_ci=2 if c12==1 & d1==3
+{txt}(2,186 real changes made)
+
+{com}. replace categopri_ci=3 if c12==2 | c12==3 | (c12==5 & c13a==1)
+{txt}(9,760 real changes made)
+
+{com}. replace categopri_ci=4 if (c12==4 | c12==5) & c13a==2
+{txt}(92 real changes made)
+
+{com}. replace categopri_ci=. if emp_ci==0
+{txt}(0 real changes made)
+
+{com}. label define categopri_ci 1 "Patron" 2"Cuenta propia" 
+{txt}
+{com}. label define categopri_ci 3 "Empleado" 4" No remunerado" , add
+{txt}
+{com}. label value categopri_ci categopri_ci
+{txt}
+{com}. label variable categopri_ci "Categoria ocupacional"
+{txt}
+{com}. 
+{txt}end of do-file
+
+{com}. tab f7
+
+             {txt}Posición empleo secundario {c |}
+                         (cuestionario) {c |}      Freq.     Percent        Cum.
+{hline 40}{c +}{hline 35}
+Un negocio, empresa, actividad propia,  {c |}{res}         25        7.33        7.33
+{txt}Un negocio o actividad propia sin contr {c |}{res}        189       55.43       62.76
+{txt}Como empleado para un patrón/ empresa/  {c |}{res}         99       29.03       91.79
+{txt}    Como empleado de casas particulares {c |}{res}         27        7.92       99.71
+{txt}Como ayuda a un familiar o conocido sin {c |}{res}          1        0.29      100.00
+{txt}{hline 40}{c +}{hline 35}
+                                  Total {c |}{res}        341      100.00
+
+{com}. do "C:\Users\MACARE~1\AppData\Local\Temp\STD71ec_000000.tmp"
+{txt}
+{com}. gen categosec_ci=.
+{txt}(30,846 missing values generated)
+
+{com}. replace categosec_ci=1 if f7==1
+{txt}(25 real changes made)
+
+{com}. replace categosec_ci=2 if f7==2
+{txt}(189 real changes made)
+
+{com}. replace categosec_ci=3 if f7==3 | f7==4
+{txt}(126 real changes made)
+
+{com}. replace categosec_ci=4 if f7==5
+{txt}(1 real change made)
+
+{com}. replace categosec_ci=. if emp_ci==0
+{txt}(0 real changes made)
+
+{com}. label define categosec_ci 1"Patron" 2"Cuenta propia" 
+{txt}
+{com}. label define categosec_ci 3"Empleado" 4"No remunerado" , add
+{txt}
+{com}. label value categosec_ci categosec_ci
+{txt}
+{com}. label variable categosec_ci "Categoria ocupacional trabajo secundario"
+{txt}
+{com}. 
+{txt}end of do-file
+
+{com}. tab ramaemppri
+
+         {txt}Rama de actividad en el empleo {c |}
+                              principal {c |}      Freq.     Percent        Cum.
+{hline 40}{c +}{hline 35}
+Agricultura, ganadería, silvicultura y  {c |}{res}      1,370       10.72       10.72
+{txt}        Explotación de minas y canteras {c |}{res}         21        0.16       10.88
+{txt}              Industrias manufactureras {c |}{res}      1,478       11.56       22.45
+{txt}Suministro de electricidad, gas, vapor  {c |}{res}         82        0.64       23.09
+{txt}Suministro de agua; evacuación de aguas {c |}{res}         63        0.49       23.58
+{txt}                           Construcción {c |}{res}        808        6.32       29.91
+{txt}Comercio al por mayor y al por menor; r {c |}{res}      1,995       15.61       45.52
+{txt}            Transporte y almacenamiento {c |}{res}        676        5.29       50.81
+{txt}Actividades de alojamiento y de servici {c |}{res}        909        7.11       57.92
+{txt}           Información y comunicaciones {c |}{res}        300        2.35       60.27
+{txt}   Actividades financieras y de seguros {c |}{res}        327        2.56       62.82
+{txt}              Actividades inmobiliarias {c |}{res}         72        0.56       63.39
+{txt}Actividades profesionales, científicas  {c |}{res}        428        3.35       66.74
+{txt}Actividades de servicios administrativo {c |}{res}        788        6.17       72.90
+{txt}Administración pública y defensa; plane {c |}{res}        684        5.35       78.26
+{txt}                              Enseñanza {c |}{res}        863        6.75       85.01
+{txt}Actividades de atención de la salud hum {c |}{res}        396        3.10       88.11
+{txt}Actividades artísticas, de entretenimie {c |}{res}        195        1.53       89.63
+{txt}         Otras actividades de servicios {c |}{res}        487        3.81       93.44
+{txt}               Hogares como empleadores {c |}{res}        806        6.31       99.75
+{txt}Actividades de organizaciones y órganos {c |}{res}          5        0.04       99.79
+{txt}No pueden clasificarse según la activid {c |}{res}         27        0.21      100.00
+{txt}{hline 40}{c +}{hline 35}
+                                  Total {c |}{res}     12,780      100.00
+
+{com}. do "C:\Users\MACARE~1\AppData\Local\Temp\STD71ec_000000.tmp"
+{txt}
+{com}. gen rama_ci=.
+{txt}(30,846 missing values generated)
+
+{com}. replace rama_ci=1 if ramaemppri==1
+{txt}(1,370 real changes made)
+
+{com}. replace rama_ci=2 if ramaemppri==2
+{txt}(21 real changes made)
+
+{com}. replace rama_ci=3 if ramaemppri==3
+{txt}(1,478 real changes made)
+
+{com}. replace rama_ci=4 if ramaemppri==4 | ramaemppri==5
+{txt}(145 real changes made)
+
+{com}. replace rama_ci=5 if ramaemppri==6
+{txt}(808 real changes made)
+
+{com}. replace rama_ci=6 if ramaemppri==7 | ramaemppri==9
+{txt}(2,904 real changes made)
+
+{com}. replace rama_ci=7 if ramaemppri==8
+{txt}(676 real changes made)
+
+{com}. replace rama_ci=8 if ramaemppri==11 | ramaemppri==12
+{txt}(399 real changes made)
+
+{com}. replace rama_ci=9 if ramaemppri>=13  & ramaemppri<=21 | ramaemppri==10
+{txt}(4,952 real changes made)
+
+{com}. label var rama_ci "Rama de actividad"
+{txt}
+{com}. label def rama_ci 1"Agricultura, caza, silvicultura y pesca" 2"Explotación de minas y canteras" 3"Industrias manufactureras"
+{txt}
+{com}. label def rama_ci 4"Electricidad, gas y agua" 5"Construcción" 6"Comercio, restaurantes y hoteles" 7"Transporte y almacenamiento", add
+{txt}
+{com}. label def rama_ci 8"Establecimientos financieros, seguros e inmuebles" 9"Servicios sociales y comunales", add
+{txt}
+{com}. label val rama_ci rama_ci
+{txt}
+{com}. 
+{txt}end of do-file
+
+{com}. do "C:\Users\MACARE~1\AppData\Local\Temp\STD71ec_000000.tmp"
+{txt}
+{com}. gen spublico_ci=.
+{txt}(30,846 missing values generated)
+
+{com}. replace spublico_ci =1 if  claspubprivpri==1 &  emp_ci==1
+{txt}(1,781 real changes made)
+
+{com}. label var spublico_ci "Personas que trabajan en el sector público"
+{txt}
+{com}. 
+{txt}end of do-file
+
+{com}. tab c10
+
+           {txt}Tamaño {c |}
+  establecimiento {c |}      Freq.     Percent        Cum.
+{hline 18}{c +}{hline 35}
+                1 {c |}{res}      2,838       22.20       22.20
+{txt}                2 {c |}{res}      1,121        8.77       30.97
+{txt}                3 {c |}{res}        653        5.11       36.08
+{txt}                4 {c |}{res}        456        3.57       39.64
+{txt}                5 {c |}{res}        397        3.11       42.75
+{txt}                6 {c |}{res}        247        1.93       44.68
+{txt}                7 {c |}{res}        159        1.24       45.92
+{txt}                8 {c |}{res}        178        1.39       47.32
+{txt}                9 {c |}{res}        149        1.17       48.48
+{txt} 10 a menos de 20 {c |}{res}      1,256        9.82       58.31
+{txt} 20 a menos de 30 {c |}{res}        810        6.34       64.64
+{txt}30 a menos de 100 {c |}{res}      1,643       12.85       77.50
+{txt}        100 o más {c |}{res}      2,812       22.00       99.49
+{txt}         Ignorado {c |}{res}         65        0.51      100.00
+{txt}{hline 18}{c +}{hline 35}
+            Total {c |}{res}     12,784      100.00
+
+{com}. do "C:\Users\MACARE~1\AppData\Local\Temp\STD71ec_000000.tmp"
+{txt}
+{com}. gen tamemp_ci = 1 if (c10>=1 & c10<=5)
+{txt}(25,381 missing values generated)
+
+{com}. replace tamemp_ci = 2 if (c10>=6 & c10<=10)
+{txt}(1,989 real changes made)
+
+{com}. replace tamemp_ci = 3 if (c10>10 & c10!=.)
+{txt}(5,330 real changes made)
+
+{com}. replace tamemp_ci = . if c10==99 /*missing*/
+{txt}(65 real changes made, 65 to missing)
+
+{com}. 
+. label define tamemp_ci 1 "Pequeña" 2 "Mediana" 3 "Grande"
+{txt}
+{com}. label value tamemp_ci tamemp_ci
+{txt}
+{com}. label var tamemp_ci "Tamaño de empresa"
+{txt}
+{com}. 
+{txt}end of do-file
+
+{com}. tab a11
+
+             {txt}Condición de aseguramiento {c |}      Freq.     Percent        Cum.
+{hline 40}{c +}{hline 35}
+                           No asegurado {c |}{res}      3,016        9.78        9.78
+{txt}                             Asalariado {c |}{res}      7,723       25.04       34.81
+{txt}Mediante convenio (asociaciones, sindic {c |}{res}         93        0.30       35.12
+{txt}                          Por el Estado {c |}{res}      3,845       12.47       47.58
+{txt}             Familiar asegurado directo {c |}{res}      8,543       27.70       75.28
+{txt}Pensionado del régimen no contributivo  {c |}{res}      1,132        3.67       78.95
+{txt}Pensionado del régimen no contributivo  {c |}{res}         24        0.08       79.02
+{txt}Pensionado del régimen de IVM de la CCS {c |}{res}      2,738        8.88       87.90
+{txt}Pensionado del régimen del Magisterio,  {c |}{res}        339        1.10       89.00
+{txt}                 Familiar de pensionado {c |}{res}        574        1.86       90.86
+{txt}Otras formas de seguro (estudiante, ref {c |}{res}        426        1.38       92.24
+{txt}        Seguro privado o del extranjero {c |}{res}         83        0.27       92.51
+{txt}                             Voluntario {c |}{res}      1,370        4.44       96.95
+{txt}               Trabajador independiente {c |}{res}        934        3.03       99.98
+{txt}                               Ignorado {c |}{res}          6        0.02      100.00
+{txt}{hline 40}{c +}{hline 35}
+                                  Total {c |}{res}     30,846      100.00
+
+{com}. tab a11, nolab
+
+  {txt}Condición {c |}
+         de {c |}
+aseguramien {c |}
+         to {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+          0 {c |}{res}      3,016        9.78        9.78
+{txt}          1 {c |}{res}      7,723       25.04       34.81
+{txt}          2 {c |}{res}         93        0.30       35.12
+{txt}          4 {c |}{res}      3,845       12.47       47.58
+{txt}          5 {c |}{res}      8,543       27.70       75.28
+{txt}          6 {c |}{res}      1,132        3.67       78.95
+{txt}          7 {c |}{res}         24        0.08       79.02
+{txt}          8 {c |}{res}      2,738        8.88       87.90
+{txt}          9 {c |}{res}        339        1.10       89.00
+{txt}         10 {c |}{res}        574        1.86       90.86
+{txt}         11 {c |}{res}        426        1.38       92.24
+{txt}         12 {c |}{res}         83        0.27       92.51
+{txt}         13 {c |}{res}      1,370        4.44       96.95
+{txt}         14 {c |}{res}        934        3.03       99.98
+{txt}         99 {c |}{res}          6        0.02      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}     30,846      100.00
+
+{com}. do "C:\Users\MACARE~1\AppData\Local\Temp\STD71ec_000000.tmp"
+{txt}
+{com}. gen cotizando_ci=1 if (a11==1 | a11==2 | a11==13 | a11==14) 
+{txt}(20,726 missing values generated)
+
+{com}. recode cotizando_ci .=0 
+{txt}(20,726 changes made to {bf:cotizando_ci})
+
+{com}. label var cotizando_ci "Cotizante a la Seguridad Social"
+{txt}
+{com}. label define cotizando_ci 0"No cotiza" 1"Cotiza a la SS" 
+{txt}
+{com}. label value cotizando_ci cotizando_ci
+{txt}
+{com}. 
+{txt}end of do-file
+
+{com}. tab cotizando_ci
+
+{txt}Cotizante a la {c |}
+     Seguridad {c |}
+        Social {c |}      Freq.     Percent        Cum.
+{hline 15}{c +}{hline 35}
+     No cotiza {c |}{res}     20,726       67.19       67.19
+{txt}Cotiza a la SS {c |}{res}     10,120       32.81      100.00
+{txt}{hline 15}{c +}{hline 35}
+         Total {c |}{res}     30,846      100.00
+
+{com}. tab a12
+
+  {txt}Pensiones: régimen básico obligatorio {c |}      Freq.     Percent        Cum.
+{hline 40}{c +}{hline 35}
+                                Ninguno {c |}{res}        176        1.74        1.74
+{txt}              Régimen de IVM de la CCSS {c |}{res}      9,659       95.44       97.18
+{txt}Otro régimen (Magisterio, Poder Judicia {c |}{res}        285        2.82      100.00
+{txt}{hline 40}{c +}{hline 35}
+                                  Total {c |}{res}     10,120      100.00
+
+{com}. do "C:\Users\MACARE~1\AppData\Local\Temp\STD71ec_000000.tmp"
+{txt}
+{com}. clonevar instcot_ci =  a12
+{txt}(20,726 missing values generated)
+
+{com}. label var instcot_ci "Institucion a la que cotiza - variable original de cada pais" 
+{txt}
+{com}. 
+{txt}end of do-file
+
+{com}. do "C:\Users\MACARE~1\AppData\Local\Temp\STD71ec_000000.tmp"
+{txt}
+{com}. gen afiliado_ci =.
+{txt}(30,846 missing values generated)
+
+{com}. replace afiliado_ci = 0 if a11==0
+{txt}(3,016 real changes made)
+
+{com}. replace afiliado_ci =1 if a11>0 & a11<99
+{txt}(27,824 real changes made)
+
+{com}. 
+{txt}end of do-file
+
+{com}. tab condocup_ci
+
+{txt}Condicion de {c |}
+   ocupación {c |}
+de acuerdo a {c |}
+ def de cada {c |}
+        pais {c |}      Freq.     Percent        Cum.
+{hline 13}{c +}{hline 35}
+     Ocupado {c |}{res}     12,784       41.44       41.44
+{txt}  Desocupado {c |}{res}        996        3.23       44.67
+{txt}    Inactivo {c |}{res}     12,985       42.10       86.77
+{txt}Menor que 12 {c |}{res}      4,081       13.23      100.00
+{txt}{hline 13}{c +}{hline 35}
+       Total {c |}{res}     30,846      100.00
+
+{com}. do "C:\Users\MACARE~1\AppData\Local\Temp\STD71ec_000000.tmp"
+{txt}
+{com}. gen formal=1 if cotizando_ci==1 
+{txt}(20,726 missing values generated)
+
+{com}. gen byte formal_ci=1 if formal==1 & (condocup_ci==1 | condocup_ci==2)
+{txt}(21,282 missing values generated)
+
+{com}. 
+{txt}end of do-file
+
+{com}. tab formal_ci
+
+  {txt}formal_ci {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+          1 {c |}{res}      9,564      100.00      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}      9,564      100.00
+
+{com}. do "C:\Users\MACARE~1\AppData\Local\Temp\STD71ec_000000.tmp"
+{txt}
+{com}. recode formal_ci .=0 if (condocup_ci==1 | condocup_ci==2)
+{txt}(4,216 changes made to {bf:formal_ci})
+
+{com}. label var formal_ci "1=afiliado o cotizante / PEA"
+{txt}
+{com}. 
+{txt}end of do-file
+
+{com}. tab formal_ci
+
+ {txt}1=afiliado {c |}
+o cotizante {c |}
+      / PEA {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+          0 {c |}{res}      4,216       30.60       30.60
+{txt}          1 {c |}{res}      9,564       69.40      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}     13,780      100.00
+
+{com}. tab e1
+
+            {txt}Estabilidad del empleo {c |}      Freq.     Percent        Cum.
+{hline 35}{c +}{hline 35}
+Por tiempo indefinido o permanente {c |}{res}      9,563       96.81       96.81
+{txt}  Sólo por la temporada o la época {c |}{res}         78        0.79       97.60
+{txt}    Sólo por un tiempo determinado {c |}{res}        168        1.70       99.30
+{txt}                  Por una sola vez {c |}{res}         13        0.13       99.43
+{txt}           Sólo cuando se lo piden {c |}{res}         56        0.57      100.00
+{txt}{hline 35}{c +}{hline 35}
+                             Total {c |}{res}      9,878      100.00
+
+{com}. do "C:\Users\MACARE~1\AppData\Local\Temp\STD71ec_000000.tmp"
+{txt}
+{com}. gen tipocontrato_ci=.
+{txt}(30,846 missing values generated)
+
+{com}. replace tipocontrato_ci=1 if e1==1 & categopri_ci==3
+{txt}(9,462 real changes made)
+
+{com}. replace tipocontrato_ci=2 if (e1>=2 & e1<=5) & categopri_ci==3
+{txt}(298 real changes made)
+
+{com}. label var tipocontrato_ci "Tipo de contrato segun su duracion"
+{txt}
+{com}. label define tipocontrato_ci 1 "Permanente/indefinido" 2 "Temporal" 3 "Sin contrato/verbal" 
+{txt}
+{com}. label value tipocontrato_ci tipocontrato_ci
+{txt}
+{com}. 
+{txt}end of do-file
+
+{com}. tab ocupemppri
+
+       {txt}Ocupación en el empleo principal {c |}      Freq.     Percent        Cum.
+{hline 40}{c +}{hline 35}
+                  Directores y gerentes {c |}{res}        278        2.18        2.18
+{txt}Profesionales científicos e intelectual {c |}{res}      1,654       12.94       15.12
+{txt}Técnicos y profesionales de nivel medio {c |}{res}      1,378       10.78       25.90
+{txt}       Personal de apoyo administrativo {c |}{res}      1,106        8.65       34.55
+{txt}Trabajadores de los servicios y vendedo {c |}{res}      2,628       20.56       55.12
+{txt}Agricultores y trabajadores calificados {c |}{res}        387        3.03       58.15
+{txt}Oficiales, operarios y artesanos de art {c |}{res}      1,277        9.99       68.14
+{txt}Operadores de instalaciones y máquinas  {c |}{res}        900        7.04       75.18
+{txt}                Ocupaciones elementales {c |}{res}      3,152       24.66       99.84
+{txt}                  No bien especificadas {c |}{res}         20        0.16      100.00
+{txt}{hline 40}{c +}{hline 35}
+                                  Total {c |}{res}     12,780      100.00
+
+{com}. do "C:\Users\MACARE~1\AppData\Local\Temp\STD71ec_000000.tmp"
+{txt}
+{com}. gen ocupa_ci=.
+{txt}(30,846 missing values generated)
+
+{com}. replace ocupa_ci=1 if ocupemppri==2 | ocupemppri==3
+{txt}(3,032 real changes made)
+
+{com}. replace ocupa_ci=2 if ocupemppri==1
+{txt}(278 real changes made)
+
+{com}. replace ocupa_ci=3 if ocupemppri==4
+{txt}(1,106 real changes made)
+
+{com}. replace ocupa_ci=4 if ocupemppri==5
+{txt}(2,628 real changes made)
+
+{com}. replace ocupa_ci=5 if ocupemppri==7
+{txt}(1,277 real changes made)
+
+{com}. replace ocupa_ci=6 if ocupemppri==6
+{txt}(387 real changes made)
+
+{com}. replace ocupa_ci=7 if ocupemppri==8
+{txt}(900 real changes made)
+
+{com}. 
+. replace ocupa_ci=9 if ocupemppri==9 | ocupemppri==10
+{txt}(3,172 real changes made)
+
+{com}. label define ocupa_ci 1"profesional y tecnico" 2"director o funcionario sup" 3"administrativo y nivel intermedio"
+{txt}
+{com}. label define ocupa_ci  4 "comerciantes y vendedores" 5 "en servicios" 6 "trabajadores agricolas", add
+{txt}
+{com}. label define ocupa_ci  7 "obreros no agricolas, conductores de maq y ss de transporte", add
+{txt}
+{com}. label define ocupa_ci  8 "FFAA" 9 "Otras ", add
+{txt}
+{com}. label value ocupa_ci ocupa_ci
+{txt}
+{com}. label variable ocupa_ci "Ocupacion laboral"
+{txt}
+{com}. 
+{txt}end of do-file
+
+{com}. tab h9e
+
+    {txt}Recibió {c |}
+   ingresos {c |}
+        por {c |}
+    pensión {c |}
+        del {c |}
+ Régimen no {c |}
+Contributiv {c |}
+          o {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+         Sí {c |}{res}      1,153        4.31        4.31
+{txt}         No {c |}{res}     25,612       95.69      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}     26,765      100.00
+
+{com}. do "C:\Users\MACARE~1\AppData\Local\Temp\STD71ec_000000.tmp"
+{txt}
+{com}. gen byte pensionsub_ci= 1 if h9e==1
+{txt}(29,693 missing values generated)
+
+{com}. replace pensionsub_ci =0 if h9e==2
+{txt}(25,612 real changes made)
+
+{com}. label var pensionsub_ci "1=recibe pension subsidiada / no contributiva"
+{txt}
+{com}. 
+{txt}end of do-file
+
+{com}. tab h9h
+
+    {txt}Recibió {c |}
+ingreso por {c |}
+pensiones o {c |}
+jubilacione {c |}
+          s {c |}
+ nacionales {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+         Sí {c |}{res}      3,074       11.49       11.49
+{txt}         No {c |}{res}     23,691       88.51      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}     26,765      100.00
+
+{com}. do "C:\Users\MACARE~1\AppData\Local\Temp\STD71ec_000000.tmp"
+{txt}
+{com}. gen byte pension_ci=1 if h9h == 1 
+{txt}(27,772 missing values generated)
+
+{com}. replace pension_ci =0 if h9h == 2 
+{txt}(23,691 real changes made)
+
+{com}. label var pension_ci "1=Recibe pension contributiva"
+{txt}
+{com}. 
+{txt}end of do-file
+
+{com}. do "C:\Users\MACARE~1\AppData\Local\Temp\STD71ec_000000.tmp"
+{txt}
+{com}. gen tipopen_ci=.
+{txt}(30,846 missing values generated)
+
+{com}. label var tipopen_ci "Tipo de pension - variable original de cada pais" 
+{txt}
+{com}. 
+{txt}end of do-file
+
+{com}. do "C:\Users\MACARE~1\AppData\Local\Temp\STD71ec_000000.tmp"
+{txt}
+{com}. gen instpen_ci=.
+{txt}(30,846 missing values generated)
+
+{com}. label var instpen_ci "Institucion proveedora de la pension - variable original de cada pais"  
+{txt}
+{com}. 
+{txt}end of do-file
+
+{com}. br spif aif gpif dif gpina gpsfi gpia spmn ipsp asp sesp bsp oisp
+
+. do "C:\Users\MACARE~1\AppData\Local\Temp\STD71ec_000000.tmp"
+{txt}
+{com}. egen ylmpri_ci=  rsum(spif aif gpif dif gpina gpsfi gpia spmn ipsp asp sesp bsp oisp), missing
+{txt}(18,141 missing values generated)
+
+{com}. replace ylmpri_ci= . if ithn == 99999999 
+{txt}(0 real changes made)
+
+{com}. replace ylmpri_ci= 0 if ithn == 0
+{txt}(66 real changes made)
+
+{com}. replace ylmpri_ci= . if ithn == .
+{txt}(33 real changes made, 33 to missing)
+
+{com}. label var  ylmpri_ci "Ingreso laboral monetario actividad principal"
+{txt}
+{com}. 
+. **************
+. * ylnmpri_ci *
+. **************
+. * Ingreso laboral no monetario actividad principal 
+. *Se da preferencia al agregado oficial 
+. egen ylnmpri_ci= rsum(inmpina inmpia spnma spnmv spnmt spnmvh spnmo), missing
+{txt}(28,811 missing values generated)
+
+{com}. replace ylnmpri_ci= . if ithn == 99999999 
+{txt}(0 real changes made)
+
+{com}. replace ylnmpri_ci= 0 if ithn == 0
+{txt}(66 real changes made)
+
+{com}. replace ylnmpri_ci= . if ithn == .
+{txt}(28 real changes made, 28 to missing)
+
+{com}. label var ylnmpri "Ingreso laboral no monetario act. principal"
+{txt}
+{com}. 
+. **************
+. * ylmsec_ci  *
+. **************
+. *Ingreso laboral monetario actividad secundaria.
+. egen ylmsec_ci= rsum(gsi ssmn), missing
+{txt}(30,523 missing values generated)
+
+{com}. replace ylmsec_ci= . if ithn == 99999999 
+{txt}(0 real changes made)
+
+{com}. replace ylmsec_ci= 0 if ithn == 0
+{txt}(66 real changes made)
+
+{com}. replace ylmsec_ci= . if ithn == .
+{txt}(1 real change made, 1 to missing)
+
+{com}. label var ylmsec_ci "Ingreso laboral monetario actividad secundaria"
+{txt}
+{com}. 
+. **************
+. * ylnmsec_ci *
+. **************
+. *Ingreso laboral no monetario actividad secundaria
+. *Se da preferencia al agregado oficial 
+. egen ylnmsec_ci= rsum(inmsi ssnm), missing
+{txt}(30,764 missing values generated)
+
+{com}. replace ylnmsec_ci= . if ithn == 99999999 
+{txt}(0 real changes made)
+
+{com}. replace ylnmsec_ci= 0 if ithn == 0
+{txt}(66 real changes made)
+
+{com}. replace ylnmsec_ci= . if ithn == .
+{txt}(0 real changes made)
+
+{com}. label var ylnmsec_ci "Ingreso laboral no monetario actividad secundaria"
+{txt}
+{com}. 
+. ***************
+. * ylmotros_ci *
+. ***************
+. *Ingreso laboral monetario otros trabajos
+. gen ylmotros_ci=.
+{txt}(30,846 missing values generated)
+
+{com}. label var ylmotros_ci "Ingreso laboral monetario otros trabajos"
+{txt}
+{com}. 
+. ****************
+. * ylnmotros_ci *
+. ****************
+. * Ingreso laboral no monetario otros trabajos
+. gen ylnmotros_ci=.
+{txt}(30,846 missing values generated)
+
+{com}. label var ylnmotros_ci "Ingreso laboral no monetario otros trabajos"
+{txt}
+{com}. 
+. **********
+. * ylm_ci *
+. **********
+. *Ingreso laboral monetario total
+. egen ylm_ci=rsum(ylmpri_ci ylmsec_ci), missing
+{txt}(18,108 missing values generated)
+
+{com}. replace ylm_ci=. if ylmpri_ci==. & ylmsec_ci==.
+{txt}(0 real changes made)
+
+{com}. label var ylm_ci "Ingreso laboral monetario total"
+{txt}
+{com}. 
+.  
+. ***********
+. * ylnm_ci *
+. ***********
+. *Ingreso laboral no monetario total
+. egen ylnm_ci=rsum(ylnmpri_ci ylnmsec_ci), missing
+{txt}(28,716 missing values generated)
+
+{com}. replace ylnm_ci=. if ylnmpri_ci==. & ylnmsec_ci==.
+{txt}(0 real changes made)
+
+{com}. label var ylnm_ci "Ingreso laboral no monetario total"
+{txt}
+{com}. 
+. ***********
+. * ynlm_ci *
+. ***********
+. *Ingreso no laboral monetario (otras fuentes)
+. *Se da preferencia al agregado oficial 
+. *Ingreso por renta de la propiedad, transferencias monetarias
+. *egen ynlm_ci=rsum(ia ii id ib trnc timas ts tbc tpa tpn tpe tap te tdp ot), missing
+. *Modificación SCGR 05/02/2017 Se agregan las variables tapa tapn tape, y elinima la tap
+. egen ynlm_ci=rsum(ia ii id ib trnc timas ts tbc tpa tpn tpe tapa tapn tape taprnc te tdp ot), missing
+{txt}(22,265 missing values generated)
+
+{com}. replace ynlm_ci= . if ithn == 99999999 
+{txt}(0 real changes made)
+
+{com}. replace ynlm_ci= 0 if ithn == 0
+{txt}(66 real changes made)
+
+{com}. replace ynlm_ci= . if ithn == .
+{txt}(0 real changes made)
+
+{com}. label var ynlm_ci "Ingreso no laboral monetario (otras fuentes)"
+{txt}
+{com}. 
+. ************
+. * ynlnm_ci *
+. ************
+. *Ingreso no laboral no monetario (otras fuentes)
+. *Transferencias no monetarias.
+. gen ynlnm_ci=tnm
+{txt}(30,215 missing values generated)
+
+{com}. replace ynlnm_ci= . if ithn == 99999999 
+{txt}(0 real changes made)
+
+{com}. replace ynlnm_ci= 0 if ithn == 0
+{txt}(66 real changes made)
+
+{com}. replace ynlnm_ci= . if ithn == .
+{txt}(0 real changes made)
+
+{com}. label var ynlnm_ci "Ingreso no laboral no monetario"
+{txt}
+{com}. egen ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci)
+{txt}
+{com}. 
+. 
+. **********
+. * ylm_ch *
+. **********
+. *Ingreso laboral monetario del Hogar
+. by idh_ch, sort: egen ylm_ch=sum(ylm_ci) if miembros_ci==1, missing
+{txt}(4,821 missing values generated)
+
+{com}. label var ylm_ch "Ingreso laboral monetario del Hogar"
+{txt}
+{com}. 
+. ***********
+. * ylnm_ch *
+. ***********
+. *Ingreso laboral no monetario del Hogar
+. by idh_ch, sort: egen ylnm_ch=sum(ylnm_ci) if miembros_ci==1, missing
+{txt}(24,702 missing values generated)
+
+{com}. label var ylnm_ch  "Ingreso laboral no monetario del Hogar"
+{txt}
+{com}. 
+. ***************
+. * nrylmpri_ci *
+. ***************
+. *Identificador de No Respuesta (NR) del ingreso de la actividad principal
+. gen nrylmpri_ci=.
+{txt}(30,846 missing values generated)
+
+{com}. label var nrylmpri_ci "Identificador de No Respuesta (NR) del ingreso de la actividad principal"
+{txt}
+{com}. 
+{txt}end of do-file
+
+{com}. do "C:\Users\MACARE~1\AppData\Local\Temp\STD71ec_000000.tmp"
+{txt}
+{com}. ***************
+. * nrylmpri_ch *
+. ***************
+. * Identificador de los hogares en donde alguno de los miembros
+. * No Sabe/No Responde el ingreso de la actividad principal
+. by idh_ch, sort: egen nrylmpri_ch=sum(nrylmpri_ci) if miembros_ci==1, missing
+{txt}(30,846 missing values generated)
+
+{com}. replace nrylmpri_ch=1 if nrylmpri_ch>0 & nrylmpri_ch<.
+{txt}(0 real changes made)
+
+{com}. replace nrylmpri_ch=. if nrylmpri_ch==.
+{txt}(0 real changes made)
+
+{com}. label var nrylmpri_ch "Id. hogar si algun miembro no sabe o no respond el ingreso act. principal"
+{txt}
+{com}. 
+. ************
+. * ylmnr_ch *
+. ************
+. *Ingreso laboral monetario del Hogar
+. by idh_ch, sort: egen ylmnr_ch=sum(ylm_ci) if miembros_ci==1, missing
+{txt}(4,821 missing values generated)
+
+{com}. replace ylmnr_ch=. if nrylmpri_ch==1
+{txt}(0 real changes made)
+
+{com}. label var ylmnr_ch "Ingreso laboral monetario del Hogar considera No respuesta"
+{txt}
+{com}. 
+. ***********
+. * ynlm_ch *
+. ***********
+. * Ingreso no laboral monetario del Hogar
+. by idh_ch, sort: egen ynlm_ch=sum(ynlm_ci) if miembros_ci==1, missing
+{txt}(13,176 missing values generated)
+
+{com}. label var ynlm_ch "Ingreso no laboral monetario del Hogar"
+{txt}
+{com}. 
+. ************
+. * ynlnm_ch *
+. ************
+. *Ingreso no laboral no monetario del Hogar
+. gen ynlnm_ch=.
+{txt}(30,846 missing values generated)
+
+{com}. label var ynlnm_ch "Ingreso no laboral no monetario del Hogar" 
+{txt}
+{com}. 
+. ***************
+. * ylmhopri_ci *
+. ***************
+. *Salario monetario de la actividad principal
+. gen ylmhopri_ci=ylmpri_ci/(horaspri_ci*4.3)
+{txt}(18,373 missing values generated)
+
+{com}. label var ylmhopri_ci "Salario  monetario de la actividad principal"
+{txt}
+{com}. 
+. ************
+. * ylmho_ci *
+. ************
+. *Salario  monetario de todas las actividades
+. gen ylmho_ci=ylm_ci/(horastot_ci*4.3)
+{txt}(18,372 missing values generated)
+
+{com}. label var ylmho_ci "Salario  monetario de todas las actividades"
+{txt}
+{com}. 
+{txt}end of do-file
+
+{com}. do "C:\Users\MACARE~1\AppData\Local\Temp\STD71ec_000000.tmp"
+{txt}
+{com}. g remesas_ci= te
+{txt}(30,750 missing values generated)
+
+{com}. replace remesas_ci= . if ithn == 99999999 
+{txt}(0 real changes made)
+
+{com}. replace remesas_ci= 0 if ithn == 0
+{txt}(66 real changes made)
+
+{com}. replace remesas_ci= . if ithn == .
+{txt}(0 real changes made)
+
+{com}. label var remesas_ci "Remesas reportadas por el individuo"
+{txt}
+{com}. 
+{txt}end of do-file
+
+{com}. do "C:\Users\MACARE~1\AppData\Local\Temp\STD71ec_000000.tmp"
+{txt}
+{com}. by idh_ch, sort: egen remesas_ch=sum(remesas_ci) if miembros_ci==1, missing
+{txt}(30,539 missing values generated)
+
+{com}. label var remesas_ch "Remesas del Hogar"
+{txt}
+{com}. 
+{txt}end of do-file
+
+{com}. do "C:\Users\MACARE~1\AppData\Local\Temp\STD71ec_000000.tmp"
+{txt}
+{com}. recode h9h1 (99999999=.)
+{txt}(61 changes made to {bf:h9h1})
+
+{com}. /* para este año sólo hay opción mes
+>                    1 mes
+>            2 bimestre
+>            3 trimestre
+>            4 cuatrimestre
+>            6 semestre
+>            8 año
+>            9 ignorado
+> */
+. gen ypen_ci=h9h1 if  h9h2 ==1
+{txt}(27,833 missing values generated)
+
+{com}. label var ypen_ci "Valor de la pension contributiva"
+{txt}
+{com}. 
+. **************
+. * ypensub_ci *
+. **************
+. gen ypensub_ci= h9e1 if h9e2==1
+{txt}(29,693 missing values generated)
+
+{com}. label var ypensub_ci "Valor de la pension subsidiada / no contributiva"
+{txt}
+{com}. 
+{txt}end of do-file
+
+{com}. tab a14
+
+                    {txt}Último año aprobado {c |}      Freq.     Percent        Cum.
+{hline 40}{c +}{hline 35}
+                                Ninguno {c |}{res}      2,731        8.85        8.85
+{txt}                           Preparatoria {c |}{res}        189        0.61        9.47
+{txt}                     Enseñanza especial {c |}{res}         51        0.17        9.63
+{txt}                       Primero primaria {c |}{res}        814        2.64       12.27
+{txt}                       Segundo primaria {c |}{res}        814        2.64       14.91
+{txt}                       Tercero primaria {c |}{res}      1,121        3.63       18.54
+{txt}                        Cuarto primaria {c |}{res}        776        2.52       21.06
+{txt}                        Quinto primaria {c |}{res}      1,047        3.39       24.45
+{txt}                         Sexto primaria {c |}{res}      6,405       20.76       45.22
+{txt}             Años de primaria ignorados {c |}{res}         26        0.08       45.30
+{txt}           Primero secundaria académica {c |}{res}      1,075        3.49       48.79
+{txt}           Segundo secundario académica {c |}{res}      1,338        4.34       53.13
+{txt}           Tercero secundaria académica {c |}{res}      1,980        6.42       59.54
+{txt}            Cuarto secundaria académica {c |}{res}        897        2.91       62.45
+{txt}Quinto secundaria académica sin título  {c |}{res}        396        1.28       63.74
+{txt}Quinto secundaria académica con título  {c |}{res}      4,690       15.20       78.94
+{txt} Años de secundaria académica ignorados {c |}{res}         23        0.07       79.02
+{txt}             Primero secundaria técnica {c |}{res}         63        0.20       79.22
+{txt}             Segundo secundaria técnica {c |}{res}         61        0.20       79.42
+{txt}             Tercero secundaria técnica {c |}{res}         90        0.29       79.71
+{txt}              Cuarto secundaria técnica {c |}{res}         63        0.20       79.91
+{txt}              Quinto secundaria técnica {c |}{res}         99        0.32       80.23
+{txt}Sexto secundaria técnica sin título de  {c |}{res}         25        0.08       80.32
+{txt}Sexto secundaria técnica con título de  {c |}{res}        553        1.79       82.11
+{txt}               Un año parauniversitaria {c |}{res}         20        0.06       82.17
+{txt}             Dos años parauniversitaria {c |}{res}         39        0.13       82.30
+{txt}            Tres años parauniversitaria {c |}{res}        134        0.43       82.73
+{txt}                  Un año de universidad {c |}{res}        350        1.13       83.87
+{txt}                Dos años de universidad {c |}{res}        540        1.75       85.62
+{txt}               Tres años de universidad {c |}{res}        895        2.90       88.52
+{txt}             Cuatro años de universidad {c |}{res}      1,138        3.69       92.21
+{txt}              Cinco años de universidad {c |}{res}        977        3.17       95.38
+{txt}               Seis años de universidad {c |}{res}        836        2.71       98.09
+{txt}          Años de universidad ignorados {c |}{res}         11        0.04       98.12
+{txt}                 Un año de especialidad {c |}{res}          5        0.02       98.14
+{txt}               Dos años de especialidad {c |}{res}          8        0.03       98.17
+{txt}            Cuatro años de especialidad {c |}{res}         21        0.07       98.23
+{txt}                     Un año de maestría {c |}{res}          2        0.01       98.24
+{txt}                   Dos años de maestría {c |}{res}        456        1.48       99.72
+{txt}             Años de maestría ignorados {c |}{res}          2        0.01       99.72
+{txt}                  Dos años de doctorado {c |}{res}         17        0.06       99.78
+{txt}                 Tres años de doctorado {c |}{res}          2        0.01       99.79
+{txt}                  Cuatro años doctorado {c |}{res}         59        0.19       99.98
+{txt}                               Ignorado {c |}{res}          7        0.02      100.00
+{txt}{hline 40}{c +}{hline 35}
+                                  Total {c |}{res}     30,846      100.00
+
+{com}. tab a14, nolab
+
+     {txt}Último {c |}
+        año {c |}
+   aprobado {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+          0 {c |}{res}      2,731        8.85        8.85
+{txt}          1 {c |}{res}        189        0.61        9.47
+{txt}          2 {c |}{res}         51        0.17        9.63
+{txt}         11 {c |}{res}        814        2.64       12.27
+{txt}         12 {c |}{res}        814        2.64       14.91
+{txt}         13 {c |}{res}      1,121        3.63       18.54
+{txt}         14 {c |}{res}        776        2.52       21.06
+{txt}         15 {c |}{res}      1,047        3.39       24.45
+{txt}         16 {c |}{res}      6,405       20.76       45.22
+{txt}         19 {c |}{res}         26        0.08       45.30
+{txt}         21 {c |}{res}      1,075        3.49       48.79
+{txt}         22 {c |}{res}      1,338        4.34       53.13
+{txt}         23 {c |}{res}      1,980        6.42       59.54
+{txt}         24 {c |}{res}        897        2.91       62.45
+{txt}         25 {c |}{res}        396        1.28       63.74
+{txt}         26 {c |}{res}      4,690       15.20       78.94
+{txt}         29 {c |}{res}         23        0.07       79.02
+{txt}         31 {c |}{res}         63        0.20       79.22
+{txt}         32 {c |}{res}         61        0.20       79.42
+{txt}         33 {c |}{res}         90        0.29       79.71
+{txt}         34 {c |}{res}         63        0.20       79.91
+{txt}         35 {c |}{res}         99        0.32       80.23
+{txt}         36 {c |}{res}         25        0.08       80.32
+{txt}         37 {c |}{res}        553        1.79       82.11
+{txt}         41 {c |}{res}         20        0.06       82.17
+{txt}         42 {c |}{res}         39        0.13       82.30
+{txt}         43 {c |}{res}        134        0.43       82.73
+{txt}         51 {c |}{res}        350        1.13       83.87
+{txt}         52 {c |}{res}        540        1.75       85.62
+{txt}         53 {c |}{res}        895        2.90       88.52
+{txt}         54 {c |}{res}      1,138        3.69       92.21
+{txt}         55 {c |}{res}        977        3.17       95.38
+{txt}         56 {c |}{res}        836        2.71       98.09
+{txt}         59 {c |}{res}         11        0.04       98.12
+{txt}         71 {c |}{res}          5        0.02       98.14
+{txt}         72 {c |}{res}          8        0.03       98.17
+{txt}         74 {c |}{res}         21        0.07       98.23
+{txt}        101 {c |}{res}          2        0.01       98.24
+{txt}        102 {c |}{res}        456        1.48       99.72
+{txt}        109 {c |}{res}          2        0.01       99.72
+{txt}        112 {c |}{res}         17        0.06       99.78
+{txt}        113 {c |}{res}          2        0.01       99.79
+{txt}        114 {c |}{res}         59        0.19       99.98
+{txt}        999 {c |}{res}          7        0.02      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}     30,846      100.00
+
+{com}. do "C:\Users\MACARE~1\AppData\Local\Temp\STD71ec_000000.tmp"
+{txt}
+{com}. replace aedu_ci=1 if a14==11 
+{err}variable {bf}aedu_ci{sf} not found
+{txt}{search r(111), local:r(111);}
+
+end of do-file
+
+{search r(111), local:r(111);}
+
+{com}. do "C:\Users\MACARE~1\AppData\Local\Temp\STD71ec_000000.tmp"
+{txt}
+{com}. gen aedu_ci=.
+{txt}(30,846 missing values generated)
+
+{com}. replace aedu_ci=0 if a14==0 | a14==1 
+{txt}(2,920 real changes made)
+
+{com}. label var aedu_ci "Años de educación"
+{txt}
+{com}. 
+. replace aedu_ci=. if a14==2 //Educacion Especial. Solo como check
+{txt}(0 real changes made)
+
+{com}. 
+. *Primaria
+. replace aedu_ci=1 if a14==11 
+{txt}(814 real changes made)
+
+{com}. replace aedu_ci=2 if a14==12
+{txt}(814 real changes made)
+
+{com}. replace aedu_ci=3 if a14==13
+{txt}(1,121 real changes made)
+
+{com}. replace aedu_ci=4 if a14==14
+{txt}(776 real changes made)
+
+{com}. replace aedu_ci=5 if a14==15
+{txt}(1,047 real changes made)
+
+{com}. replace aedu_ci=6 if a14==16
+{txt}(6,405 real changes made)
+
+{com}. 
+{txt}end of do-file
+
+{com}. do "C:\Users\MACARE~1\AppData\Local\Temp\STD71ec_000000.tmp"
+{txt}
+{com}. *Secundaria (académica y técnica)
+. replace aedu_ci=7 if a14==21 | a14==31
+{txt}(1,138 real changes made)
+
+{com}. replace aedu_ci=8 if a14==22 | a14==32
+{txt}(1,399 real changes made)
+
+{com}. replace aedu_ci=9 if a14==23 | a14==33
+{txt}(2,070 real changes made)
+
+{com}. replace aedu_ci=10 if a14==24 | a14==34
+{txt}(960 real changes made)
+
+{com}. replace aedu_ci=11 if a14==25 | a14==26 | a14==35| a14==36 | a14==37
+{txt}(5,763 real changes made)
+
+{com}. 
+{txt}end of do-file
+
+{com}. do "C:\Users\MACARE~1\AppData\Local\Temp\STD71ec_000000.tmp"
+{txt}
+{com}. *Superior (universitario o para-universitario)
+. replace aedu_ci=12 if a14==41 | a14==51
+{txt}(370 real changes made)
+
+{com}. replace aedu_ci=13 if a14==42 | a14==52
+{txt}(579 real changes made)
+
+{com}. replace aedu_ci=14 if a14==43 | a14==53
+{txt}(1,029 real changes made)
+
+{com}. replace aedu_ci=15 if a14==54 
+{txt}(1,138 real changes made)
+
+{com}. replace aedu_ci=16 if a14==55
+{txt}(977 real changes made)
+
+{com}. replace aedu_ci=17 if a14==56
+{txt}(836 real changes made)
+
+{com}. 
+{txt}end of do-file
+
+{com}. do "C:\Users\MACARE~1\AppData\Local\Temp\STD71ec_000000.tmp"
+{txt}
+{com}. replace aedu_ci=18 if a14==71 | a14==101 
+{txt}(7 real changes made)
+
+{com}. replace aedu_ci=19 if a14==72 | a14==102 
+{txt}(464 real changes made)
+
+{com}. replace aedu_ci=20 if a14==73 | a14==103 
+{txt}(0 real changes made)
+
+{com}. replace aedu_ci=21 if a14==74 | a14==104 
+{txt}(21 real changes made)
+
+{com}. replace aedu_ci=22 if a14==111
+{txt}(0 real changes made)
+
+{com}. replace aedu_ci=23 if a14==112
+{txt}(17 real changes made)
+
+{com}. replace aedu_ci=24 if a14==113
+{txt}(2 real changes made)
+
+{com}. replace aedu_ci=25 if a14==114
+{txt}(59 real changes made)
+
+{com}. 
+{txt}end of do-file
+
+{com}. do "C:\Users\MACARE~1\AppData\Local\Temp\STD71ec_000000.tmp"
+{txt}
+{com}. replace aedu_ci=0 if a14==19 // sin educacion
+{txt}(26 real changes made)
+
+{com}. replace aedu_ci=6 if a14==29 // primaria completa si secundaria ignorada
+{txt}(23 real changes made)
+
+{com}. replace aedu_ci=6 if a14==39 // primaria completa si secundaria ignorada
+{txt}(0 real changes made)
+
+{com}. 
+{txt}end of do-file
+
+{com}. do "C:\Users\MACARE~1\AppData\Local\Temp\STD71ec_000000.tmp"
+{txt}
+{com}. replace aedu_ci=11 if a14==49 // secundaria completa si parauniversitaria ignorada
+{txt}(0 real changes made)
+
+{com}. replace aedu_ci=11 if a14==59 // secundaria completa si universitaria ignorada
+{txt}(11 real changes made)
+
+{com}. replace aedu_ci=11+4 if a14==79 // universidad completa si especialidad (postgrado) ignorados
+{txt}(0 real changes made)
+
+{com}. replace aedu_ci=11+4 if a14==109 // universidad completa si maestria ignorados
+{txt}(2 real changes made)
+
+{com}. replace aedu_ci=11+4+2 if a14==119 // maestria completa si doctorado ignorados
+{txt}(0 real changes made)
+
+{com}. 
+{txt}end of do-file
+
+{com}. do "C:\Users\MACARE~1\AppData\Local\Temp\STD71ec_000000.tmp"
+{txt}
+{com}. 
+. replace aedu_ci =. if aedu_ci ==999 //missing values
+{txt}(0 real changes made)
+
+{com}. 
+{txt}end of do-file
+
+{com}. tab a16b
+
+                                 {txt}Título {c |}      Freq.     Percent        Cum.
+{hline 40}{c +}{hline 35}
+                        No tiene título {c |}{res}      1,542       23.85       23.85
+{txt}Técnico medio, perito o diplomado no un {c |}{res}        715       11.06       34.91
+{txt}  Profesorado o diplomado universitario {c |}{res}        154        2.38       37.29
+{txt}                           Bachillerato {c |}{res}      1,498       23.17       60.45
+{txt}                           Licenciatura {c |}{res}      1,988       30.75       91.20
+{txt}                        Especialización {c |}{res}         33        0.51       91.71
+{txt}                               Maestría {c |}{res}        456        7.05       98.76
+{txt}                              Doctorado {c |}{res}         78        1.21       99.97
+{txt}                               Ignorado {c |}{res}          2        0.03      100.00
+{txt}{hline 40}{c +}{hline 35}
+                                  Total {c |}{res}      6,466      100.00
+
+{com}. tab if (a14>=53 & a14<=59) & a16b<=3
+{err}varlist required
+{txt}{search r(100), local:r(100);}
+
+{com}. tab a16b if (a14>=53 & a14<=59) & a16b<=3
+
+                                 {txt}Título {c |}      Freq.     Percent        Cum.
+{hline 40}{c +}{hline 35}
+                        No tiene título {c |}{res}        316       16.90       16.90
+{txt}  Profesorado o diplomado universitario {c |}{res}         58        3.10       20.00
+{txt}                           Bachillerato {c |}{res}      1,496       80.00      100.00
+{txt}{hline 40}{c +}{hline 35}
+                                  Total {c |}{res}      1,870      100.00
+
+{com}. tab a16b, nolab
+
+     {txt}Título {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+          0 {c |}{res}      1,542       23.85       23.85
+{txt}          1 {c |}{res}        715       11.06       34.91
+{txt}          2 {c |}{res}        154        2.38       37.29
+{txt}          3 {c |}{res}      1,498       23.17       60.45
+{txt}          4 {c |}{res}      1,988       30.75       91.20
+{txt}          5 {c |}{res}         33        0.51       91.71
+{txt}          7 {c |}{res}        456        7.05       98.76
+{txt}          8 {c |}{res}         78        1.21       99.97
+{txt}          9 {c |}{res}          2        0.03      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}      6,466      100.00
+
+{com}. do "C:\Users\MACARE~1\AppData\Local\Temp\STD71ec_000000.tmp"
+{txt}
+{com}. gen byte eduuc_ci=0
+{txt}
+{com}. replace eduuc_ci=1 if a14==43 // tres anios de parauniversitaria
+{txt}(134 real changes made)
+
+{com}. replace eduuc_ci=1 if (a14==54 & a16b>3) // cuatro anios de universitaria y titulo de licenciatura o superior
+{txt}(174 real changes made)
+
+{com}. replace eduuc_ci=1 if a14>=55  & a14<=56 // cinco anios o mas de universitaria,
+{txt}(1,813 real changes made)
+
+{com}. replace eduuc_ci=1 if a14>=61  & a14<=119 // postgrados
+{txt}(572 real changes made)
+
+{com}. replace eduuc_ci=. if aedu_ci==.
+{txt}(58 real changes made, 58 to missing)
+
+{com}. label variable eduuc_ci "Superior completo"
+{txt}
+{com}. 
+{txt}end of do-file
+
+{com}. do "C:\Users\MACARE~1\AppData\Local\Temp\STD71ec_000000.tmp"
+{txt}
+{com}. gen eduui_ci=0
+{txt}
+{com}. replace eduui_ci=1 if (a14>=41 & a14<=42) // hasta dos anios de educacion parauniversitaria
+{txt}(59 real changes made)
+
+{com}. replace eduui_ci=1 if (a14>=51 & a14<=53) // hasta tres anios de universidad
+{txt}(1,785 real changes made)
+
+{com}. replace eduui_ci=1 if (a14==54 & a16b<=3) // cuatro anios pero sin titulo superior
+{txt}(964 real changes made)
+
+{com}. replace eduui_ci=. if aedu_ci==. 
+{txt}(58 real changes made, 58 to missing)
+
+{com}. label variable eduui_ci "Superior incompleto"
+{txt}
+{com}. //nota: qué pasa con personas con mas de cuatro anios de educ universitaria pero sin titulo
+. //tab a16b if (a14>=53 & a14<=59) & a16b<=3
+. 
+{txt}end of do-file
+
+{com}. tab a13
+
+          {txt}Asistencia a educación formal {c |}      Freq.     Percent        Cum.
+{hline 40}{c +}{hline 35}
+                              No asiste {c |}{res}     22,468       72.84       72.84
+{txt}        Materno, interactivo, guardería {c |}{res}        428        1.39       74.23
+{txt}              Transición o preparatoria {c |}{res}        324        1.05       75.28
+{txt}                                Escuela {c |}{res}      2,570        8.33       83.61
+{txt}                                Colegio {c |}{res}      2,609        8.46       92.07
+{txt}                      Parauniversitaria {c |}{res}         79        0.26       92.32
+{txt}                          Universitaria {c |}{res}      1,823        5.91       98.23
+{txt}                     Enseñanza especial {c |}{res}         31        0.10       98.33
+{txt}Otro tipo de educación formal (educació {c |}{res}        132        0.43       98.76
+{txt}                    Educación no formal {c |}{res}        382        1.24      100.00
+{txt}{hline 40}{c +}{hline 35}
+                                  Total {c |}{res}     30,846      100.00
+
+{com}. tab a13, nolab
+
+ {txt}Asistencia {c |}
+          a {c |}
+  educación {c |}
+     formal {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+          0 {c |}{res}     22,468       72.84       72.84
+{txt}          1 {c |}{res}        428        1.39       74.23
+{txt}          2 {c |}{res}        324        1.05       75.28
+{txt}          3 {c |}{res}      2,570        8.33       83.61
+{txt}          4 {c |}{res}      2,609        8.46       92.07
+{txt}          5 {c |}{res}         79        0.26       92.32
+{txt}          6 {c |}{res}      1,823        5.91       98.23
+{txt}          7 {c |}{res}         31        0.10       98.33
+{txt}          8 {c |}{res}        132        0.43       98.76
+{txt}          9 {c |}{res}        382        1.24      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}     30,846      100.00
+
+{com}. do "C:\Users\MACARE~1\AppData\Local\Temp\STD71ec_000000.tmp"
+{txt}
+{com}. g asispre_ci=(a13==1 | a13==2)
+{txt}
+{com}. replace asispre_ci =. if a13==99
+{txt}(0 real changes made)
+
+{com}. la var asispre_ci "Asiste a educacion prescolar"
+{txt}
+{com}. 
+{txt}end of do-file
+
+{com}. tab a14
+
+                    {txt}Último año aprobado {c |}      Freq.     Percent        Cum.
+{hline 40}{c +}{hline 35}
+                                Ninguno {c |}{res}      2,731        8.85        8.85
+{txt}                           Preparatoria {c |}{res}        189        0.61        9.47
+{txt}                     Enseñanza especial {c |}{res}         51        0.17        9.63
+{txt}                       Primero primaria {c |}{res}        814        2.64       12.27
+{txt}                       Segundo primaria {c |}{res}        814        2.64       14.91
+{txt}                       Tercero primaria {c |}{res}      1,121        3.63       18.54
+{txt}                        Cuarto primaria {c |}{res}        776        2.52       21.06
+{txt}                        Quinto primaria {c |}{res}      1,047        3.39       24.45
+{txt}                         Sexto primaria {c |}{res}      6,405       20.76       45.22
+{txt}             Años de primaria ignorados {c |}{res}         26        0.08       45.30
+{txt}           Primero secundaria académica {c |}{res}      1,075        3.49       48.79
+{txt}           Segundo secundario académica {c |}{res}      1,338        4.34       53.13
+{txt}           Tercero secundaria académica {c |}{res}      1,980        6.42       59.54
+{txt}            Cuarto secundaria académica {c |}{res}        897        2.91       62.45
+{txt}Quinto secundaria académica sin título  {c |}{res}        396        1.28       63.74
+{txt}Quinto secundaria académica con título  {c |}{res}      4,690       15.20       78.94
+{txt} Años de secundaria académica ignorados {c |}{res}         23        0.07       79.02
+{txt}             Primero secundaria técnica {c |}{res}         63        0.20       79.22
+{txt}             Segundo secundaria técnica {c |}{res}         61        0.20       79.42
+{txt}             Tercero secundaria técnica {c |}{res}         90        0.29       79.71
+{txt}              Cuarto secundaria técnica {c |}{res}         63        0.20       79.91
+{txt}              Quinto secundaria técnica {c |}{res}         99        0.32       80.23
+{txt}Sexto secundaria técnica sin título de  {c |}{res}         25        0.08       80.32
+{txt}Sexto secundaria técnica con título de  {c |}{res}        553        1.79       82.11
+{txt}               Un año parauniversitaria {c |}{res}         20        0.06       82.17
+{txt}             Dos años parauniversitaria {c |}{res}         39        0.13       82.30
+{txt}            Tres años parauniversitaria {c |}{res}        134        0.43       82.73
+{txt}                  Un año de universidad {c |}{res}        350        1.13       83.87
+{txt}                Dos años de universidad {c |}{res}        540        1.75       85.62
+{txt}               Tres años de universidad {c |}{res}        895        2.90       88.52
+{txt}             Cuatro años de universidad {c |}{res}      1,138        3.69       92.21
+{txt}              Cinco años de universidad {c |}{res}        977        3.17       95.38
+{txt}               Seis años de universidad {c |}{res}        836        2.71       98.09
+{txt}          Años de universidad ignorados {c |}{res}         11        0.04       98.12
+{txt}                 Un año de especialidad {c |}{res}          5        0.02       98.14
+{txt}               Dos años de especialidad {c |}{res}          8        0.03       98.17
+{txt}            Cuatro años de especialidad {c |}{res}         21        0.07       98.23
+{txt}                     Un año de maestría {c |}{res}          2        0.01       98.24
+{txt}                   Dos años de maestría {c |}{res}        456        1.48       99.72
+{txt}             Años de maestría ignorados {c |}{res}          2        0.01       99.72
+{txt}                  Dos años de doctorado {c |}{res}         17        0.06       99.78
+{txt}                 Tres años de doctorado {c |}{res}          2        0.01       99.79
+{txt}                  Cuatro años doctorado {c |}{res}         59        0.19       99.98
+{txt}                               Ignorado {c |}{res}          7        0.02      100.00
+{txt}{hline 40}{c +}{hline 35}
+                                  Total {c |}{res}     30,846      100.00
+
+{com}. tab a14, nolab
+
+     {txt}Último {c |}
+        año {c |}
+   aprobado {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+          0 {c |}{res}      2,731        8.85        8.85
+{txt}          1 {c |}{res}        189        0.61        9.47
+{txt}          2 {c |}{res}         51        0.17        9.63
+{txt}         11 {c |}{res}        814        2.64       12.27
+{txt}         12 {c |}{res}        814        2.64       14.91
+{txt}         13 {c |}{res}      1,121        3.63       18.54
+{txt}         14 {c |}{res}        776        2.52       21.06
+{txt}         15 {c |}{res}      1,047        3.39       24.45
+{txt}         16 {c |}{res}      6,405       20.76       45.22
+{txt}         19 {c |}{res}         26        0.08       45.30
+{txt}         21 {c |}{res}      1,075        3.49       48.79
+{txt}         22 {c |}{res}      1,338        4.34       53.13
+{txt}         23 {c |}{res}      1,980        6.42       59.54
+{txt}         24 {c |}{res}        897        2.91       62.45
+{txt}         25 {c |}{res}        396        1.28       63.74
+{txt}         26 {c |}{res}      4,690       15.20       78.94
+{txt}         29 {c |}{res}         23        0.07       79.02
+{txt}         31 {c |}{res}         63        0.20       79.22
+{txt}         32 {c |}{res}         61        0.20       79.42
+{txt}         33 {c |}{res}         90        0.29       79.71
+{txt}         34 {c |}{res}         63        0.20       79.91
+{txt}         35 {c |}{res}         99        0.32       80.23
+{txt}         36 {c |}{res}         25        0.08       80.32
+{txt}         37 {c |}{res}        553        1.79       82.11
+{txt}         41 {c |}{res}         20        0.06       82.17
+{txt}         42 {c |}{res}         39        0.13       82.30
+{txt}         43 {c |}{res}        134        0.43       82.73
+{txt}         51 {c |}{res}        350        1.13       83.87
+{txt}         52 {c |}{res}        540        1.75       85.62
+{txt}         53 {c |}{res}        895        2.90       88.52
+{txt}         54 {c |}{res}      1,138        3.69       92.21
+{txt}         55 {c |}{res}        977        3.17       95.38
+{txt}         56 {c |}{res}        836        2.71       98.09
+{txt}         59 {c |}{res}         11        0.04       98.12
+{txt}         71 {c |}{res}          5        0.02       98.14
+{txt}         72 {c |}{res}          8        0.03       98.17
+{txt}         74 {c |}{res}         21        0.07       98.23
+{txt}        101 {c |}{res}          2        0.01       98.24
+{txt}        102 {c |}{res}        456        1.48       99.72
+{txt}        109 {c |}{res}          2        0.01       99.72
+{txt}        112 {c |}{res}         17        0.06       99.78
+{txt}        113 {c |}{res}          2        0.01       99.79
+{txt}        114 {c |}{res}         59        0.19       99.98
+{txt}        999 {c |}{res}          7        0.02      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}     30,846      100.00
+
+{com}. tab a13
+
+          {txt}Asistencia a educación formal {c |}      Freq.     Percent        Cum.
+{hline 40}{c +}{hline 35}
+                              No asiste {c |}{res}     22,468       72.84       72.84
+{txt}        Materno, interactivo, guardería {c |}{res}        428        1.39       74.23
+{txt}              Transición o preparatoria {c |}{res}        324        1.05       75.28
+{txt}                                Escuela {c |}{res}      2,570        8.33       83.61
+{txt}                                Colegio {c |}{res}      2,609        8.46       92.07
+{txt}                      Parauniversitaria {c |}{res}         79        0.26       92.32
+{txt}                          Universitaria {c |}{res}      1,823        5.91       98.23
+{txt}                     Enseñanza especial {c |}{res}         31        0.10       98.33
+{txt}Otro tipo de educación formal (educació {c |}{res}        132        0.43       98.76
+{txt}                    Educación no formal {c |}{res}        382        1.24      100.00
+{txt}{hline 40}{c +}{hline 35}
+                                  Total {c |}{res}     30,846      100.00
+
+{com}. do "C:\Users\MACARE~1\AppData\Local\Temp\STD71ec_000000.tmp"
+{txt}
+{com}. gen asiste_ci=.
+{txt}(30,846 missing values generated)
+
+{com}. replace asiste_ci=1 if a13>=1 & a13<=9
+{txt}(8,378 real changes made)
+
+{com}. replace asiste_ci=0 if a13==0
+{txt}(22,468 real changes made)
+
+{com}. label variable asiste_ci "Asiste actualmente a la escuela"
+{txt}
+{com}. 
+{txt}end of do-file
+
+{com}. tab a17
+
+ {txt}Principal motivo de no asistencia a la {c |}
+                       educación formal {c |}      Freq.     Percent        Cum.
+{hline 40}{c +}{hline 35}
+                     Tiene que trabajar {c |}{res}        562       29.45       29.45
+{txt}                      Prefiere trabajar {c |}{res}        319       16.72       46.17
+{txt}Tiene que cuidar niños, adultos mayores {c |}{res}        135        7.08       53.25
+{txt} Tiene que ayudar en oficios domésticos {c |}{res}         27        1.42       54.66
+{txt}            No puede pagar los estudios {c |}{res}        348       18.24       72.90
+{txt} Problemas de acceso al sistema escolar {c |}{res}         58        3.04       75.94
+{txt}                   Le cuesta el estudio {c |}{res}         81        4.25       80.19
+{txt}No está interesado en el aprendizaje fo {c |}{res}        162        8.49       88.68
+{txt}                  Embarazo o matrimonio {c |}{res}         32        1.68       90.36
+{txt}              Enfermedad o discapacidad {c |}{res}         58        3.04       93.40
+{txt}                          No tiene edad {c |}{res}         19        1.00       94.39
+{txt}Falta ganar pruebas del MEP o exámenes  {c |}{res}         81        4.25       98.64
+{txt}                                   Otro {c |}{res}         26        1.36      100.00
+{txt}{hline 40}{c +}{hline 35}
+                                  Total {c |}{res}      1,908      100.00
+
+{com}. do "C:\Users\MACARE~1\AppData\Local\Temp\STD71ec_000000.tmp"
+{txt}
+{com}. g       pqnoasis1_ci = 1 if a17==5
+{txt}(30,498 missing values generated)
+
+{com}. replace pqnoasis1_ci = 2 if a17==1
+{txt}(562 real changes made)
+
+{com}. replace pqnoasis1_ci = 3 if a17==7 | a17==10
+{txt}(139 real changes made)
+
+{com}. replace pqnoasis1_ci = 4 if a17==2 | a17==8
+{txt}(481 real changes made)
+
+{com}. replace pqnoasis1_ci = 5 if a17==3 | a17==4 | a17==9
+{txt}(194 real changes made)
+
+{com}. replace pqnoasis1_ci = 7 if a17==11 
+{txt}(19 real changes made)
+
+{com}. replace pqnoasis1_ci = 8 if a17==6
+{txt}(58 real changes made)
+
+{com}. replace pqnoasis1_ci = 9 if a17==12 | a17==13
+{txt}(107 real changes made)
+
+{com}. 
+. label define pqnoasis1_ci 1 "Problemas económicos" 2 "Por trabajo" 3 "Problemas familiares o de salud" 4 "Falta de interés" 5 "Quehaceres domésticos/embarazo/cuidado de niños/as" 6 "Terminó sus estudios" 7      "Edad" 8 "Problemas de acceso"  9 "Otros"
+{txt}
+{com}. label value  pqnoasis1_ci pqnoasis1_ci
+{txt}
+{com}. 
+{txt}end of do-file
+
+{com}. tab a15a
+
+  {txt}Tipo de centro educativo {c |}
+   al que asiste o asistió {c |}      Freq.     Percent        Cum.
+{hline 27}{c +}{hline 35}
+         Nunca ha asistido {c |}{res}      1,738        5.63        5.63
+{txt}                   Público {c |}{res}     24,303       78.79       84.42
+{txt}Semi-público o semioficial {c |}{res}         58        0.19       84.61
+{txt}                   Privado {c |}{res}      3,806       12.34       96.95
+{txt}                Extranjero {c |}{res}        915        2.97       99.92
+{txt}                  Ignorado {c |}{res}         26        0.08      100.00
+{txt}{hline 27}{c +}{hline 35}
+                     Total {c |}{res}     30,846      100.00
+
+{com}. do "C:\Users\MACARE~1\AppData\Local\Temp\STD71ec_000000.tmp"
+{txt}
+{com}. gen edupub_ci=.
+{txt}(30,846 missing values generated)
+
+{com}. replace edupub_ci=1 if (a15a==1| a15a==2) & asiste_ci==1 // incluye los semi publicos
+{txt}(6,852 real changes made)
+
+{com}. replace edupub_ci=0 if (a15a==3 | a15a==4) & asiste_ci==1 // incluye los extranjeros
+{txt}(1,524 real changes made)
+
+{com}. label var edupub_ci "Personas asisten a centros de enseñanza públicos"
+{txt}
+{com}. 
+{txt}end of do-file
+
+{com}. tab v11
+
+  {txt}Abastecimiento de agua de la vivienda {c |}      Freq.     Percent        Cum.
+{hline 40}{c +}{hline 35}
+                   No tiene por tubería {c |}{res}         61        0.20        0.20
+{txt}          Tubería dentro de la vivienda {c |}{res}     29,949       97.09       97.29
+{txt}Tubería fuera de la vivienda pero dentr {c |}{res}        806        2.61       99.90
+{txt}      Tubería fuera del lote o edificio {c |}{res}         30        0.10      100.00
+{txt}{hline 40}{c +}{hline 35}
+                                  Total {c |}{res}     30,846      100.00
+
+{com}. tab v12
+
+      {txt}Fuente del agua de {c |}
+  consumo de la vivienda {c |}      Freq.     Percent        Cum.
+{hline 25}{c +}{hline 35}
+     Acueducto del A y A {c |}{res}     17,292       56.06       56.06
+{txt}         Acueducto rural {c |}{res}      6,867       22.26       78.32
+{txt}     Acueducto municipal {c |}{res}      4,240       13.75       92.07
+{txt}   Empresa o cooperativa {c |}{res}      1,134        3.68       95.74
+{txt}                    Pozo {c |}{res}        639        2.07       97.81
+{txt}Río, quebrada o naciente {c |}{res}        640        2.07       99.89
+{txt}           Lluvia u otro {c |}{res}         34        0.11      100.00
+{txt}{hline 25}{c +}{hline 35}
+                   Total {c |}{res}     30,846      100.00
+
+{com}. do "C:\Users\MACARE~1\AppData\Local\Temp\STD71ec_000000.tmp"
+{txt}
+{com}. gen aguared_ch=0
+{txt}
+{com}. replace aguared_ch=1 if (v12 <= 4 & (v11>0 & v11 <3))
+{txt}(29,503 real changes made)
+
+{com}. label var aguared_ch "Acceso a una fuente de agua por red"
+{txt}
+{com}. 
+{txt}end of do-file
+
+{com}. do "C:\Users\MACARE~1\AppData\Local\Temp\STD71ec_000000.tmp"
+{txt}
+{com}. gen aguafconsumo_ch = 0
+{txt}
+{com}. replace aguafconsumo_ch = 1 if (v11==1 | v11==2) & v12<=4
+{txt}(29,503 real changes made)
+
+{com}. replace aguafconsumo_ch = 2 if (v11==3|v11==0) & v12<=4
+{txt}(30 real changes made)
+
+{com}. replace aguafconsumo_ch = 5 if v12==7
+{txt}(34 real changes made)
+
+{com}. replace aguafconsumo_ch = 8 if v12==6
+{txt}(640 real changes made)
+
+{com}. replace aguafconsumo_ch = 10 if v12==5
+{txt}(639 real changes made)
+
+{com}. 
+. *****************
+. *aguafuente_ch*
+. *****************
+. gen aguafuente_ch = .
+{txt}(30,846 missing values generated)
+
+{com}. replace aguafuente_ch = 1 if (v11==1 | v11==2) & v12<=4
+{txt}(29,503 real changes made)
+
+{com}. replace aguafuente_ch = 2 if (v11==3|v11==0) & v12<=4
+{txt}(30 real changes made)
+
+{com}. replace aguafuente_ch = 5 if v12==7
+{txt}(34 real changes made)
+
+{com}. replace aguafuente_ch = 8 if v12==6
+{txt}(640 real changes made)
+
+{com}. replace aguafuente_ch = 10 if v12==5
+{txt}(639 real changes made)
+
+{com}. replace aguafuente_ch = 10 if aguafuente_ch ==. & jefe_ci==1
+{txt}(0 real changes made)
+
+{com}. 
+. 
+. *************
+. *aguadist_ch*
+. *************
+. /*v11
+>            0 No tiene por tubería
+>            1 Tubería dentro de la vivienda
+>            2 Tubería fuera de la vivienda pero dentro del lote o edificio
+>            3 Tubería fuera del lote o edificio
+>            9 Ignorado
+> */
+. 
+. gen aguadist_ch=.
+{txt}(30,846 missing values generated)
+
+{com}. replace aguadist_ch=1 if v11==1
+{txt}(29,949 real changes made)
+
+{com}. replace aguadist_ch=2 if v11==2
+{txt}(806 real changes made)
+
+{com}. replace aguadist_ch=3 if v11==3
+{txt}(30 real changes made)
+
+{com}. replace aguadist_ch=0 if v11==0
+{txt}(61 real changes made)
+
+{com}. label define aguadist_ch 1 "tubería dentro de la vivienda" 2 " tubería fuera de la vivienda pero dentro del lote o edificio" 3 "tubería fuera del lote o edificio"
+{txt}
+{com}. label var aguadist_ch "Ubicación de la principal fuente de agua"
+{txt}
+{com}. 
+. **************
+. *aguadisp1_ch*
+. **************
+. gen aguadisp1_ch =9
+{txt}
+{com}. 
+. **************
+. *aguadisp2_ch*
+. **************
+. gen aguadisp2_ch =9
+{txt}
+{com}. 
+. *************
+. *aguamala_ch*  Altered
+. *************
+. gen aguamala_ch = 2
+{txt}
+{com}. replace aguamala_ch = 0 if aguafuente_ch<=7
+{txt}(29,567 real changes made)
+
+{com}. replace aguamala_ch = 1 if aguafuente_ch>7 & aguafuente_ch!=10
+{txt}(640 real changes made)
+
+{com}. 
+. *****************
+. *aguamejorada_ch*  Altered
+. *****************
+. gen aguamejorada_ch = 2
+{txt}
+{com}. replace aguamejorada_ch = 0 if aguafuente_ch>7 & aguafuente_ch!=10
+{txt}(640 real changes made)
+
+{com}. replace aguamejorada_ch = 1 if aguafuente_ch<=7 
+{txt}(29,567 real changes made)
+
+{com}. *label var aguamejorada_ch "= 1 si la fuente de agua es mejorada"
+. 
+. ***************
+. * aguamide_ch *
+. ***************
+. gen aguamide_ch=.
+{txt}(30,846 missing values generated)
+
+{com}. label var aguamide_ch "Usan medidor para pagar consumo de agua"
+{txt}
+{com}. 
+{txt}end of do-file
+
+{com}. tab v13a
+
+      {txt}Servicio sanitario de la vivienda {c |}      Freq.     Percent        Cum.
+{hline 40}{c +}{hline 35}
+                               No tiene {c |}{res}         25        0.08        0.08
+{txt}      Conectado a alcantarilla o cloaca {c |}{res}      7,091       22.99       23.07
+{txt}       Conectado a tanque séptico común {c |}{res}     23,200       75.21       98.28
+{txt}Conectado a tanque séptico con tratamie {c |}{res}        237        0.77       99.05
+{txt}      De hueco, de pozo negro o letrina {c |}{res}        222        0.72       99.77
+{txt}                           Otro sistema {c |}{res}         71        0.23      100.00
+{txt}{hline 40}{c +}{hline 35}
+                                  Total {c |}{res}     30,846      100.00
+
+{com}. tab v14b
+
+   {txt}Exclusividad del uso del {c |}
+        baño en la vivienda {c |}      Freq.     Percent        Cum.
+{hline 28}{c +}{hline 35}
+      Solo para la vivienda {c |}{res}     30,642       99.69       99.69
+{txt}Para esta y otras viviendas {c |}{res}         94        0.31      100.00
+{txt}{hline 28}{c +}{hline 35}
+                      Total {c |}{res}     30,736      100.00
+
+{com}. do "C:\Users\MACARE~1\AppData\Local\Temp\STD71ec_000000.tmp"
+{txt}
+{com}. gen banoex_ch=.
+{txt}(30,846 missing values generated)
+
+{com}. replace banoex_ch=1 if v14b==1
+{txt}(30,642 real changes made)
+
+{com}. replace banoex_ch=0 if v14b==2
+{txt}(94 real changes made)
+
+{com}. label var banoex_ch "Servicio higiénico de uso exclusivo del hogar"
+{txt}
+{com}. 
+. *****************
+. *banomejorado_ch*  Altered
+. *****************
+. gen banomejorado_ch= 2
+{txt}
+{com}. replace banomejorado_ch =1 if bano_ch<=3 & bano_ch!=0
+{err}bano_ch not found
+{txt}{search r(111), local:r(111);}
+
+end of do-file
+
+{search r(111), local:r(111);}
+
+{com}. do "C:\Users\MACARE~1\AppData\Local\Temp\STD71ec_000000.tmp"
+{txt}
+{com}. gen bano_ch=.
+{txt}(30,846 missing values generated)
+
+{com}. replace bano_ch=0 if v13a==0 
+{txt}(25 real changes made)
+
+{com}. replace bano_ch=1 if v13a==1
+{txt}(7,091 real changes made)
+
+{com}. replace bano_ch=2 if v13a==2 | v13a==3
+{txt}(23,437 real changes made)
+
+{com}. replace bano_ch=6 if v13a==5 | v13a==4
+{txt}(293 real changes made)
+
+{com}. replace bano_ch=6 if bano_ch ==. & jefe_ci==1
+{txt}(0 real changes made)
+
+{com}. label var bano_ch "Hogar tiene algún tipo de servicio higiénico"
+{txt}
+{com}. 
+. *************
+. * banoex_ch *
+. *************
+. gen banoex_ch=.
+{err}variable {bf}banoex_ch{sf} already defined
+{txt}{search r(110), local:r(110);}
+
+end of do-file
+
+{search r(110), local:r(110);}
+
+{com}. tab v15
+
+    {txt}Electricidad de la {c |}
+              vivienda {c |}      Freq.     Percent        Cum.
+{hline 23}{c +}{hline 35}
+  No hay luz eléctrica {c |}{res}         64        0.21        0.21
+{txt}               Del ICE {c |}{res}     16,120       52.26       52.47
+{txt}            De la CNFL {c |}{res}      8,262       26.78       79.25
+{txt}    De la ESPH / JASEC {c |}{res}      2,812        9.12       88.37
+{txt}        De Cooperativa {c |}{res}      3,563       11.55       99.92
+{txt}     De planta privada {c |}{res}          1        0.00       99.92
+{txt}Otra fuente de energía {c |}{res}         24        0.08      100.00
+{txt}{hline 23}{c +}{hline 35}
+                 Total {c |}{res}     30,846      100.00
+
+{com}. do "C:\Users\MACARE~1\AppData\Local\Temp\STD71ec_000000.tmp"
+{txt}
+{com}. gen luz_ch=.
+{txt}(30,846 missing values generated)
+
+{com}. replace luz_ch=1 if v15>=1 & v15<=6
+{txt}(30,782 real changes made)
+
+{com}. replace luz_ch=0 if v15==0
+{txt}(64 real changes made)
+
+{com}. label var luz_ch "Principal fuente de iluminación es electricidad"
+{txt}
+{com}. 
+. ************
+. *luzmide_ch*
+. ************
+. gen luzmide_ch=.
+{txt}(30,846 missing values generated)
+
+{com}. label var luzmide_ch  "Hogar usa un medidor para pagar por su consumo de electricidad"
+{txt}
+{com}. 
+{txt}end of do-file
+
+{com}. tab v16
+
+{txt}Principal fuente de {c |}
+       energía para {c |}
+      cocinar en la {c |}
+           vivienda {c |}      Freq.     Percent        Cum.
+{hline 20}{c +}{hline 35}
+Ninguno (no cocina) {c |}{res}         41        0.13        0.13
+{txt}       Electricidad {c |}{res}     12,965       42.03       42.16
+{txt}                Gas {c |}{res}     16,972       55.02       97.19
+{txt}      Leña o carbón {c |}{res}        868        2.81      100.00
+{txt}{hline 20}{c +}{hline 35}
+              Total {c |}{res}     30,846      100.00
+
+{com}. tab v6
+
+     {txt}Principal material del piso de la {c |}
+                              vivienda {c |}      Freq.     Percent        Cum.
+{hline 39}{c +}{hline 35}
+             No tiene (piso de tierra) {c |}{res}        195        0.63        0.63
+{txt}            Mosaico, cerámica, terrazo {c |}{res}     23,740       76.96       77.60
+{txt}                 Cemento (lujado o no) {c |}{res}      5,543       17.97       95.57
+{txt}                                Madera {c |}{res}      1,320        4.28       99.84
+{txt}Material natural (bambú, caña, chonta) {c |}{res}         22        0.07       99.92
+{txt}                                  Otro {c |}{res}         26        0.08      100.00
+{txt}{hline 39}{c +}{hline 35}
+                                 Total {c |}{res}     30,846      100.00
+
+{com}. do "C:\Users\MACARE~1\AppData\Local\Temp\STD71ec_000000.tmp"
+{txt}
+{com}. gen piso_ch=.
+{txt}(30,846 missing values generated)
+
+{com}. replace piso_ch=0 if v6==0
+{txt}(195 real changes made)
+
+{com}. replace piso_ch=1 if v6>=1 & v6<=3
+{txt}(30,603 real changes made)
+
+{com}. replace piso_ch=2 if v6==4 | v6 ==5 
+{txt}(48 real changes made)
+
+{com}. label define piso_ch 0 "Piso de tierra" 1 "Materiales permanentes" 2 "Otros materiales"
+{txt}
+{com}. label value piso_ch piso_ch
+{txt}
+{com}. label var piso_ch "Materiales de construcción del piso"
+{txt}
+{com}. 
+{txt}end of do-file
+
+{com}. tab v3
+
+      {txt}Principal material de las paredes {c |}
+              exteriores de la vivienda {c |}      Freq.     Percent        Cum.
+{hline 40}{c +}{hline 35}
+                    Material de desecho {c |}{res}         90        0.29        0.29
+{txt}                       Block o ladrillo {c |}{res}     18,904       61.29       61.58
+{txt}Zócalo (con madera, zinc o fibrocemento {c |}{res}      2,682        8.69       70.27
+{txt}                                 Madera {c |}{res}      2,425        7.86       78.13
+{txt}                           Prefabricado {c |}{res}      5,019       16.27       94.40
+{txt}                                   Zinc {c |}{res}        250        0.81       95.21
+{txt}       Fibrocemento (Fibrolit, Ricalit) {c |}{res}      1,442        4.67       99.89
+{txt} Fibras naturales (bambú, caña, chonta) {c |}{res}         16        0.05       99.94
+{txt}                                   Otro {c |}{res}         18        0.06      100.00
+{txt}{hline 40}{c +}{hline 35}
+                                  Total {c |}{res}     30,846      100.00
+
+{com}. do "C:\Users\MACARE~1\AppData\Local\Temp\STD71ec_000000.tmp"
+{txt}
+{com}. gen pared_ch=.
+{txt}(30,846 missing values generated)
+
+{com}. replace pared_ch=0 if v3==0
+{txt}(90 real changes made)
+
+{com}. replace pared_ch=1 if v3>=1  & v3<=6
+{txt}(30,722 real changes made)
+
+{com}. replace pared_ch=2 if v3==8 | v3==7 
+{txt}(34 real changes made)
+
+{com}. label define pared_ch  0 "No permanentes" 1 "Materiales permanentes" 2 "Otros materiales"
+{txt}
+{com}. label value pared_ch pared_ch
+{txt}
+{com}. label var pared_ch "Materiales de construcción de las paredes"
+{txt}
+{com}. 
+{txt}end of do-file
+
+{com}. tab v4
+
+    {txt}Principal material del techo de la {c |}
+                              vivienda {c |}      Freq.     Percent        Cum.
+{hline 39}{c +}{hline 35}
+                   Material de desecho {c |}{res}         72        0.23        0.23
+{txt}                Lámina de metal o zinc {c |}{res}     30,196       97.89       98.13
+{txt}                          Fibrocemento {c |}{res}         89        0.29       98.41
+{txt}                             Entrepiso {c |}{res}        463        1.50       99.92
+{txt}Fibras naturales (bambú, caña, chonta) {c |}{res}         17        0.06       99.97
+{txt}                                  Otro {c |}{res}          9        0.03      100.00
+{txt}{hline 39}{c +}{hline 35}
+                                 Total {c |}{res}     30,846      100.00
+
+{com}. tab v17a
+
+           {txt}Principal sistema de {c |}
+    eliminación de basura en la {c |}
+                       vivienda {c |}      Freq.     Percent        Cum.
+{hline 32}{c +}{hline 35}
+              Camión recolector {c |}{res}     28,199       91.42       91.42
+{txt}  La botan en hueco o entierran {c |}{res}        557        1.81       93.22
+{txt}                      La queman {c |}{res}      2,028        6.57       99.80
+{txt}        La botan en lote baldío {c |}{res}         35        0.11       99.91
+{txt}                           Otro {c |}{res}         27        0.09      100.00
+{txt}{hline 32}{c +}{hline 35}
+                          Total {c |}{res}     30,846      100.00
+
+{com}. tab v17a, nolab
+
+  {txt}Principal {c |}
+ sistema de {c |}
+ eliminació {c |}
+n de basura {c |}
+      en la {c |}
+   vivienda {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+          1 {c |}{res}     28,199       91.42       91.42
+{txt}          2 {c |}{res}        557        1.81       93.22
+{txt}          3 {c |}{res}      2,028        6.57       99.80
+{txt}          4 {c |}{res}         35        0.11       99.91
+{txt}          6 {c |}{res}         27        0.09      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}     30,846      100.00
+
+{com}. tab v8
+
+{txt}Cantidad de {c |}
+    cuartos {c |}
+para dormir {c |}
+      de la {c |}
+   vivienda {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+    Ninguno {c |}{res}        109        0.35        0.35
+{txt}          1 {c |}{res}      1,567        5.08        5.43
+{txt}          2 {c |}{res}     11,440       37.09       42.52
+{txt}          3 {c |}{res}     12,735       41.29       83.81
+{txt}          4 {c |}{res}      3,815       12.37       96.17
+{txt}          5 {c |}{res}        933        3.02       99.20
+{txt}          6 {c |}{res}        184        0.60       99.80
+{txt}          7 {c |}{res}         47        0.15       99.95
+{txt}          8 {c |}{res}          8        0.03       99.97
+{txt}         10 {c |}{res}          8        0.03      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}     30,846      100.00
+
+{com}. tab v9
+
+   {txt}Total de {c |}
+  aposentos {c |}
+      de la {c |}
+   vivienda {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+          1 {c |}{res}        282        0.91        0.91
+{txt}          2 {c |}{res}        638        2.07        2.98
+{txt}          3 {c |}{res}      3,551       11.51       14.49
+{txt}          4 {c |}{res}      8,209       26.61       41.11
+{txt}          5 {c |}{res}     10,043       32.56       73.67
+{txt}          6 {c |}{res}      5,061       16.41       90.07
+{txt}          7 {c |}{res}      2,013        6.53       96.60
+{txt}          8 {c |}{res}        628        2.04       98.64
+{txt}          9 {c |}{res}        271        0.88       99.51
+{txt}         10 {c |}{res}         99        0.32       99.83
+{txt}         11 {c |}{res}         34        0.11       99.94
+{txt}         12 {c |}{res}          9        0.03       99.97
+{txt}         13 {c |}{res}          8        0.03      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}     30,846      100.00
+
+{com}. tab v18
+{bf}{err}v18{sf} ambiguous abbreviation
+{txt}{search r(111), local:r(111);}
+
+{com}. tab v18b
+
+{txt}Tenencia de {c |}
+   teléfono {c |}
+residencial {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+         Sí {c |}{res}      4,410       14.30       14.30
+{txt}         No {c |}{res}     26,436       85.70      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}     30,846      100.00
+
+{com}. tab v18c
+
+{txt}Tenencia de {c |}
+refrigerado {c |}
+         ra {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+         Sí {c |}{res}     29,738       96.41       96.41
+{txt}         No {c |}{res}      1,108        3.59      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}     30,846      100.00
+
+{com}. tab v18j
+
+{txt}Tenencia de {c |}
+  automóvil {c |}
+     (no de {c |}
+   trabajo) {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+         Sí {c |}{res}     13,592       44.06       44.06
+{txt}         No {c |}{res}     17,254       55.94      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}     30,846      100.00
+
+{com}. tab v18f
+
+{txt}Tenencia de {c |}
+computadora {c |}
+   portátil {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+         Sí {c |}{res}     12,876       41.74       41.74
+{txt}         No {c |}{res}     17,970       58.26      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}     30,846      100.00
+
+{com}. tab v19
+
+{txt}Tenencia de {c |}
+   Internet {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+         No {c |}{res}      3,745       12.14       12.14
+{txt}         SÍ {c |}{res}     27,101       87.86      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}     30,846      100.00
+
+{com}. tab v18a
+
+{txt}Tenencia de {c |}
+   teléfono {c |}
+ celular en {c |}
+la vivienda {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+         Sí {c |}{res}     30,261       98.10       98.10
+{txt}         No {c |}{res}        585        1.90      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}     30,846      100.00
+
+{com}. tab v1
+
+                       {txt}Tipo de vivienda {c |}      Freq.     Percent        Cum.
+{hline 40}{c +}{hline 35}
+Casa en condominio o residencial cerrad {c |}{res}        536        1.74        1.74
+{txt}                     Casa Independiente {c |}{res}     18,185       58.95       60.69
+{txt}                     En fila o contigua {c |}{res}     11,219       36.37       97.06
+{txt}En edificio (condominio vertical o apar {c |}{res}        832        2.70       99.76
+{txt}                              Cuartería {c |}{res}         22        0.07       99.83
+{txt}                                Tugurio {c |}{res}         51        0.17      100.00
+{txt}                                   Otro {c |}{res}          1        0.00      100.00
+{txt}{hline 40}{c +}{hline 35}
+                                  Total {c |}{res}     30,846      100.00
+
+{com}. tab v2a
+
+ {txt}Tipo de tenencia de la vivienda {c |}      Freq.     Percent        Cum.
+{hline 33}{c +}{hline 35}
+        Propia totalmente pagada {c |}{res}     20,270       65.71       65.71
+{txt}         Propia pagando a plazos {c |}{res}      2,200        7.13       72.85
+{txt}                       Alquilada {c |}{res}      5,717       18.53       91.38
+{txt}                     En precario {c |}{res}        432        1.40       92.78
+{txt}Otra tenencia (cedida, prestada) {c |}{res}      2,227        7.22      100.00
+{txt}{hline 33}{c +}{hline 35}
+                           Total {c |}{res}     30,846      100.00
+
+{com}. tab lugnac
+
+               {txt}Lugar de nacimiento {c |}      Freq.     Percent        Cum.
+{hline 35}{c +}{hline 35}
+     En mismo cantón de residencia {c |}{res}     20,384       66.08       66.08
+{txt}      En otro cantón de residencia {c |}{res}      7,720       25.03       91.11
+{txt}                      En Nicaragua {c |}{res}      2,167        7.03       98.14
+{txt}      En otro país centroamericano {c |}{res}        164        0.53       98.67
+{txt}            En otro país del mundo {c |}{res}        411        1.33      100.00
+{txt}{hline 35}{c +}{hline 35}
+                             Total {c |}{res}     30,846      100.00
+
+{com}. tab lugnac, nolab
+
+   {txt}Lugar de {c |}
+ nacimiento {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+          0 {c |}{res}     20,384       66.08       66.08
+{txt}          1 {c |}{res}      7,720       25.03       91.11
+{txt}          2 {c |}{res}      2,167        7.03       98.14
+{txt}          3 {c |}{res}        164        0.53       98.67
+{txt}          4 {c |}{res}        411        1.33      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}     30,846      100.00
+
+{com}. do "C:\Users\MACARE~1\AppData\Local\Temp\STD71ec_000000.tmp"
+{txt}
+{com}. * Ingreso del hogar
+. egen ingreso_total = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci), missing
+{txt}(10,856 missing values generated)
+
+{com}. bys idh_ch: egen yhog = sum(ingreso_total)
+{txt}
+{com}. drop ingreso_total
+{txt}
+{com}. 
+. * Monto de PTMC
+. gen tmc = a9b if (a9a==1 | a9a==5)
+{txt}(29,518 missing values generated)
+
+{com}. bys idh_ch: egen ing_ptmc = sum(tmc)
+{txt}
+{com}. 
+. * Beneficiarios PTMC
+. gen percibe_ptmc=(a9a==1 | a9a==5)
+{txt}
+{com}. bys idh_ch: egen ptmc_ch=max(percibe_ptmc)
+{txt}
+{com}. 
+. replace ing_ptmc=. if yhog==.
+{txt}(0 real changes made)
+
+{com}. replace ptmc_ch  = 1 if (ing_ptmc>0 & ing_ptmc!=.)
+{txt}(0 real changes made)
+
+{com}. 
+. * Beneficiarios PNC
+. gen pnc_ci=(a11==6)
+{txt}
+{com}. gen ing_pnc = 0
+{txt}
+{com}. replace ing_pnc=. if yhog==.
+{txt}(0 real changes made)
+
+{com}. 
+. * Adultos mayores
+. gen mayor64_ci=(edad_ci>64 & edad_ci!=.)
+{txt}
+{com}. 
+. * Ingreso neto del hogar
+. gen y_pc_net = (yhog - ing_ptmc -ing_pnc) / nmiembros_ch
+{txt}
+{com}. 
+. * Etiquetas
+. lab def ptmc_ch 1 "Beneficiario PTMC" 0 "No beneficiario PTMC"
+{txt}
+{com}. lab val ptmc_ch ptmc_ch
+{txt}
+{com}. 
+. lab def pnc_ci 1 "Beneficiario PNC" 0 "No beneficiario PNC"
+{txt}
+{com}. lab val pnc_ci pnc_ci
+{txt}
+{com}. 
+{txt}end of do-file
+
+{com}. 
