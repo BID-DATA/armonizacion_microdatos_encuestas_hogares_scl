@@ -9,7 +9,7 @@ global ruta = "${surveysFolder}"
 local PAIS PAN
 local ENCUESTA EML
 local ANO "2024"
-local ronda m8 
+local ronda m10 
 
 local log_file = "$ruta\harmonized\\`PAIS'\\`ENCUESTA'\log\\`PAIS'_`ANO'`ronda'_mergeBID.log"
 local base_in  = "$ruta\survey\\`PAIS'\\`ENCUESTA'\\`ANO'\\`ronda'\data_orig\"
