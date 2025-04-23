@@ -2216,7 +2216,7 @@ do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\Labels&Extern
 *  Pobres extremos, pobres moderados, vulnerables y no pobres 
 * con base en ingreso neto (Sin transferencias)
 * y líneas de pobreza internacionales
-
+/*
 gen     grupo_int = 1 if (y_pc_net<lp31_2011)
 replace grupo_int = 2 if (y_pc_net>=lp31_2011 & y_pc_net<(lp31_2011*1.6))
 replace grupo_int = 3 if (y_pc_net>=(lp31_2011*1.6) & y_pc_net<(lp31_2011*4))
@@ -2239,7 +2239,7 @@ replace ptmc_ingneto4 = 1 if ptmc_ch == 1 & gpo_ingneto4 == 1
 
 lab def grupo_int 1 "Pobre extremo" 2 "Pobre moderado" 3 "Vulnerable" 4 "No pobre"
 lab val grupo_int grupo_int
-
+*/
 
 /*_____________________________________________________________________________________________________*/
 * Verificación de que se encuentren todas las variables armonizadas 
