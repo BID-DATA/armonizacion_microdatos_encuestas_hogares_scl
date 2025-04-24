@@ -33,21 +33,11 @@ log using "`log_file'", replace
 País: Bolivia
 Encuesta: ECH
 Round: m11
-Autores: Mayra Sáenz
-	Stephanie González Rubio (Jul 18, 2019)
-	Cesar Lins (2021/03/09)
-	Carolina Rivas (June 2021)
-	Natália Tosi (Sept 2021)
-Última versión: Septiembre 2021
-
-							SCL/GDI - IADB
-							
-							
-****************************************************************************/
+*************************************************************************** */
 /***************************************************************************
 Detalle de procesamientos o modificaciones anteriores:
 
-****************************************************************************/
+*************************************************************************** */
 
 
 use "`base_in'", clear
@@ -302,78 +292,119 @@ gen miembros_ci=(relacion_ci>=1 & relacion_ci<=5)
 label variable miembros_ci "Miembro del hogar"
 
 
-
 *******************************************************
 ***           VARIABLES DE DIVERSIDAD               ***
-*******************************************************				
-* Maria Antonella Pereira & Nathalia Maya - Marzo 2021	
+*******************************************************			
 
-	***************
-	***afroind_ci***
-	***************
-**Pregunta: como boliviano o boliviana, pertenece a una nación o pueblo indígena? (s01a_09) (PERTENCE 1, NO PERTENECE 2, NO SOY BOLIVIANO/BOLIVIANA 3)
-**Pregunta: a qué nación o pueblo pertenece? (s01a_08)(ALL CATEGORIES ARE INDIGENOUS INCLUDING AFROBOLIVIANS)
-
-* Actualizado Sept 2022 - Natalia Tosi
-
-gen afroind_ci=. 
-replace afroind_ci=1 if s01a_09==1 
-replace afroind_ci=3 if s01a_09==2
-replace afroind_ci=9 if s01a_09==3
-
-
-	***************
-	***afroind_ch***
-	***************
-gen afroind_jefe=.
-replace afroind_jefe= afroind_ci if relacion_ci==1
-egen afroind_ch  = min(afroind_jefe), by(idh_ch) 
-
-drop afroind_jefe
-
-	*******************
-	***afroind_ano_c***
-	*******************
-gen afroind_ano_c=2012
-
-
-	*************
-	***dis_ci***
+	*********
+	*afro_ci*
+	*********
+	tab s01a_09, m
+	tab s01a_09npioc, m
+	
+	gen byte afro_ci = .
+	replace afro_ci= 1 if s01a_09npioc == 1  
+	replace afro_ci = 0 if s01a_09npioc != 1 & s01a_09 != .
+	tab afro_ci, m
+	
+	*********
+	*ind_ci*
+	*********
+	gen byte ind_ci = .
+	replace ind_ci = 1 if s01a_09npioc != 1 & s01a_09 == 1
+	replace ind_ci = 0 if s01a_09npioc == 1 | s01a_09 == 2  | s01a_09 == 3
+	tab ind_ci, m
+	
 	**************
+	*noafroind_ci*
+	**************
+	gen byte noafroind_ci =.   // se queda como missing (.) si no existe la pregunta
+	replace noafroind_ci =1 if (afro_ci==0 & ind_ci==0)
+	replace noafroind_ci =0 if (afro_ci==1 | ind_ci==1)
+	replace noafroind_ci =. if (afro_ci==. | ind_ci==.) //Esto solo en el caso que se tenga ambas opciones no disponibles. 
+	ta noafroind_ci,m
 
-/*
-
-Opciones pregunta s02a_11
-
-A. ver, aún con los anteojos o lentes puestos?
-B. oir, aún cuando utiliza algún dispositivo auditivo?
-C. caminar o subir gradas?
-D. a prender, recordar, concentrarse, razonar para desarrollar actividades de la vida d iaria?
-E. autocuidado personal como vestirse, bañarse o comer?
-F. hablar, comunicarse o conversar, aún cuando utilice lengua de señas u otro medio de comunicación?
-
-No entra como variable de discapacidad:
-G. a daptarse, comprender la realidad o tiene alteraciones o trastornos mentales o psíquicos?
-
-*/
+	************
+	*afroind_ci*
+	************
+	gen byte afroind_ci=. 
+	replace afroind_ci=1 if ind_ci==1 
+	replace afroind_ci=2 if afro_ci==1
+	replace afroind_ci=3 if noafroind_ci == 1
+	ta afroind_ci,m
 	
+	*********
+	*afro_ch*
+	*********
+	gen byte afro_jefe = afro_ci if relacion_ci==1
+	egen afro_ch  = max(afro_jefe), by(idh_ch) 
+	drop afro_jefe
 	
-gen dis_ci = 0
-foreach i in a b c d e f {
-forvalues j = 2/4 { 
-recode dis_ci 0=1 if s02a_11`i'==`j'
-}
-}
-recode dis_ci nonmiss=. if s02a_11a==9 & s02a_11b==9 & s02a_11c==9 & s02a_11d==9 & s02a_11e==9 & s02a_11f==9 
-recode dis_ci nonmiss=. if s02a_11a>=. & s02a_11b>=. & s02a_11c>=. & s02a_11d>=. & s02a_11e>=. & s02a_11f>=.
+	********
+	*ind_ch*
+	********	
+	gen byte ind_jefe = ind_ci if relacion_ci==1
+	egen ind_ch = max(ind_jefe), by(idh_ch) 
+	drop ind_jefe
 
+	**************
+	*noafroind_ch*
+	**************
+	gen byte noafroind_jefe = noafroind_ci if relacion_ci==1
+	egen noafroind_ch = max(noafroind_jefe), by(idh_ch) 
+	drop noafroind_jefe
 
-	*************
-	***dis_ch***
-	**************	
+	************
+	*afroind_ch*
+	************
+ 	gen byte afroind_jefe = afroind_ci if jefe_ci==1
+	egen afroind_ch = min(afroind_jefe), by(idh_ch) 
+	drop afroind_jefe 
+
+	********
+	*dis_ci*
+	********
+	foreach var in  s02a_11a s02a_11b s02a_11c s02a_11d s02a_11e s02a_11f {
+	tab `var', m nolab
+	}
+
+	gen byte dis_ci = 0
 	
-egen dis_ch = sum(dis_ci), by(idh_ch) 
+	foreach i in a b c d e f  {
+		forvalues j=2/4 {
+			recode dis_ci 0=1 if s02a_11`i'==`j'
+		}
+	}
 
+	recode dis_ci nonmiss=. if s02a_11a>=. & s02a_11b>=. & s02a_11c>=. & s02a_11d>=. & s02a_11e>=. & s02a_11f>=.
+	
+	tab dis_ci, m 
+	
+	**********
+	*disWG_ci*
+	**********
+	gen byte disWG_ci = 0
+	
+	foreach i in a b c d e f  {
+		forvalues j=3/4 {
+			recode disWG_ci 0=1 if s02a_11`i'==`j'
+		}
+	}
+
+	recode dis_ci nonmiss=. if s02a_11a>=. & s02a_11b>=. & s02a_11c>=. & s02a_11d>=. & s02a_11e>=. & s02a_11f>=.
+	
+	tab disWG_ci, m 
+	
+	********
+	*dis_ch*
+	********
+	egen byte dis_ch = max(dis_ci), by(idh_ch) 
+	
+	******************
+	*ISOalpha3_dis_ci*
+	******************
+	gen byte BOL_dis_ci = dis_ci
+	
 
 ************************************
 *** VARIABLES DEL MERCADO LABORAL***
@@ -2448,6 +2479,7 @@ lab val grupo_int grupo_int
     order region_BID_c region_c pais_c anio_c mes_c zona_c factor_ch idh_ch	idp_ci factor_ci factor_ch /// Identificación 
   sexo_ci edad_ci relacion_ci civil_ci jefe_ci nconyuges_ch nhijos_ch notropari_ch notronopari_ch nempdom_ch /// Demográficas 
   clasehog_ch nmiembros_ch miembros_ci nmayor21_ch nmenor21_ch nmayor65_ch nmenor6_ch nmenor1_ch /// Demográficas 
+  afro_ci ind_ci noafroind_ci afroind_ci afro_ch ind_ch noafroind_ch afroind_ch dis_ci disWG_ci dis_ch BOL_dis_ci /// Diversidad
   condocup_ci categoinac_ci emp_ci cesante_ci desemp_ci subemp_ci durades_ci pea_ci nempleos_ci antiguedad_ci desalent_ci  /// Empleo
   horaspri_ci horastot_ci tiempoparc_ci categopri_ci categosec_ci rama_ci spublico_ci tamemp_ci cotizando_ci instcot_ci	afiliado_ci /// Empleo 
   formal_ci tipocontrato_ci ocupa_ci pension_ci	pensionsub_ci tipopen_ci instpen_ci	ylmpri_ci /// Empleo 
