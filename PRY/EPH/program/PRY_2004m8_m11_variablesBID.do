@@ -1178,7 +1178,7 @@ label variable eduac_ci "Superior universitario vs superior no universitario"
 
 gen asiste_ci=.
 replace asiste_ci=1 if ed07==2
-label variable asispre_ci "Asistencia a Educacion preescolar" 
+label variable asiste_ci "Asiste actualmente a la escuela"
 
 *****************
 * Line of code with indicator pqnoasis_ci was deleted*****************
