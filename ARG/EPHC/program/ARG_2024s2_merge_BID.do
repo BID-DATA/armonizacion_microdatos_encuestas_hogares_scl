@@ -1,0 +1,93 @@
+* MERGE
+* ARGENTINA EPHC. 2o Sem. 2023
+
+clear
+set more off
+
+global ruta = "${surveysFolder}"
+local ano 24
+local trims t1 t2
+local modulos hogar individual
+
+* Abre base agregada de hogares 
+
+* Bases originales 
+
+
+
+*** se armoniza con t1 y t2 en el entre tiempo de que se publica t4
+foreach modulo of local modulos {
+
+		import delimited "$ruta\survey\ARG\EPHC\20`ano'\\t1\data_orig\usu_`modulo'_T1`ano'.txt", encoding(ISO-8859-2) clear 
+		save "$ruta\survey\ARG\EPHC\20`ano'\t1\data_orig\usu_`modulo'_t120`ano'.dta", replace
+		
+		import excel "$ruta\survey\ARG\EPHC\20`ano'\\t2\data_orig\usu_`modulo'_T2`ano'.xlsx", sheet("usu_`modulo'_T2`ano'") firstrow clear
+		rename *, lower
+		save "$ruta\survey\ARG\EPHC\20`ano'\t2\data_orig\usu_`modulo'_t220`ano'.dta", replace
+
+		*import delimited "$ruta\survey\ARG\EPHC\20`ano'\\t3\data_orig\usu_`modulo'_T3`ano'.txt", encoding(ISO-8859-2) clear 
+		*save "$ruta\survey\ARG\EPHC\20`ano'\t3\data_orig\usu_`modulo'_t320`ano'.dta", replace
+}
+
+
+* Modulos trimestres
+foreach trim of local trims {
+
+		local base_in  = "$ruta\survey\ARG\EPHC\20`ano'\\`trim'\data_orig"
+		local base_out = "$ruta\survey\ARG\EPHC\20`ano'\\`trim'\data_merge"
+	
+		use "`base_in'\usu_individual_`trim'20`ano'.dta", clear
+		sort codusu nro_hogar aglomerado
+		*save, replace
+
+		use "`base_in'\usu_individual_`trim'20`ano'.dta", clear
+		sort codusu nro_hogar aglomerado
+
+		merge m:1 codusu nro_hogar aglomerado using "`base_in'\usu_hogar_`trim'20`ano'.dta"
+
+		tab _merge
+
+		save "`base_out'\ARG_20`ano'`trim'.dta", replace
+		clear
+}
+
+use "$ruta\survey\ARG\EPHC\20`ano'\t1\data_merge\ARG_20`ano't1.dta"
+append using "$ruta\survey\ARG\EPHC\20`ano'\t2\data_merge\ARG_20`ano't2.dta", force
+*append using "$ruta\survey\ARG\EPHC\20`ano'\t3\data_merge\ARG_20`ano't3.dta", force
+
+
+* Arma ponderador semestral
+replace pondera=pondera/2
+replace pondera=round(pondera)
+
+rename codusu codusu
+
+* Elimina observaciones inconsistentes 
+drop if _merge==1
+
+more
+drop _merge
+
+* Importante, comparo que la cantidad de individuos creada por mi sea igual a la del INDEC
+sort codusu nro_hogar
+capture drop id
+egen id = group(codusu nro_hogar trimestre)  
+
+gen uno = 1
+egen miembros = sum(uno) if ch03 != ., by(id)
+replace miembros = 0 if miembros == .
+
+compare miembros ix_tot
+more
+
+drop id uno miembros
+
+* Comprime y guarda base
+compress
+local ano 24
+local trims t1 t2 
+local modulos hogar individual
+
+save "$ruta\survey\ARG\EPHC\20`ano'\s2\data_merge\ARG_20`ano's2.dta", replace
+
+
