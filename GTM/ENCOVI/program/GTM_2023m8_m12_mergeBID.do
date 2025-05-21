@@ -19,7 +19,7 @@ local ENCUESTA ENCOVI
 local ANO "2023"
 local ronda m8_m12
 
-global ruta =    "${surveysFolder}\survey\\`PAIS'\\`ENCUESTA'\\`ANO'\\`ronda'\\data_orig\"
+global ruta =    "${surveysFolder}\survey\\`PAIS'\\`ENCUESTA'\\`ANO'\\`ronda'\\data_orig\dta\"
 display "$ruta"
 
 
