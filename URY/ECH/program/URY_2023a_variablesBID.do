@@ -1211,7 +1211,22 @@ gen byte asiste_ci = (e49 == 3)
 *89. Razones para no asistir a la escuela
 * Se genera como mising porque no hay para todas las preguntas. 
 * Line of code with indicator pqnoasis_ci was deleted
+
+****************
+***pqnoasis1_ci***
+****************
+** Se agrega la armonización de la variable en mayo 2025**
+
 gen  pqnoasis1_ci=.
+replace pqnoasis1_ci = 1 if inlist (e202, 7, 9)
+replace pqnoasis1_ci = 2 if inlist (e202, 1, 2)
+replace pqnoasis1_ci = 3 if inlist (e202, 8, 10, 11)
+replace pqnoasis1_ci = 4 if inlist (e202, 3, 4)
+replace pqnoasis1_ci = 5 if inlist (e202, 5, 6)
+
+label define pqnoasis1_ci 1 "Problemas económicos/Por trabajo" 2 "Falta de interés/Problemas de rendimiento" 3 "Cuidados/ Problemas familiares o de salud" 4 "Problemas de acceso"  5 "Otros"
+label value  pqnoasis1_ci pqnoasis1_ci
+
 	
 *92. Personas que asisten a centros de ensenanza públicos
 gen edupub_ci = 1 if (e581 == 1 | e581a == 1) & (asiste_ci == 1)

@@ -948,17 +948,16 @@ label variable asiste_ci "Asiste actualmente a la escuela"
 ***pqnoasis1_ci***
 ******************
 *Daniela Zuluaga- Enero 2018: Se agrega la variable pqnoasis1_ci cuya sintaxis fue elaborada por Mayra Saenz**
-g       pqnoasis1_ci=1 if r219==3
-replace pqnoasis1_ci=2 if r219==1
-replace pqnoasis1_ci=3 if r219==4  | r219==5  | r219==6
-replace pqnoasis1_ci=4 if r219==10
-replace pqnoasis1_ci=5 if r219==2  | r219==12 | r219==15 | r219==16
-replace pqnoasis1_ci=6 if r219==8
-replace pqnoasis1_ci=7 if r219==7 
-replace pqnoasis1_ci=8 if r219==9  | r219==13 | r219==14 | r219==18
-replace pqnoasis1_ci=9 if r219==11 | r219==17 
+** Se actualiza la variable en mayo 2025**
 
-label define pqnoasis1_ci 1 "Problemas económicos" 2 "Por trabajo" 3 "Problemas familiares o de salud" 4 "Falta de interés" 5 "Quehaceres domésticos/embarazo/cuidado de niños/as" 6 "Terminó sus estudios" 7 "Edad" 8 "Problemas de acceso"  9 "Otros"
+g pqnoasis1_ci=.
+replace pqnoasis1_ci=1 if r219==1 | r219 == 3
+replace pqnoasis1_ci=2 if inlist(r219, 10, 11)
+replace pqnoasis1_ci=3 if inlist(r219, 2, 4, 12, 15, 16)
+replace pqnoasis1_ci=4 if inlist(r219, 9, 13, 14)
+replace pqnoasis1_ci=5 if inlist(r219, 5, 6, 7, 8, 17, 18)
+
+label define pqnoasis1_ci 1 "Problemas económicos/Por trabajo" 2 "Falta de interés/Problemas de rendimiento" 3 "Cuidados/ Problemas familiares o de salud" 4 "Problemas de acceso"  5 "Otros"
 label value  pqnoasis1_ci pqnoasis1_ci
 
 ***************

@@ -1121,16 +1121,14 @@ label variable asispre_ci "Asistencia a Educacion preescolar"
 *pqnoasis1_ci*
 **************
 g		pqnoasis1_ci = .						
-replace pqnoasis1_ci = 1 if porque_no_estudia==8
-replace pqnoasis1_ci = 2 if porque_no_estudia==7
-replace pqnoasis1_ci = 3 if porque_no_estudia==9  | porque_no_estudia==11
-replace pqnoasis1_ci = 4 if porque_no_estudia==12
-replace pqnoasis1_ci = 6 if porque_no_estudia==2
-replace pqnoasis1_ci = 7 if porque_no_estudia==10 
-replace pqnoasis1_ci = 8 if porque_no_estudia==3
-replace pqnoasis1_ci = 9 if porque_no_estudia==4  | porque_no_estudia==5 | porque_no_estudia==6
+replace pqnoasis1_ci = 1 if porque_no_estudia==8 | porque_no_estudia==7
+replace pqnoasis1_ci = 2 if porque_no_estudia==4 | porque_no_estudia==12
+replace pqnoasis1_ci = 3 if porque_no_estudia==11
+replace pqnoasis1_ci = 4 if porque_no_estudia==3
+replace pqnoasis1_ci = 6 if porque_no_estudia==2 | porque_no_estudia==5 | porque_no_estudia==6 | porque_no_estudia==9 | porque_no_estudia==10 porque_no_estudia==13
 
-label define pqnoasis1_ci 1 "Problemas económicos" 2 "Por trabajo" 3 "Problemas familiares o de salud" 4 "Falta de interés" 5	"Quehaceres domésticos/embarazo/cuidado de niños/as" 6 "Terminó sus estudios" 7	"Edad" 8 "Problemas de acceso"  9 "Otros"
+
+label define pqnoasis1_ci 1 "Problemas económicos/Por trabajo" 2 "Falta de interés/Problemas de rendimiento" 3 "Cuidados/ Problemas familiares o de salud" 4 "Problemas de acceso"  5 "Otros"
 label value  pqnoasis1_ci pqnoasis1_ci
 
 ***************

@@ -1307,18 +1307,17 @@ label var asiste "Personas que actualmente asisten a centros de enseñanza"
 **************
 *pqnoasis1_ci*
 **************
-g       pqnoasis1_ci = 1 if p5a==2
-replace pqnoasis1_ci = 2 if p5a==6
-replace pqnoasis1_ci = 3 if p5a==9
-replace pqnoasis1_ci = 4 if p5a==1
-replace pqnoasis1_ci = 5 if p5a==11 | p5a==10 | p5a==7
-replace pqnoasis1_ci = 6 if p5a==4
-replace pqnoasis1_ci = 7 if p5a==3
-replace pqnoasis1_ci = 8 if p5a==8 | p5a==5
-replace pqnoasis1_ci = 9 if p5a==12
 
-label define pqnoasis1 1 "Problemas económicos" 2 "Por trabajo" 3 "Problemas familiares o de salud" 4 "Falta de interés" 5	"Quehaceres domésticos/embarazo/cuidado de niños/as" 6 "Terminó sus estudios" 7	"Edad" 8 "Problemas de acceso"  9 "Otros"
-label value  pqnoasis1_ci pqnoasis1
+g pqnoasis1_ci = .
+replace pqnoasis1_ci = 1 if inlist(p5a, 2, 6)
+replace pqnoasis1_ci = 2 if p5a==1
+replace pqnoasis1_ci = 3 if inlist(p5a, 7, 9, 10, 11)
+replace pqnoasis1_ci = 4 if inlist(p5a, 5, 8)
+replace pqnoasis1_ci = 5 if inlist(p5a, 3, 4, 12)
+
+
+label define pqnoasis1_ci 1 "Problemas económicos/Por trabajo" 2 "Falta de interés/Problemas de rendimiento" 3 "Cuidados/ Problemas familiares o de salud" 4 "Problemas de acceso"  5 "Otros"
+label value  pqnoasis1_ci pqnoasis1_ci
 
 ******************************
 *	edupub_ci

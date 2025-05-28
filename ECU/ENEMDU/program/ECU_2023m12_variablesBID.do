@@ -1087,18 +1087,15 @@ egen ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci)
 	**************
     *pqnoasis1_ci*
     **************
-    g       pqnoasis1_ci = 1 if p09==3
-    replace pqnoasis1_ci = 2 if p09==5
-    replace pqnoasis1_ci = 3 if p09==7  | p09==9
-    replace pqnoasis1_ci = 4 if p09==11
-    replace pqnoasis1_ci = 5 if p09==8  | p09==12 | p09==15
-    replace pqnoasis1_ci = 6 if p09==2
-    replace pqnoasis1_ci = 7 if p09==1 
-    replace pqnoasis1_ci = 8 if p09==10 | p09==13
-    replace pqnoasis1_ci = 9 if p09==4 | p09==6 | p09==14 | p09==16 | p09==17
+    g       pqnoasis1_ci = .
+    replace pqnoasis1_ci = 1 if p09==3 | p09==5
+    replace pqnoasis1_ci = 2 if p09==11 | p09==4
+    replace pqnoasis1_ci = 3 if p09==7  | p09==8 | p09==9 | p09==12 | p09==15
+    replace pqnoasis1_ci = 4 if p09==13 | p09==10
+    replace pqnoasis1_ci = 5 if p09==1 | p09==2 | p09==14 | p09==16 | p09==17
 
-    label define pqnoasis1_ci 1 "Problemas económicos" 2 "Por trabajo" 3 "Problemas familiares o de salud" 4 "Falta de interés" 5	"Quehaceres domésticos/embarazo/cuidado de niños/as" 6 "Terminó sus estudios" 7	"Edad" 8 "Problemas de acceso"  9 "Otros"
-    label value  pqnoasis1_ci pqnoasis1_ci
+    label define pqnoasis1_ci 1 "Problemas económicos/Por trabajo" 2 "Falta de interés/Problemas de rendimiento" 3 "Cuidados/ Problemas familiares o de salud" 4 "Problemas de acceso"  5 "Otros"
+label value  pqnoasis1_ci pqnoasis1_ci
 	
 	***************
 * Line of code with indicator repite_ci was deleted	***************

@@ -945,27 +945,16 @@ gen pea_ci=(emp_ci==1 | desemp_ci==1)
 	******************
 	***pqnoasis1_ci***
 	******************
-	gen		pqnoasis1_ci = 1 if inlist(ed04,7)
-	replace pqnoasis1_ci = 2 if inlist(ed04,11)
-	replace pqnoasis1_ci = 3 if inlist(ed04,6)
-	replace pqnoasis1_ci = 4 if inlist(ed04,3)
-	replace pqnoasis1_ci = 5 if inlist(ed04,4,10)
-	replace pqnoasis1_ci = 6 if inlist(ed04,2)
-	replace pqnoasis1_ci = 7 if inlist(ed04,8,9)
-	replace pqnoasis1_ci = 8 if inlist(ed04,5)
-	replace pqnoasis1_ci = 9 if inlist(ed04,1,12,13)
+	gen pqnoasis1_ci = .
+	replace pqnoasis1_ci = 1 if inlist(ed04,7,11)
+	replace pqnoasis1_ci = 2 if inlist(ed04,3)
+	replace pqnoasis1_ci = 3 if inlist(ed04,4,6,10)
+	replace pqnoasis1_ci = 4 if inlist(ed04,5)
+	replace pqnoasis1_ci = 5 if inlist(ed04,2,8,9,12,13)
 
-	label define pqnoasis1_ci 	1 "Problemas económicos" ///
-								2 "Por trabajo" ///
-								3 "Problemas familiares o de salud" ///
-								4 "Falta de interés" ///
-								5 "Quehaceres domésticos/embarazo/cuidado de niños/as" ///
-								6 "Terminó sus estudios" ///
-								7 "Edad" ///
-								8 "Problemas de acceso" ///
-								9 "Otros"
-	
-	label value pqnoasis1_ci pqnoasis1_ci
+
+	label define pqnoasis1_ci 1 "Problemas económicos/Por trabajo" 2 "Falta de interés/Problemas de rendimiento" 3 "Cuidados/ Problemas familiares o de salud" 4 "Problemas de acceso"  5 "Otros"
+	label value  pqnoasis1_ci pqnoasis1_ci
 
 	***************
 	***repite_ci*** 

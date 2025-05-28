@@ -1048,18 +1048,16 @@ egen ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci)
 	
 	**desc q3_24 "What is the main reason why you did not continue studying?"
 	**Daniela Zuluaga- Enero 2018: Se agrega la variable pqnoasis1_ci cuya sintaxis fue elaborada por Mayra Saenz**
+
+	** Se actualiza la variable en mayo 2025 **
     
-    replace pqnoasis1_ci = 1 if q03_24==2
-    replace pqnoasis1_ci = 2 if q03_24==3
+    replace pqnoasis1_ci = 1 if q03_24==2 | q03_24==3
+    replace pqnoasis1_ci = 2 if q03_24==1
     replace pqnoasis1_ci = 3 if q03_24==4
-    replace pqnoasis1_ci = 4 if q03_24==1
-    *replace pqnoasis1_ci = 5 if q03_24==
-    *replace pqnoasis1_ci = 6 if q03_24==
-    *replace pqnoasis1_ci = 7 if q03_24== 
-    *replace pqnoasis1_ci = 8 if q03_24==
-    replace pqnoasis1_ci = 9 if q03_24==5 
-    label define pqnoasis1_ci 1 "Problemas económicos" 2 "Por trabajo" 3 "Problemas familiares o de salud" 4 "Falta de interés" 5	"Quehaceres domésticos/embarazo/cuidado de niños/as" 6 "Terminó sus estudios" 7	"Edad" 8 "Problemas de acceso"  9 "Otros"
-    label value  pqnoasis1_ci pqnoasis1_ci
+    replace pqnoasis1_ci = 5 if q03_24==5
+
+    label define pqnoasis1_ci 1 "Problemas económicos/Por trabajo" 2 "Falta de interés/Problemas de rendimiento" 3 "Cuidados/ Problemas familiares o de salud" 4 "Problemas de acceso"  5 "Otros"
+label value  pqnoasis1_ci pqnoasis1_ci
 	
 	***************
 * Line of code with indicator repite_ci was deleted	***************

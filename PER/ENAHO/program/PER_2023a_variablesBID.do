@@ -1007,27 +1007,18 @@ egen ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci)
 	**************
 	*pqnoasis1_ci*
 	**************
-		g       pqnoasis1_ci = 1 if p313==1
-		replace pqnoasis1_ci = 2 if p313==2
-		replace pqnoasis1_ci = 3 if p313==5
-		replace pqnoasis1_ci = 4 if p313==9
-		replace pqnoasis1_ci = 5 if p313==10
-		replace pqnoasis1_ci = 6 if p313==3
-		replace pqnoasis1_ci = 7 if p313==4
-		replace pqnoasis1_ci = 8 if p313==7
-		replace pqnoasis1_ci = 9 if p313==11
-		replace pqnoasis1_ci = . if asiste_ci==1
+	** Se actualiza la variable en mayo 2025 **
 
-		label define pqnoasis1_ci 	1 "Problemas económicos" ///
-									2 "Por trabajo" ///
-									3 "Problemas familiares o de salud" ///
-									4 "Falta de interés" ///
-									5 "Quehaceres domésticos/embarazo/cuidado de niños/as" ///
-									6 "Terminó sus estudios" ///
-									7	"Edad" ///
-									8 "Problemas de acceso" ///
-									9 "Otros"
-		label value  pqnoasis1_ci pqnoasis1_ci
+	g pqnoasis1_ci = .
+	replace pqnoasis1_ci = 1 if inlist(p313, 1, 2)
+	replace pqnoasis1_ci = 2 if p313 == 9
+	replace pqnoasis1_ci = 3 if inlist(p313, 5, 10)
+	replace pqnoasis1_ci = 4 if p313 == 7 
+	replace pqnoasis1_ci = 5 if inlist(p313, 3, 4, 11)
+
+
+label define pqnoasis1_ci 1 "Problemas económicos/Por trabajo" 2 "Falta de interés/Problemas de rendimiento" 3 "Cuidados/ Problemas familiares o de salud" 4 "Problemas de acceso"  5 "Otros"
+label value  pqnoasis1_ci pqnoasis1_ci
 
 
 	***************
