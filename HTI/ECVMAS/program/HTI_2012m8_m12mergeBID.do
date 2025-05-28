@@ -49,9 +49,10 @@ replace _I_J24G = 749.5 if I_J24G==-8 & I_J24H ==2   //rango de ingreso: De 500 
 replace _I_J24G = 2499.5 if I_J24G==-8 & I_J24H ==4   //rango de ingreso: De 2,000 à 2,999 gourdes
 replace _I_J24G = 500 if I_J24G==-9 & I_J24H ==1   // Moins de 500 gourdes Menos de 500
 
-collapse(sum) ylnm_gourdres =_I_J24G, by(i_id1new  I_ID3)
+collapse(sum) ylnm_gourdres_70 =_I_J24G, by(i_id2new  I_ID3)
 rename I_ID3 i_id3
-save _ylnm_gourdres_individuo.dta, replace
+rename i_id2new hh_id2new
+save _ylnm_gourdres_individuo_70.dta, replace
 
 *** módulo 69_mod_j2_ok Remuneracion efectivo
 *********************************************
@@ -65,6 +66,8 @@ replace _I_J24D  = I_J24D*52/12 if I_J24D>0 &  I_J24B == 3  //semana
 replace _I_J24D  = I_J24D*2 if I_J24D>0 &  I_J24B == 4  //cada quincena
 replace _I_J24D  = I_J24D/12 if I_J24D>0 &  I_J24B == 6  //año
 
+replace _I_J24D = 500 if I_J24D<0 &  I_J24E  == 1 //moins de 500 gourdes
+replace _I_J24D   = 749.5 if I_J24D<0 &  I_J24E == 2 // de 500 � 999 gourdes
 replace _I_J24D  = 1499.5 if I_J24D<0 &  I_J24E == 3  //De 1,000 à 1,999 gourdes
 replace _I_J24D  = 2499.5 if I_J24D<0 &  I_J24E == 4  //De 2,000 à 2,999 gourdes
 replace _I_J24D  = 3999.5 if I_J24D<0 &  I_J24E == 5  //De 3,000 à 4,999 gourdes
@@ -72,13 +75,15 @@ replace _I_J24D  = 6249.5 if I_J24D<0 &  I_J24E == 6  //De 5,000 à 7,499 gourde
 replace _I_J24D  = 8749.5 if I_J24D<0 &  I_J24E == 7  //De 7,500 à 9,999 gourdes
 replace _I_J24D  = 12499.5 if I_J24D<0 &  I_J24E == 8  //De 10,000 à 14,999 gourdes
 replace _I_J24D  = 17499.5 if I_J24D<0 &  I_J24E == 9  //De 15,000 à 19,999 gourdes
+replace _I_J24D = 24999.5 if I_J24D<0 &  I_J24E == 10  //de 20,000 � 29,999 gourdes
 replace _I_J24D  = 39999.5 if I_J24D<0 &  I_J24E == 11 //De 30,000 à 49,999 gourdes
 replace _I_J24D  = 50000*1.2 if I_J24D<0 &  I_J24E == 12  //50,000 gourdes ou plus
 sort I_J24D
 
-collapse(sum) ylnm_gourdres =_I_J24D, by(i_id1new  I_ID3)
+collapse(sum) ylm_gourdres_69 =_I_J24D, by(i_id2new  I_ID3)
 rename I_ID3 i_id3
-save _ylm_gourdres_individuo.dta, replace
+rename i_id2new hh_id2new
+save _ylm_gourdres_individuo_69.dta, replace
 
 ******módulo 24_mod_r2_ok 
 *************************
@@ -116,68 +121,50 @@ collapse(sum) ynlnm_ch_1_gourdres, by(hh_id2new)
 save _ynlnm_ch_1_gourdres.dta, replace
 
 
-* 75_mod_O1_ok.sav
+* 75_mod_O1_ok.sav INDIVIDUO
 ***************************************************************
 import spss using "Z:\survey\HTI\ECVMAS\2012\m8_m12\data_orig\ECVMAS 2012\2_ECVMAS_BASE DE DONNEES\75_mod_O1_ok.sav", clear
 
-gen ynlnm_ch_2=.
-replace ynlnm_ch_2 = I_O01C*365/12 if I_O01C>0 & I_O01B == 1
-replace ynlnm_ch_2 = I_O01C*52/12 if I_O01C>0 & I_O01B == 2
-replace ynlnm_ch_2 = I_O01C*2 if I_O01C>0 & I_O01B == 3
-replace ynlnm_ch_2 = I_O01C*1 if I_O01C>0 & I_O01B == 4
-replace ynlnm_ch_2 = I_O01C/3 if I_O01C>0 & I_O01B == 5
-replace ynlnm_ch_2 = I_O01C/12 if I_O01C>0 & I_O01B == 6
+gen ynlnm_ci_2=.
+replace ynlnm_ci_2 = I_O01C*365/12 if I_O01C>0 & I_O01B == 1
+replace ynlnm_ci_2 = I_O01C*52/12 if I_O01C>0 & I_O01B == 2
+replace ynlnm_ci_2 = I_O01C*2 if I_O01C>0 & I_O01B == 3
+replace ynlnm_ci_2 = I_O01C*1 if I_O01C>0 & I_O01B == 4
+replace ynlnm_ci_2 = I_O01C/3 if I_O01C>0 & I_O01B == 5
+replace ynlnm_ci_2 = I_O01C/12 if I_O01C>0 & I_O01B == 6
 
-gen ynlnm_ch_2_gourdres = ynlnm_ch_2
-gen hh_id2new = i_id2new  //id_hogar?
-collapse(sum) ynlnm_ch_2_gourdres, by(hh_id2new)
+gen ynlnm_gourdres_75= ynlnm_ci_2
+collapse(sum) ynlnm_gourdres_75, by(i_id2new I_ID3)
+rename I_ID3 i_id3
+rename i_id2new hh_id2new
+save _ynlnm_gourdres_individuo_75.dta, replace
 
-save _ynlnm_ch_2_gourdres.dta, replace
 
 ***********************
 ******III. merge ******
 ***********************
 
+*hogar   
 use "`base_in'\ECVMAS 2012\2_ECVMAS_BASE DE DONNEES\Hogares2012.dta", clear
 sort hh_id2new
 merge 1:1 hh_id2new using _ynlnm_ch_0_gourdres.dta
 drop _merge
-merge 1:1 hh_id2new using _ynlnm_ch_2_gourdres.dta
-drop _merge
 merge 1:1 hh_id2new using _ynlnm_ch_1_gourdres.dta
 drop _merge
 
+*individuo
 merge 1:m hh_id2new using "${surveysFolder}\survey\HTI\ECVMAS\2012\m8_m12\data_orig\ECVMAS 2012\2_ECVMAS_BASE DE DONNEES\Individuos2012.dta"
 drop _merge
 merge m:1 hh_id2new using "${surveysFolder}\survey\HTI\ECVMAS\2012\m8_m12\data_orig\ECVMAS 2012\2_ECVMAS_BASE DE DONNEES\pesos2012.dta", gen(mergepesos)
-merge m:1 i_id1new  i_id3 using _ylm_gourdres_individuo.dta
-/*
-tab _merge
-    Result                      Number of obs
-    -----------------------------------------
-    Not matched                        13,603
-        from master                    13,602  (_merge==1)
-        from using                          1  (_merge==2)
 
-    Matched                            10,173  (_merge==3)
-    -----------------------------------------
-*/
-drop if _merge ==2   //1 obs se borra
+merge m:1 hh_id2new i_id3 using _ylm_gourdres_individuo_69.dta
+drop if _merge ==2   //2 obs se borran de using
 drop _merge
-
-merge m:1 i_id1new i_id3 using _ylnm_gourdres_individuo.dta
-/*
-
-    Result                      Number of obs
-    -----------------------------------------
-    Not matched                        13,645
-        from master                    13,644  (_merge==1)
-        from using                          1  (_merge==2)
-
-    Matched                            10,131  (_merge==3)
-    ----------------------------------------- */
-
-drop if _merge ==2   //1 obs se borra
+merge m:1 hh_id2new i_id3 using _ylnm_gourdres_individuo_70.dta
+drop if _merge ==2   //2 obs se borran de using
+drop _merge
+merge m:1  hh_id2new i_id3 using _ynlnm_gourdres_individuo_75.dta
+drop if _merge ==2   //16 obs se borran de using
 drop _merge
 
 compress
