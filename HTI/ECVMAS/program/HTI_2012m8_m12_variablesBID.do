@@ -785,8 +785,29 @@ label var ylnm_ci "Ingreso laboral NO monetario total"
 ***ynlm_ci***
 *************
 
-gen ynlm_ci=.
+**********************************
+*** remesas_ci & remesas_ch ***
+**********************************
+merge m:m idh_ch using "$ruta\survey\HTI\ECVMAS\2012\m8_m12\data_orig\ECVMAS 2012\2_ECVMAS_BASE DE DONNEES\Modulo Remesas.dta", gen(mergeremesas)
+*Tipo de cambio en 2012: 0.02378, dollars x gourdes. Para explicación del dollar hatiano, ver: https://www.vagabondjourney.com/what-is-a-haitian-dollar/
+recode hh_r09b (-9 -8 =.)
+gen remesas_ci=.
+replace remesas_ci=hh_r09b 
+replace remesas_ci=hh_r09b*5 if hh_r09c==2
+replace remesas_ci=hh_r09b*41.63 if hh_r09c==3
+replace remesas_ci=hh_r09b*41.63*1.29 if hh_r09c==4
+replace remesas_ci=remesas_ci/12
+label var remesas_ci "Remesas mensuales reportadas por el individuo" 
+
+gen ynlm_ci=remesas_ci
 label var ynlm_ci "Ingreso no laboral monetario"  
+
+***************
+*** ynlm_ch ***
+***************
+
+by idh_ch, sort: egen ynlm=sum(ynlm_ci) if miembros_ci==1
+
 
 **************
 ***ynlnm_ci***
@@ -846,31 +867,10 @@ gen tcylmpri_ch=.
 egen ynlnm_ch= rowtotal( ynlnm_ch_1_gourdres  ynlnm_ch_0_gourdres), mi
 label var ynlnm_ch "Ingreso no laboral no monetario del hogar"
 
-**********************************
-*** remesas_ci & remesas_ch ***
-**********************************
-merge m:m idh_ch using "$ruta\survey\HTI\ECVMAS\2012\m8_m12\data_orig\ECVMAS 2012\2_ECVMAS_BASE DE DONNEES\Modulo Remesas.dta", gen(mergeremesas)
-*Tipo de cambio en 2012: 0.02378, dollars x gourdes. Para explicación del dollar hatiano, ver: https://www.vagabondjourney.com/what-is-a-haitian-dollar/
-recode hh_r09b (-9 -8 =.)
-gen remesas_ci=.
-replace remesas_ci=hh_r09b if hh_r09c==1
-replace remesas_ci=hh_r09b/5 if hh_r09c==2
-replace remesas_ci=hh_r09b*0.02378 if hh_r09c==3
-replace remesas_ci=remesas_ci/12
-label var remesas_ci "Remesas mensuales reportadas por el individuo" 
-
-bys idh_ch: egen remesas_ch=sum(remesas_ci)
-label var remesas_ch "Remesas mensuales del hogar"
-
 ***************
 *** ynlm_ch ***
 ***************
-
-by idh_ch, sort: egen ynlm=sum(ynlm_ci) if miembros_ci==1
-egen ynlm_ch=rsum(ynlm remesas_ch)
-replace ynlm_ch=. if ynlm==. 
-drop ynlm
-
+bys idh_ch: egen ynlm_ch=sum(ynlm_ci)
 
 *******************
 *** autocons_ci ***
