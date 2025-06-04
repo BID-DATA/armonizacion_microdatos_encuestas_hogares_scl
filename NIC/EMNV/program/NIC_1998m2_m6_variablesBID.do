@@ -1,5 +1,5 @@
 
-* (Versión Stata 12)
+* (VersiÃ³n Stata 12)
 clear
 set more off
 *________________________________________________________________________________________________________________*
@@ -7,7 +7,7 @@ set more off
  * Activar si es necesario (dejar desactivado para evitar sobreescribir la base y dejar la posibilidad de 
  * utilizar un loop)
  * Los datos se obtienen de las carpetas que se encuentran en el servidor: \\Sdssrv03\surveys
- * Se tiene acceso al servidor únicamente al interior del BID.
+ * Se tiene acceso al servidor Ãºnicamente al interior del BID.
  * El servidor contiene las bases de datos MECOVI.
  *________________________________________________________________________________________________________________*
  
@@ -31,13 +31,13 @@ log using "`log_file'", replace
 
 /***************************************************************************
                  BASES DE DATOS DE ENCUESTA DE HOGARES - SOCIOMETRO 
-País: Nicaragua
+PaÃ­s: Nicaragua
 Encuesta: EMNV
 Round: Febrero-Junio
 Autores: Yessenia Loayza
-Versión 2013: Mayra Sáenz
-Última versión: Mayra Sáenz - Email: mayras@iadb.org, saenzmayra.a@gmail.com
-Fecha última modificación: 10 de Septiembre de 2013
+VersiÃ³n 2013: Mayra SÃ¡enz
+Ãšltima versiÃ³n: Mayra SÃ¡enz - Email: mayras@iadb.org, saenzmayra.a@gmail.com
+Fecha Ãºltima modificaciÃ³n: 10 de Septiembre de 2013
 
 							SCL/LMK - IADB
 ****************************************************************************/
@@ -73,7 +73,7 @@ Old code can be seen in education section below.
 * Region_c *
 ************
 gen region_c=  .
-label var region_c "División política"
+label var region_c "DivisiÃ³n polÃ­tica"
 
 
 /*****************
@@ -93,7 +93,7 @@ replace region_BID_c=3 if pais=="ECU" | pais=="COL" | pais=="PER" | pais=="VEN" 
 replace region_BID_c=4 if pais=="ARG" | pais=="BRA" | pais=="CHL" | pais=="PRY" | pais=="URU" 
 replace region_BID_c=5 if pais=="HAI"
 label var region_BID_c "Regiones BID"
-label define region_BID_c 1 "Centroamérica_(CID)" 2 "Caribe_(CCB)" 3 "Andinos_(CAN)" 4 "Cono_Sur_(CSC)"
+label define region_BID_c 1 "CentroamÃ©rica_(CID)" 2 "Caribe_(CCB)" 3 "Andinos_(CAN)" 4 "Cono_Sur_(CSC)"
 label value region_BID_c region_BID_c
 gen mes_c=etapa+3
 gen relacion_ci=p202
@@ -224,8 +224,8 @@ by idh_ch:egen byte nmenor21_ch=sum(((relacion_ci>0 & relacion_ci<5)|p202==9) & 
 by idh_ch:egen byte nmayor65_ch=sum(((relacion_ci>0 & relacion_ci<5)|p202==9) & (edad_ci>=65))
 by idh_ch:egen byte nmenor6_ch=sum(((relacion_ci>0 & relacion_ci<5)|p202==9) & (edad_ci<6))
 by idh_ch:egen byte nmenor1_ch=sum(((relacion_ci>0 & relacion_ci<5)|p202==9) & (edad_ci<1)) /*Hay que tener en cuenta que en 
-este año, se pregunto si existen pensionistas en la casa, que tecnicamente son "otros no parientes", pero que en la practica
-no deben ser incluídos en las variables de hogar (eg: _ch)*/
+este aÃ±o, se pregunto si existen pensionistas en la casa, que tecnicamente son "otros no parientes", pero que en la practica
+no deben ser incluÃ­dos en las variables de hogar (eg: _ch)*/
 
 ****************
 ***miembros_ci***
@@ -285,7 +285,7 @@ replace pea_ci=1 if emp_ci==1 |desemp_ci==1
 
 gen afiliado_ci=.
 /*
-Se genera como missing porque la pregunta hace referencia sólo al seguro de salud y no es comparable con el resto de años.
+Se genera como missing porque la pregunta hace referencia sÃ³lo al seguro de salud y no es comparable con el resto de aÃ±os.
 gen afiliado_ci=(p3c43==1 | p3c43==4)
 replace afiliado_ci=. if p3c43==.
 */
@@ -320,7 +320,7 @@ label var tipopen_ci "Tipo de pension - variable original de cada pais"
 *** instcot_ci *****
 ********************
 gen instcot_ci=.
-label var instcot_ci "institución a la cual cotiza"
+label var instcot_ci "instituciÃ³n a la cual cotiza"
 
 *************
 **pension_ci*
@@ -374,7 +374,7 @@ label var lpe_ci "Linea de indigencia oficial del pais"
 
 
 /************************************************************************************************************
-* 3. Creación de nuevas variables de SS and LMK a incorporar en Armonizadas
+* 3. CreaciÃ³n de nuevas variables de SS and LMK a incorporar en Armonizadas
 ************************************************************************************************************/
 
 gen rama_ci=.
@@ -433,13 +433,13 @@ replace salario=p5b19a/6 if p5b19b==7
 replace salario=p5b19a/12 if p5b19b==8
 replace salario=. if p5b19b==9 | emp_ci==0 /*Hay algunos tipos que cobran con una frecuencia incierta(17), por lo que, ante
 la duda los ponemos como missing.*/
-gen agui=p5b22b/12 /*El aguinaldo esta preguntado para todo el año*/
+gen agui=p5b22b/12 /*El aguinaldo esta preguntado para todo el aÃ±o*/
 egen ylmpri_ci=rsum(salario p5b21b agui)
 replace ylmpri_ci=. if (salario==. & p5b21b==. & p5b22b==.) |emp_ci==0 /*INCLUYE LO MISMO QUE INCLUYE EL YLMPRI_CI DEL '93*/
 drop salario agui
 
 /*Para los ingresos laborales no monetarios de la actividad principal, el rubro mensual de uniformes
-* debe ser calculado en base a la p5b25b, que hace referencia a cuántas veces al año recibe los uniformes.
+* debe ser calculado en base a la p5b25b, que hace referencia a cuÃ¡ntas veces al aÃ±o recibe los uniformes.
 */
 gen unif=p5b25b if p5b25c==12
 replace unif=p5b25b/2 if p5b25c==6 
@@ -463,7 +463,7 @@ replace salariosec=p5c38a/6 if p5c38b==7
 replace salariosec=p5c38a/12 if p5c38b==8
 replace salariosec=. if p5c38b==9 | emp_ci==0 /*Hay algunos tipos que cobran con una frecuencia incierta(17), por lo que, ante
 la duda los ponemos como missing.*/
-gen aguis=p5c41b/12 /*Esta definido por año*/
+gen aguis=p5c41b/12 /*Esta definido por aÃ±o*/
 egen ylmsec_ci=rsum(salariosec p5c40b aguis)
 replace ylmsec_ci=. if (salariosec==. & p5c40b==. & p5c41b==.) |emp_ci==0 
 drop salariosec aguis
@@ -487,7 +487,7 @@ replace ylnm_ci=. if ylnmpri_ci==. & ylnmsec_ci==.
 
 forvalues i=1(1)10{
 gen gd22mo`i'=gd22`i'/12
-} /*Existen categorías que estan anuales*/
+} /*Existen categorÃ­as que estan anuales*/
 egen ynlm_ch=rsum(gd12* gd22mo*)
 replace ynlm_ch=. if  (gd1201==. & gd1202==. & gd1203==. & gd1204==. & gd1205==. & gd1206==. & gd1207==. & gd221==. & gd222==. & gd223==. & gd224==. & gd225==. & gd226==. & gd227==. & gd228==. & gd229==. & gd2210==.) 
 drop gd22mo*
@@ -585,11 +585,11 @@ gen spublico_ci=.
 *************
 *tamemp_ci
 *************
-*Nicaragua Pequeña 1 a 5, Mediana 6 a 50, Grande Más de 50
+*Nicaragua PequeÃ±a 1 a 5, Mediana 6 a 50, Grande MÃ¡s de 50
 /*
 gen tamemp_ci=p5b18
 label define tamemp_ci 1 "1 persona" 2 "2-5 personas" 3 "6-10 personas" ///
-4 "11-30 personas" 5 "31-50 personas" 6 "51-100 personas" 7"101 y más personas" 
+4 "11-30 personas" 5 "31-50 personas" 6 "51-100 personas" 7"101 y mÃ¡s personas" 
 label var tamemp_ci "# empleados en la empresa de la actividad principal"
 
 */
@@ -597,9 +597,9 @@ gen tamemp_ci = 1 if p5b18>=1 & p5b18<=2
 replace tamemp_ci = 2 if (p5b18>=3 & p5b18<=5)
 replace tamemp_ci = 3 if (p5b18>=6 & p5b18<=7)
 
-label define tamemp_ci 1 "Pequeña" 2 "Mediana" 3 "Grande"
+label define tamemp_ci 1 "PequeÃ±a" 2 "Mediana" 3 "Grande"
 label value tamemp_ci tamemp_ci
-label var tamemp_ci "Tamaño de empresa"
+label var tamemp_ci "TamaÃ±o de empresa"
 
 *******************
 ***categoinac_ci*** 
@@ -608,8 +608,8 @@ gen categoinac_ci =1 if ((p5a05==7) & condocup_ci==3)
 replace categoinac_ci = 2 if  (p5a05==6 & condocup_ci==3)
 replace categoinac_ci = 3 if  (p5a05==9 & condocup_ci==3)
 replace categoinac_ci = 4 if  ((categoinac_ci ~=1 & categoinac_ci ~=2 & categoinac_ci ~=3) & condocup_ci==3)
-label var categoinac_ci "Categoría de inactividad"
-label define categoinac_ci 1 "jubilados o pensionados" 2 "Estudiantes" 3 "Quehaceres domésticos" 4 "Otros" 
+label var categoinac_ci "CategorÃ­a de inactividad"
+label define categoinac_ci 1 "jubilados o pensionados" 2 "Estudiantes" 3 "Quehaceres domÃ©sticos" 4 "Otros" 
 
 *******************
 ***formal***
@@ -712,7 +712,7 @@ replace pqnoasis1_ci = 7 if p4b11==1
 replace pqnoasis1_ci = 7 if p4b11==7
 replace pqnoasis1_ci = 9 if p4b11==9
 
-label define pqnoasis1_ci 1 "Problemas económicos" 2 "Por trabajo" 3 "Problemas familiares o de salud" 4 "Falta de interés" 5	"Quehaceres domésticos/embarazo/cuidado de niños/as" 6 "Terminó sus estudios" 7	"Edad" 8 "Problemas de acceso"  9 "Otros"
+label define pqnoasis1_ci 1 "Problemas econÃ³micos" 2 "Por trabajo" 3 "Problemas familiares o de salud" 4 "Falta de interÃ©s" 5	"Quehaceres domÃ©sticos/embarazo/cuidado de niÃ±os/as" 6 "TerminÃ³ sus estudios" 7	"Edad" 8 "Problemas de acceso"  9 "Otros"
 label value  pqnoasis1_ci pqnoasis1_ci
 
 ***************
@@ -737,55 +737,6 @@ gen tecnica_ci=(p4b08a==7)
 label var tecnica_ci "=1 formacion terciaria tecnica"
 
 
-*********
-*raza_ci*
-*********
-/*
-p212:
-           1 Espa¤ol 
-           2 Miskito 
-           3 Sumo/Sum
-           4 Ingl‚s  
-           5 Otro    
-           9 NR 
-*/
-/*gen raza_ci=.
-replace raza_ci= 1 if p212 ==2 | p212 ==3
-replace raza_ci= 3 if p212 ==1 | p212 ==4 | p212 ==5 |raza_ci==.
-
-label define raza_ci 1 "Indígena" 2 "Afro-descendiente" 3 "Otros" 
-label value raza_ci raza_ci 
-label value raza_ci raza_ci
-label var raza_ci "Raza o etnia del individuo"
-*/
-
-*Modificación Mayra Sáenz 10/20/2015: modificaciones realizadas en base a metodología enviada por SCL/GDI Maria Olga Peña
-
-gen raza_idioma_ci=.
-replace raza_idioma_ci= 1 if p212 ==2 | p212 ==3
-replace raza_idioma_ci= 3 if p212 ==1 | p212 ==4 | p212 ==5 |raza_idioma_ci==.
-
-label define raza_idioma_ci 1 "Indígena" 2 "Afro-descendiente" 3 "Otros"  
-label value raza_idioma_ci raza_idioma_ci 
-label value raza_idioma_ci raza_idioma_ci
-label var raza_idioma_ci "Raza o etnia del individuo"
-
-gen raza_ci=.
-
-gen id_ind_ci = 0
-replace id_ind_ci=1 if raza_idioma_ci==1 
-label define id_ind_ci 1 "Indígena" 0 "Otros" 
-label value id_ind_ci id_ind_ci 
-label var id_ind_ci  "Indigena" 
-
-gen id_afro_ci = 0
-replace id_afro_ci=1 if raza_idioma_ci==2 
-label define id_afro_ci 1 "Afro-descendiente" 0 "Otros" 
-label value id_afro_ci id_afro_ci 
-label var id_afro_ci "Afro-descendiente" 
-
-
-
 
 /*
 **********************
@@ -796,12 +747,12 @@ label var id_afro_ci "Afro-descendiente"
 /*
 Parentco
 1. Jefe(a) 
-2. Esposa(o)/Compañera(o)  
+2. Esposa(o)/CompaÃ±era(o)  
 3. Hija(o)/hijastro(a)  
 4. Padres/suegros  
 5. Yerno/nuera 
 6. Nieto(a)/bisnieto(a) 
-7. Hermano(a)/Cuñado(a) 
+7. Hermano(a)/CuÃ±ado(a) 
 8. Otros parientes del jefe(a)
 9. Sin parentesco 
 10. Empleado domestico(a)
@@ -884,25 +835,25 @@ Parentco
 
 /*
 
-SECCION 4. EDUCACION PARTE B: ESCOLARIDAD - PARA PERSONAS DE 6 AÑOS Y MAS -
+SECCION 4. EDUCACION PARTE B: ESCOLARIDAD - PARA PERSONAS DE 6 AÃ‘OS Y MAS -
 
-6.¿..... Sabe:
+6.Â¿..... Sabe:
  1. Leer y escribir
- 2. Sólo sabe leer
+ 2. SÃ³lo sabe leer
  3. No sabe leer ni escribir
 
-7. ¿Dónde aprendió..... a leer?
+7. Â¿DÃ³nde aprendiÃ³..... a leer?
 
-8. ¿Cuál es el nivel de estudio y el último grado o año que .... aprobó?
+8. Â¿CuÃ¡l es el nivel de estudio y el Ãºltimo grado o aÃ±o que .... aprobÃ³?
 
 0. Ninguno 			=> PREG.10
 1. Preescolar 
-2. Educación de Adultos 
+2. EducaciÃ³n de Adultos 
 3. Primaria 
 4. Secundaria 
-5. Técnico Básico 
-6. Técnico Medio 
-7. Técnico Superior 
+5. TÃ©cnico BÃ¡sico 
+6. TÃ©cnico Medio 
+7. TÃ©cnico Superior 
 8. Universitario 
 */
 
@@ -946,27 +897,27 @@ SECCION 4. EDUCACION PARTE B: ESCOLARIDAD - PARA PERSONAS DE 6 AÑOS Y MAS -
 ** For further information on this do file contact Pavel Luengas (pavell@iadb.org)
 
 /*
-MATRÍCULA ACTUAL
+MATRÃCULA ACTUAL
 
 p4b10
-10. ¿Se matriculó ..... en el presente año escolar en: Preescolar, Educación de
+10. Â¿Se matriculÃ³ ..... en el presente aÃ±o escolar en: Preescolar, EducaciÃ³n de
 Adultos, Primaria, Secundaria, Universidad, PostGrado?
  1.Si => 12
- 2.No => Mayores de 40 años pasar a 47
+ 2.No => Mayores de 40 aÃ±os pasar a 47
 	 Menores de 40 pasar a 11
 	 
-11. ¿Por qué razón no asiste ..... en el presente año escolar?
+11. Â¿Por quÃ© razÃ³n no asiste ..... en el presente aÃ±o escolar?
 
 
 matniv		matgrado
-12. ¿En qué nivel educativo y grado o año se matriculó ...... en el presente año escolar?
+12. Â¿En quÃ© nivel educativo y grado o aÃ±o se matriculÃ³ ...... en el presente aÃ±o escolar?
  1. Preescolar  
- 2. Educación de Adultos 
+ 2. EducaciÃ³n de Adultos 
  3. Primaria  
  4. Secundaria  
- 5. Técnico Básico  
- 6. Técnico Medio  
- 7. Técnico Superior
+ 5. TÃ©cnico BÃ¡sico  
+ 6. TÃ©cnico Medio  
+ 7. TÃ©cnico Superior
  8. Universitario
 */
 
@@ -986,7 +937,7 @@ matniv		matgrado
  replace NERS=1 if (edad>=13 & edad<=17) & matniv==4 
 
 ** Upper secondary
-* Educación Secundaria: Ciclo diversificado (4o Magisterio - 5o Bachillerato)
+* EducaciÃ³n Secundaria: Ciclo diversificado (4o Magisterio - 5o Bachillerato)
 
  gen     NERS2=0 if (edad>=16 & edad<=17) & (p4b10==1 | p4b10==2)
  replace NERS2=1 if (edad>=16 & edad<=17) & (matniv==4) & (matgrado>=4 & matgrado<=5)
@@ -1100,9 +1051,9 @@ matniv		matgrado
 *** GOAL 7 ENSURE ENVIROMENTAL SUSTAINABILITY
 
 /*
-38. ¿Com qué tipo de alumbrado cuenta principalmente este hogar?
- 1. Energía eléctrica
- 2. Planta generador eléctrico
+38. Â¿Com quÃ© tipo de alumbrado cuenta principalmente este hogar?
+ 1. EnergÃ­a elÃ©ctrica
+ 2. Planta generador elÃ©ctrico
  3. Gas, kerosene, candil
  4. Otro
  5. ninguno
@@ -1116,12 +1067,12 @@ matniv		matgrado
 ** Target 10, Indicator: Proportion of the population using solidfuels (%)
 /*
 combusti (vb43)
-43. ¿Qué combustible utilizan usualmente
+43. Â¿QuÃ© combustible utilizan usualmente
 para cocinar?
- 1. Leña
+ 1. LeÃ±a
  2. Gas butano o propano
  3. Gas o kerosene
- 4. Carbón
+ 4. CarbÃ³n
  5. Electricidad
  6. Otro
 */
@@ -1133,20 +1084,20 @@ para cocinar?
  	 	
 ** Target 10, Indicator: Proportion of the population with sustainable access to an improved water source (%)
 /*
-18. De dónde obtiene principalmente agua este hogar
- 1. Tubería dentro de la vivienda				==> 19
- 2. Tubería fuera de la vivienda, pero dentro del terreno	==> 19
- 3. Puesto público						==> 20
- 4. Pozo público o privado					==> 20
- 5. Río, manantial o quebrada					==> 20
- 6. Camión, carreta o pipa					==> 20
+18. De dÃ³nde obtiene principalmente agua este hogar
+ 1. TuberÃ­a dentro de la vivienda				==> 19
+ 2. TuberÃ­a fuera de la vivienda, pero dentro del terreno	==> 19
+ 3. Puesto pÃºblico						==> 20
+ 4. Pozo pÃºblico o privado					==> 20
+ 5. RÃ­o, manantial o quebrada					==> 20
+ 6. CamiÃ³n, carreta o pipa					==> 20
  7. De otra vivienda						==> 20
  8. Otro							==> 20	
 
-19. ¿El suministro de agua es de uso exclusivo del hogar?
+19. Â¿El suministro de agua es de uso exclusivo del hogar?
 
-20. ¿A qué distancia de su vivienda se encuentra la fuente donde obtiene el
-agua y cuánto tiempo utiliza en llegar?
+20. Â¿A quÃ© distancia de su vivienda se encuentra la fuente donde obtiene el
+agua y cuÃ¡nto tiempo utiliza en llegar?
 
 DISTANCIA /___/___/KMS. /___ /___/___/ MTS.
 TIEMPO /___/___/HRS. /___/___/MINUT.
@@ -1154,21 +1105,21 @@ distkms vb20a
 distmts vb20b 
 
 21. Paga este hogar por el agua que consumen:
-22. ¿Cuánto pagó el mes pasado o la última vez por el agua que consumió?
-23. Qué tratamiento aplican principalmente al agua para beber:
+22. Â¿CuÃ¡nto pagÃ³ el mes pasado o la Ãºltima vez por el agua que consumiÃ³?
+23. QuÃ© tratamiento aplican principalmente al agua para beber:
  1. Tal como la obtiene
  2. La hierven
  3. La cloran
  4. Compran agua purificada
  5. Otro
 
-24. Desde 1993, ¿Ud. ha obtenido el agua del mismo lugar?
+24. Desde 1993, Â¿Ud. ha obtenido el agua del mismo lugar?
 
-25. En 1993, de dónde obtenía principalmente el agua este hogar:
+25. En 1993, de dÃ³nde obtenÃ­a principalmente el agua este hogar:
 
 26. El agua del hogar era de uso exclusivo
 
-27. En 1993, ¿Qué distancia recorría y qué tiempo le llevaba para obtener el agua?
+27. En 1993, Â¿QuÃ© distancia recorrÃ­a y quÃ© tiempo le llevaba para obtener el agua?
 */
 
 * Gender classification of the population refers to the head of the household.
@@ -1179,16 +1130,16 @@ distmts vb20b
 ** Target 10, Indicator: Proportion of Population with Access to Improved Sanitation, Urban and Rural (%)
 /*
 servsani (vb28)
-28. ¿Con qué tipo de servicio higiénico cuenta este hogar?
+28. Â¿Con quÃ© tipo de servicio higiÃ©nico cuenta este hogar?
  1. Excusado o letrina
 INODORO
- 2. Conectado a tubería de aguas negras
- 3. Conectado a sumidero o pozo séptico
- 4. Que descarga en el río o quebrada
+ 2. Conectado a tuberÃ­a de aguas negras
+ 3. Conectado a sumidero o pozo sÃ©ptico
+ 4. Que descarga en el rÃ­o o quebrada
  5. No tiene				==> 31
 
 usoserv (vb29)
-29. ¿El servicio higiénico es de uso de su hogar?
+29. Â¿El servicio higiÃ©nico es de uso de su hogar?
 */
  	
 	*** The variables are not comparable with the 2001 survey, or with the 1993 survey.
@@ -1217,11 +1168,11 @@ usoserv (vb29)
 
 ** Target 18, Indicator: "Telephone lines and celullar subscribers per 100 population"
 /*
-49. Pagan en este hogar por concepto servicio telefónico:
+49. Pagan en este hogar por concepto servicio telefÃ³nico:
  1. Si  
  2. Si, con el alquiler  
  3. No paga  
- 4. No tiene teléfono  
+ 4. No tiene telÃ©fono  
 */
 
 * Gender classification of the population refers to the head of the household.
@@ -1250,13 +1201,13 @@ usoserv (vb29)
 
 /*
 cuartviv
-9. ¿Cuántos cuartos tiene en total esta
-vivienda? (No incluya cocina, baños,
+9. Â¿CuÃ¡ntos cuartos tiene en total esta
+vivienda? (No incluya cocina, baÃ±os,
 pasillos y garage)
 
 vb10
-10. ¿De cuántos cuartos dispone este hogar?
-(No incluya cocina, baños, pasillos,
+10. Â¿De cuÃ¡ntos cuartos dispone este hogar?
+(No incluya cocina, baÃ±os, pasillos,
 garajes y los cuartos dedicados a
 trabajo o negocios)
 */
@@ -1343,24 +1294,105 @@ trabajo o negocios)
  gen GFAS=(anoest/(edad-7)) if (edad>=13 & edad<=17) & (anoest>=0 & anoest<99)
 
 
+*******************************************************
+***           VARIABLES DE DIVERSIDAD               ***
+*******************************************************
+	*********
+	*afro_ci*
+	*********
+	gen byte afro_ci = . 	  // se queda como missing (.) si no existe la pregunta
+	
+	*********
+	*ind_ci*
+	*********	
+	gen byte ind_ci =. 		  // se queda como missing (.) si no existe la pregunta
 
+	**************
+	*noafroind_ci*
+	**************
+	gen byte noafroind_ci =.   // se queda como missing (.) si no existe la pregunta
+	replace noafroind_ci =1 if (afro_ci==0 & ind_ci==0)
+	replace noafroind_ci =0 if (afro_ci==1 | ind_ci==1)
+	replace noafroind_ci =. if (afro_ci==. | ind_ci==.) //Esto solo en el caso que se tenga ambas opciones no disponibles. 
+	ta noafroind_ci,m
+
+	************
+	*afroind_ci*
+	************
+	gen byte afroind_ci=. 
+	replace afroind_ci=1 if ind_ci==1 
+	replace afroind_ci=2 if afro_ci==1
+	replace afroind_ci=3 if noafroind_ci == 1
+	ta afroind_ci,m
+	
+	*********
+	*afro_ch*
+	*********
+	gen byte afro_jefe = afro_ci if relacion_ci==1
+	egen afro_ch  = max(afro_jefe), by(idh_ch) 
+	drop afro_jefe
+	
+	********
+	*ind_ch*
+	********	
+	gen byte ind_jefe = ind_ci if relacion_ci==1
+	egen ind_ch = max(ind_jefe), by(idh_ch) 
+	drop ind_jefe
+
+	**************
+	*noafroind_ch*
+	**************
+	gen byte noafroind_jefe = noafroind_ci if relacion_ci==1
+	egen noafroind_ch = max(noafroind_jefe), by(idh_ch) 
+	drop noafroind_jefe
+
+	************
+	*afroind_ch*
+	************
+ 	gen byte afroind_jefe = afroind_ci if jefe_ci==1
+	egen afroind_ch = min(afroind_jefe), by(idh_ch) 
+	drop afroind_jefe 
+
+	********
+	*dis_ci*
+	********
+	gen byte dis_ci=.
+	
+	**********
+	*disWG_ci*
+	**********
+	gen byte disWG_ci=.
+	
+	********
+	*dis_ch*
+	********
+	egen byte dis_ch = max(dis_ci), by(idh_ch) 
+	
+	******************
+	*ISOalpha3_dis_ci*
+	******************
+	gen byte NIC_dis_ci = .
+
+	
 */
 
 /*_____________________________________________________________________________________________________*/
-* Asignación de etiquetas e inserción de variables externas: tipo de cambio, Indice de Precios al 
-* Consumidor (2011=100), líneas de pobreza
+* AsignaciÃ³n de etiquetas e inserciÃ³n de variables externas: tipo de cambio, Indice de Precios al 
+* Consumidor (2011=100), lÃ­neas de pobreza
 /*_____________________________________________________________________________________________________*/
 
 
 do "$ruta\harmonized\_DOCS\\Labels&ExternalVars_Harmonized_DataBank.do"
 
 /*_____________________________________________________________________________________________________*/
-* Verificación de que se encuentren todas las variables armonizadas 
+* VerificaciÃ³n de que se encuentren todas las variables armonizadas 
 /*_____________________________________________________________________________________________________*/
 
 order region_BID_c region_c pais_c anio_c mes_c zona_c factor_ch	idh_ch	idp_ci	factor_ci sexo_ci edad_ci ///
-raza_idioma_ci  id_ind_ci id_afro_ci raza_ci  relacion_ci civil_ci jefe_ci nconyuges_ch nhijos_ch notropari_ch notronopari_ch nempdom_ch ///
+relacion_ci civil_ci jefe_ci nconyuges_ch nhijos_ch notropari_ch notronopari_ch nempdom_ch ///
 clasehog_ch nmiembros_ch miembros_ci nmayor21_ch nmenor21_ch nmayor65_ch nmenor6_ch	nmenor1_ch	condocup_ci ///
+afro_ci ind_ci noafroind_ci afroind_ci afro_ch ind_ch noafroind_ch afroind_ch dis_ci disWG_ci dis_ch NIC_dis_ci /// Diversidad
+
 categoinac_ci nempleos_ci emp_ci antiguedad_ci	desemp_ci cesante_ci durades_ci	pea_ci desalent_ci subemp_ci ///
 tiempoparc_ci categopri_ci categosec_ci rama_ci spublico_ci tamemp_ci cotizando_ci instcot_ci	afiliado_ci ///
 formal_ci tipocontrato_ci ocupa_ci horaspri_ci horastot_ci	pensionsub_ci pension_ci tipopen_ci instpen_ci	ylmpri_ci nrylmpri_ci ///
