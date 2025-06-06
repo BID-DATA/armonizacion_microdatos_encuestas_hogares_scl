@@ -1043,21 +1043,22 @@ egen ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci)
 	******************
     ***pqnoasis1_ci***
     ******************
-	
-	g pqnoasis1_ci =.
-	
-	**desc q3_24 "What is the main reason why you did not continue studying?"
-	**Daniela Zuluaga- Enero 2018: Se agrega la variable pqnoasis1_ci cuya sintaxis fue elaborada por Mayra Saenz**
+* pqnoasis1_ci was replaced by pqnoasis, June 2025 * 
 
-	** Se actualiza la variable en mayo 2025 **
+***************
+***pqnoasis***
+***************
+	
+	g pqnoasis =.
+	
     
-    replace pqnoasis1_ci = 1 if q03_24==2 | q03_24==3
-    replace pqnoasis1_ci = 2 if q03_24==1
-    replace pqnoasis1_ci = 3 if q03_24==4
-    replace pqnoasis1_ci = 5 if q03_24==5
+    replace pqnoasis = 1 if q03_24==2 | q03_24==3
+    replace pqnoasis = 2 if q03_24==1
+    replace pqnoasis = 3 if q03_24==4
+    replace pqnoasis = 5 if q03_24==5
 
-    label define pqnoasis1_ci 1 "Problemas económicos/Por trabajo" 2 "Falta de interés/Problemas de rendimiento" 3 "Cuidados/ Problemas familiares o de salud" 4 "Problemas de acceso"  5 "Otros"
-label value  pqnoasis1_ci pqnoasis1_ci
+    label define pqnoasis 1 "Problemas económicos/Por trabajo" 2 "Falta de interés/Problemas de rendimiento" 3 "Cuidados/ Problemas familiares o de salud" 4 "Problemas de acceso"  5 "Otros"
+label value  pqnoasis pqnoasis
 	
 	***************
 * Line of code with indicator repite_ci was deleted	***************

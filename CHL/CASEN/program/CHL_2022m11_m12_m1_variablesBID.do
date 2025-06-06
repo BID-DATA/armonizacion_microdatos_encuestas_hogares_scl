@@ -941,15 +941,21 @@ la var asispre_ci "Asiste a educacion prescolar"
 * Line of code with indicator pqnoasis_ci was deleted* Line of code with indicator pqnoasis_ci was deleted******************
 ***pqnoasis1_ci***
 ******************
-gen pqnoasis1_ci=.
-replace pqnoasis1_ci = 1 if e5a == 11 | e5a == 12
-replace pqnoasis1_ci = 2 if e5a == 7 | e5a == 13
-replace pqnoasis1_ci = 3 if e5a == 1 | e5a == 2 | e5a == 3 | e5a == 5 | e5a == 6
-replace pqnoasis1_ci = 4 if e5a == 4 | e5a == 14
-replace pqnoasis1_ci = 5 if e5a == 8 | e5a == 15 | e5a == 16
+* pqnoasis1_ci was replaced by pqnoasis, June 2025 * 
 
-label define pqnoasis1_ci 1 "Problemas económicos/Por trabajo" 2 "Falta de interés/Problemas de rendimiento" 3 "Cuidados/ Problemas familiares o de salud" 4 "Problemas de acceso"  5 "Otros"
-label value  pqnoasis1_ci pqnoasis1_ci
+****************
+***pqnoasis***
+****************
+* Variable agregada junio 2025 * 
+gen pqnoasis=.
+replace pqnoasis = 1 if e5a == 11 | e5a == 12
+replace pqnoasis = 2 if e5a == 7 | e5a == 13
+replace pqnoasis = 3 if e5a == 1 | e5a == 2 | e5a == 3 | e5a == 5 | e5a == 6
+replace pqnoasis = 4 if e5a == 4 | e5a == 14
+replace pqnoasis = 5 if e5a == 8 | e5a == 15 | e5a == 16
+
+label define pqnoasis 1 "Problemas económicos/Por trabajo" 2 "Falta de interés/Problemas de rendimiento" 3 "Cuidados/ Problemas familiares o de salud" 4 "Problemas de acceso"  5 "Otros"
+label value  pqnoasis pqnoasis
 
 **************
 * Line of code with indicator repite_ci was deleted**************

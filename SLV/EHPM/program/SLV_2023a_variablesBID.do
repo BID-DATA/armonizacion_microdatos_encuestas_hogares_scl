@@ -947,18 +947,21 @@ label variable asiste_ci "Asiste actualmente a la escuela"
 ******************
 ***pqnoasis1_ci***
 ******************
-*Daniela Zuluaga- Enero 2018: Se agrega la variable pqnoasis1_ci cuya sintaxis fue elaborada por Mayra Saenz**
-** Se actualiza la variable en mayo 2025**
+* pqnoasis1_ci was replaced by pqnoasis, June 2025 * 
 
-g pqnoasis1_ci=.
-replace pqnoasis1_ci=1 if r219==1 | r219 == 3
-replace pqnoasis1_ci=2 if inlist(r219, 10, 11)
-replace pqnoasis1_ci=3 if inlist(r219, 2, 4, 12, 15, 16)
-replace pqnoasis1_ci=4 if inlist(r219, 9, 13, 14)
-replace pqnoasis1_ci=5 if inlist(r219, 5, 6, 7, 8, 17, 18)
+***************
+***pqnoasis***
+***************
 
-label define pqnoasis1_ci 1 "Problemas económicos/Por trabajo" 2 "Falta de interés/Problemas de rendimiento" 3 "Cuidados/ Problemas familiares o de salud" 4 "Problemas de acceso"  5 "Otros"
-label value  pqnoasis1_ci pqnoasis1_ci
+g pqnoasis=.
+replace pqnoasis=1 if r219==1 | r219 == 3
+replace pqnoasis=2 if inlist(r219, 10, 11)
+replace pqnoasis=3 if inlist(r219, 2, 4, 12, 15, 16)
+replace pqnoasis=4 if inlist(r219, 9, 13, 14)
+replace pqnoasis=5 if inlist(r219, 5, 6, 7, 8, 17, 18)
+
+label define pqnoasis 1 "Problemas económicos/Por trabajo" 2 "Falta de interés/Problemas de rendimiento" 3 "Cuidados/ Problemas familiares o de salud" 4 "Problemas de acceso"  5 "Otros"
+label value  pqnoasis pqnoasis
 
 ***************
 * Line of code with indicator repite_ci was deleted***************

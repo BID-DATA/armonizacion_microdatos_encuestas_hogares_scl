@@ -1215,17 +1215,21 @@ gen byte asiste_ci = (e49 == 3)
 ****************
 ***pqnoasis1_ci***
 ****************
-** Se agrega la armonización de la variable en mayo 2025**
+* pqnoasis1_ci was replaced by pqnoasis, June 2025 * 
 
-gen  pqnoasis1_ci=.
-replace pqnoasis1_ci = 1 if inlist (e202, 7, 9)
-replace pqnoasis1_ci = 2 if inlist (e202, 1, 2)
-replace pqnoasis1_ci = 3 if inlist (e202, 8, 10, 11)
-replace pqnoasis1_ci = 4 if inlist (e202, 3, 4)
-replace pqnoasis1_ci = 5 if inlist (e202, 5, 6)
+***************
+***pqnoasis***
+***************
 
-label define pqnoasis1_ci 1 "Problemas económicos/Por trabajo" 2 "Falta de interés/Problemas de rendimiento" 3 "Cuidados/ Problemas familiares o de salud" 4 "Problemas de acceso"  5 "Otros"
-label value  pqnoasis1_ci pqnoasis1_ci
+gen  pqnoasis=.
+replace pqnoasis = 1 if inlist (e202, 7, 9)
+replace pqnoasis = 2 if inlist (e202, 1, 2)
+replace pqnoasis = 3 if inlist (e202, 8, 10, 11)
+replace pqnoasis = 4 if inlist (e202, 3, 4)
+replace pqnoasis = 5 if inlist (e202, 5, 6)
+
+label define pqnoasis 1 "Problemas económicos/Por trabajo" 2 "Falta de interés/Problemas de rendimiento" 3 "Cuidados/ Problemas familiares o de salud" 4 "Problemas de acceso"  5 "Otros"
+label value  pqnoasis pqnoasis
 
 	
 *92. Personas que asisten a centros de ensenanza públicos

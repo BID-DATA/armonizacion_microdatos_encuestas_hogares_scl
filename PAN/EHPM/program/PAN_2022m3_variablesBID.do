@@ -1307,17 +1307,22 @@ label var asiste "Personas que actualmente asisten a centros de enseñanza"
 **************
 *pqnoasis1_ci*
 **************
+* pqnoasis1_ci was replaced by pqnoasis, June 2025 * 
 
-g pqnoasis1_ci = .
-replace pqnoasis1_ci = 1 if inlist(p5a, 2, 6)
-replace pqnoasis1_ci = 2 if p5a==1
-replace pqnoasis1_ci = 3 if inlist(p5a, 7, 9, 10, 11)
-replace pqnoasis1_ci = 4 if inlist(p5a, 5, 8)
-replace pqnoasis1_ci = 5 if inlist(p5a, 3, 4, 12)
+***************
+***pqnoasis***
+***************
+
+g pqnoasis = .
+replace pqnoasis = 1 if inlist(p5a, 2, 6)
+replace pqnoasis = 2 if p5a==1
+replace pqnoasis = 3 if inlist(p5a, 7, 9, 10, 11)
+replace pqnoasis = 4 if inlist(p5a, 5, 8)
+replace pqnoasis = 5 if inlist(p5a, 3, 4, 12)
 
 
-label define pqnoasis1_ci 1 "Problemas económicos/Por trabajo" 2 "Falta de interés/Problemas de rendimiento" 3 "Cuidados/ Problemas familiares o de salud" 4 "Problemas de acceso"  5 "Otros"
-label value  pqnoasis1_ci pqnoasis1_ci
+label define pqnoasis 1 "Problemas económicos/Por trabajo" 2 "Falta de interés/Problemas de rendimiento" 3 "Cuidados/ Problemas familiares o de salud" 4 "Problemas de acceso"  5 "Otros"
+label value  pqnoasis pqnoasis
 
 ******************************
 *	edupub_ci
