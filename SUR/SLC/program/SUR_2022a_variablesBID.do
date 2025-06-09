@@ -1043,22 +1043,21 @@ egen ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci)
 	******************
     ***pqnoasis1_ci***
     ******************
-* pqnoasis1_ci was replaced by pqnoasis, June 2025 * 
+* pqnoasis1_ci was replaced by razonesnoasis_ci, June 2025 * 
 
-***************
-***pqnoasis***
-***************
-	
-	g pqnoasis =.
+**********************
+***razonesnoasis_ci***
+**********************	
+	g razonesnoasis_ci =.
 	
     
-    replace pqnoasis = 1 if q03_24==2 | q03_24==3
-    replace pqnoasis = 2 if q03_24==1
-    replace pqnoasis = 3 if q03_24==4
-    replace pqnoasis = 5 if q03_24==5
+    replace razonesnoasis_ci = 1 if q03_24==2 | q03_24==3
+    replace razonesnoasis_ci = 2 if q03_24==1
+    replace razonesnoasis_ci = 3 if q03_24==4
+    replace razonesnoasis_ci = 5 if q03_24==5
 
-    label define pqnoasis 1 "Problemas económicos/Por trabajo" 2 "Falta de interés/Problemas de rendimiento" 3 "Cuidados/ Problemas familiares o de salud" 4 "Problemas de acceso"  5 "Otros"
-label value  pqnoasis pqnoasis
+    label define razonesnoasis_ci 1 "Problemas económicos/Por trabajo" 2 "Falta de interés/Problemas de rendimiento" 3 "Cuidados/ Problemas familiares o de salud" 4 "Problemas de acceso"  5 "Otros"
+label value  razonesnoasis_ci razonesnoasis_ci
 	
 	***************
 * Line of code with indicator repite_ci was deleted	***************

@@ -1120,23 +1120,22 @@ label variable asispre_ci "Asistencia a Educacion preescolar"
 **************
 *pqnoasis1_ci*
 **************
-* pqnoasis1_ci was replaced by pqnoasis, June 2025 * 
+* pqnoasis1_ci was replaced by razonesnoasis_ci, June 2025 * 
 
 
-****************
-***pqnoasis***
-****************
+**********************
+***razonesnoasis_ci***
+**********************
+g razonesnoasis_ci = .						
+replace razonesnoasis_ci = 1 if porque_no_estudia==8 | porque_no_estudia==7
+replace razonesnoasis_ci = 2 if porque_no_estudia==4 | porque_no_estudia==12
+replace razonesnoasis_ci = 3 if porque_no_estudia==11
+replace razonesnoasis_ci = 4 if porque_no_estudia==3
+replace razonesnoasis_ci = 6 if porque_no_estudia==2 | porque_no_estudia==5 | porque_no_estudia==6 | porque_no_estudia==9 | porque_no_estudia==10 porque_no_estudia==13
 
-g pqnoasis = .						
-replace pqnoasis = 1 if porque_no_estudia==8 | porque_no_estudia==7
-replace pqnoasis = 2 if porque_no_estudia==4 | porque_no_estudia==12
-replace pqnoasis = 3 if porque_no_estudia==11
-replace pqnoasis = 4 if porque_no_estudia==3
-replace pqnoasis = 6 if porque_no_estudia==2 | porque_no_estudia==5 | porque_no_estudia==6 | porque_no_estudia==9 | porque_no_estudia==10 porque_no_estudia==13
 
-
-label define pqnoasis 1 "Problemas económicos/Por trabajo" 2 "Falta de interés/Problemas de rendimiento" 3 "Cuidados/ Problemas familiares o de salud" 4 "Problemas de acceso"  5 "Otros"
-label value  pqnoasis pqnoasis
+label define razonesnoasis_ci 1 "Problemas económicos/Por trabajo" 2 "Falta de interés/Problemas de rendimiento" 3 "Cuidados/ Problemas familiares o de salud" 4 "Problemas de acceso"  5 "Otros"
+label value  razonesnoasis_ci razonesnoasis_ci
 
 ***************
 * Line of code with indicator repite_ci was deleted***************

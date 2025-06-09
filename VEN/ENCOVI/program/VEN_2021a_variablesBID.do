@@ -1005,21 +1005,21 @@ label var edupub_ci "1 = personas que asisten a centros de enseñanza publicos"
 ******************
 ***pqnoasis1_ci***
 ******************
-* pqnoasis1_ci was replaced by pqnoasis, June 2025 * 
+* pqnoasis1_ci was replaced by razonesnoasis_ci, June 2025 * 
 
-***************
-***pqnoasis***
-***************
+**********************
+***razonesnoasis_ci***
+**********************
 
-gen  pqnoasis=.
-replace pqnoasis = 1 if inlist (s7q13, 5, 6, 8)
-replace pqnoasis = 2 if inlist (s7q13, 9, 15)
-replace pqnoasis = 3 if inlist (s7q13, 7, 13, 14)
-replace pqnoasis = 4 if inlist (s7q13, 2, 3, 4)
-replace pqnoasis = 5 if inlist (s7q13, 1, 10, 11, 12, 16)
+gen  razonesnoasis_ci=.
+replace razonesnoasis_ci = 1 if inlist (s7q13, 5, 6, 8)
+replace razonesnoasis_ci = 2 if inlist (s7q13, 9, 15)
+replace razonesnoasis_ci = 3 if inlist (s7q13, 7, 13, 14)
+replace razonesnoasis_ci = 4 if inlist (s7q13, 2, 3, 4)
+replace razonesnoasis_ci = 5 if inlist (s7q13, 1, 10, 11, 12, 16)
 
-label define pqnoasis 1 "Problemas económicos/Por trabajo" 2 "Falta de interés/Problemas de rendimiento" 3 "Cuidados/ Problemas familiares o de salud" 4 "Problemas de acceso"  5 "Otros"
-label value pqnoasis pqnoasis
+label define razonesnoasis_ci 1 "Problemas económicos/Por trabajo" 2 "Falta de interés/Problemas de rendimiento" 3 "Cuidados/ Problemas familiares o de salud" 4 "Problemas de acceso"  5 "Otros"
+label value razonesnoasis_ci razonesnoasis_ci
 
 ********************************************
 ***Variables de Infraestructura del hogar***

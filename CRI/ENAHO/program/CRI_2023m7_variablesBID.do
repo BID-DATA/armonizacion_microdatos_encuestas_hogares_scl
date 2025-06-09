@@ -1165,22 +1165,20 @@ label variable asiste_ci "Asiste actualmente a la escuela"
 ***pqnoasis1_ci***
 ******************
 
-* pqnoasis1_ci was replaced by pqnoasis, June 2025 * 
+* pqnoasis1_ci was replaced by razonesnoasis_ci, June 2025 * 
 
-****************
-***pqnoasis***
-****************
-* Variable agregada junio 2025 * 
+**********************
+***razonesnoasis_ci***
+**********************
+gen razonesnoasis_ci=.
+replace razonesnoasis_ci = 1 if a17==1 | a17==2 | a17==5
+replace razonesnoasis_ci = 2 if a17==7 | a17==8
+replace razonesnoasis_ci = 3 if a17==3 | a17==4 | a17==9 | a17==10
+replace razonesnoasis_ci = 4 if a17==6
+replace razonesnoasis_ci = 5 if a17==11 | a17==12 | a17==13
 
-gen pqnoasis=.
-replace pqnoasis = 1 if a17==1 | a17==2 | a17==5
-replace pqnoasis = 2 if a17==7 | a17==8
-replace pqnoasis = 3 if a17==3 | a17==4 | a17==9 | a17==10
-replace pqnoasis = 4 if a17==6
-replace pqnoasis = 5 if a17==11 | a17==12 | a17==13
-
-label define pqnoasis 1 "Problemas económicos/Por trabajo" 2 "Falta de interés/Problemas de rendimiento" 3 "Cuidados/ Problemas familiares o de salud" 4 "Problemas de acceso"  5 "Otros"
-label value pqnoasis pqnoasis
+label define razonesnoasis_ci 1 "Problemas económicos/Por trabajo" 2 "Falta de interés/Problemas de rendimiento" 3 "Cuidados/ Problemas familiares o de salud" 4 "Problemas de acceso"  5 "Otros"
+label value razonesnoasis_ci razonesnoasis_ci
 
 ********************************************************************************************************************************
 ***REPITE_CI: Personas que han repetido al menos un año o grado

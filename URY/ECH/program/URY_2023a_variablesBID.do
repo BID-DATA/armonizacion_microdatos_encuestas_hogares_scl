@@ -1215,22 +1215,20 @@ gen byte asiste_ci = (e49 == 3)
 ****************
 ***pqnoasis1_ci***
 ****************
-* pqnoasis1_ci was replaced by pqnoasis, June 2025 * 
+* pqnoasis1_ci was replaced by razonesnoasis_ci, June 2025 * 
 
-***************
-***pqnoasis***
-***************
+**********************
+***razonesnoasis_ci***
+**********************
+gen  razonesnoasis_ci=.
+replace razonesnoasis_ci = 1 if inlist (e202, 7, 9)
+replace razonesnoasis_ci = 2 if inlist (e202, 1, 2)
+replace razonesnoasis_ci = 3 if inlist (e202, 8, 10, 11)
+replace razonesnoasis_ci = 4 if inlist (e202, 3, 4)
+replace razonesnoasis_ci = 5 if inlist (e202, 5, 6)
 
-gen  pqnoasis=.
-replace pqnoasis = 1 if inlist (e202, 7, 9)
-replace pqnoasis = 2 if inlist (e202, 1, 2)
-replace pqnoasis = 3 if inlist (e202, 8, 10, 11)
-replace pqnoasis = 4 if inlist (e202, 3, 4)
-replace pqnoasis = 5 if inlist (e202, 5, 6)
-
-label define pqnoasis 1 "Problemas económicos/Por trabajo" 2 "Falta de interés/Problemas de rendimiento" 3 "Cuidados/ Problemas familiares o de salud" 4 "Problemas de acceso"  5 "Otros"
-label value  pqnoasis pqnoasis
-
+label define razonesnoasis_ci 1 "Problemas económicos/Por trabajo" 2 "Falta de interés/Problemas de rendimiento" 3 "Cuidados/ Problemas familiares o de salud" 4 "Problemas de acceso"  5 "Otros"
+label value  razonesnoasis_ci razonesnoasis_ci
 	
 *92. Personas que asisten a centros de ensenanza públicos
 gen edupub_ci = 1 if (e581 == 1 | e581a == 1) & (asiste_ci == 1)
