@@ -418,6 +418,47 @@ label value categoinac_ci categoinac_ci
 gen byte emp_ci=(condocup_ci==1)
 label var emp_ci "Ocupado (empleado)"
 
+*************
+*cesante_ci* 
+*************
+gen cesante_ci=1 if trabajo_antes==1
+replace cesante_ci=0 if trabajo_antes==2
+label var cesante_ci "Desocupado - definicion oficial del pais"	
+
+****************
+***desemp_ci***
+****************
+gen desemp_ci=(condocup_ci==2)
+label var desemp_ci "Desempleado que buscó empleo en el periodo de referencia"
+
+***************
+***subemp_ci***
+***************    
+*Modificacion MGD 06/20/2014: condiciona solo a horas en ocupacion primaria.
+gen subemp_ci=0  
+replace  subemp_ci=1 if (promhora>=1 & promhora<=30) & emp_ci==1 & desea_trabajar_mas_horas==1
+label var subemp_ci "Personas en subempleo por horas"
+
+************
+*durades_ci*
+************
+gen durades_ci=.
+replace durades_ci=1 if que_tiempo_busca_trabajo==1
+replace durades_ci=(1+6)/2 if que_tiempo_busca_trabajo==2
+replace durades_ci=(6+12)/2 if que_tiempo_busca_trabajo==3
+replace durades_ci=(12+12)/2 if que_tiempo_busca_trabajo==4
+label variable durades_ci "Duracion del desempleo en meses"
+label def durades_ci 1 "Menos de un mes" 2"1 mes a menos de  meses" 3"2 meses a menos de 3 meses"
+label def durades_ci 4 "3 meses a menos de 6 meses" 5"6 meses a menos de 1 año" 6"Más de 1 año", add
+label val durades_ci durades1_ci
+
+*************
+***pea_ci***
+*************
+gen pea_ci=0
+replace pea_ci=1 if emp_ci==1 |desemp_ci==1
+label var pea_ci "Población Económicamente Activa"
+
 *****************
 ***nempleos_ci***
 *****************
@@ -437,39 +478,6 @@ replace antiguedad_ci=. if emp_ci==0
 replace antiguedad_ci=. if tiempo_empleo_dias==. & tiempo_empleo_meses==. & tiempo_empleo_anos==.
 label var antiguedad_ci "Antiguedad en la actividad actual en anios"
 drop temp*
-
-****************
-***desemp_ci***
-****************
-gen desemp_ci=(condocup_ci==2)
-label var desemp_ci "Desempleado que buscó empleo en el periodo de referencia"
-  
-*************
-*cesante_ci* 
-*************
-gen cesante_ci=1 if trabajo_antes==1
-replace cesante_ci=0 if trabajo_antes==2
-label var cesante_ci "Desocupado - definicion oficial del pais"	
-
-************
-*durades_ci*
-************
-gen durades_ci=.
-replace durades_ci=1 if que_tiempo_busca_trabajo==1
-replace durades_ci=(1+6)/2 if que_tiempo_busca_trabajo==2
-replace durades_ci=(6+12)/2 if que_tiempo_busca_trabajo==3
-replace durades_ci=(12+12)/2 if que_tiempo_busca_trabajo==4
-label variable durades_ci "Duracion del desempleo en meses"
-label def durades_ci 1 "Menos de un mes" 2"1 mes a menos de  meses" 3"2 meses a menos de 3 meses"
-label def durades_ci 4 "3 meses a menos de 6 meses" 5"6 meses a menos de 1 año" 6"Más de 1 año", add
-label val durades_ci durades1_ci
-  
-*************
-***pea_ci***
-*************
-gen pea_ci=0
-replace pea_ci=1 if emp_ci==1 |desemp_ci==1
-label var pea_ci "Población Económicamente Activa"
 
 *****************
 ***desalent_ci***
@@ -498,14 +506,6 @@ replace tothoras=. if promhora==. & promhora1==.
 replace tothoras=. if tothoras>=168
 gen horastot_ci=tothoras  if emp_ci==1 
 label var horastot_ci "Horas trabajadas semanalmente en todos los empleos"
-
-***************
-***subemp_ci***
-***************    
-*Modificacion MGD 06/20/2014: condiciona solo a horas en ocupacion primaria.
-gen subemp_ci=0  
-replace  subemp_ci=1 if (promhora>=1 & promhora<=30) & emp_ci==1 & desea_trabajar_mas_horas==1
-label var subemp_ci "Personas en subempleo por horas"
 
 *******************
 ***tiempoparc_ci***
@@ -546,7 +546,6 @@ label define categosec_ci 1"Patron" 2"Cuenta propia" 0"Otro"
 label define categosec_ci 3"Empleado" 4"No remunerado" , add
 label value categosec_ci categosec_ci
 label variable categosec_ci "Categoria ocupacional trabajo secundario"
-
 
 *************
 ***rama_ci***
@@ -684,18 +683,18 @@ label define ocupa_ci  8 "FFAA" 9 "Otras ", add
 label value ocupa_ci ocupa_ci
 label variable ocupa_ci "Ocupacion laboral" 
 
-***************
-*pensionsub_ci*
-***************
-gen pensionsub_ci= (ps_apoyo_adultos_mayores==1)
-label var pensionsub_ci "1=recibe pension subsidiada / no contributiva"
-
 *************
 **pension_ci*
 *************
 gen pension_ci=1 if pension_nac_monto!=0 & pension_nac_monto!=.
 recode pension_ci .=0 
 label var pension_ci "1=Recibe pension contributiva"
+
+***************
+*pensionsub_ci*
+***************
+gen pensionsub_ci= (ps_apoyo_adultos_mayores==1)
+label var pensionsub_ci "1=recibe pension subsidiada / no contributiva"
 
 ****************
 *tipopen_ci*****
@@ -717,10 +716,6 @@ label var instpen_ci "Institucion proveedora de la pension - variable original d
 ***********************************************
 * A.	Ingresos laborales a nivel individuo
 ***********************************************
-
-***************
-***ylmpri_ci***
-***************
 
 *Asalariados
 destring tiempo_recibe_pago_dias_ap, replace
@@ -817,7 +812,10 @@ destring recibio_remesa_ext3, replace
 replace remesas_mes=. if recibio_remesa_ext1!=1 & recibio_remesa_ext2!=1 & recibio_remesa_ext3!=1
 gen remesas_prom=remesas_mes/6
 
-*ylmpri_ci
+***************
+***ylmpri_ci***
+***************
+
 *2018 AJAM, Obs. variable ymensual tiene muchos más missings que en bases anteriores (ENFT -<2016), para ver correr un: mdesc ymensual.
 *Esto explica en parte porque se observa una media más baja en el ingreso laboral total
 egen ylmpri_ci=rsum(ymensual comisiones propinas horasextra vacaciones bonificaciones regalia utilidades beneficios otrosbeneficios bonoantiguedad otros_pagos_ap_monto ymensualindep), missing 
@@ -880,6 +878,23 @@ label var ylnm_ci "Ingreso laboral NO monetario total"
 * B. Ingresos no laborales a nivel individuo
 ***********************************************
 
+******************
+**ynlm_publico_ci
+******************
+destring intereses, replace
+egen ynlm_publico_ci=rsum(pension gobierno), missing 
+replace ynlm_publico_ci=. if pension==. & gobierno==. 
+label var ynlm_publico_ci "Ingreso no laboral monetario publico del individuo"  
+
+******************
+**ynlm_privado_ci
+******************
+
+destring intereses, replace
+egen ynlm_privado_ci=rsum(intereses alquiler remesasnales otrosing pension_int /*interes_int*/ remesas_prom dividendos), missing 
+replace ynlm_privado_ci=. if intereses==. & alquiler==. & remesasnales==. & otrosing==. & pension_int==. /*& interes_int==.*/ & remesas_prom==.
+label var ynlm_privado_ci "Ingreso no laboral monetario privado del individuo"  
+
 *************
 ***ynlm_ci***
 *************
@@ -896,27 +911,16 @@ destring regalos_ext_monto, replace
 gen ynlnm_ci=regalos_ext_monto
 replace ynlnm_ci=. if regalos_ext_monto==.
 label var ynlnm_ci "Ingreso no laboral no monetario" 
-egen ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci)
 
+***********************************************
+* C. Ingresos total a nivel de individuo 
+***********************************************
 
-******************
-* C.No respuesta
-******************
+**************
+* ytot_ci ****
+**************
 
-*****************
-***nrylmpri_ci***
-*****************
-gen nrylmpri_ci=(ylmpri_ci==. & emp_ci==1)
-label var nrylmpri_ci "Id no respuesta ingreso de la actividad principal"  
-
-*******************
-*** nrylmpri_ch ***
-*******************
-*Creating a Flag label for those households where someone has a ylmpri_ci as missing
-by idh_ch, sort: egen nrylmpri_ch=sum(nrylmpri_ci) if miembros_ci==1, missing
-replace nrylmpri_ch=1 if nrylmpri_ch>0 & nrylmpri_ch<.
-replace nrylmpri_ch=. if nrylmpri_ch==.
-label var nrylmpri_ch "Hogares con algún miembro que no respondió por ingresos"
+egen ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci), mi
 
 *********************************************************
 * D.  Ingresos laborales y no laborales a nivel hogar
@@ -934,31 +938,48 @@ label var ylm_ch "Ingreso laboral monetario del hogar"
 by idh_ch, sort: egen ylnm_ch=sum(ylnm_ci) if miembros_ci==1, missing
 label var ylnm_ch "Ingreso laboral no monetario del hogar"
 
-****************
-*** ylmnr_ch ***
-****************
-by idh_ch, sort: egen ylmnr_ch=sum(ylm_ci) if miembros_ci==1, missing
-replace ylmnr_ch=. if nrylmpri_ch==1
-label var ylmnr_ch "Ingreso laboral monetario del hogar"
-
-***************
-*** ynlm_ch ***
-***************
-by idh_ch, sort: egen ynlm_ch=sum(ynlm_ci) if miembros_ci==1, missing
-label var ynlm_ch "Ingreso no laboral monetario del hogar"
-
 **************
 ***ynlnm_ch***
 **************
 by idh_ch, sort: egen ynlnm_ch=sum(ynlnm_ci) if miembros_ci==1, missing
 label var ynlnm_ch "Ingreso no laboral no monetario del hogar"
 
+*********************
+***ynlm_publico_ch***
+*********************
+by idh_ch, sort: egen ynlnm_ch=sum(ynlm_publico_ci) if miembros_ci==1, missing
+label var ynlnm_ch "Ingreso no laboral monetario publico del hogar"
+
+*********************
+***ynlm_privado_ch***
+*********************
+by idh_ch, sort: egen ynlnm_ch=sum(ynlm_privado_ci) if miembros_ci==1, missing
+label var ynlnm_ch "Ingreso no laboral monetario privado del hogar"
+
+***************
+*** ynlm_ch ***
+***************
+by idh_ch, sort: egen double ynlm_ci = rowtotal(ynlm_privado_ci ynlm_publico_ci), mi 
+label var ynlm_ch "Ingreso no laboral monetario del hogar"
+
+
+*********************************************************
+* E.  Ingresos total a nivel de hogar
+*********************************************************
+
+**************
+* ytot_ch ****
+**************
+
+egen double ytot_ch= rowtotal(ylm_ch ylnm_ch ynlm_ch ynlnm_ch), mi 
+
+
 **************************
-* D. Salario por hora
+* F. Salario por hora
 **************************
 
 *****************
-***ylhopri_ci ***
+***ylmhopri_ci ***
 *****************
 gen ylmhopri_ci=ylmpri_ci/(horaspri_ci*4.3)
 label var ylmhopri_ci "Salario monetario de la actividad principal" 
@@ -970,8 +991,34 @@ gen ylmho_ci=ylm_ci/(horastot_ci*4.3)
 label var ylmho_ci "Salario monetario de todas las actividades" 
 
 
+***********************
+* G.No respuesta
+***********************
+
+*****************
+***nrylmpri_ci***
+*****************
+gen nrylmpri_ci=(ylmpri_ci==. & emp_ci==1)
+label var nrylmpri_ci "Id no respuesta ingreso de la actividad principal"  
+
+*******************
+*** nrylmpri_ch ***
+*******************
+*Creating a Flag label for those households where someone has a ylmpri_ci as missing
+by idh_ch, sort: egen nrylmpri_ch=sum(nrylmpri_ci) if miembros_ci==1, missing
+replace nrylmpri_ch=1 if nrylmpri_ch>0 & nrylmpri_ch<.
+replace nrylmpri_ch=. if nrylmpri_ch==.
+label var nrylmpri_ch "Hogares con algún miembro que no respondió por ingresos"
+
+****************
+*** ylmnr_ch ***
+****************
+by idh_ch, sort: egen ylmnr_ch=sum(ylm_ci) if miembros_ci==1, missing
+replace ylmnr_ch=. if nrylmpri_ch==1
+label var ylmnr_ch "Ingreso laboral monetario del hogar"
+
 ************
-*F.	Remesas
+*H.	Remesas
 ************
 
 ****************
@@ -989,7 +1036,7 @@ by idh_ch, sort: egen remesas_ch=sum(remesas_ci) if miembros_ci==1, missing
 label var remesas_ch "Remesas mensuales del hogar" 
 
 ***************
-* G.Pensiones
+* I.Pensiones
 ***************
 
 *************
@@ -1013,7 +1060,6 @@ label var ypen_ci "Valor de la pension contributiva"
 gen ypensub_ci=gob_proteccion_vejez_monto
 replace ypensub_ci=. if gob_proteccion_vejez_monto==0
 label var ypensub_ci "Valor de la pension subsidiada / no contributiva"
-
 
  
 		****************************
