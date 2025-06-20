@@ -782,13 +782,13 @@ egen ymensual2=rsum(ganancia_secun_imp_monto ingreso_asalariado_secun ingreso_in
 *Información cambiaria que viene en la base de excel
 *Dado que se necesita la información en moneda local se calcula el factor de conversión a pesos
 *Si la información está en pesos se deja como está
-*Si la información está en dólares se multiplica por 52.78, Euros, luego de ser convertidos en dolares, por 0.9 (promedio para los meses del cuarto trimestre de 2019)
+*Si la información está en dólares se multiplica por 58.73, Euros, luego de ser convertidos en dolares, por 0.9 (promedio para los meses del cuarto trimestre de 2024)
 *Nota: Tasa de cambio a peso CHF=51.54 Para ultimo trimestre
 
 *Modulo Ingresos del Exterior
 gen pension_int=pension_ext_monto	 		    if  pension_ext_moneda=="DOP"
-replace pension_int=pension_ext_monto*52.78   	if  pension_ext_moneda=="USD"
-replace pension_int=(pension_ext_monto*0.9)*52.78  if  pension_ext_moneda=="EUR"
+replace pension_int=pension_ext_monto*58.73   	if  pension_ext_moneda=="USD"
+replace pension_int=(pension_ext_monto*0.9)*58.73  if  pension_ext_moneda=="EUR"
 replace pension_int=pension_ext_monto*51.54   	if  pension_ext_moneda=="CHF"
 replace pension_int=. if pension_ext==2
 /*
