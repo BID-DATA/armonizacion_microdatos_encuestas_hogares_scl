@@ -1518,6 +1518,34 @@ label var miglac_ci "=1 si es migrante proveniente de un pais LAC"
 * PNC: 	 Apoyo de adultos mayores (gob_proteccio ps_apoyo_adul)
 * 		 Bonos (ps_bono_luz ps_bono_gas gob_bono_luz_ gob_bonogas_h)
 
+************************
+*** nmienbros_sph_ch ***
+************************
+
+bys idh_ch: gen nmiembros_sph_ch=_N
+
+********************
+*** y_neto_pc_ch ***
+********************
+
+*ingreso neto mensualizado de transferencias publicas per capita
+gen double yneto_pc_ch = (ytot_ch - ynlm_publico_ch) / nmiembros_sph_ch 
+
+********************
+*** bene_cash_ch ***
+********************
+
+bys idh_ch: gen bene_cash_ch=1 if (gobierno!=0 & gobierno!=.) 
+replace bene_cash_ch=0 if (gobierno==0 & gobierno!=.) 
+label define bene_cash_ch 0"Hogar no beneficiario" 1"Hogar beneficiario" 
+
+********************
+*** pensionsub_ch ***
+********************
+
+bys idh_ch: egen pnc_ch = max(pensionsub_ci) 
+
+
 *************
 *** y_hog ***
 *************	
@@ -1546,11 +1574,7 @@ drop aux
 bys idh_ch: egen ing_pension = sum(gob_proteccion_vejez_monto)
 replace ing_pension=. if y_hog==.
 
-****************
-*** y_pc_net ***
-****************
-*ingreso neto del hogar
-gen y_pc_net = (y_hog - ing_ptmc - ing_pension) / nmiembros_ch
+
 
 ***********************
 *** percibe_ptmc_ci ***
@@ -1637,9 +1661,8 @@ lab val grupo_int grupo_int
 *************
 **salmm_ci***
 *************
-* 2021 https://tss.gob.do/aumento-topes-smc.html#:~:text=Asimismo%2C%20la%20instituci%C3%B3n%20responsable%20de,de%20cotizaci%C3%B3n%20del%20R%C3%A9gimen%20Contributivo
-*2023: https://tss.gob.do/assets/reso01-2023.pdf
-gen salmm_ci=18702
+*2024: https://tss.gob.do/assets/reso01-2024.pdf
+gen salmm_ci=19352.50
 label var salmm_ci "Salario minimo legal"
 
 *************************************
@@ -1650,17 +1673,17 @@ label var salmm_ci "Salario minimo legal"
 *********
 *lp_ci***
 *********
-* 2023 : Líneas de pobreza monetaria general por persona https://www.one.gob.do/media/tm5paqul/pobreza-monetaria-en-la-rep%C3%BAblica-dominicana-2023elfinal.pdf
+* 2024 : Líneas de pobreza monetaria general por persona https://mepyd.gob.do/publicaciones/boletin-de-estadisticas-oficiales-de-pobreza-monetaria-en-republica-dominicana-2024
 gen lp_ci =.
-replace lp_ci = 7645.3 
+replace lp_ci = 7890.9 
 label var lp_ci "Linea de pobreza oficial del pais"
 
 *********
 *lpe_ci***
 *********
-* 2023 https://www.one.gob.do/media/tm5paqul/pobreza-monetaria-en-la-rep%C3%BAblica-dominicana-2023elfinal.pdf
+* 2024 https://mepyd.gob.do/publicaciones/boletin-de-estadisticas-oficiales-de-pobreza-monetaria-en-republica-dominicana-2024
 gen lpe_ci =.
-replace lpe_ci =  3643.5 
+replace lpe_ci =  3760.8
 label var lpe_ci "Linea de pobreza extrema del pais"
 
 ************
