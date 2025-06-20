@@ -1545,7 +1545,13 @@ label define bene_cash_ch 0"Hogar no beneficiario" 1"Hogar beneficiario"
 
 bys idh_ch: egen pnc_ch = max(pensionsub_ci) 
 
+/*
 
+	
+Esto no está en el manual de armonizaciones. como las variables de SPH aún están en construcción, no borro este contenido que figura en el 2022 y 2023. Puede que se usen los indicadores que aparecen acá en los nuevos indicadores
+ 
+ 
+ 
 *************
 *** y_hog ***
 *************	
@@ -1573,7 +1579,6 @@ drop aux
 *******************
 bys idh_ch: egen ing_pension = sum(gob_proteccion_vejez_monto)
 replace ing_pension=. if y_hog==.
-
 
 
 ***********************
@@ -1609,8 +1614,7 @@ gen pnc_ci=(ps_apoyo_adultos_mayores==1 & mayor64_ci ==1)
 lab def pnc_ci 1 "Beneficiario PNC" 0 "No beneficiario PNC"
 lab val pnc_ci pnc_ci
 
-	
-/* Esto no está en el manual de armonizaciones. como las variables de SPH aún están en construcción, no borro este contenido que figura en el 2022.
+
 
 *******************
 *** benefdes_ci ***
