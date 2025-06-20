@@ -1075,7 +1075,8 @@ replace aedu_ci= 0 if nivel_ultimo_ano_aprobado==9
 replace aedu_ci= 0 if nivel_ultimo_ano_aprobado==10
 replace aedu_ci= . if nivel_ultimo_ano_aprobado==99
 replace aedu_ci= ultimo_ano_aprobado if nivel_ultimo_ano_aprobado==2 
-replace aedu_ci = ultimo_ano_aprobado+8 if nivel_ultimo_ano_aprobado == 3 | nivel_ultimo_ano_aprobado == 4  
+replace aedu_ci = ultimo_ano_aprobado+6 if nivel_ultimo_ano_aprobado == 3  
+replace aedu_ci = ultimo_ano_aprobado+8 if nivel_ultimo_ano_aprobado == 4  
 replace aedu_ci = ultimo_ano_aprobado+12 if nivel_ultimo_ano_aprobado == 5  
 replace aedu_ci = ultimo_ano_aprobado+12+4 if nivel_ultimo_ano_aprobado==6 | nivel_ultimo_ano_aprobado==7 
 replace aedu_ci = ultimo_ano_aprobado+12+4+2 if nivel_ultimo_ano_aprobado==8 
@@ -1085,39 +1086,12 @@ label define nivel 1 "Pre-escolar" 2 "Primario" 3 "Secundario" 4 "Secundario-té
 label values nivel_ultimo_ano_aprobado nivel 
 label values nivel_se_matriculo nivel
 
-**************
-* Line of code with indicator eduno_ci was deleted**************
-* Line of code with indicator eduno_ci was deleted* Line of code with indicator eduno_ci was deleted* Line of code with indicator eduno_ci was deleted
 ***************
 ***edupre_ci***
 ***************
 gen byte edupre_ci=.
 label variable edupre_ci "Educacion preescolar completa"
 
-**************
-* Line of code with indicator edupi_ci was deleted**************
-* Line of code with indicator edupi_ci was deleted* Line of code with indicator edupi_ci was deleted* Line of code with indicator edupi_ci was deleted
-**************
-* Line of code with indicator edupc_ci was deleted**************
-* Line of code with indicator edupc_ci was deleted* Line of code with indicator edupc_ci was deleted* Line of code with indicator edupc_ci was deleted
-**************
-* Line of code with indicator edusi_ci was deleted**************
-* Line of code with indicator edusi_ci was deleted* Line of code with indicator edusi_ci was deleted* Line of code with indicator edusi_ci was deleted
-**************
-* Line of code with indicator edusc_ci was deleted**************
-* Line of code with indicator edusc_ci was deleted* Line of code with indicator edusc_ci was deleted* Line of code with indicator edusc_ci was deleted
-***************
-* Line of code with indicator edus1i_ci was deleted***************
-* Line of code with indicator edus1i_ci was deleted* Line of code with indicator edus1i_ci was deleted* Line of code with indicator edus1i_ci was deleted
-***************
-* Line of code with indicator edus1c_ci was deleted***************
-* Line of code with indicator edus1c_ci was deleted* Line of code with indicator edus1c_ci was deleted* Line of code with indicator edus1c_ci was deleted
-***************
-* Line of code with indicator edus2i_ci was deleted***************
-* Line of code with indicator edus2i_ci was deleted* Line of code with indicator edus2i_ci was deleted* Line of code with indicator edus2i_ci was deleted
-***************
-* Line of code with indicator edus2c_ci was deleted***************
-* Line of code with indicator edus2c_ci was deleted* Line of code with indicator edus2c_ci was deleted* Line of code with indicator edus2c_ci was deleted
 **************
 ***eduui_ci***
 **************
@@ -1183,11 +1157,6 @@ replace pqnoasis1_ci = 9 if porque_no_estudia==4  | porque_no_estudia==5 | porqu
 label define pqnoasis1_ci 1 "Problemas económicos" 2 "Por trabajo" 3 "Problemas familiares o de salud" 4 "Falta de interés" 5	"Quehaceres domésticos/embarazo/cuidado de niños/as" 6 "Terminó sus estudios" 7	"Edad" 8 "Problemas de acceso"  9 "Otros"
 label value  pqnoasis1_ci pqnoasis1_ci
 
-***************
-* Line of code with indicator repite_ci was deleted***************
-* Line of code with indicator repite_ci was deleted* Line of code with indicator repite_ci was deleted
-******************
-* Line of code with indicator repiteult was deleted* Line of code with indicator repiteult was deleted
 
 
 			**********************************
