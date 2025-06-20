@@ -1274,8 +1274,6 @@ label var refrig_ch "El hogar posee refrigerador o heladera"
 gen freez_ch=.
 label var freez_ch "El hogar posee congelador"
 
-
-
 *************
 ***auto_ch***
 *************
@@ -1339,7 +1337,7 @@ replace viviprop_ch=3 if tenencia_vivienda==4 | tenencia_vivienda==6 | tenencia_
 replace viviprop_ch=. if tenencia_vivienda==8
 label var viviprop_ch "Propiedad de la vivienda"
 label def viviprop_ch 0"Alquilada" 1"Propia" 2"Propia en proceso de pago"
-label def viviprop_ch 3"Ocupada (propia de facto)", add
+label def viviprop_ch 3"Ocupada (propia de facto)" 4"No se sabe la respuesta/ no hay respuesta", add
 label val viviprop_ch viviprop_ch
 
 ****************
