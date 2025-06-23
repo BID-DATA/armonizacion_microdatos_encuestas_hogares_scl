@@ -33,7 +33,7 @@ País: Republica Dominicana
 Encuesta: ENCFT
 Round: t4
 Autores: Olga Dulce
-Fecha última modificación:06/19/2025
+Fecha última modificación:06/23/2025
 *****************************************************************************
 							SCL/SCL - IADB
 ****************************************************************************/
@@ -448,8 +448,7 @@ replace durades_ci=(1+6)/2 if que_tiempo_busca_trabajo==2
 replace durades_ci=(6+12)/2 if que_tiempo_busca_trabajo==3
 replace durades_ci=(12+12)/2 if que_tiempo_busca_trabajo==4
 label variable durades_ci "Duracion del desempleo en meses"
-label def durades_ci 1 "Menos de un mes" 2"1 mes a menos de  meses" 3"2 meses a menos de 3 meses"
-label def durades_ci 4 "3 meses a menos de 6 meses" 5"6 meses a menos de 1 año" 6"Más de 1 año", add
+label def durades_ci 1 "Menos de un mes" 2"Promedio 3 meses" 3"Promedio 9 meses" 4"Promedio 12 meses"
 label val durades_ci durades1_ci
 
 *************
@@ -622,26 +621,15 @@ label var instcot_ci "institución a la cual cotiza"
 ****************
 gen afiliado_ci=.	
 replace afiliado_ci =1 if afiliado_afp_princ==1 
-*replace afiliado_ci =1 if eft_afiliado_afp_princ==1 | (eft_afiliado_seguro_salud >=1 & eft_afiliado_seguro_salud <=3)
-recode afiliado_ci .=0
+replace afiliado_ci =0 if afiliado_afp_princ==2 
+replace afiliado_ci =. if afiliado_afp_princ==98 
 label var afiliado_ci "Afiliado a la Seguridad Social"
 
 ***************
 ***formal_ci***
 ***************
-gen formal_ci=. /*Nota: se está validando el código entre las lineas 635-644 con el equipo SPL*/
-
-/*
-capture drop formal
-gen formal=1 if cotizando_ci==1
-replace formal=1 if afiliado_ci==1 & (cotizando_ci!=1 | cotizando_ci!=0) & condocup_ci==1 & pais_c=="DOM"
-gen byte formal_ci=.
-replace formal_ci=1 if formal==1 & (condocup_ci==1 | condocup_ci==2)
-replace formal_ci=0 if formal_ci==. & (condocup_ci==1 | condocup_ci==2) 
-label var formal_ci "1=afiliado o cotizante / PEA"
-* Formalidad sin restringir a PEA
-g formal_1=afiliado_ci
-*/
+gen formal_ci = (cotizando_ci == 1 | afiliado_ci == 1)
+label var formal_ci "1=formal"
 
 *****************
 *tipocontrato_ci*
@@ -1529,7 +1517,7 @@ bys idh_ch: gen nmiembros_sph_ch=_N
 ********************
 
 *ingreso neto mensualizado de transferencias publicas per capita
-gen double yneto_pc_ch = (ytot_ch - ynlm_publico_ch) / nmiembros_sph_ch 
+gen double yneto_pc_ch = (ytot_ch - ynlm_publico_ch) / nmiembros_sph_ch /*en validación SPL*/
 
 ********************
 *** bene_cash_ch ***
