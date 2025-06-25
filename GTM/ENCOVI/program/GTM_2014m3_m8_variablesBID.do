@@ -763,30 +763,14 @@ label var ypeoficial_ch "Ingreso per cápita generado por el país"
 
 */
 
-gen byte aedu_ci = .
 
-*Modificación Mayra Sáenz - se utiliza la p06b06a p06b06b en lugar de la p06b25a p06b25b
-
-*** preprimaria
-replace aedu_ci=0 if p06b06a==1 
-
-
-*** primaria
-replace aedu_ci=p06b06b  if p06b06a==2
-
-
-*** basica
-replace aedu_ci=6 + p06b06b if p06b06a==3
-
-*** diversificado
-replace aedu_ci=9 + p06b06b if p06b06a==4
-
-
-*** educacion superior
-replace aedu_ci=12 + p06b06b if p06b06a==5 
-
-*** post-grado
-replace aedu_ci=17 + p06b06b if p06b06a==6
+gen aedu_ci = .
+replace	 aedu_ci = 0  if (p06b25a == 0 | p06b25a== 1) // Ninguno Preprimaria
+replace aedu_ci = p06b25b if p06b25a == 2 // Primaria
+replace aedu_ci = 6 + p06b25b if (p06b25a == 3 | p06b25a == 4) // Básico, Diversificado
+replace aedu_ci = 11 + p06b25b if p06b25a== 5 // Superior
+replace aedu_ci = 16 + p06b25b if (p06b25a == 6 | p06b25a == 7) // Postgrado 
+label var aedu_ci "Anios de educacion aprobados"
 
 
 *Para los que no están asistiendo actualmente 
