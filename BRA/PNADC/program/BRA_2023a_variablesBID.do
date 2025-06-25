@@ -1540,11 +1540,7 @@ gen lp_ci = 665 // reales diarios
 *lpe_ci ***
 ***********
 * https://educa.ibge.gov.br/jovens/materias-especiais/22544-brasil-atinge-menor-nivel-de-pobreza-em-2023.html
-<<<<<<< HEAD
 gen lpe_ci= 209 
-=======
-gen lpe_ci = 209 
->>>>>>> 2dbf3a68a3915d65d8108dbaf3e78474e5704ccb
 
 /*_____________________________________________________________________________________________________*/
 * Asignación de etiquetas e inserción de variables externas: tipo de cambio, Indice de Precios al 
