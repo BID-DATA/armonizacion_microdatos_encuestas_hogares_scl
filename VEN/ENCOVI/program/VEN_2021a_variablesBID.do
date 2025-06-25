@@ -1012,11 +1012,11 @@ label var edupub_ci "1 = personas que asisten a centros de enseñanza publicos"
 **********************
 
 gen  razonesnoasis_ci=.
-replace razonesnoasis_ci = 1 if inlist (s7q13, 5, 6, 8)
-replace razonesnoasis_ci = 2 if inlist (s7q13, 9, 15)
-replace razonesnoasis_ci = 3 if inlist (s7q13, 7, 13, 14)
-replace razonesnoasis_ci = 4 if inlist (s7q13, 2, 3, 4)
-replace razonesnoasis_ci = 5 if inlist (s7q13, 1, 10, 11, 12, 16)
+replace razonesnoasis_ci = 1 if inlist(s7q13, 5, 6, 8)
+replace razonesnoasis_ci = 2 if inlist(s7q13, 9, 15)
+replace razonesnoasis_ci = 3 if inlist(s7q13, 7, 13, 14)
+replace razonesnoasis_ci = 4 if inlist(s7q13, 2, 3, 4)
+replace razonesnoasis_ci = 5 if inlist(s7q13, 1, 10, 11, 12, 16)
 
 label define razonesnoasis_ci 1 "Problemas económicos/Por trabajo" 2 "Falta de interés/Problemas de rendimiento" 3 "Cuidados/ Problemas familiares o de salud" 4 "Problemas de acceso"  5 "Otros"
 label value razonesnoasis_ci razonesnoasis_ci
@@ -1440,7 +1440,7 @@ do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&Exter
   ylm_ch ylnm_ch ylmnr_ch ynlm_ch ynlnm_ch ylmhopri_ci ylmho_ci /// Ingresos del hogar 
   nrylmpri_ci nrylmpri_ch /// No respuesta de ingresos  
   remesas_ci remesas_ch ypen_ci ypensub_ci /// Remesas y pensiones
-  aedu_ci eduui_ci eduuc_ci edupre_ci eduac_ci asiste_ci edupub_ci pqnoasis1_ci asispre_ci /// Educación
+  aedu_ci eduui_ci eduuc_ci edupre_ci eduac_ci asiste_ci edupub_ci  razonesnoasis_ci asispre_ci /// Educación
   luz_ch luzmide_ch combust_ch piso_ch pared_ch techo_ch resid_ch dorm_ch cuartos_ch cocina_ch telef_ch refrig_ch /// Vivienda
   freez_ch auto_ch compu_ch internet_ch cel_ch vivi1_ch vivi2_ch viviprop_ch vivitit_ch vivialq_ch vivialqimp_ch /// Vivienda
   aguared_ch aguafconsumo_ch aguafuente_ch aguadist_ch aguadisp1_ch aguadisp2_ch /// Agua y saneamineto
