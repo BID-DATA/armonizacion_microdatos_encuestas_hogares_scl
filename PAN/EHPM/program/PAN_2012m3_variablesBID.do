@@ -274,8 +274,8 @@ label var miembros_ci "Miembro del hogar"
 	*ind_ci*
 	*********	
 	gen byte ind_ci = .
-	replace ind_ci = 1 if indi_rec == 2
-	replace ind_ci = 0 if indi_rec == 1
+	replace ind_ci = 1 if indi_rec == "2"
+	replace ind_ci = 0 if indi_rec == "1"
 	
 	tab ind_ci, m
 	
