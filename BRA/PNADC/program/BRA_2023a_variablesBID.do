@@ -387,31 +387,7 @@ label variable nmenor1_ch "Numero de familiares menores a 1 anio"
 	gen byte BRA_dis_ci = .
 
 
-	*******************************
-	** SITUACIÓN DE DISCAPACIDAD **
-	*******************************
-
-************
-***dis_ci***
-************
-gen dis_ci = .
-
-************
-**disWG_ci**
-************
-gen disWG_ci = .
-
-*******************
-**ISO3pais_dis_ci**
-*******************
-gen BRA_dis_ci = . 
-
-************
-***dis_ch***
-************
-gen dis_ch = .
-
- 
+	 
 
 	************************************
 	*** VARIABLES DEL MERCADO LABORAL***
