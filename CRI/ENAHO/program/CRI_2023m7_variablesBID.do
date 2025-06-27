@@ -1164,19 +1164,21 @@ label variable asiste_ci "Asiste actualmente a la escuela"
 ******************
 ***pqnoasis1_ci***
 ******************
-**Daniela Zuluaga- Enero 2018: Se agrega la variable pqnoasis1_ci cuya sintaxis fue elaborada por Mayra Saenz**
 
-g       pqnoasis1_ci = 1 if a17==5
-replace pqnoasis1_ci = 2 if a17==1
-replace pqnoasis1_ci = 3 if a17==7 | a17==10
-replace pqnoasis1_ci = 4 if a17==2 | a17==8
-replace pqnoasis1_ci = 5 if a17==3 | a17==4 | a17==9
-replace pqnoasis1_ci = 7 if a17==11 
-replace pqnoasis1_ci = 8 if a17==6
-replace pqnoasis1_ci = 9 if a17==12 | a17==13
+* pqnoasis1_ci was replaced by razonesnoasis_ci, June 2025 * 
 
-label define pqnoasis1_ci 1 "Problemas económicos" 2 "Por trabajo" 3 "Problemas familiares o de salud" 4 "Falta de interés" 5	"Quehaceres domésticos/embarazo/cuidado de niños/as" 6 "Terminó sus estudios" 7	"Edad" 8 "Problemas de acceso"  9 "Otros"
-label value  pqnoasis1_ci pqnoasis1_ci
+**********************
+***razonesnoasis_ci***
+**********************
+gen razonesnoasis_ci=.
+replace razonesnoasis_ci = 1 if a17==1 | a17==2 | a17==5
+replace razonesnoasis_ci = 2 if a17==7 | a17==8
+replace razonesnoasis_ci = 3 if a17==3 | a17==4 | a17==9 | a17==10
+replace razonesnoasis_ci = 4 if a17==6
+replace razonesnoasis_ci = 5 if a17==11 | a17==12 | a17==13
+
+label define razonesnoasis_ci 1 "Problemas económicos/Por trabajo" 2 "Falta de interés/Problemas de rendimiento" 3 "Cuidados/ Problemas familiares o de salud" 4 "Problemas de acceso"  5 "Otros"
+label value razonesnoasis_ci razonesnoasis_ci
 
 ********************************************************************************************************************************
 ***REPITE_CI: Personas que han repetido al menos un año o grado
@@ -1711,7 +1713,7 @@ do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&Exter
   ylm_ch ylnm_ch ylmnr_ch ynlm_ch ynlnm_ch ylmhopri_ci ylmho_ci /// Ingresos del hogar 
   nrylmpri_ci nrylmpri_ch /// No respuesta de ingresos  
   remesas_ci remesas_ch ypen_ci ypensub_ci /// Remesas y pensiones
-  aedu_ci eduui_ci eduuc_ci edupre_ci eduac_ci asiste_ci edupub_ci pqnoasis1_ci asispre_ci /// Educación
+  aedu_ci eduui_ci eduuc_ci edupre_ci eduac_ci asiste_ci edupub_ci razonesnoasis_ci asispre_ci /// Educación
   luz_ch luzmide_ch combust_ch piso_ch pared_ch techo_ch resid_ch dorm_ch cuartos_ch cocina_ch telef_ch refrig_ch /// Vivienda
   freez_ch auto_ch compu_ch internet_ch cel_ch vivi1_ch vivi2_ch viviprop_ch vivitit_ch vivialq_ch vivialqimp_ch /// Vivienda
   aguared_ch aguafconsumo_ch aguafuente_ch aguadist_ch aguadisp1_ch aguadisp2_ch /// Agua y saneamineto

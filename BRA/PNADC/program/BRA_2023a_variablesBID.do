@@ -30,11 +30,6 @@ log using "`log_file'", replace
 País: Brasil
 Encuesta: PNADC
 Round: anual 2021
-Autores: Angela Lopez alop@iadb.org
-Alvaro Altamirano alvaroalt@iadb.org - Junio de 2020
-Cesar Lins - Marzo 2021
-Cecilia Giambruno - Noviembre 2021
-Oscar Jaramillo - Enero 2025
 
 ****************************************************************************
 *****************************************************************************/
@@ -301,96 +296,98 @@ label variable nmenor1_ch "Numero de familiares menores a 1 anio"
 
 
 
-	*******************************
-	** DIVERSIDAD ÉTNICO-RACIAL ***
-	*******************************
+*******************************************************
+***           VARIABLES DE DIVERSIDAD               ***
+*******************************************************
 
-****************
-*****afro_ci****
-****************
-**Pregunta: COR OU RACA? (v2010) (BRANCA 1, PRETA 2, AMARELA 3, PARDA 4, INDIGENA 5, IGNORADA 9) 
-gen afro_ci = 0 
-replace afro_ci = 1 if v2010 == 2 | v2010 == 4
+	*********
+	*afro_ci*
+	*********
+	**Pregunta: COR OU RACA? (v2010) (BRANCA 1, PRETA 2, AMARELA 3, PARDA 4, INDIGENA 5, IGNORADA 9) 
+	tab v2010, m
+	
+	gen byte afro_ci = . 
+	replace afro_ci = 1 if v2010 == 2 | v2010 == 4
+	replace afro_ci = 0 if v2010 != 2 & v2010 != 4 & v2010 != 9
+	tab afro_ci, m
+	
+	*********
+	*ind_ci*
+	*********	
+	gen byte ind_ci = .
+	replace ind_ci = 1 if v2010 == 5
+	replace ind_ci = 0 if v2010 != 5 & v2010 != 9
+	
+	tab ind_ci, m
 
-****************
-*****ind_ci*****
-****************
-**Pregunta: COR OU RACA? (v2010) (BRANCA 1, PRETA 2, AMARELA 3, PARDA 4, INDIGENA 5, IGNORADA 9) 
-gen ind_ci = 0
-replace ind_ci = 1 if v2010 == 5
+	**************
+	*noafroind_ci*
+	**************
+	gen byte noafroind_ci =.   // se queda como missing (.) si no existe la pregunta
+	replace noafroind_ci =1 if (afro_ci==0 & ind_ci==0)
+	replace noafroind_ci =0 if (afro_ci==1 | ind_ci==1)
+	replace noafroind_ci =. if (afro_ci==. | ind_ci==.) //Esto solo en el caso que se tenga ambas opciones no disponibles. 
+	ta noafroind_ci,m
 
-****************
-**noafroind_ci**
-****************
-**Pregunta: COR OU RACA? (v2010) (BRANCA 1, PRETA 2, AMARELA 3, PARDA 4, INDIGENA 5, IGNORADA 9) 
-gen noafroind_ci = 0 
-replace noafroind_ci = 1 if afro_ci == 0 | ind_ci == 0
+	************
+	*afroind_ci*
+	************
+	gen byte afroind_ci=. 
+	replace afroind_ci=1 if ind_ci==1 
+	replace afroind_ci=2 if afro_ci==1
+	replace afroind_ci=3 if noafroind_ci == 1
+	ta afroind_ci,m
+	
+	*********
+	*afro_ch*
+	*********
+	gen byte afro_jefe = afro_ci if relacion_ci==1
+	egen afro_ch  = max(afro_jefe), by(idh_ch) 
+	drop afro_jefe
+	
+	********
+	*ind_ch*
+	********	
+	gen byte ind_jefe = ind_ci if relacion_ci==1
+	egen ind_ch = max(ind_jefe), by(idh_ch) 
+	drop ind_jefe
 
-****************
-*****afro_ch****
-****************
-gen afro_ch = 0
-replace afro_ch = 1 if afro_ci == 1 & jefe_ci == 1
+	**************
+	*noafroind_ch*
+	**************
+	gen byte noafroind_jefe = noafroind_ci if relacion_ci==1
+	egen noafroind_ch = max(noafroind_jefe), by(idh_ch) 
+	drop noafroind_jefe
 
-****************
-*****ind_ch*****
-****************
-gen ind_ch = 0
-replace ind_ch = 1 if ind_ci == 1 & jefe_ci == 1
+	************
+	*afroind_ch*
+	************
+ 	gen byte afroind_jefe = afroind_ci if jefe_ci==1
+	egen afroind_ch = min(afroind_jefe), by(idh_ch) 
+	drop afroind_jefe 
 
-****************
-**noafroind_ch**
-****************
-gen noafroind_ch = 0
-replace noafroind_ch = 1 if (ind_ci == 0 | afro_ci == 0) & jefe_ci == 1
-
-*******************
-***afroind_ano_c***
-*******************
-gen afroind_ano_c = 1990
-
-****************
-***afroind_ci***
-****************
-gen afroind_ci = . 
-replace afroind_ci = 1 if v2010 == 5
-replace afroind_ci = 2 if v2010 == 2 | v2010 == 4 
-replace afroind_ci = 3 if v2010 == 1 | v2010 == 3
-
-****************
-***afroind_ch***
-****************
-gen afroind_jefe = afroind_ci if jefe_ci == 1
-egen afroind_ch = min(afroind_jefe), by(idh_ch) 
-
-drop afroind_jefe
+	********
+	*dis_ci*
+	********
+	gen byte dis_ci=.
+	
+	**********
+	*disWG_ci*
+	**********
+	gen byte disWG_ci=.
+	
+	********
+	*dis_ch*
+	********
+	egen byte dis_ch = max(dis_ci), by(idh_ch) 
+	
+	******************
+	*ISOalpha3_dis_ci*
+	******************
+	gen byte BRA_dis_ci = .
 
 
-	*******************************
-	** SITUACIÓN DE DISCAPACIDAD **
-	*******************************
-
-************
-***dis_ci***
-************
-gen dis_ci = .
-
-************
-**disWG_ci**
-************
-gen disWG_ci = .
-
-*******************
-**ISO3pais_dis_ci**
-*******************
-gen BRA_dis_ci = . 
-
-************
-***dis_ch***
-************
-gen dis_ch = .
-
- 
+	 
 
 	************************************
 	*** VARIABLES DEL MERCADO LABORAL***
@@ -402,7 +399,7 @@ gen dis_ch = .
 gen condocup_ci = .
 replace condocup_ci = 1 if (v4001 == 1 | v4002 == 1 | v4003 == 1 | v4004 == 1 | v4005 == 1)
 replace condocup_ci = 2 if  v4005 == 2 & (v4071 == 1 & v4072a! = 9) /*tomaron alguna providencia en la semana de referencia*/
-replace condocup_ci = 3 if  condocup_ci! = 1 | condocup_ci! = 2
+replace condocup_ci = 3 if condocup_ci == .
 replace condocup_ci = 4 if edad_ci < 10
 label define condocup_ci 1 "ocupados" 2 "desocupados" 3 "inactivos" 4 "menor 10 años"
 label value condocup_ci condocup_ci
@@ -683,7 +680,8 @@ label var afiliado_ci "Afiliado a la Seguridad Social"
 ***************
 ***formal_ci***
 ***************
-gen formal_ci=(cotizando_ci==1)
+gen formal_ci= (afiliado_ci == 1 | cotizando_ci == 1)
+label var formal_ci "=1 el trabajo es formal"
 
 *********************
 ***tipocontrato_ci***
@@ -1539,7 +1537,7 @@ gen lp_ci = 665 // reales diarios
 *lpe_ci ***
 ***********
 * https://educa.ibge.gov.br/jovens/materias-especiais/22544-brasil-atinge-menor-nivel-de-pobreza-em-2023.html
-gen lpe_ci = 209 
+gen lpe_ci= 209 
 
 /*_____________________________________________________________________________________________________*/
 * Asignación de etiquetas e inserción de variables externas: tipo de cambio, Indice de Precios al 
@@ -1555,6 +1553,7 @@ do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&Exter
     order region_BID_c region_c pais_c anio_c mes_c zona_c factor_ch idh_ch	idp_ci factor_ci factor_ch /// Identificación 
   sexo_ci edad_ci relacion_ci civil_ci jefe_ci nconyuges_ch nhijos_ch notropari_ch notronopari_ch nempdom_ch /// Demográficas 
   clasehog_ch nmiembros_ch miembros_ci nmayor21_ch nmenor21_ch nmayor65_ch nmenor6_ch nmenor1_ch /// Demográficas 
+  afro_ci ind_ci noafroind_ci afroind_ci afro_ch ind_ch noafroind_ch afroind_ch dis_ci disWG_ci dis_ch BRA_dis_ci /// Diversidad
   condocup_ci categoinac_ci emp_ci cesante_ci desemp_ci subemp_ci durades_ci pea_ci nempleos_ci antiguedad_ci desalent_ci  /// Empleo
   horaspri_ci horastot_ci tiempoparc_ci categopri_ci categosec_ci rama_ci spublico_ci tamemp_ci cotizando_ci instcot_ci	afiliado_ci /// Empleo 
   formal_ci tipocontrato_ci ocupa_ci pension_ci	pensionsub_ci tipopen_ci instpen_ci	ylmpri_ci /// Empleo 
