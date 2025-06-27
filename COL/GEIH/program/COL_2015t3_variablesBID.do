@@ -388,42 +388,10 @@ by idh_ch, sort: egen byte nmenor1_ch=sum((relacion_ci>0 & relacion_ci<=5) & (ed
 	gen byte COL_dis_ci = .
 	
 	
-	******************************************************************************
-*	VARIABLES DE DIVERSIDAD
-******************************************************************************
-**María Antonella Pereira & Nathalia Maya - Marzo 2021 
-
-	***************
-	***afroind_ci***
-	***************
-**Pregunta: De acuerdo con su cultura, pueblo o rasgos físicos, … es o se reconoce como:(P6080) (1- Indigena 2- Gitano - Rom 3- Raizal del archipiélago de San Andrés y providencia 4- Palenquero de San basilio o descendiente 5- Negro(a), mulato(a), Afrocolombiano(a) o Afrodescendiente 6- Ninguno de los anteriores (mestizo, blanco, etc)) 
-gen afroind_ci=. 
-replace afroind_ci=1  if P6080 == 1 
-replace afroind_ci=2 if P6080 == 3 | P6080 == 4 | P6080 == 5
-replace afroind_ci=3 if P6080 == 2 | P6080 == 6
-replace afroind_ci=. if P6080 ==.
-
-	***************
-	***afroind_ch***
-	***************
-gen afroind_jefe= afroind_ci if relacion_ci==1
-egen afroind_ch  = min(afroind_jefe), by(idh_ch) 
-drop afroind_jefe
-
 	*******************
 	***afroind_ano_c***
 	*******************
 gen afroind_ano_c=2006
-
-	*******************
-	***dis_ci***
-	*******************
-gen dis_ci=. 
-
-	*******************
-	***dis_ch***
-	*******************
-gen dis_ch=. 
 
 
 		************************************
@@ -1552,7 +1520,7 @@ do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&Exter
 /*_____________________________________________________________________________________________________*/
 destring idh_ch, replace
 
-    order region_BID_c region_c pais_c anio_c mes_c zona_c factor_ch idh_ch	idp_ci factor_ci factor_ch /// Identificación 
+ cap   order region_BID_c region_c pais_c anio_c mes_c zona_c factor_ch idh_ch	idp_ci factor_ci factor_ch /// Identificación 
   sexo_ci edad_ci relacion_ci civil_ci jefe_ci nconyuges_ch nhijos_ch notropari_ch notronopari_ch nempdom_ch /// Demográficas 
   clasehog_ch nmiembros_ch miembros_ci nmayor21_ch nmenor21_ch nmayor65_ch nmenor6_ch nmenor1_ch /// Demográficas 
   afro_ci ind_ci noafroind_ci afroind_ci afro_ch ind_ch noafroind_ch afroind_ch dis_ci disWG_ci dis_ch COL_dis_ci /// Diversidad
