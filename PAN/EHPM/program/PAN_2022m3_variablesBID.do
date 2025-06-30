@@ -33,16 +33,12 @@ log using "`log_file'", replace
 País: Panama
 Encuesta: EHPM
 Round: Marzo
-Autores: 
-Versión 2018:Daniela Zuluaga (DZG) - Email: danielazu@iadb.org, da.zuluaga@hotmail.com
-Última versión: Eric Torres (SCL/LMK) - Mayo 2023
 
-							SCL/LMK - IADB
-****************************************************************************/
+*************************************************************************** */
 /***************************************************************************
 Detalle de procesamientos o modificaciones anteriores:
 
-****************************************************************************/
+*************************************************************************** */
 
 
 use `base_in', clear
@@ -501,49 +497,101 @@ label var miembros_ci "Miembro del hogar"
 	
 *******************************************************
 ***           VARIABLES DE DIVERSIDAD               ***
-*******************************************************				
-* Maria Antonella Pereira & Nathalia Maya - Marzo 2021	
+*******************************************************
+	*********
+	*afro_ci*
+	*********
+	*Pregunta: ¿Se considera usted negro(a) o afrodescendiente? (p4f) 1- SI, 2- NO
+	destring p4f, gen(p4f_aux)
+	gen byte afro_ci = . 	  
+	replace afro_ci = 1 if p4f_aux>=1 & p4f_aux<=7
+	replace afro_ci = 0 if p4f_aux == 8
 
-	***************
-	*** afroind_ci ***
-	***************
-**Pregunta: ¿Se considera usted indígena? (p4d) ¿Se considera usted negro(a) o afrodescendiente? (p4f)
-**Puedes reportar más de una identidad por lo que hay una población afroindigena. Estos se consideran afrodescendientes puesto que la muestra total de afros es mayor.
-destring p4d p4f, replace
+	tab afro_ci, m
+	*********
+	*ind_ci*
+	*********
+	*Pregunta: ¿Se considera usted indígena? (p4d) 1- SI, 2- NO	
+	destring p4d, gen(p4d_aux)
+	gen byte ind_ci = .
+	replace ind_ci = 1 if p4d_aux>=1 & p4d_aux<=10 
+	replace ind_ci = 0 if p4d_aux == 11 
+	
+	tab ind_ci, m
+	
+	**************
+	*noafroind_ci*
+	**************
+	gen byte noafroind_ci =.   // se queda como missing (.) si no existe la pregunta
+	replace noafroind_ci =1 if (afro_ci==0 & ind_ci==0)
+	replace noafroind_ci =0 if (afro_ci==1 | ind_ci==1)
+	replace noafroind_ci =. if (afro_ci==. | ind_ci==.) //Esto solo en el caso que se tenga ambas opciones no disponibles. 
+	ta noafroind_ci,m
 
-gen afroind_ci=. 
-replace afroind_ci=1 if p4d>=1 & p4d<=10 
-replace afroind_ci=2 if p4f>=1 & p4f<=7
-replace afroind_ci=3 if p4d==11 & p4f==8
+	************
+	*afroind_ci*
+	************
+	gen byte afroind_ci=. 
+	replace afroind_ci=1 if ind_ci==1 
+	replace afroind_ci=2 if afro_ci==1
+	replace afroind_ci=3 if noafroind_ci == 1
+	ta afroind_ci,m
+	
+	*********
+	*afro_ch*
+	*********
+	gen byte afro_jefe = afro_ci if relacion_ci==1
+	egen afro_ch  = max(afro_jefe), by(idh_ch) 
+	drop afro_jefe
+	
+	********
+	*ind_ch*
+	********	
+	gen byte ind_jefe = ind_ci if relacion_ci==1
+	egen ind_ch = max(ind_jefe), by(idh_ch) 
+	drop ind_jefe
 
+	**************
+	*noafroind_ch*
+	**************
+	gen byte noafroind_jefe = noafroind_ci if relacion_ci==1
+	egen noafroind_ch = max(noafroind_jefe), by(idh_ch) 
+	drop noafroind_jefe
 
-	***************
-	*** afroind_ch ***
-	***************
-gen afroind_jefe= afroind_ci if relacion_ci==1
-egen afroind_ch  = min(afroind_jefe), by(idh_ch) 
+	************
+	*afroind_ch*
+	************
+ 	gen byte afroind_jefe = afroind_ci if jefe_ci==1
+	egen afroind_ch = min(afroind_jefe), by(idh_ch) 
+	drop afroind_jefe 
 
-drop afroind_jefe
-
-	*******************
-	*** afroind_ano_c ***
-	*******************
-gen afroind_ano_c=2022
-
-
-	*******************
-	*** dis_ci ***
-	*******************
-destring p4z1_cami p4z2_usarb p4z3_habl p4z4_enten p4z5_cuid p4z6_ver p4z7_oir, replace
-gen dis_ci= 0 if p4z1_cami==1 | p4z2_usarb==1 | p4z3_habl==1 | p4z4_enten==1 | p4z5_cuid==1 | p4z6_ver==1 | p4z7_oir==1
-replace dis_ci= 1 if ((p4z1_cami>1 & p4z1_cami!=.) | (p4z2_usarb>1 & p4z2_usarb!=.) | (p4z3_habl>1 & p4z3_habl!=.) | (p4z4_enten>1 & p4z4_enten!=.) | (p4z5_cuid>1 & p4z5_cuid!=.) | (p4z6_ver>1 & p4z6_ver!=.) | (p4z7_oir>1 & p4z7_oir!=.))
-
-
-	*******************
-	*** dis_ch ***
-	*******************
-egen dis_ch  = sum(dis_ci), by(idh_ch) 
-replace dis_ch=1 if dis_ch>=1 & dis_ch!=. 
+	********
+	*dis_ci*
+	********
+	foreach var in  p4z1_cami p4z2_usarb p4z3_habl p4z4_enten p4z5_cuid p4z6_ver p4z7_oir { 
+	destring `var', gen(`var'_aux)	
+	}
+	
+	gen byte dis_ci = .
+	replace dis_ci = 1 if ((p4z1_cami_aux>1 & p4z1_cami_aux!=.) | (p4z2_usarb_aux>1 & p4z2_usarb_aux!=.) | (p4z3_habl_aux>1 & p4z3_habl_aux!=.) | (p4z4_enten_aux>1 & p4z4_enten_aux!=.) | (p4z5_cuid_aux>1 & p4z5_cuid_aux!=.) | (p4z6_ver_aux>1 & p4z6_ver_aux!=.) | (p4z7_oir_aux>1 & p4z7_oir_aux!=.))
+	replace dis_ci = 0 if  p4z1_cami_aux==1 & p4z2_usarb_aux==1 & p4z3_habl_aux==1 & p4z4_enten_aux==1 & p4z5_cuid_aux==1 & p4z6_ver_aux==1 & p4z7_oir_aux==1
+	
+	**********
+	*disWG_ci*
+	**********
+	gen byte disWG_ci=.
+	replace disWG_ci = 1 if ((p4z1_cami_aux>2 & p4z1_cami_aux!=.) | (p4z2_usarb_aux>2 & p4z2_usarb_aux!=.) | (p4z3_habl_aux>2 & p4z3_habl_aux!=.) | (p4z4_enten_aux>2 & p4z4_enten_aux!=.) | (p4z5_cuid_aux>2 & p4z5_cuid_aux!=.) | (p4z6_ver_aux>2 & p4z6_ver_aux!=.) | (p4z7_oir_aux>2 & p4z7_oir_aux!=.))
+	replace disWG_ci = 0 if  p4z1_cami_aux==1 & p4z2_usarb_aux==1 & p4z3_habl_aux==1 & p4z4_enten_aux==1 & p4z5_cuid_aux==1 & p4z6_ver_aux==1 & p4z7_oir_aux==1
+	
+	********
+	*dis_ch*
+	********
+	egen byte dis_ch = max(dis_ci), by(idh_ch) 
+	
+	******************
+	*ISOalpha3_dis_ci*
+	******************
+	gen byte PAN_dis_ci = dis_ci
 
 
 ******************************************************************************
@@ -1658,6 +1706,7 @@ lab val grupo_int grupo_int
     order region_BID_c region_c pais_c anio_c mes_c zona_c factor_ch idh_ch	idp_ci factor_ci factor_ch /// Identificación 
   sexo_ci edad_ci relacion_ci civil_ci jefe_ci nconyuges_ch nhijos_ch notropari_ch notronopari_ch nempdom_ch /// Demográficas 
   clasehog_ch nmiembros_ch miembros_ci nmayor21_ch nmenor21_ch nmayor65_ch nmenor6_ch nmenor1_ch /// Demográficas 
+  afro_ci ind_ci noafroind_ci afroind_ci afro_ch ind_ch noafroind_ch afroind_ch dis_ci disWG_ci dis_ch PAN_dis_ci /// Diversidad
   condocup_ci categoinac_ci emp_ci cesante_ci desemp_ci subemp_ci durades_ci pea_ci nempleos_ci antiguedad_ci desalent_ci  /// Empleo
   horaspri_ci horastot_ci tiempoparc_ci categopri_ci categosec_ci rama_ci spublico_ci tamemp_ci cotizando_ci instcot_ci	afiliado_ci /// Empleo 
   formal_ci tipocontrato_ci ocupa_ci pension_ci	pensionsub_ci tipopen_ci instpen_ci	ylmpri_ci /// Empleo 
@@ -1665,7 +1714,7 @@ lab val grupo_int grupo_int
   ylm_ch ylnm_ch ylmnr_ch ynlm_ch ynlnm_ch ylmhopri_ci ylmho_ci /// Ingresos del hogar 
   nrylmpri_ci nrylmpri_ch /// No respuesta de ingresos  
   remesas_ci remesas_ch ypen_ci ypensub_ci /// Remesas y pensiones
-  aedu_ci eduui_ci eduuc_ci edupre_ci eduac_ci asiste_ci edupub_ci pqnoasis1_ci asispre_ci /// Educación
+  aedu_ci eduui_ci eduuc_ci edupre_ci eduac_ci asiste_ci edupub_ci razonesnoasis_ci asispre_ci /// Educación
   luz_ch luzmide_ch combust_ch piso_ch pared_ch techo_ch resid_ch dorm_ch cuartos_ch cocina_ch telef_ch refrig_ch /// Vivienda
   freez_ch auto_ch compu_ch internet_ch cel_ch vivi1_ch vivi2_ch viviprop_ch vivitit_ch vivialq_ch vivialqimp_ch /// Vivienda
   aguared_ch aguafconsumo_ch aguafuente_ch aguadist_ch aguadisp1_ch aguadisp2_ch /// Agua y saneamineto
