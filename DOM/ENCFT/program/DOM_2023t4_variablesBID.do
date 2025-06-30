@@ -1131,7 +1131,7 @@ replace razonesnoasis_ci = 1 if porque_no_estudia==8 | porque_no_estudia==7
 replace razonesnoasis_ci = 2 if porque_no_estudia==4 | porque_no_estudia==12
 replace razonesnoasis_ci = 3 if porque_no_estudia==11
 replace razonesnoasis_ci = 4 if porque_no_estudia==3
-replace razonesnoasis_ci = 6 if porque_no_estudia==2 | porque_no_estudia==5 | porque_no_estudia==6 | porque_no_estudia==9 | porque_no_estudia==10 porque_no_estudia==13
+replace razonesnoasis_ci = 5 if porque_no_estudia==2 | porque_no_estudia==5 | porque_no_estudia==6 | porque_no_estudia==9 | porque_no_estudia==10 porque_no_estudia==13
 
 
 label define razonesnoasis_ci 1 "Problemas económicos/Por trabajo" 2 "Falta de interés/Problemas de rendimiento" 3 "Cuidados/ Problemas familiares o de salud" 4 "Problemas de acceso"  5 "Otros"
