@@ -324,171 +324,401 @@ cap destring, replace
 	gen dis_ch=. 
 
 
-*************************************************************************************
-*******************************INGRESOS**********************************************
-*************************************************************************************
-**************
-***ocupa_ci***
-**************
-encode tp48, g(tp48_)
-*La clasificación no corresponde a la clasificación estandarizada de ocupación
-
-gen ocupa_ci=.
-label var ocupa_ci "Ocupacion Laboral en la Actividad Principal"
-label define ocupa_ci 1 "PROFESIONALES Y TECNICOS" 2 "GERENTES, DIRECTORES Y FUNCIONARIOS SUPERIORES"  3 "PERSONAL ADMINISTRATIVO Y NIVEL INTERMEDIO" 4 "COMERCIANTES Y VENDEDORES" 5 "TRABAJADORES EN SERVICIOS" 6"TRABAJADORES AGRICOLAS Y AFINES" 7 "OBREROS NO AGRICOLAS, CONDUCTORES DE MAQUINAS Y VEHICULOS DE TRANSPORTE Y SIMILARES" 8"FUERZAS ARMADAS" 9"OTRAS OCUPACIONES NO CLASIFICADAS ANTERIORMENTE"
-label values ocupa_ci ocupa_ci
-
-
-*****************
-***horastot_ci***
-*****************
-
-
-gen byte horastot_ci=.
-replace horastot_ci=tp54 if tp54>=0 & tp54 <168
-label var horastot_ci "Horas totales trabajadas la semana pasada en todas las Actividades"
-
-
 ************************************
 *** VARIABLES DEL MERCADO LABORAL***
 ************************************
 
-****************
-****condocup_ci*
-****************
-gen condocup_ci=.
-replace condocup_ci=1 if (tp47>=1 & tp47 <=2) 
-replace condocup_ci=2 if (tp47>=3 & tp47 <=4)  
-replace condocup_ci=3 if condocup_ci!=1 & condocup_ci!=2
-replace condocup_ci=4 if edad_ci<10
-label define condocup_ci 1"ocupados" 2"desocupados" 3"inactivos" 4"menor de PET"
-label value condocup_ci condocup_ci
-label var condocup_ci "Condicion de ocupacion utilizando definicion del pais"
+	****************
+	****condocup_ci*
+	****************
+	gen condocup_ci=.
+	replace condocup_ci=1 if (tp47>=1 & tp47 <=2) 
+	replace condocup_ci=2 if (tp47>=3 & tp47 <=4)  
+	replace condocup_ci=3 if condocup_ci!=1 & condocup_ci!=2
+	replace condocup_ci=4 if edad_ci<10
+
+	********************
+	****categoinac_ci***
+	********************
+	gen categoinac_ci = .
+	replace categoinac_ci = 1 if ((tp47==7) & condocup_ci==3)
+	replace categoinac_ci = 2 if ((tp47==6) & condocup_ci==3)
+	replace categoinac_ci = 3 if ((tp47==5) & condocup_ci==3)
+	replace categoinac_ci = 4 if  ((categoinac_ci ~=1 & categoinac_ci ~=2 & categoinac_ci ~=3) & condocup_ci==3)
+
+	************
+	***emp_ci***
+	************
+	gen emp_ci=(condocup_ci==1)
+
+	*************
+	*cesante_ci* 
+	*************
+	generat cesante_ci=0 if condocup_ci==2
+	replace cesante_ci=1 if (tp47==4) & condocup_ci==2
+
+	****************
+	***desemp_ci***
+	****************
+	gen desemp_ci=(condocup_ci==2)
+
+	***************
+	***subemp_ci***
+	***************
+	gen subemp_ci=0     if  emp_ci==1
+	replace subemp_ci=1 if horaspri_ci<=30 & tp56==1 & emp_ci==1
+
+	****************
+	***durades_ci***
+	****************
+	gen durades_ci = .
+
+	*************
+	***pea_ci***
+	*************
+	gen pea_ci=(emp_ci==1 | desemp_ci==1)
+
+	*****************
+	***nempleos_ci***
+	*****************
+	gen byte nempleos_ci=.
+
+	*******************
+	***antiguedad_ci***
+	*******************
+	gen antiguedad_ci=.
+
+	*****************
+	***desalent_ci***
+	*****************
+	* La variable tp58 que contiene las categorías para desalentados sólo se pregunta a los que trabajan y no a los inactivos.
+	gen desalent_ci=.
+
+	*****************
+	***horaspri_ci***
+	*****************
+	*No se pregunta específicamente la actividad principal, se pregunta las horas en promedio que trabajó la semana anterior.
+	gen byte horaspri_ci=.
+	replace horaspri_ci=tp54 if tp54>=0 & tp54 <168
+
+	*****************
+	***horastot_ci***
+	*****************
+	gen byte horastot_ci=.
+	replace horastot_ci=tp54 if tp54>=0 & tp54 <168
+
+	*******************
+	***tiempoparc_ci***
+	*******************
+	/*Sobre las horas normalmente trabajadas*/
+	gen tiempoparc_ci=0 if  emp_ci==1
+	replace tiempoparc_ci=0 if horaspri_ci<=30 & tp56==2 & emp_ci==1
+	*No está la variable pp38: Ha hecho algo para trabajar horas adicionales?
+
+	******************
+	***categopri_ci***
+	******************
+	gen categopri_ci=.
+	replace categopri_ci=1 if tp50==5 & condocup_ci==1
+	replace categopri_ci=2 if (tp50==6 | tp50==7 | tp50==9)  & condocup_ci==1
+	replace categopri_ci=3 if (tp50>=1 & tp50<=4)   & condocup_ci==1
+	replace categopri_ci=4 if tp50==8 & condocup_ci==1
+	
+	******************
+	***categosec_ci***
+	******************
+	gen categosec_ci=.
+
+	*************
+	***rama_ci***
+	*************
+	gen rama_ci=.
+
+	*****************
+	***spublico_ci***
+	*****************
+	gen byte spublico_ci=.
+	replace spublico_ci=1 if emp_ci==1 & (tp50==1 | tp50==2) 
+	replace spublico_ci=0 if emp_ci==1 & (tp50>2 & tp50<=9) 
+	label var spublico "Personas que trabajan en el sector publico"
+
+	*************
+	*tamemp_ci***
+	*************
+	gen tamemp_ci=1 if tp49>=1 & tp49<=3
+	*Empresas medianas
+	replace tamemp_ci=2 if tp49>=4 & tp49<=5
+	*Empresas grandes
+	replace tamemp_ci=3 if tp49>=6 & tp49<=7
+
+	****************
+	*cotizando_ci***
+	****************
+	*Las preguntas relacionadas con pensiones son respondidas por personas a partir de los 40 años pp61, pp63ss, pp63ep 
+	gen cotizando_ci=.
+
+	********************
+	*** instcot_ci *****
+	********************
+	gen instcot_ci=.
+
+	****************
+	*afiliado_ci****
+	****************
+	gen afiliado_ci=1 if tp53ss ==1
+	replace afiliado_ci=0 if tp53ss ==2
+
+	*************
+	***formal_ci***
+	*************
+	gen formal_ci=(cotizando_ci==1)
+
+	*****************
+	*tipocontrato_ci*
+	*****************
+	gen tipocontrato_ci=.
+	replace tipocontrato_ci =1 if tp52 ==1
+	replace tipocontrato_ci =2 if tp52 ==2
+	replace tipocontrato_ci =3 if tp52 ==3 | tp52==4
+
+	**************
+	***ocupa_ci***
+	**************
+	encode tp48, g(tp48_)
+	*La clasificación no corresponde a la clasificación estandarizada de ocupación
+	gen ocupa_ci=.
+	label var ocupa_ci "Ocupacion Laboral en la Actividad Principal"
+	label define ocupa_ci 1 "PROFESIONALES Y TECNICOS" 2 "GERENTES, DIRECTORES Y FUNCIONARIOS SUPERIORES"  3 "PERSONAL ADMINISTRATIVO Y NIVEL INTERMEDIO" 4 "COMERCIANTES Y VENDEDORES" 5 "TRABAJADORES EN SERVICIOS" 6"TRABAJADORES AGRICOLAS Y AFINES" 7 "OBREROS NO AGRICOLAS, CONDUCTORES DE MAQUINAS Y VEHICULOS DE TRANSPORTE Y SIMILARES" 8"FUERZAS ARMADAS" 9"OTRAS OCUPACIONES NO CLASIFICADAS ANTERIORMENTE"
+	label values ocupa_ci ocupa_ci
+
+	*************
+	**pension_ci*
+	*************
+	gen pension_ci=. 
+	replace pension_ci = 1 if pp61==1 | (pp63ss==1 | pp63ep==1 | pp63pr==1 | pp63ot==1) 
+	replace pension_ci = 0 if pp61==2 | (pp63ss==2 & pp63ep==2 & pp63pr==2 & pp63ot==2) 
+
+	***************
+	*pensionsub_ci*
+	***************
+	gen pensionsub_ci=.
+
+	****************
+	*tipopen_ci*****
+	****************
+	gen tipopen_ci=.
+
+	****************
+	*instpen_ci*****
+	****************
+	gen instpen_ci=.
 
 
+****************************
+****** INGRESOS ************
+****************************
 
-******************
-***categopri_ci***
-******************
+	****************
+	***ylmpri_ci ***
+	****************
+	recode tp51 tp51m (99=.) (98=.)
+	gen ylmpri_ci=.
+	replace ylmpri_ci=tp51m
+	label var ylmpri_ci "Ingreso Laboral Monetario de la Actividad Principal"
 
-gen categopri_ci=.
-replace categopri_ci=1 if tp50==5 & condocup_ci==1
-replace categopri_ci=2 if (tp50==6 | tp50==7 | tp50==9)  & condocup_ci==1
-replace categopri_ci=3 if (tp50>=1 & tp50<=4)   & condocup_ci==1
-replace categopri_ci=4 if tp50==8 & condocup_ci==1
-label var categopri_ci "CATEGORIA OCUPACIONAL ACTIVIDAD PRINCIPAL"
-label define categopri_ci 1 "Patron" 2 "Cuenta Propia" 3 "Asalariado" 4 "Trabajador No Remunerado" 
-label values categopri_ci categopri_ci
+	*****************
+	*** ylnmpri_ci***
+	*****************
+	gen ylnmpri_ci=.
+	label var ylnmpri_ci "Ingreso Laboral NO Monetario de la Actividad Principal"
+
+	***************
+	***ylmsec_ci***
+	***************
+	gen ylmsec_ci=.
+	label var ylmsec_ci "Ingreso Laboral Monetario de la Actividad Secundaria"
+
+	*****************
+	***ylnmsec_ci ***
+	*****************
+	gen ylnmsec_ci=.
+	label var ylnmsec_ci "Ingreso Laboral NO Monetario de la Actividad Secundaria"
+
+	******************
+	*** ylmotros_ci***
+	******************
+	gen ylmotros_ci=.
+	label var ylmotros_ci "Ingreso Laboral Monetario Otros Trabajos"
+
+	******************
+	***ylnmotros_ci***
+	******************
+	gen ylnmotros_ci=.
+	label var ylnmotros_ci "Ingreso Laboral NO Monetario Otros Trabajos"
+
+	************
+	***ylm_ci***
+	************
+	egen ylm_ci= rsum(ylmpri_ci ylmsec_ci),m
+	replace ylm_ci=. if ylmpri_ci==. &  ylmsec_ci==.
+	label var ylm_ci "Ingreso laboral monetario total"  
+
+	*************
+	***ylnm_ci***
+	*************
+	gen ylnm_ci=.
+	label var ylnm_ci "Ingreso Laboral NO Monetario Total"
+
+	*** ingreso no laboral ***
+	
+	*********************
+	***ynlm_publico_ci***
+	*********************
+	gen ynlm_publico_ci = .
+
+	*********************
+	***ynlm_privado_ci***
+	*********************
+	gen ynlm_privado_ci = .
+
+	*************
+	***ynlm_ci***
+	*************
+	recode pp63pm  pp630m (98=.) (99=.)
+	egen pensiones = rsum(pp63sm pp63em pp63pm  pp630m), missing
+	gen ynlm_ci=.
+	replace ynlm_ci=pensiones 
+	label var ynlm_ci "Ingreso NO Laboral Monetario"
+
+	**************
+	***ynlnm_ci***
+	**************
+	gen ynlnm_ci=.
+	label var ynlnm_ci "Ingreso NO Laboral NO Monetario"
+
+	*** ingresos total a nivel de individuo ***
+
+	*************
+	***ytot_ci***
+	*************
+	egen double ytot_ci= rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci), mi
+	
+	*** Ingresos laborales y no laborales a nivel hogar ***
+	
+	*************
+	*** ylm_ch***
+	*************
+	egen ylm_ch=sum(ylm_ci) if miembros_ci==1, by(idh_ch)
+	label var ylm_ch "Ingreso Laboral Monetario del Hogar"
+
+	***************
+	*** ylnm_ch ***
+	***************
+	egen ylnm_ch=sum(ylnm_ci) if miembros_ci==1, by(idh_ch)
+	label var ylnm_ch "Ingreso Laboral No Monetario del Hogar"
+
+	****************
+	*** ynlnm_ch ***
+	****************
+	egen ynlnm_ch=sum(ynlnm_ci) if miembros_ci==1, by(idh_ch)
+	label var ynlnm_ch "Ingreso No Laboral No Monetario del Hogar"
+
+	*********************
+	***ynlm_publico_ch***
+	*********************
+	gen ynlm_publico_ch = .
+
+	*********************
+	***ynlm_privado_ch***
+	*********************
+	gen ynlm_privado_ch = .
+	
+	***************
+	*** ynlm_ch ***
+	***************
+	egen ynlm_ch=sum(ynlm_ci) if miembros_ci==1, by(idh_ch)
+	label var ynlm_ch "Ingreso No Laboral Monetario del Hogar"	
+
+	*** Ingresos totales a nivel hogar ***
+
+	****************
+	*** ytot_ch ***
+	****************
+	egen double ytot_ch= rowtotal(ylm_ch ylnm_ch ynlm_ch ynlnm_ch), mi
+
+	** Salario por hora
+	
+	*******************
+	*** ylmhopri_ci ***
+	*******************
+	gen ylmhopri_ci=.
+	replace ylmhopri_ci=ylmpri_ci/(horaspri_ci*4.3)
+	label var ylmhopri_ci "Salario Horario Monetario de la Actividad Principal"
+
+	***************
+	***ylmho_ci ***
+	***************
+	gen ylmho_ci=.
+	replace ylmho_ci=ylm_ci/(horastot*4.3)
+	label var ylmho_ci "Salario Horario Monetario de todas las Actividades"
+
+	*** no respuesta
+	
+	******************
+	***nrylmpri_ci ***
+	******************
+	g nrylmpri_ci=(ylmpri_ci==. & emp_ci==1)
+	replace nrylmpri_ci=. if emp_ci!=1 | categopri_ci==4 /*excluding unpaid workers*/
+	label var nrylmpri_ci "Id no respuesta ingreso de la actividad principal"  
+	******************
+	*** nrylmpri_ch***
+	******************
+	capture drop nrylmpri_ch
+	sort idh
+	egen nrylmpri_ch=sum(nrylmpri_ci) if miembros_ci==1, by(idh)
+	replace nrylmpri_ch=1 if nrylmpri_ch>1 & nrylmpri_ch~=. & miembros_ci==1
+	label var nrylmpri_ch "Identificador de Hogares en donde alguno de los miembros No Responde el Ingreso Monetario de la Actividad Principal"
+	
+	****************
+	*** ylmnr_ch ***
+	****************
+	egen ylmnr_ch=sum(ylm_ci) if miembros_ci==1 & nrylmpri_ch==0, by(idh_ch)
+	label var ylmnr_ch "Ingreso Laboral Monetario del Hogar, considera 'missing' la No Respuesta"
+
+	** remesas
+	
+	*****************
+	***remesas_ci***
+	*****************
+	gen remesas_ci=.
+	label var remesas_ci "Remesas Individuales"
+		
+	******************
+	*** remesas_ch ***
+	******************
+	egen remesas_ch=sum(remesas_ci) if miembros_ci==1, by(idh_ch)
+	label var remesas_ch "Remesas del Hogar (monetario + especies)"
+
+	** Pensiones
+	
+	*************
+	*ypen_ci*
+	*************
+	**DZ Octubre 2017- Se agregan las variables pp63pm pp630m a la suma*
+	recode pp63sm (98=.) (99=.)
+	recode pp63em (98=.) (99=.)
+	recode pp63pm (98=.) (99=.)
+	recode pp630m (98=.) (99=.)
+	egen ypen_ci= rsum(pp63sm pp63em pp63pm pp630m) if pension_ci==1, missing
+	label var ypen_ci "Valor de la pension contributiva"
+
+	*****************
+	**  ypensub_ci  *
+	*****************
+	gen ypensub_ci=.
+	label var ypensub_ci "Valor de la pension subsidiada / no contributiva"
 
 
-
-
-****************
-*afiliado_ci****
-****************
-
-gen afiliado_ci=1 if tp53ss ==1
-replace afiliado_ci=0 if tp53ss ==2
-label var afiliado_ci "Afiliado a la Seguridad Social"
-
-****************
-*cotizando_ci***
-****************
-*Las preguntas relacionadas con pensiones son respondidas por personas a partir de los 40 años pp61, pp63ss, pp63ep 
-gen cotizando_ci=.
-label var cotizando_ci "Cotizante a la Seguridad Social"
-
-****************
-*instpen_ci*****
-****************
-gen instpen_ci=.
-label var instpen_ci "Institucion proveedora de la pension - variable original de cada pais" 
-
-****************
-*tipopen_ci*****
-****************
-gen tipopen_ci=.
-label var tipopen_ci "Tipo de pension - variable original de cada pais" 
-
-
-********************
-*** instcot_ci *****
-********************
-gen instcot_ci=.
-label var instcot_ci "institución a la cual cotiza"
-
-*****************
-*tipocontrato_ci*
-*****************
-
-gen tipocontrato_ci=.
-replace tipocontrato_ci =1 if tp52 ==1
-replace tipocontrato_ci =2 if tp52 ==2
-replace tipocontrato_ci =3 if tp52 ==3 | tp52==4
-label var tipocontrato_ci "Tipo de contrato segun su duracion en act principal"
-label define tipocontrato_ci 1 "Permanente/indefinido" 2 "Temporal" 3 "Sin contrato/verbal" 
-label value tipocontrato_ci tipocontrato_ci
-
-*************
-*tamemp_ci***
-*************
-gen tamemp_ci=1 if tp49>=1 & tp49<=3
-label var  tamemp_ci "Tamaño de Empresa" 
-*Empresas medianas
-replace tamemp_ci=2 if tp49>=4 & tp49<=5
-*Empresas grandes
-replace tamemp_ci=3 if tp49>=6 & tp49<=7
-label define tamaño 1"Pequeña" 2"Mediana" 3"Grande"
-label values tamemp_ci tamaño
-tab tamemp_ci [iw=factor_ci]
-
-gen categoinac_ci = .
-replace categoinac_ci = 1 if ((tp47==7) & condocup_ci==3)
-replace categoinac_ci = 2 if ((tp47==6) & condocup_ci==3)
-replace categoinac_ci = 3 if ((tp47==5) & condocup_ci==3)
-replace categoinac_ci = 4 if  ((categoinac_ci ~=1 & categoinac_ci ~=2 & categoinac_ci ~=3) & condocup_ci==3)
-label var categoinac_ci "Categoría de inactividad"
-label define categoinac_ci 1 "Jubilados o pensionados" 2 "Estudiantes" 3 "Quehaceres domésticos" 4 "Otros"
-label values categoinac_ci categoinac_ci
-
-*************
-**pension_ci*
-*************
-gen pension_ci=. 
-replace pension_ci = 1 if pp61==1 | (pp63ss==1 | pp63ep==1 | pp63pr==1 | pp63ot==1) 
-replace pension_ci = 0 if pp61==2 | (pp63ss==2 & pp63ep==2 & pp63pr==2 & pp63ot==2) 
-label var pension_ci "1=Recibe pension contributiva"
- 
-*************
-*ypen_ci*
-*************
-**DZ Octubre 2017- Se agregan las variables pp63pm pp630m a la suma*
-recode pp63sm (98=.) (99=.)
-recode pp63em (98=.) (99=.)
-recode pp63pm (98=.) (99=.)
-recode pp630m (98=.) (99=.)
-
-egen ypen_ci= rsum(pp63sm pp63em pp63pm pp630m) if pension_ci==1, missing
-label var ypen_ci "Valor de la pension contributiva"
-
-***************
-*pensionsub_ci*
-***************
-gen pensionsub_ci=.
-label var pensionsub_ci "1=recibe pension subsidiada / no contributiva"
-
-*****************
-**  ypensub_ci  *
-*****************
-gen ypensub_ci=.
-label var ypensub_ci "Valor de la pension subsidiada / no contributiva"
-
-*************
-*cesante_ci* 
-*************
-generat cesante_ci=0 if condocup_ci==2
-replace cesante_ci=1 if (tp47==4) & condocup_ci==2
-label var cesante_ci "Desocupado - definicion oficial del pais"
 
 *********
 *lp_ci***
@@ -516,185 +746,13 @@ label var salmm_ci "Salario minimo legal"
 gen tecnica_ci=(ep37n==5)
 label var tecnica_ci "=1 formacion terciaria tecnica"	
 
-************
-***emp_ci***
-************
-gen emp_ci=(condocup_ci==1)
-
-****************
-***desemp_ci***
-****************
-gen desemp_ci=(condocup_ci==2)
-
-*************
-***pea_ci***
-*************
-gen pea_ci=(emp_ci==1 | desemp_ci==1)
-
-*************
-***formal_ci***
-*************
-gen formal_ci=(cotizando_ci==1)
-
-*****************
-***horaspri_ci***
-*****************
-*No se pregunta específicamente la actividad principal, se pregunta las horas en promedio que trabajó la semana anterior.
-gen byte horaspri_ci=.
-replace horaspri_ci=tp54 if tp54>=0 & tp54 <168
-label var horaspri_ci "Horas totales trabajadas la semana pasada en la Actividad Principal"
-
-
-****************
-***durades_ci***
-****************
-
-gen durades_ci = .
-
-
-*****************
-***desalent_ci***
-*****************
-* La variable tp58 que contiene las categorías para desalentados sólo se pregunta a los que trabajan y no a los inactivos.
-
-gen desalent_ci=.
-label var desalent_ci "Trabajadores desalentados: personas que creen que por alguna razón no conseguirán trabajo"
-label define desalent_ci 1 "Trabajador desalentado" 0 "No es trabajador desalentado" 
-label values desalent_ci desalent_ci 
-
-
-***************
-***subemp_ci***
-***************
-gen subemp_ci=0     if  emp_ci==1
-replace subemp_ci=1 if horaspri_ci<=30 & tp56==1 & emp_ci==1
-label var subemp_ci "Personas que trabajan 30 horas a la semana o menos y están dispuestas a trabajar más"
-label define subemp_ci 1 "Subempleado " 0 "No subempleado" 
-label values subemp_ci subemp_ci 
-
-*******************
-***tiempoparc_ci***
-*******************
-/*Sobre las horas normalmente trabajadas*/
-
-gen tiempoparc_ci=0 if  emp_ci==1
-replace tiempoparc_ci=0 if horaspri_ci<=30 & tp56==2 & emp_ci==1
-*No está la variable pp38: Ha hecho algo para trabajar horas adicionales?
-
-
-*************
-***rama_ci***
-*************
-
-gen rama_ci=.
-label var rama_ci "RAMA"
-label define rama_ci 1 "Agricultura, caza, silvicultura y pesca" 2 "Explotación de minas y canteras" 3 "Industrias manufactureras" 4 "Electricidad, gas y agua" 5 "Construcción" 6"Comercio al por mayor y menor, restaurantes, hoteles" 7"Transporte y almacenamiento" 8"Establecimientos financieros, seguros, bienes inmuebles" 9"Servicios sociales, comunales y personales"
-label values rama_ci rama_ci
-
-******************
-***categosec_ci***
-******************
-gen categosec_ci=.
-label var categosec_ci "CATEGORIA OCUPACIONAL ACTIVIDAD SECUNDARIA"
 
 
 
-*****************
-***nempleos_ci***
-*****************
-capture drop nempleos_ci
-gen byte nempleos_ci=.
-label var nempleos "Numero de empleos"
-
-*****************
-***spublico_ci***
-*****************
-gen byte spublico_ci=.
-replace spublico_ci=1 if emp_ci==1 & (tp50==1 | tp50==2) 
-replace spublico_ci=0 if emp_ci==1 & (tp50>2 & tp50<=9) 
-label var spublico "Personas que trabajan en el sector publico"
-
-****************
-***ylmpri_ci ***
-****************
-recode tp51 tp51m (99=.) (98=.)
 
 
-gen ylmpri_ci=.
-replace ylmpri_ci=tp51m
-label var ylmpri_ci "Ingreso Laboral Monetario de la Actividad Principal"
-
-*******************
-*** ylmhopri_ci ***
-*******************
-gen ylmhopri_ci=.
-replace ylmhopri_ci=ylmpri_ci/(horaspri_ci*4.3)
-label var ylmhopri_ci "Salario Horario Monetario de la Actividad Principal"
-
-g nrylmpri_ci=(ylmpri_ci==. & emp_ci==1)
-replace nrylmpri_ci=. if emp_ci!=1 | categopri_ci==4 /*excluding unpaid workers*/
-label var nrylmpri_ci "Id no respuesta ingreso de la actividad principal"  
 
 
-***************
-***ylmsec_ci***
-***************
-gen ylmsec_ci=.
-label var ylmsec_ci "Ingreso Laboral Monetario de la Actividad Secundaria"
-
-******************
-*** ylmotros_ci***
-******************
-gen ylmotros_ci=.
-label var ylmotros_ci "Ingreso Laboral Monetario Otros Trabajos"
-
-*****************
-*** ylnmpri_ci***
-*****************
-gen ylnmpri_ci=.
-label var ylnmpri_ci "Ingreso Laboral NO Monetario de la Actividad Principal"
-
-***************
-***ylmsec_ci***
-***************
-gen ylnmsec_ci=.
-label var ylnmsec_ci "Ingreso Laboral NO Monetario de la Actividad Secundaria"
-
-******************
-***ylnmotros_ci***
-******************
-gen ylnmotros_ci=.
-label var ylnmotros_ci "Ingreso Laboral NO Monetario Otros Trabajos"
-
-************
-***ylm_ci***
-************
-egen ylm_ci= rsum(ylmpri_ci ylmsec_ci),m
-replace ylm_ci=. if ylmpri_ci==. &  ylmsec_ci==.
-label var ylm_ci "Ingreso laboral monetario total"  
-
-*************
-***ylnm_ci***
-*************
-gen ylnm_ci=.
-label var ylnm_ci "Ingreso Laboral NO Monetario Total"
-
-*************
-***ynlm_ci***
-*************
-
-recode pp63pm  pp630m (98=.) (99=.)
-egen pensiones = rsum(pp63sm pp63em  pp63pm  pp630m), missing
-
-gen ynlm_ci=.
-replace ynlm_ci=pensiones 
-label var ynlm_ci "Ingreso NO Laboral Monetario"
-
-*************
-***ynlnm_ci***
-*************
-gen ynlnm_ci=.
-label var ynlnm_ci "Ingreso NO Laboral NO Monetario"
 
 ******************
 *** tcylmpri_ci***
@@ -708,24 +766,12 @@ label var tcylmpri_ci "Identificador de top-code del ingreso de la actividad pri
 gen autocons_ci=.
 label var autocons_ci "Autoconsumo Individual"
 
-*****************
-***remesas_ci***
-*****************
-gen remesas_ci=.
-label var remesas_ci "Remesas Individuales"
 
 ************************
 *** HOUSEHOLD INCOME ***
 ************************
 
-******************
-*** nrylmpri_ch***
-******************
-capture drop nrylmpri_ch
-sort idh
-egen nrylmpri_ch=sum(nrylmpri_ci) if miembros_ci==1, by(idh)
-replace nrylmpri_ch=1 if nrylmpri_ch>1 & nrylmpri_ch~=. & miembros_ci==1
-label var nrylmpri_ch "Identificador de Hogares en donde alguno de los miembros No Responde el Ingreso Monetario de la Actividad Principal"
+
 
 ******************
 *** tcylmpri_ch***
@@ -733,44 +779,7 @@ label var nrylmpri_ch "Identificador de Hogares en donde alguno de los miembros 
 gen tcylmpri_ch=.
 
 
-*************
-*** ylm_ch***
-*************
-egen ylm_ch=sum(ylm_ci) if miembros_ci==1, by(idh_ch)
-label var ylm_ch "Ingreso Laboral Monetario del Hogar"
 
-****************
-*** ylmnr_ch ***
-****************
-egen ylmnr_ch=sum(ylm_ci) if miembros_ci==1 & nrylmpri_ch==0, by(idh_ch)
-label var ylmnr_ch "Ingreso Laboral Monetario del Hogar, considera 'missing' la No Respuesta"
-
-***************
-*** ylnm_ch ***
-***************
-egen ylnm_ch=sum(ylnm_ci) if miembros_ci==1, by(idh_ch)
-label var ylnm_ch "Ingreso Laboral No Monetario del Hogar"
-
-***************
-*** ynlm_ch ***
-***************
-egen ynlm_ch=sum(ynlm_ci) if miembros_ci==1, by(idh_ch)
-label var ynlm_ch "Ingreso No Laboral Monetario del Hogar"
-
-
-****************
-*** ynlnm_ch ***
-****************
-egen ynlnm_ch=sum(ynlnm_ci) if miembros_ci==1, by(idh_ch)
-label var ynlnm_ch "Ingreso No Laboral No Monetario del Hogar"
-
-
-***************
-***ylmho_ci ***
-***************
-gen ylmho_ci=.
-replace ylmho_ci=ylm_ci/(horastot*4.3)
-label var ylmho_ci "Salario Horario Monetario de todas las Actividades"
 
 
 
@@ -788,18 +797,8 @@ label var rentaimp_ch "Rentas imputadas del hogar"
 egen autocons_ch=sum(autocons_ci) if miembros_ci==1, by(idh_ch)
 label var autocons_ch "Autoconsumo del Hogar"
 
-******************
-*** remesas_ch ***
-******************
-egen remesas_ch=sum(remesas_ci) if miembros_ci==1, by(idh_ch)
-label var remesas_ch "Remesas del Hogar (monetario + especies)"
 
 
-*******************
-***antiguedad_ci***
-*******************
-gen antiguedad_ci=.
-label var antiguedad_ci "Antiguedad en la actividad actual"
 
 
 replace ylnm_ch=. if ylnm_ci==.
