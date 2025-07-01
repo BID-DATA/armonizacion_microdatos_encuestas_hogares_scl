@@ -43,6 +43,46 @@ cap destring, replace
 *****   IDENTIFICACIÓN   ******
 *******************************
 
+	************************
+	*** region según BID ***
+	************************
+	gen region_BID_c=3 
+	label var region_BID_c "Regiones BID"
+	label define region_BID_c 1 "Centroamérica_(CID)" 2 "Caribe_(CCB)" 3 "Andinos_(CAN)" 4 "Cono_Sur_(CSC)"
+	label value region_BID_c region_BID_c
+
+	***********
+	* Region_c *
+	************
+	gen region_c=  enti
+	label define region_c  ///
+	1	"Distrito Federal"  ///
+	2	"Amazonas " ///
+	3	"Anzoategui"  ///
+	4	"Apure " ///
+	5	"Aragua " ///
+	6	"Barinas " ///
+	7	"Bolívar " ///
+	8	"Carabobo " ///
+	9	"Cojedes " ///
+	10	"Delta Amacuro"  ///
+	11	"Falcón"  ///
+	12	"Guárico"  ///
+	13	"Lara"  ///
+	14	"Mérida"  ///
+	15	"Miranda"  ///
+	16	"Monagas"  ///
+	17	"Nueva Esparta"  /// 
+	18	"Portuguesa"  ///
+	19	"Sucre"  ///
+	20	"Táchira"  ///
+	21	"Trujillo"  ///
+	22	"Yaracuy"  ///
+	23	"Zulia"  ///
+	24	"Vargas" 			
+	label value region_c region_c
+	label var region_c " Primera División política - Entidades Federativas"
+
 	************
 	****pais****
 	************
@@ -103,209 +143,120 @@ cap destring, replace
 *****     DEMOGRAFÍA     ******
 *******************************
 
-**********
-***sexo***
-**********
-gen sexo_ci=mhp27
+	**********
+	***sexo***
+	**********
+	gen sexo_ci=mhp27
 
-**********
-***edad***
-**********
-gen edad_ci=mhp26
+	**********
+	***edad***
+	**********
+	gen edad_ci=mhp26
 
-*****************
-***civil_ci***
-*****************
-gen byte civil_ci=.
-replace civil_ci=1 if mhp28==8
-replace civil_ci=2 if (mhp28>=1  & mhp28<=4)
-replace civil_ci=3 if mhp28==5 | mhp28 ==6
-replace civil_ci=4 if mhp28==7
-label var civil_ci "Estado Civil"
-label define civil_ci 1 "Soltero" 2 "Union Formal o Informal" 3 "Divorciado o Separado" 4 "Viudo"
-label value civil_ci civil_ci
+	*****************
+	***relacion_ci***
+	*****************
+	gen relacion_ci=.
+	replace relacion_ci=1 if mhp25==1
+	replace relacion_ci=2 if mhp25==2
+	replace relacion_ci=3 if mhp25==3
+	replace relacion_ci=4 if mhp25>=4 & mhp25<=10 /* Otros familiares */
+	replace relacion_ci=5 if mhp25==11  
+	replace relacion_ci=6 if mhp25==12
 
-************
-***jefe_ci***
-*************
+	*****************
+	***civil_ci***
+	*****************
+	gen byte civil_ci=.
+	replace civil_ci=1 if mhp28==8
+	replace civil_ci=2 if (mhp28>=1  & mhp28<=4)
+	replace civil_ci=3 if mhp28==5 | mhp28 ==6
+	replace civil_ci=4 if mhp28==7
 
-gen jefe_ci=(relacion_ci==1)
-label variable jefe_ci "Jefe de hogar"
+	************
+	***jefe_ci***
+	*************
+	gen jefe_ci=(relacion_ci==1)
 
+	******************
+	***nconyuges_ch***
+	******************
+	by idh_ch, sort: egen nconyuges_ch=sum(relacion_ci==2)
 
-******************
-***nconyuges_ch***
-******************
+	***************
+	***nhijos_ch***
+	***************
+	by idh_ch, sort: egen nhijos_ch=sum(relacion_ci==3)
 
-by idh_ch, sort: egen nconyuges_ch=sum(relacion_ci==2)
-label variable nconyuges_ch "Numero de conyuges"
+	******************
+	***notropari_ch***
+	******************
+	by idh_ch, sort: egen notropari_ch=sum(relacion_ci==4)
 
-***************
-***nhijos_ch***
-***************
+	********************
+	***notronopari_ch***
+	********************
+	by idh_ch, sort: egen notronopari_ch=sum(relacion_ci==5)
 
-by idh_ch, sort: egen nhijos_ch=sum(relacion_ci==3)
-label variable nhijos_ch "Numero de hijos"
+	****************
+	***nempdom_ch***
+	****************
+	by idh_ch, sort: egen nempdom_ch=sum(relacion_ci==6)
 
-******************
-***notropari_ch***
-******************
+	*****************
+	***clasehog_ch***
+	*****************
+	gen byte clasehog_ch=0
+	**** unipersonal
+	replace clasehog_ch=1 if nhijos_ch==0 & nconyuges_ch==0 & notropari_ch==0 & notronopari_ch==0
+	**** nuclear   (child with or without spouse but without other relatives)
+	replace clasehog_ch=2 if (nhijos_ch>0| nconyuges_ch>0) & (notropari_ch==0 & notronopari_ch==0)
+	**** ampliado
+	replace clasehog_ch=3 if ((clasehog_ch ==2 & notropari_ch>0) & notronopari_ch==0) |(notropari_ch>0 & notronopari_ch==0) 
+	**** compuesto  (some relatives plus non relative)
+	replace clasehog_ch=4 if ((nconyuges_ch>0 | nhijos_ch>0 | notropari_ch>0) & (notronopari_ch>0))
+	**** corresidente
+	replace clasehog_ch=5 if nhijos_ch==0 & nconyuges_ch==0 & notropari_ch==0 & notronopari_ch>0
 
-by idh_ch, sort: egen notropari_ch=sum(relacion_ci==4)
-label variable notropari_ch "Numero de otros familiares"
+	******************
+	***nmiembros_ch***
+	******************
+	by idh_ch, sort: egen nmiembros_ch=sum(relacion_ci>=1 & relacion_ci<=5)
 
-********************
-***notronopari_ch***
-********************
+	****************
+	***miembros_ci***
+	****************
+	gen miembros_ci=(relacion_ci<=5)
 
-by idh_ch, sort: egen notronopari_ch=sum(relacion_ci==5)
-label variable notronopari_ch "Numero de no familiares"
+	*****************
+	***nmayor21_ch***
+	*****************
+	by idh_ch, sort: egen nmayor21_ch=sum((relacion_ci>=1 & relacion_ci<=5) & edad_ci>=21)
 
+	*****************
+	***nmenor21_ch***
+	*****************
+	by idh_ch, sort: egen nmenor21_ch=sum((relacion_ci>=1 & relacion_ci<=5) & edad_ci<21)
 
-****************
-***nempdom_ch***
-****************
-****************
-by idh_ch, sort: egen nempdom_ch=sum(relacion_ci==6)
-label variable nempdom_ch "Numero de empleados domesticos"
+	*****************
+	***nmayor65_ch***
+	*****************
+	by idh_ch, sort: egen nmayor65_ch=sum((relacion_ci>=1 & relacion_ci<=5) & edad_ci>=65)
 
+	****************
+	***nmenor6_ch***
+	****************
+	by idh_ch, sort: egen nmenor6_ch=sum((relacion_ci>=1 & relacion_ci<=5) & edad_ci<6)
 
-***********
-* Region_c *
-************
-gen region_c=  enti
-label define region_c  ///
-1	"Distrito Federal"  ///
-2	"Amazonas " ///
-3	"Anzoategui"  ///
-4	"Apure " ///
-5	"Aragua " ///
-6	"Barinas " ///
-7	"Bolívar " ///
-8	"Carabobo " ///
-9	"Cojedes " ///
-10	"Delta Amacuro"  ///
-11	"Falcón"  ///
-12	"Guárico"  ///
-13	"Lara"  ///
-14	"Mérida"  ///
-15	"Miranda"  ///
-16	"Monagas"  ///
-17	"Nueva Esparta"  /// 
-18	"Portuguesa"  ///
-19	"Sucre"  ///
-20	"Táchira"  ///
-21	"Trujillo"  ///
-22	"Yaracuy"  ///
-23	"Zulia"  ///
-24	"Vargas" 
-	    
-label value region_c region_c
-label var region_c " Primera División política - Entidades Federativas"
-
-************************
-*** region según BID ***
-************************
-gen region_BID_c=3 
-label var region_BID_c "Regiones BID"
-label define region_BID_c 1 "Centroamérica_(CID)" 2 "Caribe_(CCB)" 3 "Andinos_(CAN)" 4 "Cono_Sur_(CSC)"
-label value region_BID_c region_BID_c
-
-*****************
-***relacion_ci***
-*****************
-gen relacion_ci=.
-replace relacion_ci=1 if mhp25==1
-replace relacion_ci=2 if mhp25==2
-replace relacion_ci=3 if mhp25==3
-replace relacion_ci=4 if mhp25>=4 & mhp25<=10 /* Otros familiares */
-replace relacion_ci=5 if mhp25==11  
-replace relacion_ci=6 if mhp25==12
-label var relacion_ci "Relacion con el Jefe de Hogar"
-label define relacion_ci 1 "Jefe de Hogar" 2 "Conyuge/Pareja" 3 "Hijo(a)/Hijastro(a)" 4 "Otros Parientes" 5 "Otros No parientes" 6 "Servicio Domestico (inc fam Serv. Dom.)"
-label value relacion_ci relacion_ci
+	****************
+	***nmenor1_ch***
+	****************
+	by idh_ch, sort: egen nmenor1_ch=sum((relacion_ci>=1 & relacion_ci<=5) & edad_ci<1)
 
 
-****************************
-***VARIABLES DEMOGRAFICAS***
-****************************
-
-
-*****************
-***clasehog_ch***
-*****************
-
-gen byte clasehog_ch=0
-**** unipersonal
-replace clasehog_ch=1 if nhijos_ch==0 & nconyuges_ch==0 & notropari_ch==0 & notronopari_ch==0
-**** nuclear   (child with or without spouse but without other relatives)
-replace clasehog_ch=2 if (nhijos_ch>0| nconyuges_ch>0) & (notropari_ch==0 & notronopari_ch==0)
-**** ampliado
-replace clasehog_ch=3 if ((clasehog_ch ==2 & notropari_ch>0) & notronopari_ch==0) |(notropari_ch>0 & notronopari_ch==0) 
-**** compuesto  (some relatives plus non relative)
-replace clasehog_ch=4 if ((nconyuges_ch>0 | nhijos_ch>0 | notropari_ch>0) & (notronopari_ch>0))
-**** corresidente
-replace clasehog_ch=5 if nhijos_ch==0 & nconyuges_ch==0 & notropari_ch==0 & notronopari_ch>0
-
-label variable clasehog_ch "Tipo de hogar"
-label define clasehog_ch 1 " Unipersonal" 2 "Nuclear" 3 "Ampliado" 
-label define clasehog_ch 4 "Compuesto" 5 " Corresidente", add
-label value clasehog_ch clasehog_ch
-
-******************
-***nmiembros_ch***
-******************
-
-by idh_ch, sort: egen nmiembros_ch=sum(relacion_ci>=1 & relacion_ci<=4)
-label variable nmiembros_ch "Numero de familiares en el hogar"
-
-*****************
-***nmayor21_ch***
-*****************
-
-by idh_ch, sort: egen nmayor21_ch=sum((relacion_ci>=1 & relacion_ci<=4) & edad_ci>=21)
-label variable nmayor21_ch "Numero de familiares mayores a 21 anios"
-
-*****************
-***nmenor21_ch***
-*****************
-
-by idh_ch, sort: egen nmenor21_ch=sum((relacion_ci>=1 & relacion_ci<=4) & edad_ci<21)
-label variable nmenor21_ch "Numero de familiares menores a 21 anios"
-
-*****************
-***nmayor65_ch***
-*****************
-
-by idh_ch, sort: egen nmayor65_ch=sum((relacion_ci>=1 & relacion_ci<=4) & edad_ci>=65)
-label variable nmayor65_ch "Numero de familiares mayores a 65 anios"
-
-****************
-***nmenor6_ch***
-****************
-
-by idh_ch, sort: egen nmenor6_ch=sum((relacion_ci>=1 & relacion_ci<=4) & edad_ci<6)
-label variable nmenor6_ch "Numero de familiares menores a 6 anios"
-
-****************
-***nmenor1_ch***
-****************
-
-by idh_ch, sort: egen nmenor1_ch=sum((relacion_ci>=1 & relacion_ci<=4) & edad_ci<1)
-label variable nmenor1_ch "Numero de familiares menores a 1 anio"
-
-****************
-***miembros_ci***
-****************
-
-gen miembros_ci=(relacion_ci<5)
-label variable miembros_ci "Miembro del hogar"
-
-
-
-*************************
-*** VARIABLES DE RAZA ***
-*************************
+*******************************
+*** VARIABLES DE DIVERSIDAD ***
+*******************************
 
 	***************
 	*** afroind_ci ***
