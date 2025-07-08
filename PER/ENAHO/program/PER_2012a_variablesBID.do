@@ -30,12 +30,7 @@ log using "`log_file'", replace
 País: Perú
 Encuesta: ENAHO
 Round: a
-Autores: Yessenia Loayza, Mayra Sáenz E-mail: saenzmayra.a@gmail.com - mayras@iadb.org
-Generación nuevas variables LMK: Yessenia Loayza (desloay@hotmail.com)
-Última versión: Yessenia Loayza - Email: desloay@hotmail.com
-Fecha última modificación: octubre 2013
 
-							SCL/LMK - IADB
 ****************************************************************************/
 ****************************************************************************/
 
@@ -378,46 +373,88 @@ gen miembros_ci=(relacion_ci>=1 & relacion_ci<=5)
 label variable miembros_ci "Miembro del hogar"
 
 
-
-         ******************************
-         *** VARIABLES DE DIVERSIDAD **
-         ******************************
-*Nathalia Maya & Antonella Pereira
-*Feb 2021	
+*******************************************************
+***           VARIABLES DE DIVERSIDAD               ***
+*******************************************************
+**Pregunta por sus antepasados y de acuerdo a sus costumbres,  ud. se considera:(p558c) (1 quechua; 2 aymara; 3 nativo o indígena de la amazonía; 4 negro/ mulato/zambo/afroperuano; 5 blanco; 6 mestizo; 7 otro; 8 no sabe) 
 
 	***************
-	***afroind_ci***
+	*** afro_ci  **
 	***************
-**Pregunta por sus antepasados y de acuerdo a sus costumbres, �ud. se considera:(p558c) (1 quechua; 2 aymara; 3 nativo o indígena de la amazonía; 4 negro/ mulato/zambo/afroperuano; 5 blanco; 6 mestizo; 7 otro; 8 no sabe)
-gen afroind_ci=. 
-replace afroind_ci=1  if p558c == 1 |  p558c == 2 |  p558c ==3 
-replace afroind_ci=2 if p558c == 4
-replace afroind_ci=3 if p558c ==5 | p558c ==6 | p558c ==7
-replace afroind_ci=. if p558c ==8 | p558c ==.
-replace afroind_ci=9 if p558c ==. & edad_ci<14
+		gen byte afro_ci = . 
+		replace afro_ci = 1 if inlist(p558c,4)
+		replace afro_ci = 0 if inlist(p558c,1,2,3,5,6,7,8)
+	
+
+	***************
+	*** ind_ci  **
+	***************
+		gen byte ind_ci = . 
+		replace ind_ci = 1 if inlist(p558c,1,2,3)
+		replace ind_ci = 0 if inlist(p558c,4,5,6,7)
+	
+	***************
+	*** noafroind_ci **
+	***************
+		gen byte noafroind_ci = . 
+		replace noafroind_ci = 1 if afro_ci==0 & ind_ci==0
+		replace noafroind_ci = 0 if afro_ci==1 | ind_ci==1
+	
+	***************
+	***afro_ch***
+	***************
+		gen afro_jefe = afro_ci if relacion_ci == 1
+		egen afro_ch = min(afro_jefe), by(idh_ch) 
+		drop afro_jefe
+
+	***************
+	***ind_ch***
+	***************
+		gen ind_jefe = ind_ci if relacion_ci == 1
+		egen ind_ch = min(ind_jefe), by(idh_ch) 
+		drop ind_jefe
+		
+	***************
+	***noafroind_ch***
+	***************
+		gen noafroind_jefe = noafroind_ci if relacion_ci == 1
+		egen noafroind_ch = min(noafroind_jefe), by(idh_ch) 
+		drop noafroind_jefe
+
+	***************
+	***afroind_ci**
+	***************
+		gen afroind_ci =. 
+		replace afroind_ci = 1 if ind_ci==1
+		replace afroind_ci = 2 if afro_ci==1
+		replace afroind_ci = 3 if noafroind_ci==1
 
 	***************
 	***afroind_ch***
 	***************
-gen afroind_jefe= afroind_ci if relacion_ci==1
-egen afroind_ch  = min(afroind_jefe), by(idh_ch) 
-drop afroind_jefe
-
-	*******************
-	***afroind_ano_c***
-	*******************
-gen afroind_ano_c=2012
+		gen afroind_jefe = afroind_ci if relacion_ci == 1
+		egen afroind_ch = min(afroind_jefe), by(idh_ch) 
+		drop afroind_jefe
 
 	*******************
 	***dis_ci***
 	*******************
-gen dis_ci=. 
-
+		gen dis_ci =.
+		
+	*******************
+	***disWG_ci***
+	*******************
+		gen disWG_ci =.
+	
+	*******************
+	***disWG_ci***
+	*******************
+		gen PER_dis_ci =dis_ci
+		
 	*******************
 	***dis_ch***
 	*******************
-gen dis_ch=. 
-
+		bysort idh_ch : egen dis_ch = max(dis_ci)
 
 
 ************************************
@@ -2050,6 +2087,7 @@ do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&Exter
     order region_BID_c region_c pais_c anio_c mes_c zona_c factor_ch idh_ch	idp_ci factor_ci factor_ch /// Identificación 
   sexo_ci edad_ci relacion_ci civil_ci jefe_ci nconyuges_ch nhijos_ch notropari_ch notronopari_ch nempdom_ch /// Demográficas 
   clasehog_ch nmiembros_ch miembros_ci nmayor21_ch nmenor21_ch nmayor65_ch nmenor6_ch nmenor1_ch /// Demográficas 
+  afro_ci ind_ci noafroind_ci afroind_ci afro_ch ind_ch noafroind_ch afroind_ch dis_ci disWG_ci dis_ch PER_dis_ci /// Diversidad
   condocup_ci categoinac_ci emp_ci cesante_ci desemp_ci subemp_ci durades_ci pea_ci nempleos_ci antiguedad_ci desalent_ci  /// Empleo
   horaspri_ci horastot_ci tiempoparc_ci categopri_ci categosec_ci rama_ci spublico_ci tamemp_ci cotizando_ci instcot_ci	afiliado_ci /// Empleo 
   formal_ci tipocontrato_ci ocupa_ci pension_ci	pensionsub_ci tipopen_ci instpen_ci	ylmpri_ci /// Empleo 

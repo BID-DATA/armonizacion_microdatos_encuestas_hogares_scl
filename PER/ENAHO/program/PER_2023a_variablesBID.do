@@ -31,11 +31,7 @@ capture log close
 País: Perú
 Encuesta: ENAHO
 Round: a
-Autores: Mayte Ysique E-mail: mysique@pucp.pe - maytes@iadb.org
-Última modificación: 
-Fecha última modificación: XX de octubre de 2024
 
-							SCL/GDI - IADB
 ****************************************************************************/
 
 use "`base_in'", clear
@@ -350,7 +346,9 @@ by idh_ch, sort: egen byte nmenor1_ch=sum((relacion_ci>0 & relacion_ci<=5) & (ed
 		label variable nmenor1_ch "Numero de familiares menores a 1 anio"
 
 
-/****** Variables de identidad etnico-racial  ******/
+*******************************************************
+***           VARIABLES DE DIVERSIDAD               ***
+*******************************************************
 
 	***************
 	*** afro_ci  **
@@ -395,11 +393,6 @@ by idh_ch, sort: egen byte nmenor1_ch=sum((relacion_ci>0 & relacion_ci<=5) & (ed
 		egen noafroind_ch = min(noafroind_jefe), by(idh_ch) 
 		drop noafroind_jefe
 
-	*******************
-	***afroind_ano_c***
-	*******************
-		gen afroind_ano_c=2017
-
 	***************
 	***afroind_ci**
 	***************
@@ -415,9 +408,6 @@ by idh_ch, sort: egen byte nmenor1_ch=sum((relacion_ci>0 & relacion_ci<=5) & (ed
 		gen afroind_jefe = afroind_ci if relacion_ci == 1
 		egen afroind_ch = min(afroind_jefe), by(idh_ch) 
 		drop afroind_jefe
-
-
-/****** Situación de discapacidad  ******/
 
 	*******************
 	***dis_ci***
@@ -1537,6 +1527,7 @@ do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&Exter
     order region_BID_c region_c pais_c anio_c mes_c zona_c factor_ch idh_ch	idp_ci factor_ci factor_ch /// Identificación 
   sexo_ci edad_ci relacion_ci civil_ci jefe_ci nconyuges_ch nhijos_ch notropari_ch notronopari_ch nempdom_ch /// Demográficas 
   clasehog_ch nmiembros_ch miembros_ci nmayor21_ch nmenor21_ch nmayor65_ch nmenor6_ch nmenor1_ch /// Demográficas 
+  afro_ci ind_ci noafroind_ci afroind_ci afro_ch ind_ch noafroind_ch afroind_ch dis_ci disWG_ci dis_ch PER_dis_ci /// Diversidad
   condocup_ci categoinac_ci emp_ci cesante_ci desemp_ci subemp_ci durades_ci pea_ci nempleos_ci antiguedad_ci desalent_ci  /// Empleo
   horaspri_ci horastot_ci tiempoparc_ci categopri_ci categosec_ci rama_ci spublico_ci tamemp_ci cotizando_ci instcot_ci	afiliado_ci /// Empleo 
   formal_ci tipocontrato_ci ocupa_ci pension_ci	pensionsub_ci tipopen_ci instpen_ci	ylmpri_ci /// Empleo 
