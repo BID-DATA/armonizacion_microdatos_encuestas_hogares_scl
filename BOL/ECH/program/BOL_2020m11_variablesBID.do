@@ -381,6 +381,11 @@ label variable miembros_ci "Miembro del hogar"
 	******************
 	gen byte BOL_dis_ci = .
 
+	*******************
+	***afroind_ano_c***
+	*******************
+	gen afroind_ano_c=2012
+
 ************************************
 *** VARIABLES DEL MERCADO LABORAL***
 ************************************
