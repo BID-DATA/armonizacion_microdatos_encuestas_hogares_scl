@@ -325,8 +325,8 @@ by idh_ch, sort: egen byte nmenor1_ch=sum((relacion_ci>0 & relacion_ci<=5) & (ed
 	**Solo se pregunta a personas de 15 años o mas. 
 
 	gen byte afro_ci = . 
-	replace afro_ci = 1 if pe15 == 4 | pe15 == 5
-	replace afro_ci = 0 if pe15 != 4 & pe15 != 5 & pe15 != .
+	replace afro_ci = 1 if p15 == 4 | p15 == 5
+	replace afro_ci = 0 if p15 != 4 & p15 != 5 & p15 != .
 	
 	tab afro_ci, m
 	
@@ -334,8 +334,8 @@ by idh_ch, sort: egen byte nmenor1_ch=sum((relacion_ci>0 & relacion_ci<=5) & (ed
 	*ind_ci*
 	*********	
 	gen byte ind_ci = .
-	replace ind_ci = 1 if pe15 == 1
-	replace ind_ci = 0 if pe15 != 1 & pe15 != .
+	replace ind_ci = 1 if p15 == 1
+	replace ind_ci = 0 if p15 != 1 & p15 != .
 	
 	tab ind_ci, m
 
