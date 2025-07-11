@@ -310,6 +310,10 @@ sort idh_ch
 	******************
 	gen byte GTM_dis_ci = .
 
+	*******************
+	***afroind_ano_c***
+	*******************
+	gen afroind_ano_c=.	
 
 *** HOUSING ***
 
