@@ -947,19 +947,20 @@ label variable asiste_ci "Asiste actualmente a la escuela"
 ******************
 ***pqnoasis1_ci***
 ******************
-*Daniela Zuluaga- Enero 2018: Se agrega la variable pqnoasis1_ci cuya sintaxis fue elaborada por Mayra Saenz**
-g       pqnoasis1_ci=1 if r219==3
-replace pqnoasis1_ci=2 if r219==1
-replace pqnoasis1_ci=3 if r219==4  | r219==5  | r219==6
-replace pqnoasis1_ci=4 if r219==10
-replace pqnoasis1_ci=5 if r219==2  | r219==12 | r219==15 | r219==16
-replace pqnoasis1_ci=6 if r219==8
-replace pqnoasis1_ci=7 if r219==7 
-replace pqnoasis1_ci=8 if r219==9  | r219==13 | r219==14 | r219==18
-replace pqnoasis1_ci=9 if r219==11 | r219==17 
+* pqnoasis1_ci was replaced by razonesnoasis_ci, June 2025 * 
 
-label define pqnoasis1_ci 1 "Problemas económicos" 2 "Por trabajo" 3 "Problemas familiares o de salud" 4 "Falta de interés" 5 "Quehaceres domésticos/embarazo/cuidado de niños/as" 6 "Terminó sus estudios" 7 "Edad" 8 "Problemas de acceso"  9 "Otros"
-label value  pqnoasis1_ci pqnoasis1_ci
+**********************
+***razonesnoasis_ci***
+**********************
+g razonesnoasis_ci=.
+replace razonesnoasis_ci=1 if r219==1 | r219 == 3
+replace razonesnoasis_ci=2 if inlist(r219, 10, 11)
+replace razonesnoasis_ci=3 if inlist(r219, 2, 4, 12, 15, 16)
+replace razonesnoasis_ci=4 if inlist(r219, 9, 13, 14)
+replace razonesnoasis_ci=5 if inlist(r219, 5, 6, 7, 8, 17, 18)
+
+label define razonesnoasis_ci 1 "Problemas económicos/Por trabajo" 2 "Falta de interés/Problemas de rendimiento" 3 "Cuidados/ Problemas familiares o de salud" 4 "Problemas de acceso"  5 "Otros"
+label value  razonesnoasis_ci razonesnoasis_ci
 
 ***************
 * Line of code with indicator repite_ci was deleted***************
@@ -1706,7 +1707,7 @@ lab val grupo_int grupo_int
   ylm_ch ylnm_ch ylmnr_ch ynlm_ch ynlnm_ch ylmhopri_ci ylmho_ci /// Ingresos del hogar 
   nrylmpri_ci nrylmpri_ch /// No respuesta de ingresos  
   remesas_ci remesas_ch ypen_ci ypensub_ci /// Remesas y pensiones
-  aedu_ci eduui_ci eduuc_ci edupre_ci eduac_ci asiste_ci edupub_ci pqnoasis1_ci asispre_ci /// Educación
+  aedu_ci eduui_ci eduuc_ci edupre_ci eduac_ci asiste_ci edupub_ci  razonesnoasis_ci asispre_ci /// Educación
   luz_ch luzmide_ch combust_ch piso_ch pared_ch techo_ch resid_ch dorm_ch cuartos_ch cocina_ch telef_ch refrig_ch /// Vivienda
   freez_ch auto_ch compu_ch internet_ch cel_ch vivi1_ch vivi2_ch viviprop_ch vivitit_ch vivialq_ch vivialqimp_ch /// Vivienda
   aguared_ch aguafconsumo_ch aguafuente_ch aguadist_ch aguadisp1_ch aguadisp2_ch /// Agua y saneamineto
