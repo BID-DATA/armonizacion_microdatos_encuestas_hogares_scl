@@ -408,7 +408,10 @@ by idh_ch, sort: egen byte nmenor1_ch=sum((relacion_ci>0 & relacion_ci<=5) & (ed
 	******************
 	gen byte ECU_dis_ci = .
 	
-	
+	*******************
+	***afroind_ano_c***
+	*******************
+gen afroind_ano_c=2010
 			***********************************
 			***VARIABLES DEL MERCADO LABORAL***
 			***********************************
