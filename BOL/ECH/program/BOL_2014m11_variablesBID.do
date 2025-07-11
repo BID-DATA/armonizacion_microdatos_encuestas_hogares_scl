@@ -74,7 +74,7 @@ label var region_c "division politica, estados"
 ***************
 ***factor_ch***
 ***************
-gen factor_ch= factor
+gen factor_ch= factor_2014
 label variable factor_ch "Factor de expansion del hogar"
 
 	***************
@@ -108,8 +108,8 @@ tostring idp_ci, replace
 ***zona***
 **********
 
-gen byte zona_c=0 	if urbrur==2
-replace zona_c=1 	if urbrur==1
+gen byte zona_c=0 	if area==2
+replace zona_c=1 	if area==1
 label variable zona_c "Zona del pais"
 label define zona_c 1 "Urbana" 0 "Rural"
 label value zona_c zona_c
@@ -372,6 +372,11 @@ label variable miembros_ci "Miembro del hogar"
 	*ISOalpha3_dis_ci*
 	******************
 	gen byte BOL_dis_ci = .
+	
+	*******************
+	***afroind_ano_c***
+	*******************
+	gen afroind_ano_c=2012
 
 
 ************************************

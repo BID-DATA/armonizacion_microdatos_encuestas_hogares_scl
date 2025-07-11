@@ -380,39 +380,10 @@ label variable miembros_ci "Miembro del hogar"
 	******************
 	gen byte BOL_dis_ci = .
 	
-*******************************************************
-***           VARIABLES DE DIVERSIDAD               ***
-*******************************************************				
-* Maria Antonella Pereira & Nathalia Maya - Marzo 2021	
-
-
-gen afroind_ci=. 
-replace afroind_ci=1 if s2_05a==1 
-replace afroind_ci=2 if s2_05a==0
-replace afroind_ci=3 if s2_05a==2 
-replace afroind_ci=9 if s2_05a==3 
-
-	***************
-	***afroind_ch***
-	***************
-gen afroind_jefe= afroind_ci if relacion_ci==1
-egen afroind_ch  = min(afroind_jefe), by(idh_ch) 
-drop afroind_jefe
-
 	*******************
 	***afroind_ano_c***
 	*******************
 gen afroind_ano_c=2012
-
-	*******************
-	***dis_ci***
-	*******************
-gen dis_ci=. 
-
-	*******************
-	***dis_ch***
-	*******************
-gen dis_ch=. 
 
 
 ************************************
