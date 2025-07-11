@@ -1415,7 +1415,10 @@ replace vivialqimp_ch=. if alqmens2==9999
 	******************
 	gen byte PER_dis_ci = .
 
-
+	*******************
+	***afroind_ano_c***
+	*******************
+	gen afroind_ano_c=.
 	
 /*_____________________________________________________________________________________________________*/
 * Verificación de que se encuentren todas las variables del SOCIOMETRO y las nuevas de mercado laboral
@@ -1423,7 +1426,7 @@ replace vivialqimp_ch=. if alqmens2==9999
 * firmapeq_ci nrylmpri_ch nrylmpri_ci tcylmpri_ch tcylmpri_ci tipopen_ci
 /*_____________________________________________________________________________________________________*/
 
-order region_BID_c region_c pais_c anio_c mes_c zona_c factor_ch	idh_ch	idp_ci	factor_ci sexo_ci edad_ci ///
+cap order region_BID_c region_c pais_c anio_c mes_c zona_c factor_ch	idh_ch	idp_ci	factor_ci sexo_ci edad_ci ///
 relacion_ci civil_ci jefe_ci nconyuges_ch nhijos_ch notropari_ch notronopari_ch nempdom_ch ///
 afro_ci ind_ci noafroind_ci afroind_ci afro_ch ind_ch noafroind_ch afroind_ch dis_ci disWG_ci dis_ch PER_dis_ci /// Diversidad
 clasehog_ch nmiembros_ch miembros_ci nmayor21_ch nmenor21_ch nmayor65_ch nmenor6_ch	nmenor1_ch	condocup_ci ///

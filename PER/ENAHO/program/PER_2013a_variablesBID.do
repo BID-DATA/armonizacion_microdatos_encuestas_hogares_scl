@@ -454,7 +454,11 @@ label variable miembros_ci "Miembro del hogar"
 	*******************
 		bysort idh_ch : egen dis_ch = max(dis_ci)
 
-
+	*******************
+	***afroind_ano_c***
+	*******************
+	gen afroind_ano_c=2012
+	
 ************************************
 *** VARIABLES DEL MERCADO LABORAL***
 ************************************
