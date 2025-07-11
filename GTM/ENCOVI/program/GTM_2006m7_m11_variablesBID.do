@@ -1053,6 +1053,7 @@ sort idh_ch
 	******************
 	gen byte GTM_dis_ci = .
 
+	gen byte afroind_ano_c =.
 
 *****************************************************************
 *** INGRESOS LABORALES (PARA PESONAS DE 5 AÑOS O MAS DE PPA03) ***
