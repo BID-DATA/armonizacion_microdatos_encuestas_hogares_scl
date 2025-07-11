@@ -29,7 +29,7 @@ local base_out = "$ruta\harmonized\\`PAIS'\\`ENCUESTA'\data_arm\\`PAIS'_`ANO'`ro
 
 
 capture log close
-*log using "`log_file'", replace 
+log using "`log_file'", replace 
 
 
 /***************************************************************************
