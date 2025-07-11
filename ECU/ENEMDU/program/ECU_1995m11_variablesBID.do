@@ -435,6 +435,12 @@ gen region_c=int(ciudad/10000)
 	*ISOalpha3_dis_ci*
 	******************
 	gen byte ECU_dis_ci = .
+
+	*******************
+	***afroind_ano_c***
+	*******************
+	gen afroind_ano_c=.	
+
 	
 			***********************************
 			***VARIABLES DEL MERCADO LABORAL***

@@ -444,6 +444,11 @@ by idh_ch, sort: egen byte nmenor1_ch=sum((relacion_ci>0 & relacion_ci<=5) & (ed
 	*******************
 	gen afroind_ano_c=.
 
+	*******************
+	***afroind_ano_c***
+	*******************
+	gen afroind_ano_c=.	
+
 			***********************************
 			***VARIABLES DEL MERCADO LABORAL***
 			***********************************
