@@ -468,6 +468,11 @@ foreach var of local varlist {
 	******************
 	gen byte ECU_dis_ci = .
 	
+	*******************
+	***afroind_ano_c***
+	*******************
+	gen afroind_ano_c=2010
+
 			***********************************
 			***VARIABLES DEL MERCADO LABORAL***
 			***********************************
