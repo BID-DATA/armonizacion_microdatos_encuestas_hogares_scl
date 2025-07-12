@@ -111,6 +111,8 @@ gen idh_ch=upms+nvivis+nhogas
 destring idh_ch, replace
 sort idh_ch
 label variable idh_ch "ID del hogar"
+tostring idh_ch, replace
+
 drop upms nvivis nhogas
 
 **************
@@ -120,6 +122,8 @@ drop upms nvivis nhogas
 *cap bysort idh_ch:gen idp_ci=_n 
 gen idp_ci=l02
 label variable idp_ci "ID de la persona en el hogar"
+tostring idp_ci, replace
+
 
 **********
 ***zona***
@@ -321,49 +325,49 @@ label value clasehog_ch clasehog_ch
 ***nmiembros_ch***
 ******************
 
-by idh_ch, sort: egen nmiembros_ch=sum(relacion_ci>=1 & relacion_ci<=4)
+by idh_ch, sort: egen byte nmiembros_ch=sum(relacion_ci>0 & relacion_ci<=5)
 label variable nmiembros_ch "Numero de familiares en el hogar"
 
 *****************
 ***nmayor21_ch***
 *****************
 
-by idh_ch, sort: egen nmayor21_ch=sum((relacion_ci>=1 & relacion_ci<=4) & edad>=21)
+by idh_ch, sort: egen byte nmayor21_ch=sum((relacion_ci>0 & relacion_ci<=5) & (edad_ci>=21 & edad_ci<=98))
 label variable nmayor21_ch "Numero de familiares mayores a 21 anios"
 
 *****************
 ***nmenor21_ch***
 *****************
 
-by idh_ch, sort: egen nmenor21_ch=sum((relacion_ci>=1 & relacion_ci<=4) & edad<21)
+by idh_ch, sort: egen byte nmenor21_ch=sum((relacion_ci>0 & relacion_ci<=5) & (edad_ci<21))
 label variable nmenor21_ch "Numero de familiares menores a 21 anios"
 
 *****************
 ***nmayor65_ch***
 *****************
 
-by idh_ch, sort: egen nmayor65_ch=sum((relacion_ci>=1 & relacion_ci<=4) & edad_ci>=65 )
+by idh_ch, sort: egen byte nmayor65_ch=sum((relacion_ci>0 & relacion_ci<=5) & (edad_ci>=65 & edad_ci!=.))
 label variable nmayor65_ch "Numero de familiares mayores a 65 anios"
 
 ****************
 ***nmenor6_ch***
 ****************
 
-by idh_ch, sort: egen nmenor6_ch=sum((relacion_ci>=1 & relacion_ci<=4) & edad<6)
+by idh_ch, sort: egen byte nmenor6_ch=sum((relacion_ci>0 & relacion_ci<=5) & (edad_ci<6))
 label variable nmenor6_ch "Numero de familiares menores a 6 anios"
 
 ****************
 ***nmenor1_ch***
 ****************
 
-by idh_ch, sort: egen nmenor1_ch=sum((relacion_ci>=1 & relacion_ci<=4) & edad<1)
+by idh_ch, sort: egen byte nmenor1_ch=sum((relacion_ci>0 & relacion_ci<=5) & (edad_ci<1))
 label variable nmenor1_ch "Numero de familiares menores a 1 anio"
 
 ****************
 ***miembros_ci***
 ****************
 
-gen miembros_ci=(relacion_ci<5)
+gen miembros_ci=(relacion_ci>=1 & relacion_ci<=5)
 label variable miembros_ci "Miembros del hogar"
 
 
@@ -925,6 +929,8 @@ gen ylnmotros_ci=.
 
 gen remesas_ci= e02tde
 gen ynlnm_ci=.
+egen ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci)
+
 
 ************************
 *** HOUSEHOLD INCOME ***
@@ -1096,81 +1102,53 @@ replace aedu_ci=aedu_temp+12+5 if ed06c==9 // maestria
 replace aedu_ci=aedu_temp+12+5 if ed06c==10 // especialización
 
 **************
-***eduno_ci***
+* Line of code with indicator eduno_ci was deleted**************
+* Line of code with indicator eduno_ci was deleted* Line of code with indicator eduno_ci was deleted* Line of code with indicator eduno_ci was deleted
 **************
-gen byte eduno_ci=(aedu_ci==0)
-replace eduno_ci=. if aedu_ci==.
-label variable eduno_ci "Cero anios de educacion"
-
+* Line of code with indicator edupi_ci was deleted**************
+* Line of code with indicator edupi_ci was deleted* Line of code with indicator edupi_ci was deleted* Line of code with indicator edupi_ci was deleted
 **************
-***edupi_ci***
+* Line of code with indicator edupc_ci was deleted**************
+* Line of code with indicator edupc_ci was deleted* Line of code with indicator edupc_ci was deleted* Line of code with indicator edupc_ci was deleted
 **************
-gen byte edupi_ci=(aedu_ci>0 & aedu_ci<6)
-replace edupi_ci=. if aedu_ci==.
-label variable edupi_ci "Primaria incompleta"
-
+* Line of code with indicator edusi_ci was deleted**************
+* Line of code with indicator edusi_ci was deleted* Line of code with indicator edusi_ci was deleted* Line of code with indicator edusi_ci was deleted
 **************
-***edupc_ci***
-**************
-gen byte edupc_ci=(aedu_ci==6)
-replace edupc_ci=. if aedu_ci==.
-label variable edupc_ci "Primaria completa"
-
-**************
-***edusi_ci***
-**************
-gen byte edusi_ci=(aedu_ci>6 & aedu_ci<12)
-replace edusi_ci=. if aedu_ci==.
-label variable edusi_ci "Secundaria incompleta"
-
-**************
-***edusc_ci***
-**************
-gen byte edusc_ci=(aedu_ci==12)
-replace edusc_ci=. if aedu_ci==.
-label variable edusc_ci "Secundaria completa"
-
+* Line of code with indicator edusc_ci was deleted**************
+* Line of code with indicator edusc_ci was deleted* Line of code with indicator edusc_ci was deleted* Line of code with indicator edusc_ci was deleted
 ***************
-***edus1i_ci***
+* Line of code with indicator edus1i_ci was deleted***************
+* Line of code with indicator edus1i_ci was deleted* Line of code with indicator edus1i_ci was deleted* Line of code with indicator edus1i_ci was deleted
 ***************
-gen byte edus1i_ci=(aedu_ci>6 & aedu_ci<9)
-replace edus1i_ci=. if aedu_ci==.
-label variable edus1i_ci "1er ciclo de la secundaria incompleto"
-
+* Line of code with indicator edus1c_ci was deleted***************
+* Line of code with indicator edus1c_ci was deleted* Line of code with indicator edus1c_ci was deleted* Line of code with indicator edus1c_ci was deleted
 ***************
-***edus1c_ci***
+* Line of code with indicator edus2i_ci was deleted***************
+* Line of code with indicator edus2i_ci was deleted* Line of code with indicator edus2i_ci was deleted* Line of code with indicator edus2i_ci was deleted
 ***************
-gen byte edus1c_ci=(aedu_ci==9)
-replace edus1c_ci=. if aedu_ci==.
-label variable edus1c_ci "1er ciclo de la secundaria completo"
-
-***************
-***edus2i_ci***
-***************
-gen byte edus2i_ci=(aedu_ci>9 & aedu_ci<12)
-replace edus2i_ci=. if aedu_ci==.
-label variable edus2i_ci "2do ciclo de la secundaria incompleto"
-
-***************
-***edus2c_ci***
-***************
-gen byte edus2c_ci=(aedu_ci==12)
-replace edus2c_ci=. if aedu_ci==.
-label variable edus2c_ci "2do ciclo de la secundaria completo"
-
+* Line of code with indicator edus2c_ci was deleted***************
+* Line of code with indicator edus2c_ci was deleted* Line of code with indicator edus2c_ci was deleted* Line of code with indicator edus2c_ci was deleted
 **************
 ***eduui_ci***
 **************
-gen byte eduui_ci=(aedu_ci>12 & aedu_ci<16)
-replace eduui_ci=. if aedu_ci==.
-label variable eduui_ci "Universitaria incompleta"
+gen eduui_ci = (inrange(ed0504, 2001, 2406) & ed06c == 14)
+replace eduui_ci = . if aedu_ci == .
+lab var eduui_ci "Superior Incompleto"
 
-***************
-***eduuc_ci****
-***************
-gen byte eduuc_ci=(aedu_ci>=16)
-replace eduuc_ci=. if aedu_ci==.
-label variable eduuc_ci "Universitaria completa o mas"
+**************
+***eduuc_ci***
+**************
+gen eduuc_ci = (inrange(ed06c, 1, 13))
+replace eduuc_ci = . if aedu_ci == .
+lab var eduuc_ci "Superior Completo"
+
+**************
+***eduac_ci***
+**************
+gen eduac_ci = .
+replace eduac_ci = 1 if inrange(ed0504, 2101, 2406)
+replace eduac_ci = 0 if inrange(ed0504, 2001, 2004)
+label variable eduac_ci "Superior universitario vs superior no universitario"
 
 ***************
 ***edupre_ci***
@@ -1184,16 +1162,6 @@ label variable edupre_ci "Educacion preescolar"
 gen byte asispre_ci=(ed08==1)
 label variable asispre_ci "Asistencia a Educacion preescolar" 
 
-**************
-***eduac_ci***
-**************
-gen byte eduac_ci=. 
-replace eduac_ci=1 if nivgra>=2400 & nivgra<=2499 | nivgra>=2200 & nivgra<=2299 // profesionalización docente
-replace eduac_ci=0 if nivgra>=2000 & nivgra<=2099 // tecnica superior
-replace eduac_ci=0 if nivgra>=2100 & nivgra<=2199 // formacion docente
-replace eduac_ci=0 if nivgra>=2300 & nivgra<=2399 // formacion militar
-label variable eduac_ci "Superior universitario vs superior no universitario"
-		
 ***************
 ***asiste_ci***
 ***************
@@ -1203,13 +1171,8 @@ replace asiste_ci=0 if ed08==19
 label variable asiste_ci "Asiste actualmente a la escuela"
 
 *****************
-***pqnoasis_ci***
-*****************
-gen pqnoasis_ci=ed10
-replace pqnoasis_ci=. if ed10==99
-label define pqnoasis_ci 1 "Sin recursos en el hogar" 2 "Necesidad de trabajar" 3 "Muy costosos los materiales y matrícula" 4 "No tiene edad adecuada" 5 "Considera que terminó los estudios" 6 "No existe institución cercana" 7 "Institución cercana muy mala" 8 "El centro educativo cerró"  9 "El docente no asiste con regularidad" 10 "Institución no ofrece escolaridad completa" 11 "Requiere educación especial" 12 "Por enfermedad/accidente" 13 "Realiza labores en el hogar" 14 "Motivos familiares" 15 "No quiere estudiar" 16 "Asiste a una enseñanza vocacional o formación profesional" 17 "Servicio militar" 18 "Otra razón" 
-label value pqnoasis_ci pqnoasis_ci
-
+* Line of code with indicator pqnoasis_ci was deleted*****************
+* Line of code with indicator pqnoasis_ci was deleted* Line of code with indicator pqnoasis_ci was deleted* Line of code with indicator pqnoasis_ci was deleted* Line of code with indicator pqnoasis_ci was deleted
 ******************
 ***pqnoasis1_ci***
 ******************
@@ -1228,18 +1191,10 @@ label define pqnoasis1_ci 1 "Problemas económicos" 2 "Por trabajo" 3 "Problemas
 label value  pqnoasis1_ci pqnoasis1_ci
 		
 ***************
-***repite_ci***
-***************
-gen repite_ci=. 
-label variable repite_ci "Esta repitendo el grado o curso"
-
+* Line of code with indicator repite_ci was deleted***************
+* Line of code with indicator repite_ci was deleted* Line of code with indicator repite_ci was deleted
 ******************
-***repiteult_ci***
-******************
-gen repiteult_ci=.
-label variable repiteult_ci "Esta repitendo ultimo grado o curso"
-
-***************
+* Line of code with indicator repiteult was deleted* Line of code with indicator repiteult was deleted***************
 ***edupub_ci***
 ***************
 gen edupub_ci=1 if ed09==1 
@@ -1783,10 +1738,10 @@ do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&Exter
 *  Pobres extremos, pobres moderados, vulnerables y no pobres 
 * con base en ingreso neto (Sin transferencias)
 * y líneas de pobreza internacionales
-gen     grupo_int = 1 if (y_pc_net<lp31_ci)
-replace grupo_int = 2 if (y_pc_net>=lp31_ci & y_pc_net<(lp31_ci*1.6))
-replace grupo_int = 3 if (y_pc_net>=(lp31_ci*1.6) & y_pc_net<(lp31_ci*4))
-replace grupo_int = 4 if (y_pc_net>=(lp31_ci*4) & y_pc_net<.)
+gen     grupo_int = 1 if (y_pc_net<lp31_2011)
+replace grupo_int = 2 if (y_pc_net>=lp31_2011 & y_pc_net<(lp31_2011*1.6))
+replace grupo_int = 3 if (y_pc_net>=(lp31_2011*1.6) & y_pc_net<(lp31_2011*4))
+replace grupo_int = 4 if (y_pc_net>=(lp31_2011*4) & y_pc_net<.)
 
 tab grupo_int, gen(gpo_ingneto)
 
