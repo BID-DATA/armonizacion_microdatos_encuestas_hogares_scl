@@ -31,17 +31,12 @@ log using "`log_file'", replace
 País: Honduras
 Encuesta: EPHPM
 Round: m6
-Autores: Mayte Ysique
-Última versión: Mayte Ysique - Email: maytes@iadb.org, mysique@pucp.pe
-Fecha última modificación: Abril de 2023
-
-			  
-							SCL/LMK - IADB
-****************************************************************************/
+Autores: 
+*************************************************************************** */
 /***************************************************************************
 Detalle de procesamientos o modificaciones anteriores:
 * no disponible base septiembre hasta el momento
-****************************************************************************/
+*************************************************************************** */
 
 
 use "`base_in'", clear
@@ -298,75 +293,89 @@ use "`base_in'", clear
 	label variable miembros_ci "Numero de miembros del hogar"
 
 
-*****************************
-***VARIABLES DE DIVERSIDAD***
-*****************************
+*******************************************************
+***           VARIABLES DE DIVERSIDAD               ***
+*******************************************************
 
 	***************
 	****afro_ci****
 	***************
 	gen afro_ci=(inlist(ch308,1,2)==1) if ch308!=.
 
-	***************
-	****afro_ch****
-	***************
-	gen byte afro_jefe= afro_ci if relacion_ci==1 
-	egen afro_ch  = max(afro_jefe), by(idh_ch)  
-	drop afro_jefe 
-
+	
 	***************
 	*****ind_ci****
 	***************
 	gen ind_ci=(inlist(ch308,1,3,4,5,6,7,8,9)==1) if ch308!=.
+	
+	**************
+	*noafroind_ci*
+	**************
+	gen byte noafroind_ci =.   // se queda como missing (.) si no existe la pregunta
+	replace noafroind_ci =1 if (afro_ci==0 & ind_ci==0)
+	replace noafroind_ci =0 if (afro_ci==1 | ind_ci==1)
+	replace noafroind_ci =. if (afro_ci==. | ind_ci==.) //Esto solo en el caso que se tenga ambas opciones no disponibles. 
+	ta noafroind_ci,m
 
-	***************
-	*****ind_ch****
-	***************
-	gen byte ind_jefe= ind_ci if relacion_ci==1 
-	egen ind_ch  = max(ind_jefe), by(idh_ch)  
+	************
+	*afroind_ci*
+	************
+	gen byte afroind_ci=. 
+	replace afroind_ci=1 if ind_ci==1 
+	replace afroind_ci=2 if afro_ci==1
+	replace afroind_ci=3 if noafroind_ci == 1
+	ta afroind_ci,m
+	
+	*********
+	*afro_ch*
+	*********
+	gen byte afro_jefe = afro_ci if relacion_ci==1
+	egen afro_ch  = max(afro_jefe), by(idh_ch) 
+	drop afro_jefe
+	
+	********
+	*ind_ch*
+	********	
+	gen byte ind_jefe = ind_ci if relacion_ci==1
+	egen ind_ch = max(ind_jefe), by(idh_ch) 
 	drop ind_jefe
 
-	******************
-	***noafroind_ci***
-	******************
-	gen byte noafroind_ci = . 
-	replace noafroind_ci = 1 if afro_ci==0 & ind_ci==0 
-	replace noafroind_ci = 0 if afro_ci==1 | ind_ci==1 
+	**************
+	*noafroind_ch*
+	**************
+	gen byte noafroind_jefe = noafroind_ci if relacion_ci==1
+	egen noafroind_ch = max(noafroind_jefe), by(idh_ch) 
+	drop noafroind_jefe
 
-	******************
-	***noafroind_ch***
-	******************
-	gen byte noafroind_jefe= noafroind_ci if relacion_ci==1 
-	egen noafroind_ch  = max(noafroind_jefe), by(idh_ch)  
-	drop noafroind_jefe 
-
-	***************
-	***afroind_ci***
-	***************
-	gen afroind_ci=.  
-	replace afroind_ci=1 if afro_ci==1 
-	replace afroind_ci=2 if ind_ci==1  
-	replace afroind_ci=3 if noafroind_ci==1 
-
-	***************
-	***afroind_ch***
-	***************
-	gen afroind_ch=. 
-
-	*******************
-	***afroind_ano_c***
-	*******************
-	gen afroind_ano_c=.		
+	************
+	*afroind_ch*
+	************
+ 	gen byte afroind_jefe = afroind_ci if jefe_ci==1
+	egen afroind_ch = min(afroind_jefe), by(idh_ch) 
+	drop afroind_jefe 
 	
-	************
-	***dis_ci***
-	************
-	gen dis_ci=. 
+	********
+	*dis_ci*
+	********
+	gen byte dis_ci=.
+	replace dis_ci = 1 if ch307 != 7 & ch307 != 8 & ch307 != 9 
+	replace dis_ci = 0 if ch307 == 7 | ch307 == 8 | ch307 == 9 
+	
+	**********
+	*disWG_ci*
+	**********
+	gen byte disWG_ci=.
+	
+	********
+	*dis_ch*
+	********
+	egen byte dis_ch = max(dis_ci), by(idh_ch) 
+	
+	******************
+	*ISOalpha3_dis_ci*
+	******************
+	gen byte HND_dis_ci = dis_ci
 
-	************
-	***dis_ch***
-	************
-	gen dis_ch=. 
 
 
 ************************************
@@ -945,27 +954,21 @@ gen pea_ci=(emp_ci==1 | desemp_ci==1)
 	******************
 	***pqnoasis1_ci***
 	******************
-	gen		pqnoasis1_ci = 1 if inlist(ed04,7)
-	replace pqnoasis1_ci = 2 if inlist(ed04,11)
-	replace pqnoasis1_ci = 3 if inlist(ed04,6)
-	replace pqnoasis1_ci = 4 if inlist(ed04,3)
-	replace pqnoasis1_ci = 5 if inlist(ed04,4,10)
-	replace pqnoasis1_ci = 6 if inlist(ed04,2)
-	replace pqnoasis1_ci = 7 if inlist(ed04,8,9)
-	replace pqnoasis1_ci = 8 if inlist(ed04,5)
-	replace pqnoasis1_ci = 9 if inlist(ed04,1,12,13)
+* pqnoasis1_ci was replaced by razonesnoasis_ci, June 2025 * 
 
-	label define pqnoasis1_ci 	1 "Problemas económicos" ///
-								2 "Por trabajo" ///
-								3 "Problemas familiares o de salud" ///
-								4 "Falta de interés" ///
-								5 "Quehaceres domésticos/embarazo/cuidado de niños/as" ///
-								6 "Terminó sus estudios" ///
-								7 "Edad" ///
-								8 "Problemas de acceso" ///
-								9 "Otros"
-	
-	label value pqnoasis1_ci pqnoasis1_ci
+**********************
+***razonesnoasis_ci***
+**********************
+	gen razonesnoasis_ci = .
+	replace razonesnoasis_ci = 1 if inlist(ed04,7,11)
+	replace razonesnoasis_ci = 2 if inlist(ed04,3)
+	replace razonesnoasis_ci = 3 if inlist(ed04,4,6,10)
+	replace razonesnoasis_ci = 4 if inlist(ed04,5)
+	replace razonesnoasis_ci = 5 if inlist(ed04,2,8,9,12,13)
+
+
+	label define razonesnoasis_ci 1 "Problemas económicos/Por trabajo" 2 "Falta de interés/Problemas de rendimiento" 3 "Cuidados/ Problemas familiares o de salud" 4 "Problemas de acceso"  5 "Otros"
+	label value  razonesnoasis_ci razonesnoasis_ci
 
 	***************
 	***repite_ci*** 
@@ -1408,6 +1411,7 @@ do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&Exter
     order region_BID_c region_c pais_c anio_c mes_c zona_c factor_ch idh_ch	idp_ci factor_ci factor_ch /// Identificación 
   sexo_ci edad_ci relacion_ci civil_ci jefe_ci nconyuges_ch nhijos_ch notropari_ch notronopari_ch nempdom_ch /// Demográficas 
   clasehog_ch nmiembros_ch miembros_ci nmayor21_ch nmenor21_ch nmayor65_ch nmenor6_ch nmenor1_ch /// Demográficas 
+  afro_ci ind_ci noafroind_ci afroind_ci afro_ch ind_ch noafroind_ch afroind_ch dis_ci disWG_ci dis_ch HND_dis_ci /// Diversidad
   condocup_ci categoinac_ci emp_ci cesante_ci desemp_ci subemp_ci durades_ci pea_ci nempleos_ci antiguedad_ci desalent_ci  /// Empleo
   horaspri_ci horastot_ci tiempoparc_ci categopri_ci categosec_ci rama_ci spublico_ci tamemp_ci cotizando_ci instcot_ci	afiliado_ci /// Empleo 
   formal_ci tipocontrato_ci ocupa_ci pension_ci	pensionsub_ci tipopen_ci instpen_ci	ylmpri_ci /// Empleo 
@@ -1415,7 +1419,7 @@ do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&Exter
   ylm_ch ylnm_ch ylmnr_ch ynlm_ch ynlnm_ch ylmhopri_ci ylmho_ci /// Ingresos del hogar 
   nrylmpri_ci nrylmpri_ch /// No respuesta de ingresos  
   remesas_ci remesas_ch ypen_ci ypensub_ci /// Remesas y pensiones
-  aedu_ci eduui_ci eduuc_ci edupre_ci eduac_ci asiste_ci edupub_ci pqnoasis1_ci asispre_ci /// Educación
+  aedu_ci eduui_ci eduuc_ci edupre_ci eduac_ci asiste_ci edupub_ci razonesnoasis_ci asispre_ci /// Educación
   luz_ch luzmide_ch combust_ch piso_ch pared_ch techo_ch resid_ch dorm_ch cuartos_ch cocina_ch telef_ch refrig_ch /// Vivienda
   freez_ch auto_ch compu_ch internet_ch cel_ch vivi1_ch vivi2_ch viviprop_ch vivitit_ch vivialq_ch vivialqimp_ch /// Vivienda
   aguared_ch aguafconsumo_ch aguafuente_ch aguadist_ch aguadisp1_ch aguadisp2_ch /// Agua y saneamineto
