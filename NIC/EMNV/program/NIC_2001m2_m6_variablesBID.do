@@ -34,17 +34,11 @@ log using "`log_file'", replace
 País: Nicaragua
 Encuesta: EMNV
 Round: Febrero-Junio
-Autores: Yessenia Loayza
-Versión 2013: Mayra Sáenz
-Última versión: Mayra Sáenz - Email: mayras@iadb.org, saenzmayra.a@gmail.com
-Fecha última modificación: 10 de Septiembre de 2013
-
-							SCL/LMK - IADB
-****************************************************************************/
+*************************************************************************** */
 /***************************************************************************
 Detalle de procesamientos o modificaciones anteriores:
 
-****************************************************************************/
+*************************************************************************** */
 use `base_in', clear
 
 /***** revision August 03,2005
@@ -54,7 +48,7 @@ removed condition (& edad_ci<18) froom the following two lines:
 by idh_ch: egen byte nhijos_ch=sum((relacion_ci==3) & edad_ci<18)
 by idh_ch: egen byte notropari_ch=sum((relacion_ci==4) & edad_ci>=18)
 
-***/
+** */
 
 
 /** revision August 18,2006 (Victoria) 
@@ -64,11 +58,11 @@ Nicaragua.
 
 Code for education dummies was changed beacuse there were mistakes in it. 
 Old code can be seen in education section below. 
-**/
+* */
 
 /*****************
 Variables de Hogar
-******************/
+***************** */
 gen factor_ch=peso2
 gen idh_ch=id_hogar
 tostring idh_ch, replace
@@ -97,7 +91,7 @@ replace relacion_ci=6 if s2p2==10
 
 /*************************************
 Variables de Infraestructura del Hogar
-**************************************/
+************************************* */
 gen aguared_ch=(s1p20==1 | s1p20==2) /*Esta definido como acceso a agua de red!*/
 gen aguadist_ch=0
 replace aguadist_ch=1 if s1p20==1
@@ -193,7 +187,7 @@ gen internet_ch=.
 
 /*********************
 Variables Demograficas
-*********************/
+******************** */
 ************
 * Region_c *
 ************
@@ -260,7 +254,7 @@ label variable miembros_ci "Miembro del hogar"
 
 /***************************
 Variables de Demanda Laboral
-****************************/
+*************************** */
 
 ****************
 ****condocup_ci*
@@ -401,7 +395,7 @@ label var lpe_ci "Linea de indigencia oficial del pais"
 
 /************************************************************************************************************
 * 3. Creación de nuevas variables de SS and LMK a incorporar en Armonizadas
-************************************************************************************************************/
+*********************************************************************************************************** */
 
 gen rama_ci=.
 replace rama_ci=1 if (s5p14>=111 & s5p14<=500) & emp_ci==1
@@ -642,44 +636,83 @@ replace antiguedad_ci=s5p15a /48 if s5p15b==2
 replace antiguedad_ci=s5p15a /365 if s5p15b==1
 replace antiguedad_ci=. if emp_ci==0
 
-		  ******************************
-          *** VARIABLES DE DIVERSIDAD **
-          ******************************
-*Nathalia Maya & Antonella Pereira
-*Julio 2021	
 
+*******************************************************
+***           VARIABLES DE DIVERSIDAD               ***
+*******************************************************
+	*********
+	*afro_ci*
+	*********
+	gen byte afro_ci = . 	 
+	replace afro_ci = 1 if s2p10 == 5
+	replace afro_ci = 0 if s2p10 != 5 & s2p10 != 10 
 	
 	
-	***************
-	***afroind_ci***
-	***************
-gen afroind_ci=. 
+	*********
+	*ind_ci*
+	*********	
+	gen byte ind_ci = .
+	replace ind_ci = 1 if s2p10 == 6 | s2p10 == 7 | s2p10 == 8
+	replace ind_ci = 0 if s2p10 != 6 & s2p10 != 7 & s2p10 != 8 & s2p10 != 10
 
-	***************
-	***afroind_ch***
-	***************
-gen afroind_ch=. 
+	**************
+	*noafroind_ci*
+	**************
+	gen byte noafroind_ci =.   // se queda como missing (.) si no existe la pregunta
+	replace noafroind_ci =1 if (afro_ci==0 & ind_ci==0)
+	replace noafroind_ci =0 if (afro_ci==1 | ind_ci==1)
+	replace noafroind_ci =. if (afro_ci==. | ind_ci==.) //Esto solo en el caso que se tenga ambas opciones no disponibles. 
+	ta noafroind_ci,m
+
+	************
+	*afroind_ci*
+	************
+	gen byte afroind_ci=. 
+	replace afroind_ci=1 if ind_ci==1 
+	replace afroind_ci=2 if afro_ci==1
+	replace afroind_ci=3 if noafroind_ci == 1
+	ta afroind_ci,m
+	
+	*********
+	*afro_ch*
+	*********
+	gen byte afro_jefe = afro_ci if relacion_ci==1
+	egen afro_ch  = max(afro_jefe), by(idh_ch) 
+	drop afro_jefe
+	
+	********
+	*ind_ch*
+	********	
+	gen byte ind_jefe = ind_ci if relacion_ci==1
+	egen ind_ch = max(ind_jefe), by(idh_ch) 
+	drop ind_jefe
 
 	*******************
 	***afroind_ano_c***
 	*******************
 gen afroind_ano_c=.		
 
-	*******************
-	***dis_ci***
-	*******************
-gen dis_ci=. 
+	********
+	*dis_ci*
+	********
+	gen byte dis_ci =.
+	
+	********
+	*dis_ch*
+	********
+	egen byte dis_ch = max(dis_ci), by(idh_ch) 
+	
+	******************
+	*ISOalpha3_dis_ci*
+	******************
+	gen byte NIC_dis_ci = .
 
-	*******************
-	***dis_ch***
-	*******************
-gen dis_ch=. 
 
 
 
 /****************************
 Variables del Mercado Laboral
-****************************/
+*************************** */
 gen desalent_ci=(s5p6==12 | s5p6==13)
 replace desalent_ci=. if emp_ci==1
 
@@ -774,7 +807,7 @@ label var formal_ci "1=afiliado o cotizante / PEA"
 
 /*******************
 Variables Educativas
-********************/
+******************* */
 gen aedu_ci=.
 replace aedu_ci=0 if s4p17a==0
 replace aedu_ci=s4p17b if s4p17a==3
@@ -1617,25 +1650,29 @@ do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&Exter
 * Verificación de que se encuentren todas las variables armonizadas 
 /*_____________________________________________________________________________________________________*/
 
-    order region_BID_c region_c pais_c anio_c mes_c zona_c factor_ch idh_ch	idp_ci factor_ci factor_ch /// Identificación 
-  sexo_ci edad_ci relacion_ci civil_ci jefe_ci nconyuges_ch nhijos_ch notropari_ch notronopari_ch nempdom_ch /// Demográficas 
-  clasehog_ch nmiembros_ch miembros_ci nmayor21_ch nmenor21_ch nmayor65_ch nmenor6_ch nmenor1_ch /// Demográficas 
-  condocup_ci categoinac_ci emp_ci cesante_ci desemp_ci subemp_ci durades_ci pea_ci nempleos_ci antiguedad_ci desalent_ci  /// Empleo
-  horaspri_ci horastot_ci tiempoparc_ci categopri_ci categosec_ci rama_ci spublico_ci tamemp_ci cotizando_ci afiliado_ci /// Empleo 
-  formal_ci tipocontrato_ci ocupa_ci pension_ci	pensionsub_ci tipopen_ci instpen_ci	ylmpri_ci /// Empleo 
-  ylmpri_ci ylnmpri_ci ylmsec_ci ylnmsec_ci ylmotros_ci	ylnmotros_ci  ylm_ci ylnm_ci ynlm_ci ynlnm_ci nrylmpri_ci /// Ingresos individuo 
-  ylm_ch ylnm_ch ylmnr_ch ynlm_ch ynlnm_ch ylmhopri_ci ylmho_ci /// Ingresos del hogar 
-  nrylmpri_ci nrylmpri_ch /// No respuesta de ingresos  
-  remesas_ci remesas_ch ypen_ci ypensub_ci /// Remesas y pensiones
-  aedu_ci eduui_ci eduuc_ci edupre_ci eduac_ci asiste_ci pqnoasis1_ci /// Educación
-  luz_ch luzmide_ch combust_ch piso_ch pared_ch techo_ch resid_ch dorm_ch cuartos_ch cocina_ch telef_ch refrig_ch /// Vivienda
-  freez_ch auto_ch compu_ch internet_ch cel_ch vivi1_ch vivi2_ch viviprop_ch vivitit_ch vivialq_ch vivialqimp_ch /// Vivienda
-  salmm_ci lp19_2011 lp31_2011 lp5_2011 lp_ci lpe_ci lp365_2017 lp685_2017 lp14_2017 lp81_2017 tc_c cpi_c cpi2011 cpi2017 ratio_cpi2011 ratio_cpi2017 /// Fuente externa
-  ppp_c ppp_2011 ppp_2017 , first /// Fuente externa 
-  /// the order was created by regex functions, sph variables are excluded /// Fuente externa 
-  /// the order was created by regex functions, sph variables are excluded
- /// Fuente externa 
-  /// the order was created by regex functions, sph variables are excluded
+cap order region_BID_c region_c pais_c anio_c mes_c zona_c factor_ch idh_ch	idp_ci factor_ci factor_ch /// Identificación
+	  sexo_ci edad_ci relacion_ci civil_ci jefe_ci nconyuges_ch nhijos_ch notropari_ch notronopari_ch nempdom_ch /// Demográficas
+	  clasehog_ch nmiembros_ch miembros_ci nmayor21_ch nmenor21_ch nmayor65_ch nmenor6_ch nmenor1_ch /// Demográficas
+	  afroind_ci afroind_ch afroind_ano_c dis_ci dis_ch /// Género y diversidad 
+	  afro_ci ind_ci noafroind_ci afro_ch ind_ch noafroind_ch disWG_ci /// Género y diversidad 
+          condocup_ci categoinac_ci emp_ci cesante_ci desemp_ci subemp_ci durades_ci pea_ci nempleos_ci antiguedad_ci desalent_ci  /// Empleo
+	  horaspri_ci horastot_ci tiempoparc_ci categopri_ci categosec_ci rama_ci spublico_ci tamemp_ci cotizando_ci instcot_ci	afiliado_ci /// Empleo
+	  formal_ci tipocontrato_ci ocupa_ci pension_ci	pensionsub_ci tipopen_ci instpen_ci	ylmpri_ci /// Empleo
+	  ylmpri_ci ylnmpri_ci ylmsec_ci ylnmsec_ci ylmotros_ci	ylnmotros_ci ylm_ci ylnm_ci ynlm_ci ynlnm_ci ytot_ci ynlm_publico_ci ynlm_privado_ci  /// Ingresos individuo
+	  ylm_ch ylnm_ch ylmnr_ch ynlm_ch ynlnm_ch ynlm_publico_ch ynlm_privado_ch  ytot_ch /// Ingresos del hogar
+	  ylmhopri_ci ylmho_ci /// ingreso por hora
+	  nrylmpri_ci nrylmpri_ch /// No respuesta de ingresos 
+	  remesas_ci remesas_ch ypen_ci ypensub_ci /// Remesas y pensiones
+          aedu_ci eduui_ci eduuc_ci edupre_ci eduac_ci asiste_ci edupub_ci pqnoasis1_ci asispre_ci /// Educación 
+	  luz_ch luzmide_ch combust_ch piso_ch pared_ch techo_ch resid_ch dorm_ch cuartos_ch cocina_ch telef_ch refrig_ch /// Vivienda 
+	  freez_ch auto_ch compu_ch internet_ch cel_ch vivi1_ch vivi2_ch viviprop_ch vivitit_ch vivialq_ch vivialqimp_ch /// Vivienda
+	  aguared_ch aguafconsumo_ch aguafuente_ch aguadist_ch aguadisp1_ch aguadisp2_ch /// Agua y saneamineto
+	  aguatrat_ch aguamala_ch aguamejorada_ch aguamide_ch bano_ch banoex_ch banomejorado_ch sinbano_ch  /// Agua y saneamineto
+	  migrante_ci migrantiguo5_ci miglac_ci /// Migración  
+	  nmiembros_sph_ch yneto_pc_ch bene_cash_ch pensionsub_ch   /// Protección social 
+          ynlm_publico_ch ynlm_privado_ch ynlm_privado_ci ynlm_publico_ci  /// Protección social ingresos
+ 	  salmm_ci lp19_2011 lp31_2011 lp5_2011 lp_ci lpe_ci lp365_2017 lp685_2017 lp14_2017 lp81_2017 tc_c ratio_cpi2011 ratio_cpi2017 cpi_c cpi2011 cpi2017 ppp_c ppp_2011 ppp_2017, first /// Fuente externa
+
 
 clonevar codindustria=s5p14
 clonevar codocupa=s5p13
