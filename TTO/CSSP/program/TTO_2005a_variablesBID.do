@@ -18,13 +18,13 @@ local ENCUESTA CSSP
 local ANO "2005"
 local ronda a
 
-*local log_file = "$ruta\harmonized\\`PAIS'\\`ENCUESTA'\log\\`PAIS'_`ANO'`ronda'_variablesBID.log"
+local log_file = "$ruta\harmonized\\`PAIS'\\`ENCUESTA'\log\\`PAIS'_`ANO'`ronda'_variablesBID.log"
 local base_in  = "$ruta\survey\\`PAIS'\\`ENCUESTA'\\`ANO'\\`ronda'\data_merge\\`PAIS'_`ANO'`ronda'.dta"
 local base_out = "$ruta\harmonized\\`PAIS'\\`ENCUESTA'\data_arm\\`PAIS'_`ANO'`ronda'_BID.dta"
    
 
-*capture log close
-*log using "`log_file'", replace 
+capture log close
+log using "`log_file'", replace 
 
 *log off
 /***************************************************************************
@@ -172,100 +172,6 @@ egen idp_ci =group(idh_ch indivno)
 label var idp_ci "Identificador Individual dentro del Hogar"
 tostring idp_ci, replace
 
-
-
-************************************
-*  RELACION CON EL JEFE DE HOGAR   *
-************************************
-gen relacion_ci=1 if p02==1
-replace relacion_ci=2 if p02==2
-replace relacion_ci=3 if p02==3
-replace relacion_ci=4 if p02==4  | p02==5
-replace relacion_ci=5 if p02==6
-replace relacion_ci=6 if p02==7
-replace relacion_ci=. if p02==9 /* No sabe */
-label var relacion_ci "relación con el jefe de hogar"
-label define relacion 1"Jefe" 2"Cónguye, Esposo/a, Compañero/a" 3"Hijo/a" 4"Otros parientes" 5"Otros no parientes" 6"Servicio doméstico" 
-label values relacion_ci relacion
-
-************************************
-* DUMMY PARA NO MIEMBROS DEL HOGAR *
-************************************
-* Create a dummy indicating this person's income should NOT be included 
-gen miembros_ci=(relacion_ci>=1 & relacion_ci<=5)
-replace miembros_ci=1 if (relacion_ci>=1 & relacion_ci<=4)
-label variable miembros_ci "Variable dummy que indica las personas que son miembros del Hogar"
-
-*******************************************************
-***           VARIABLES DE DIVERSIDAD               ***
-*******************************************************
-	*********
-	*afro_ci*
-	*********
-	gen byte afro_ci = . 	  // se queda como missing (.) si no existe la pregunta
-	
-	*********
-	*ind_ci*
-	*********	
-	gen byte ind_ci =. 		  // se queda como missing (.) si no existe la pregunta
-
-	**************
-	*noafroind_ci*
-	**************
-	gen byte noafroind_ci =.   // se queda como missing (.) si no existe la pregunta
-
-	************
-	*afroind_ci*
-	************
-	gen byte afroind_ci=. 
-	
-	*********
-	*afro_ch*
-	*********
-	gen byte afro_jefe = afro_ci if relacion_ci==1
-	egen afro_ch  = max(afro_jefe), by(idh_ch) 
-	drop afro_jefe
-	
-	********
-	*ind_ch*
-	********	
-	gen byte ind_jefe = ind_ci if relacion_ci==1
-	egen ind_ch = max(ind_jefe), by(idh_ch) 
-	drop ind_jefe
-
-	**************
-	*noafroind_ch*
-	**************
-	gen byte noafroind_jefe = noafroind_ci if relacion_ci==1
-	egen noafroind_ch = max(noafroind_jefe), by(idh_ch) 
-	drop noafroind_jefe
-
-	************
-	*afroind_ch*
-	************
- 	gen byte afroind_jefe = afroind_ci if jefe_ci==1
-	egen afroind_ch = min(afroind_jefe), by(idh_ch) 
-	drop afroind_jefe 
-
-	********
-	*dis_ci*
-	********
-	gen byte dis_ci=.
-	
-	**********
-	*disWG_ci*
-	**********
-	gen byte disWG_ci=.
-	
-	********
-	*dis_ch*
-	********
-	egen byte dis_ch = max(dis_ci), by(idh_ch) 
-	
-	******************
-	*ISOalpha3_dis_ci*
-	******************
-	gen byte TTO_dis_ci = .
 *******************************
 *******************************
 *******************************
@@ -301,6 +207,29 @@ replace civil_ci=2 if p12==4 | p12==5
 label var civil_ci "Estado civil del individuo"
 label define civil 1"Soltero" 2"Unión formal o informal" 3"Divorciado o separado" 4"Viudo" 
 label values civil_ci civil
+
+************************************
+*  RELACION CON EL JEFE DE HOGAR   *
+************************************
+gen relacion_ci=1 if p02==1
+replace relacion_ci=2 if p02==2
+replace relacion_ci=3 if p02==3
+replace relacion_ci=4 if p02==4  | p02==5
+replace relacion_ci=5 if p02==6
+replace relacion_ci=6 if p02==7
+replace relacion_ci=. if p02==9 /* No sabe */
+label var relacion_ci "relación con el jefe de hogar"
+label define relacion 1"Jefe" 2"Cónguye, Esposo/a, Compañero/a" 3"Hijo/a" 4"Otros parientes" 5"Otros no parientes" 6"Servicio doméstico" 
+label values relacion_ci relacion
+
+************************************
+* DUMMY PARA NO MIEMBROS DEL HOGAR *
+************************************
+* Create a dummy indicating this person's income should NOT be included 
+gen miembros_ci=(relacion_ci>=1 & relacion_ci<=5)
+replace miembros_ci=1 if (relacion_ci>=1 & relacion_ci<=4)
+label variable miembros_ci "Variable dummy que indica las personas que son miembros del Hogar"
+
 
 *******************
 *  JEFE DE HOGAR  *
@@ -408,6 +337,79 @@ label variable nmenor6_ch "Miembros menores a 6 años dentro del Hogar"
 ******************************************
 egen nmenor1_ch=sum((relacion_ci>0 & relacion_ci<5) & (edad_ci<1)),  by (idh_ch)
 label variable nmenor1_ch "Miembros menores a 1 año dentro del Hogar"
+
+*******************************************************
+***           VARIABLES DE DIVERSIDAD               ***
+*******************************************************
+	*********
+	*afro_ci*
+	*********
+	gen byte afro_ci = . 	  // se queda como missing (.) si no existe la pregunta
+	
+	*********
+	*ind_ci*
+	*********	
+	gen byte ind_ci =. 		  // se queda como missing (.) si no existe la pregunta
+
+	**************
+	*noafroind_ci*
+	**************
+	gen byte noafroind_ci =.   // se queda como missing (.) si no existe la pregunta
+
+	************
+	*afroind_ci*
+	************
+	gen byte afroind_ci=. 
+	
+	*********
+	*afro_ch*
+	*********
+	gen byte afro_jefe = afro_ci if relacion_ci==1
+	egen afro_ch  = max(afro_jefe), by(idh_ch) 
+	drop afro_jefe
+	
+	********
+	*ind_ch*
+	********	
+	gen byte ind_jefe = ind_ci if relacion_ci==1
+	egen ind_ch = max(ind_jefe), by(idh_ch) 
+	drop ind_jefe
+
+	**************
+	*noafroind_ch*
+	**************
+	gen byte noafroind_jefe = noafroind_ci if relacion_ci==1
+	egen noafroind_ch = max(noafroind_jefe), by(idh_ch) 
+	drop noafroind_jefe
+
+	************
+	*afroind_ch*
+	************
+ 	gen byte afroind_jefe = afroind_ci if jefe_ci==1
+	egen afroind_ch = min(afroind_jefe), by(idh_ch) 
+	drop afroind_jefe 
+
+	********
+	*dis_ci*
+	********
+	gen byte dis_ci=.
+	
+	**********
+	*disWG_ci*
+	**********
+	gen byte disWG_ci=.
+	
+	********
+	*dis_ch*
+	********
+	egen byte dis_ch = max(dis_ci), by(idh_ch) 
+	
+	******************
+	*ISOalpha3_dis_ci*
+	******************
+	gen byte TTO_dis_ci = .
+
+
 
 
 *******************************
@@ -1477,5 +1479,5 @@ compress
 saveold "`base_out'", replace
 
 
-*log close
+log close
 
