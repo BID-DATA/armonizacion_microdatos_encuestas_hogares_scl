@@ -31,11 +31,7 @@ capture log close
 País: Perú
 Encuesta: ENAHO
 Round: a
-Autores: Mayte Ysique E-mail: mysique@pucp.pe - maytes@iadb.org
-Última modificación: 
-Fecha última modificación: XX de octubre de 2024
 
-							SCL/GDI - IADB
 ****************************************************************************/
 
 use "`base_in'", clear
@@ -350,7 +346,9 @@ by idh_ch, sort: egen byte nmenor1_ch=sum((relacion_ci>0 & relacion_ci<=5) & (ed
 		label variable nmenor1_ch "Numero de familiares menores a 1 anio"
 
 
-/****** Variables de identidad etnico-racial  ******/
+*******************************************************
+***           VARIABLES DE DIVERSIDAD               ***
+*******************************************************
 
 	***************
 	*** afro_ci  **
@@ -395,11 +393,6 @@ by idh_ch, sort: egen byte nmenor1_ch=sum((relacion_ci>0 & relacion_ci<=5) & (ed
 		egen noafroind_ch = min(noafroind_jefe), by(idh_ch) 
 		drop noafroind_jefe
 
-	*******************
-	***afroind_ano_c***
-	*******************
-		gen afroind_ano_c=2017
-
 	***************
 	***afroind_ci**
 	***************
@@ -415,9 +408,6 @@ by idh_ch, sort: egen byte nmenor1_ch=sum((relacion_ci>0 & relacion_ci<=5) & (ed
 		gen afroind_jefe = afroind_ci if relacion_ci == 1
 		egen afroind_ch = min(afroind_jefe), by(idh_ch) 
 		drop afroind_jefe
-
-
-/****** Situación de discapacidad  ******/
 
 	*******************
 	***dis_ci***
@@ -440,6 +430,11 @@ by idh_ch, sort: egen byte nmenor1_ch=sum((relacion_ci>0 & relacion_ci<=5) & (ed
 	***dis_ch***
 	*******************
 		bysort idh_ch : egen dis_ch = max(dis_ci)
+
+	*******************
+	***afroind_ano_c***
+	*******************
+	gen afroind_ano_c=2017
 
 
 /****** Variables laborales ******/
@@ -1007,27 +1002,21 @@ egen ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci)
 	**************
 	*pqnoasis1_ci*
 	**************
-		g       pqnoasis1_ci = 1 if p313==1
-		replace pqnoasis1_ci = 2 if p313==2
-		replace pqnoasis1_ci = 3 if p313==5
-		replace pqnoasis1_ci = 4 if p313==9
-		replace pqnoasis1_ci = 5 if p313==10
-		replace pqnoasis1_ci = 6 if p313==3
-		replace pqnoasis1_ci = 7 if p313==4
-		replace pqnoasis1_ci = 8 if p313==7
-		replace pqnoasis1_ci = 9 if p313==11
-		replace pqnoasis1_ci = . if asiste_ci==1
+        * pqnoasis1_ci was replaced by razonesnoasis_ci, June 2025 * 
 
-		label define pqnoasis1_ci 	1 "Problemas económicos" ///
-									2 "Por trabajo" ///
-									3 "Problemas familiares o de salud" ///
-									4 "Falta de interés" ///
-									5 "Quehaceres domésticos/embarazo/cuidado de niños/as" ///
-									6 "Terminó sus estudios" ///
-									7	"Edad" ///
-									8 "Problemas de acceso" ///
-									9 "Otros"
-		label value  pqnoasis1_ci pqnoasis1_ci
+**********************
+***razonesnoasis_ci***
+**********************
+	g razonesnoasis_ci = .
+	replace razonesnoasis_ci = 1 if inlist(p313, 1, 2)
+	replace razonesnoasis_ci = 2 if p313 == 9
+	replace razonesnoasis_ci = 3 if inlist(p313, 5, 10)
+	replace razonesnoasis_ci = 4 if p313 == 7 
+	replace razonesnoasis_ci = 5 if inlist(p313, 3, 4, 11)
+
+
+label define razonesnoasis_ci 1 "Problemas económicos/Por trabajo" 2 "Falta de interés/Problemas de rendimiento" 3 "Cuidados/ Problemas familiares o de salud" 4 "Problemas de acceso"  5 "Otros"
+label value  razonesnoasis_ci razonesnoasis_ci
 
 
 	***************
@@ -1543,6 +1532,7 @@ do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&Exter
     order region_BID_c region_c pais_c anio_c mes_c zona_c factor_ch idh_ch	idp_ci factor_ci factor_ch /// Identificación 
   sexo_ci edad_ci relacion_ci civil_ci jefe_ci nconyuges_ch nhijos_ch notropari_ch notronopari_ch nempdom_ch /// Demográficas 
   clasehog_ch nmiembros_ch miembros_ci nmayor21_ch nmenor21_ch nmayor65_ch nmenor6_ch nmenor1_ch /// Demográficas 
+  afro_ci ind_ci noafroind_ci afroind_ci afro_ch ind_ch noafroind_ch afroind_ch dis_ci disWG_ci dis_ch PER_dis_ci /// Diversidad
   condocup_ci categoinac_ci emp_ci cesante_ci desemp_ci subemp_ci durades_ci pea_ci nempleos_ci antiguedad_ci desalent_ci  /// Empleo
   horaspri_ci horastot_ci tiempoparc_ci categopri_ci categosec_ci rama_ci spublico_ci tamemp_ci cotizando_ci instcot_ci	afiliado_ci /// Empleo 
   formal_ci tipocontrato_ci ocupa_ci pension_ci	pensionsub_ci tipopen_ci instpen_ci	ylmpri_ci /// Empleo 
@@ -1550,7 +1540,7 @@ do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&Exter
   ylm_ch ylnm_ch ylmnr_ch ynlm_ch ynlnm_ch ylmhopri_ci ylmho_ci /// Ingresos del hogar 
   nrylmpri_ci nrylmpri_ch /// No respuesta de ingresos  
   remesas_ci remesas_ch ypen_ci ypensub_ci /// Remesas y pensiones
-  aedu_ci eduui_ci eduuc_ci edupre_ci eduac_ci asiste_ci edupub_ci pqnoasis1_ci asispre_ci /// Educación
+  aedu_ci eduui_ci eduuc_ci edupre_ci eduac_ci asiste_ci edupub_ci razonesnoasis_ci asispre_ci /// Educación
   luz_ch luzmide_ch combust_ch piso_ch pared_ch techo_ch resid_ch dorm_ch cuartos_ch cocina_ch telef_ch refrig_ch /// Vivienda
   freez_ch auto_ch compu_ch internet_ch cel_ch vivi1_ch vivi2_ch viviprop_ch vivitit_ch vivialq_ch vivialqimp_ch /// Vivienda
   aguared_ch aguafconsumo_ch aguafuente_ch aguadist_ch aguadisp1_ch aguadisp2_ch /// Agua y saneamineto
