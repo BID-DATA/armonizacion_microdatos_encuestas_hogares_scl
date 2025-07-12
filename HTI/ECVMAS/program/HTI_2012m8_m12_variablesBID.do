@@ -286,7 +286,7 @@ label variable miembros_ci "Miembro del hogar"
 ***           VARIABLES DE DIVERSIDAD               ***
 *******************************************************
 	*********
-	*re_ci*
+	*afro_ci*
 	*********
 	gen byte afro_ci = . 	  // se queda como missing (.) si no existe la pregunta
 	
