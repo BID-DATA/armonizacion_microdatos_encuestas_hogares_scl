@@ -31,16 +31,12 @@ log using "`log_file'", replace
 País: Bolivia
 Encuesta: ECH
 Round: m11
-Autores: Mayra Sáenz
-Stephanie González Rubio (Jul 18, 2019)
-Última versión: 2021/03/09 (Cesar Lins)
 
-							SCL/LMK - IADB
-****************************************************************************/
+*************************************************************************** */
 /***************************************************************************
 Detalle de procesamientos o modificaciones anteriores:
 
-****************************************************************************/
+*************************************************************************** */
 
 
 use "`base_in'", clear
@@ -296,54 +292,121 @@ label variable miembros_ci "Miembro del hogar"
 
 *******************************************************
 ***           VARIABLES DE DIVERSIDAD               ***
-*******************************************************				
-* Maria Antonella Pereira & Nathalia Maya - Marzo 2021	
+*******************************************************			
 
-	***************
-	***afroind_ci***
-	***************
-**Pregunta: como boliviano o boliviana, pertenece a una nación o pueblo indígena? (s03a_04) (PERTENCE 1, NO PERTENECE 2, NO SOY BOLIVIANO/BOLIVIANA 3)
-**Pregunta: a qué nación o pueblo pertenece? (s03a_04n)(ALL CATEGORIES ARE INDIGENOUS INCLUDING AFROBOLIVIANS)
-** La base original difiere de la base armonizada (s03a_04npioc vs s03a_04n). 
+	*********
+	*afro_ci*
+	*********
+	tab s03a_04, m
+	tab s03a_04npioc, m
+	
+	gen byte afro_ci = .
+	replace afro_ci= 1 if s03a_04npioc == 1  
+	replace afro_ci = 0 if s03a_04npioc != 1 & s03a_04 != .
+	tab afro_ci, m
+	
+	*********
+	*ind_ci*
+	*********
+	gen byte ind_ci = .
+	replace ind_ci = 1 if s03a_04npioc != 1 & s03a_04 == 1
+	replace ind_ci = 0 if s03a_04npioc == 1 | s03a_04 == 2  | s03a_04 == 3
+	tab ind_ci, m
+	
+	**************
+	*noafroind_ci*
+	**************
+	gen byte noafroind_ci =.   // se queda como missing (.) si no existe la pregunta
+	replace noafroind_ci =1 if (afro_ci==0 & ind_ci==0)
+	replace noafroind_ci =0 if (afro_ci==1 | ind_ci==1)
+	replace noafroind_ci =. if (afro_ci==. | ind_ci==.) //Esto solo en el caso que se tenga ambas opciones no disponibles. 
+	ta noafroind_ci,m
 
-gen afroind_ci=. 
-replace afroind_ci=1 if s03a_04==1
-replace afroind_ci=2 if s03a_04==0 
-replace afroind_ci=3 if s03a_04==2 
-replace afroind_ci=9 if s03a_04==3 
+	************
+	*afroind_ci*
+	************
+	gen byte afroind_ci=. 
+	replace afroind_ci=1 if ind_ci==1 
+	replace afroind_ci=2 if afro_ci==1
+	replace afroind_ci=3 if noafroind_ci == 1
+	ta afroind_ci,m
+	
+	*********
+	*afro_ch*
+	*********
+	gen byte afro_jefe = afro_ci if relacion_ci==1
+	egen afro_ch  = max(afro_jefe), by(idh_ch) 
+	drop afro_jefe
+	
+	********
+	*ind_ch*
+	********	
+	gen byte ind_jefe = ind_ci if relacion_ci==1
+	egen ind_ch = max(ind_jefe), by(idh_ch) 
+	drop ind_jefe
 
+	**************
+	*noafroind_ch*
+	**************
+	gen byte noafroind_jefe = noafroind_ci if relacion_ci==1
+	egen noafroind_ch = max(noafroind_jefe), by(idh_ch) 
+	drop noafroind_jefe
 
-	***************
-	***afroind_ch***
-	***************
-gen afroind_jefe= afroind_ci if relacion_ci==1
-egen afroind_ch  = min(afroind_jefe), by(idh_ch) 
+	************
+	*afroind_ch*
+	************
+ 	gen byte afroind_jefe = afroind_ci if jefe_ci==1
+	egen afroind_ch = min(afroind_jefe), by(idh_ch) 
+	drop afroind_jefe 
 
-drop afroind_jefe
+	********
+	*dis_ci*
+	********
+	foreach var in  s04a_06a s04a_06b s04a_06c s04a_06d s04a_06e s04a_06f {
+	tab `var', m nolab
+	}
+
+	gen byte dis_ci = 0
+	
+	foreach i in a b c d e f  {
+		forvalues j=2/4 {
+			recode dis_ci 0=1 if s04a_06`i'==`j'
+		}
+	}
+
+	recode dis_ci nonmiss=. if s04a_06a>=. & s04a_06b>=. & s04a_06c>=. & s04a_06d>=. & s04a_06e>=. & s04a_06f>=.
+	
+	tab dis_ci, m 
+	
+	**********
+	*disWG_ci*
+	**********
+	gen byte disWG_ci = 0
+	
+	foreach i in a b c d e f  {
+		forvalues j=3/4 {
+			recode disWG_ci 0=1 if s04a_06`i'==`j'
+		}
+	}
+
+	recode dis_ci nonmiss=. if s04a_06a>=. & s04a_06b>=. & s04a_06c>=. & s04a_06d>=. & s04a_06e>=. & s04a_06f>=.
+	
+	tab disWG_ci, m 
+	
+	********
+	*dis_ch*
+	********
+	egen byte dis_ch = max(dis_ci), by(idh_ch) 
+	
+	******************
+	*ISOalpha3_dis_ci*
+	******************
+	gen byte BOL_dis_ci = dis_ci
 
 	*******************
 	***afroind_ano_c***
 	*******************
-gen afroind_ano_c=2012
-
-
-	*************
-	***dis_ci***
-	**************
-gen dis_ci = 0
-foreach i in a b c d e f  {
-forvalues j=2/4 {
-recode dis_ci 0=1 if s04a_06`i'==`j'
-}
-}
-recode dis_ci nonmiss=. if s04a_06a==9 & s04a_06b==9 & s04a_06c==9 & s04a_06d==9 & s04a_06e==9 & s04a_06f==9 
-recode dis_ci nonmiss=. if s04a_06a>=. & s04a_06b>=. & s04a_06c>=. & s04a_06d>=. & s04a_06e>=. & s04a_06f>=.
-
-	*************
-	***dis_ch***
-	**************	
-egen dis_ch = sum(dis_ci), by(idh_ch) 
-
+	gen afroind_ano_c=2012
 ************************************
 *** VARIABLES DEL MERCADO LABORAL***
 ************************************
@@ -2321,6 +2384,7 @@ lab val grupo_int grupo_int
     order region_BID_c region_c pais_c anio_c mes_c zona_c factor_ch idh_ch	idp_ci factor_ci factor_ch /// Identificación 
   sexo_ci edad_ci relacion_ci civil_ci jefe_ci nconyuges_ch nhijos_ch notropari_ch notronopari_ch nempdom_ch /// Demográficas 
   clasehog_ch nmiembros_ch miembros_ci nmayor21_ch nmenor21_ch nmayor65_ch nmenor6_ch nmenor1_ch /// Demográficas 
+  afro_ci ind_ci noafroind_ci afroind_ci afro_ch ind_ch noafroind_ch afroind_ch dis_ci disWG_ci dis_ch BOL_dis_ci /// Diversidad
   condocup_ci categoinac_ci emp_ci cesante_ci desemp_ci subemp_ci durades_ci pea_ci nempleos_ci antiguedad_ci desalent_ci  /// Empleo
   horaspri_ci horastot_ci tiempoparc_ci categopri_ci categosec_ci rama_ci spublico_ci tamemp_ci cotizando_ci instcot_ci	afiliado_ci /// Empleo 
   formal_ci tipocontrato_ci ocupa_ci pension_ci	pensionsub_ci tipopen_ci instpen_ci	ylmpri_ci /// Empleo 
