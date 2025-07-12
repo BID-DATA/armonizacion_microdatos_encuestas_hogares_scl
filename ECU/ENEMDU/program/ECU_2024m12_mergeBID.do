@@ -1,17 +1,26 @@
-*********************************************
-****** Merge modulos de Vivienda y Hogar ****
-*********************************************
-
-* Última modificación: Pablo Cortés Sánchez
-* Fecha: 26/03/2024
+* (Versión Stata 18)
+/*==============================================================================
+						Armonización de encuestas
+			Script de merge - Unión de módulos en una sola base 
+País: Ecuador
+Año: 2024
+Autores: Oscar Jaramillo SPL / Jillie Chang SCL 
+Última versión: 07JUL2015
+División: SPL/SCL y SCL/SCL - IADB
+*******************************************************************************/
 
 clear all
 set more off 
+
+/****************************************************************************
+   I. Definir rutas y log file
+****************************************************************************/
+
 global ruta = "${surveysFolder}"
  
 local PAIS ECU
 local ENCUESTA ENEMDU
-local ANIO 2023
+local ANIO 2024
 local RONDA m12
 
 local log_file = "$ruta\harmonized\\`PAIS'\\`ENCUESTA'\log\\`PAIS'_`ANIO'`ronda'_variablesBID.log"
@@ -21,27 +30,55 @@ local base_out = "$ruta\survey\\`PAIS'\\`ENCUESTA'\\`ANIO'\\`RONDA'\\data_merge\
 capture log close
 log using "`log_file'", replace 
 
+/****************************************************************************
+   II. Unir módulos en una sola base
+*****************************************************************************/
 
-* Merge de base de hogar con base individual
-import spss "`base_in'\enemdu_vivienda_hogar_2023_12.sav", clear
-duplicates report area estrato upm  vivienda hogar
-sort area estrato upm vivienda hogar 
-saveold "`base_in'\hogares.dta",  version(12) replace
+* Base de hogares
+
+use "`base_in'\enemdu_vivienda_hogar_2024_12.dta", clear
+duplicates report id_vivienda id_hogar 
+/*--------------------------------------
+   Copies | Observations       Surplus
+----------+---------------------------
+        1 |        27610             0
+--------------------------------------*/
 
 * Sort de base
-import spss "`base_in'\enemdu_persona_2023_12.sav", clear
-duplicates report area estrato upm  vivienda hogar p01
-sort area estrato upm vivienda hogar p01
-saveold "`base_in'\miembros.dta", version(12) replace
+use "`base_in'\enemdu_persona_2024_12.dta", clear
+duplicates report id_vivienda id_hogar id_persona
+/*
+--------------------------------------
+   Copies | Observations       Surplus
+----------+---------------------------
+        1 |        27610             0
+--------------------------------------*/
+tostring ciudad, replace
 
+merge m:1 id_vivienda id_hogar  using "`base_in'\enemdu_vivienda_hogar_2024_12.dta"
 
-merge m:1 area estrato upm  vivienda hogar using "`base_in'\hogares.dta"
+/****************************************************************************
+  III. Verificar que merge se haya hecho correctamente y no hayan duplicados
+*****************************************************************************/
+tab _merge
+drop if _merge <3
 drop _merge
-destring fexp ingpc,  dpcomma replace
-destring *, replace
-saveold "`base_out'", version(12) replace
 
+duplicates report id_vivienda id_hogar id_persona
+/*
+--------------------------------------
+   Copies | Observations       Surplus
+----------+---------------------------
+        1 |        27610             0
+--------------------------------------*/
 
+/***************************************************************************
+  IV. Guardar la base
+****************************************************************************/
+compress
+save "`base_out'", replace
+
+log close
 
 
 
