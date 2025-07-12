@@ -1120,18 +1120,21 @@ label variable asispre_ci "Asistencia a Educacion preescolar"
 **************
 *pqnoasis1_ci*
 **************
-g		pqnoasis1_ci = .						
-replace pqnoasis1_ci = 1 if porque_no_estudia==8
-replace pqnoasis1_ci = 2 if porque_no_estudia==7
-replace pqnoasis1_ci = 3 if porque_no_estudia==9  | porque_no_estudia==11
-replace pqnoasis1_ci = 4 if porque_no_estudia==12
-replace pqnoasis1_ci = 6 if porque_no_estudia==2
-replace pqnoasis1_ci = 7 if porque_no_estudia==10 
-replace pqnoasis1_ci = 8 if porque_no_estudia==3
-replace pqnoasis1_ci = 9 if porque_no_estudia==4  | porque_no_estudia==5 | porque_no_estudia==6
+* pqnoasis1_ci was replaced by razonesnoasis_ci, June 2025 * 
 
-label define pqnoasis1_ci 1 "Problemas económicos" 2 "Por trabajo" 3 "Problemas familiares o de salud" 4 "Falta de interés" 5	"Quehaceres domésticos/embarazo/cuidado de niños/as" 6 "Terminó sus estudios" 7	"Edad" 8 "Problemas de acceso"  9 "Otros"
-label value  pqnoasis1_ci pqnoasis1_ci
+
+**********************
+***razonesnoasis_ci***
+**********************
+g razonesnoasis_ci = .						
+replace razonesnoasis_ci = 1 if porque_no_estudia==8 | porque_no_estudia==7
+replace razonesnoasis_ci = 2 if porque_no_estudia==4 | porque_no_estudia==12
+replace razonesnoasis_ci = 3 if porque_no_estudia==11
+replace razonesnoasis_ci = 4 if porque_no_estudia==3
+replace razonesnoasis_ci = 5 if porque_no_estudia==2 | porque_no_estudia==5 | porque_no_estudia==6 | porque_no_estudia==9 | porque_no_estudia==10  |porque_no_estudia==13
+
+label define razonesnoasis_ci 1 "Problemas económicos/Por trabajo" 2 "Falta de interés/Problemas de rendimiento" 3 "Cuidados/ Problemas familiares o de salud" 4 "Problemas de acceso"  5 "Otros"
+label value  razonesnoasis_ci razonesnoasis_ci
 
 ***************
 * Line of code with indicator repite_ci was deleted***************
@@ -1676,7 +1679,7 @@ do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&Exter
   ylm_ch ylnm_ch ylmnr_ch ynlm_ch ynlnm_ch ylmhopri_ci ylmho_ci /// Ingresos del hogar 
   nrylmpri_ci nrylmpri_ch /// No respuesta de ingresos  
   remesas_ci remesas_ch ypen_ci ypensub_ci /// Remesas y pensiones
-  aedu_ci eduui_ci eduuc_ci edupre_ci eduac_ci asiste_ci edupub_ci pqnoasis1_ci asispre_ci /// Educación
+  aedu_ci eduui_ci eduuc_ci edupre_ci eduac_ci asiste_ci edupub_ci razonesnoasis_ci asispre_ci /// Educación
   luz_ch luzmide_ch combust_ch piso_ch pared_ch techo_ch resid_ch dorm_ch cuartos_ch cocina_ch telef_ch refrig_ch /// Vivienda
   freez_ch auto_ch compu_ch internet_ch cel_ch vivi1_ch vivi2_ch viviprop_ch vivitit_ch vivialq_ch vivialqimp_ch /// Vivienda
   aguared_ch aguafconsumo_ch aguafuente_ch aguadist_ch aguadisp1_ch aguadisp2_ch /// Agua y saneamineto
