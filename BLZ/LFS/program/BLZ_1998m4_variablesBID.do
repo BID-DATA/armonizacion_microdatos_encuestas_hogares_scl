@@ -1446,7 +1446,10 @@ cap order region_BID_c region_c pais_c anio_c mes_c zona_c factor_ch idh_ch	idp_
 	  nmiembros_sph_ch yneto_pc_ch bene_cash_ch pensionsub_ch   /// Protección social 
           ynlm_publico_ch ynlm_privado_ch ynlm_privado_ci ynlm_publico_ci  /// Protección social ingresos
  	  salmm_ci lp19_2011 lp31_2011 lp5_2011 lp_ci lpe_ci lp365_2017 lp685_2017 lp14_2017 lp81_2017 tc_c ratio_cpi2011 ratio_cpi2017 cpi_c cpi2011 cpi2017 ppp_c ppp_2011 ppp_2017, first /// Fuente externa
+<<<<<<< HEAD
+=======
 
+>>>>>>> 32c89641f2915281a5bf22a574fe43409bce3372
 
 
 
