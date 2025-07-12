@@ -17,12 +17,12 @@ local ENCUESTA CLFS_SLC
 local ANO "1996"
 local ronda "m10-1996_m7-1997"
 
-*local log_file = "$ruta\harmonized\\`PAIS'\\`ENCUESTA'\log\\`PAIS'_`ANO'`ronda'_variablesBID.log"
+local log_file = "$ruta\harmonized\\`PAIS'\\`ENCUESTA'\log\\`PAIS'_`ANO'`ronda'_variablesBID.log"
 local base_in  = "Z:\survey\BRB\CLFS_SLC\1996\m10-1996_m7-1997\data_orig\brb9697.dta"
 local base_out = "$ruta\harmonized\\`PAIS'\\`ENCUESTA'\data_arm\\`PAIS'_`ANO'm7_BID.dta"
    
 capture log close
-*log using "`log_file'", replace 
+log using "`log_file'", replace 
 
 *log off
 
@@ -456,13 +456,14 @@ label var tiempoparc_ci "Trabaja menos de 30 horas"
 * CATEGORIA OCUPACION PRINCIPAL *
 *********************************
 gen categopri_ci=.
+/*
 replace categopri_ci=1 if emplstat==1 & emp_ci==1
 replace categopri_ci=2 if emplstat==4 & emp_ci==1
 replace categopri_ci=3 if (emplstat==2 | emplstat==3 | emplstat==6) & emp_ci==1 
 replace categopri_ci=4 if emplstat==5 & emp_ci==1
 label var categopri_ci "Categoría ocupación principal"
 label define categopri 1"Patrón o empleador" 2"Cuenta propia o independiente" 3"Empleado o asalariado" 4"Trabajador no remunerado"  
-label values categopri_ci categopri
+label values categopri_ci */
 
 *********************************
 * CATEGORIA OCUPACION SECUNDARIA*
@@ -593,7 +594,8 @@ label var instpen_ci "Institución que otorga la pensión o jubilación"
 *************************************
 *Nota MGD 01/15: El ingreso se reporta por rangos establecidos en la encuesta, no es variable continua.
 *Earnings denota ingresos de todas las fuentes pero se asume que es el de la actividad principal
-gen ylmpri_ci=      ((1+200)/2) if earngs==1 & emp_ci==1
+gen ylmpri_ci=  .
+/*    ((1+200)/2) if earngs==1 & emp_ci==1
 replace ylmpri_ci=((200+299)/2) if earngs==2 & emp_ci==1
 replace ylmpri_ci=((300+399)/2) if earngs==3 & emp_ci==1
 replace ylmpri_ci=((400+499)/2) if earngs==4 & emp_ci==1
@@ -603,6 +605,7 @@ replace ylmpri_ci=((700+799)/2) if earngs==7 & emp_ci==1
 replace ylmpri_ci=((800+899)/2) if earngs==8 & emp_ci==1
 replace ylmpri_ci=((900+999)/2) if earngs==9 & emp_ci==1
 label var ylmpri_ci "Monto mensual de ingreso laboral de la actividad principal"
+*/
 
 *******************************
 * INGRESO MENSUAL NO MONETARIO*
@@ -662,7 +665,7 @@ label var ynlnm_ci "Ingreso mensual NO laboral NO monetario otras actividades"
 * INGRESO MENSUAL LABORAL DEL HOGAR *
 *************************************
 gen ylm_ch=.
-by idh_ch: replace ylm_ch=sum(ylm_ci) if miembros_ci==1 
+bys idh_ch: replace ylm_ch=sum(ylm_ci) if miembros_ci==1 
 label var ylm_ch "Ingreso Laboral Monetario del Hogar (Bruto)"
 
 **************************************************
@@ -674,6 +677,7 @@ label var ylnm_ch "Ingreso Laboral No Monetario del Hogar"
 **************************************************************
 * INGRESO MENSUAL NO LABORAL OTRAS ACTIVIDADES no respuesta  *
 **************************************************************
+gen nrylmpri_ch=.
 egen ylmnr_ch=sum(ylm_ci) if miembros_ci==1 & nrylmpri_ch==0, by(idh_ch)
 label var ylmnr_ch "Ingreso Laboral Monetario del Hogar, considera 'missing' la No Respuesta"
 
@@ -954,8 +958,6 @@ g vivialqimp_ch=.
 g tcylmpri_ci=.
 g tcylmpri_ch=.
 g instcot_ci=.
-g edus1i_ci=.
-g edus1c_ci=.
 
 ******************************
 *** VARIABLES DE MIGRACION ***
@@ -1004,20 +1006,28 @@ do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&Exter
  * Verificación de que se encuentren todas las variables armonizadas 
 /*_____________________________________________________________________________________________________*/
 
-order region_BID_c region_c pais_c anio_c mes_c zona_c factor_ch	idh_ch	idp_ci	factor_ci sexo_ci edad_ci ///
-afro_ci ind_ci noafroind_ci afroind_ci afro_ch ind_ch noafroind_ch afroind_ch dis_ci disWG_ci dis_ch BRB_dis_ci /// Diversidad
-relacion_ci civil_ci jefe_ci nconyuges_ch nhijos_ch notropari_ch notronopari_ch nempdom_ch ///
-clasehog_ch nmiembros_ch miembros_ci nmayor21_ch nmenor21_ch nmayor65_ch nmenor6_ch	nmenor1_ch	condocup_ci ///
-categoinac_ci nempleos_ci emp_ci antiguedad_ci	desemp_ci cesante_ci durades_ci	pea_ci desalent_ci subemp_ci ///
-tiempoparc_ci categopri_ci categosec_ci rama_ci spublico_ci tamemp_ci cotizando_ci instcot_ci	afiliado_ci ///
-formal_ci tipocontrato_ci ocupa_ci horaspri_ci horastot_ci	pensionsub_ci pension_ci tipopen_ci instpen_ci	ylmpri_ci nrylmpri_ci ///
-tcylmpri_ci ylnmpri_ci ylmsec_ci ylnmsec_ci	ylmotros_ci	ylnmotros_ci ylm_ci	ylnm_ci	ynlm_ci	ynlnm_ci ylm_ch	ylnm_ch	ylmnr_ch  ///
-ynlm_ch	ynlnm_ch ylmhopri_ci ylmho_ci rentaimp_ch autocons_ci autocons_ch nrylmpri_ch tcylmpri_ch remesas_ci remesas_ch	ypen_ci	ypensub_ci ///
-salmm_ci tc_c ipc_c lp19_c lp31_c lp5_c lp_ci lpe_ci aedu_ci eduno_ci edupi_ci edupc_ci	edusi_ci edusc_ci eduui_ci eduuc_ci	edus1i_ci ///
-edus1c_ci edus2i_ci edus2c_ci edupre_ci eduac_ci asiste_ci pqnoasis_ci pqnoasis1_ci	repite_ci repiteult_ci edupub_ci tecnica_ci ///
-aguared_ch aguadist_ch aguamala_ch aguamide_ch luz_ch luzmide_ch combust_ch	bano_ch banoex_ch des1_ch des2_ch piso_ch aguamejorada_ch banomejorado_ch  ///
-pared_ch techo_ch resid_ch dorm_ch cuartos_ch cocina_ch telef_ch refrig_ch freez_ch auto_ch compu_ch internet_ch cel_ch ///
-vivi1_ch vivi2_ch viviprop_ch vivitit_ch vivialq_ch	vivialqimp_ch , first
+cap order region_BID_c region_c pais_c anio_c mes_c zona_c factor_ch idh_ch	idp_ci factor_ci factor_ch /// Identificación
+	  sexo_ci edad_ci relacion_ci civil_ci jefe_ci nconyuges_ch nhijos_ch notropari_ch notronopari_ch nempdom_ch /// Demográficas
+	  clasehog_ch nmiembros_ch miembros_ci nmayor21_ch nmenor21_ch nmayor65_ch nmenor6_ch nmenor1_ch /// Demográficas
+	  afroind_ci afroind_ch afroind_ano_c dis_ci dis_ch /// Género y diversidad 
+	  afro_ci ind_ci noafroind_ci afro_ch ind_ch noafroind_ch disWG_ci /// Género y diversidad 
+          condocup_ci categoinac_ci emp_ci cesante_ci desemp_ci subemp_ci durades_ci pea_ci nempleos_ci antiguedad_ci desalent_ci  /// Empleo
+	  horaspri_ci horastot_ci tiempoparc_ci categopri_ci categosec_ci rama_ci spublico_ci tamemp_ci cotizando_ci instcot_ci	afiliado_ci /// Empleo
+	  formal_ci tipocontrato_ci ocupa_ci pension_ci	pensionsub_ci tipopen_ci instpen_ci	ylmpri_ci /// Empleo
+	  ylmpri_ci ylnmpri_ci ylmsec_ci ylnmsec_ci ylmotros_ci	ylnmotros_ci ylm_ci ylnm_ci ynlm_ci ynlnm_ci ytot_ci ynlm_publico_ci ynlm_privado_ci  /// Ingresos individuo
+	  ylm_ch ylnm_ch ylmnr_ch ynlm_ch ynlnm_ch ynlm_publico_ch ynlm_privado_ch  ytot_ch /// Ingresos del hogar
+	  ylmhopri_ci ylmho_ci /// ingreso por hora
+	  nrylmpri_ci nrylmpri_ch /// No respuesta de ingresos 
+	  remesas_ci remesas_ch ypen_ci ypensub_ci /// Remesas y pensiones
+          aedu_ci eduui_ci eduuc_ci edupre_ci eduac_ci asiste_ci edupub_ci pqnoasis1_ci asispre_ci /// Educación 
+	  luz_ch luzmide_ch combust_ch piso_ch pared_ch techo_ch resid_ch dorm_ch cuartos_ch cocina_ch telef_ch refrig_ch /// Vivienda 
+	  freez_ch auto_ch compu_ch internet_ch cel_ch vivi1_ch vivi2_ch viviprop_ch vivitit_ch vivialq_ch vivialqimp_ch /// Vivienda
+	  aguared_ch aguafconsumo_ch aguafuente_ch aguadist_ch aguadisp1_ch aguadisp2_ch /// Agua y saneamineto
+	  aguatrat_ch aguamala_ch aguamejorada_ch aguamide_ch bano_ch banoex_ch banomejorado_ch sinbano_ch  /// Agua y saneamineto
+	  migrante_ci migrantiguo5_ci miglac_ci /// Migración  
+	  nmiembros_sph_ch yneto_pc_ch bene_cash_ch pensionsub_ch   /// Protección social 
+          ynlm_publico_ch ynlm_privado_ch ynlm_privado_ci ynlm_publico_ci  /// Protección social ingresos
+ 	  salmm_ci lp19_2011 lp31_2011 lp5_2011 lp_ci lpe_ci lp365_2017 lp685_2017 lp14_2017 lp81_2017 tc_c ratio_cpi2011 ratio_cpi2017 cpi_c cpi2011 cpi2017 ppp_c ppp_2011 ppp_2017, first /// Fuente externa
 
 *armonizar las variables originales de códigos de industria y ocupacion
 rename occup codocupa
@@ -1025,6 +1035,6 @@ rename indus codindustria
 
 compress
 
-saveold "`base_out'", replace
+save "`base_out'", replace
 
 log close
