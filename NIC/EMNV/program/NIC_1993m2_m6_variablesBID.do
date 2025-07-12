@@ -831,7 +831,10 @@ label var tecnica_ci "=1 formacion terciaria tecnica"
 	******************
 	gen byte NIC_dis_ci = .
 
-
+	*******************
+	***afroind_ano_c***
+	*******************
+gen afroind_ano_c=.
 
 /*_____________________________________________________________________________________________________*/
 * Asignación de etiquetas e inserción de variables externas: tipo de cambio, Indice de Precios al 

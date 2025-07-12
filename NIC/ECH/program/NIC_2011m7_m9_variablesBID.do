@@ -318,29 +318,12 @@ label variable miembros_ci "Miembro del hogar"
 	egen ind_ch = max(ind_jefe), by(idh_ch) 
 	drop ind_jefe
 
-	**************
-	*noafroind_ch*
-	**************
-	gen byte noafroind_jefe = noafroind_ci if relacion_ci==1
-	egen noafroind_ch = max(noafroind_jefe), by(idh_ch) 
-	drop noafroind_jefe
+	*******************
+	***afroind_ano_c***
+	*******************
+gen afroind_ano_c=.		
 
-	************
-	*afroind_ch*
-	************
- 	gen byte afroind_jefe = afroind_ci if jefe_ci==1
-	egen afroind_ch = min(afroind_jefe), by(idh_ch) 
-	drop afroind_jefe 
 
-	********
-	*dis_ci*
-	********
-	gen byte dis_ci=.
-	
-	**********
-	*disWG_ci*
-	**********
-	gen byte disWG_ci=.
 	
 	********
 	*dis_ch*

@@ -1051,7 +1051,10 @@ Otro 5
 	******************
 	gen byte NIC_dis_ci = .
 
-
+	*******************
+	***afroind_ano_c***
+	*******************
+	gen afroind_ano_c=.	
 
 **Verificación de que se encuentren todas las variables del SOCIOMETRO y las nuevas de mercado laboral
 qui sum factor_ch	idh_ch	idp_c	zona_c	pais_c	anio_c	mes_c	relacion_ci	factor_ci	sexo_ci	edad_ci	civil_ci	///
