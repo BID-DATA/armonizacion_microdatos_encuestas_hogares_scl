@@ -1387,66 +1387,44 @@ do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&Exter
 
 *_____________________________________________________________________________________________________*
 
-*  Pobres extremos, pobres moderados, vulnerables y no pobres 
-* con base en ingreso neto (Sin transferencias)
-* y líneas de pobreza internacionales
-gen     grupo_int = 1 if (y_pc_net<lp31_2011)
-replace grupo_int = 2 if (y_pc_net>=lp31_2011 & y_pc_net<(lp31_2011*1.6))
-replace grupo_int = 3 if (y_pc_net>=(lp31_2011*1.6) & y_pc_net<(lp31_2011*4))
-replace grupo_int = 4 if (y_pc_net>=(lp31_2011*4) & y_pc_net<.)
-
-tab grupo_int, gen(gpo_ingneto)
-
-* Crear interacción entre recibirla la PTMC y el gpo de ingreso
-gen ptmc_ingneto1 = 0
-replace ptmc_ingneto1 = 1 if ptmc_ch == 1 & gpo_ingneto1 == 1
-
-gen ptmc_ingneto2 = 0
-replace ptmc_ingneto2 = 1 if ptmc_ch == 1 & gpo_ingneto2 == 1
-
-gen ptmc_ingneto3 = 0
-replace ptmc_ingneto3 = 1 if ptmc_ch == 1 & gpo_ingneto3 == 1
-
-gen ptmc_ingneto4 = 0
-replace ptmc_ingneto4 = 1 if ptmc_ch == 1 & gpo_ingneto4 == 1
-
-lab def grupo_int 1 "Pobre extremo" 2 "Pobre moderado" 3 "Vulnerable" 4 "No pobre"
-lab val grupo_int grupo_int
 
 /*_____________________________________________________________________________________________________*/
 * Verificación de que se encuentren todas las variables armonizadas 
 /*_____________________________________________________________________________________________________*/
 
-order region_BID_c region_c pais_c anio_c mes_c zona_c estrato_ci upm_ci idh_ch idp_ci factor_ci factor_ch /// Identificación
-sexo_ci edad_ci relacion_ci civil_ci jefe_ci nconyuges_ch nhijos_ch notropari_ch notronopari_ch nempdom_ch /// Demográficas
-clasehog_ch nmiembros_ch miembros_ci nmayor21_ch nmenor21_ch nmayor65_ch nmenor6_ch nmenor1_ch /// Demográficas
-afro_ci ind_ci noafroind_ci afro_ch ind_ch noafroind_ch afroind_ano_c afroind_ci afroind_ch /// Diversidad étnico-racial
-dis_ci disWG_ci ISO3pais_dis_ci dis_ch /// Situación de discapacidad
-condocup_ci categoinac_ci emp_ci cesante_ci desemp_ci subemp_ci durades_ci pea_ci nempleos_ci antiguedad_ci /// Variables laborales
-desalent_ci horaspri_ci horastot_ci tiempoparc_ci categopri_ci categosec_ci rama_ci spublico_ci tamemp_ci cotizando_ci /// Variables laborales
-instcot_ci afiliado_ci formal_ci tipocontrato_ci ocupa_ci pension_ci pensionsub_ci tipopen_ci instpen_ci /// Variables laborales
-ylmpri_ci ylnmpri_ci ylmsec_ci ylnmsec_ci ylmotros_ci ylnmotros_ci ylm_ci ylnm_ci ynlm_publico_ci ynlm_ci ynlm_privado_ci /// Variables de ingreso
-ynlnm_ci ytot_ci ylm_ch ylnm_ch ynlnm_ch ynlm_publico_ch ynlm_privado_ch ynlm_ch ytot_ch ylmhopri_ci ylmho_ci /// Variables de ingreso
-nrylmpri_ci nrylmpri_ch ylmnr_ch remesas_ci remesas_ch ypen_ci ypensub_ci /// Variables de ingreso
-aedu_ci edupre_ci eduui_ci eduuc_ci eduac_ci asiste_ci edupub_ci asispre_ci pqnoasis1_ci /// Variables de educación
-luz_ch luzmide_ch combust_ch piso_ch pared_ch techo_ch resid_ch dorm_ch cuartos_ch cocina_ch telef_ch refrig_ch /// Variables de vivienda
-freez_ch auto_ch compu_ch internet_ch cel_ch vivi1_ch vivi2_ch viviprop_ch vivitit_ch vivialq_ch vivialqimp_ch /// Variables de vivienda
-aguared_ch aguafconsumo_ch aguafuente_ch aguadist_ch aguadisp1_ch aguadisp2_ch aguatrat_ch aguamala_ch aguamejorada_ch aguamide_ch /// Variables de Wash
-bano_ch banoex_ch sinbano_ch banomejorado_ch /// Variables de Wash
-migrante_ci migrantiguo5_ci miglac_ci /// Variables migración
-nmiembros_sph_ch yneto_pc_ch bene_cash_ch pensionsub_ch /// Variables de protección social
-salmn_ci lp_ci lpe_ci lp19_ci lp31_ci lp5_ci lp365_2017 lp685_2017 lp14_2017 lp81_2017 /// Variables de referencia externa
-tc_c ratio_cpi2011 ratio_cpi2017 cpi_c cpi_2011 cpi_2017 ppp_c ppp_2011 ppp_2017, first
+order region_BID_c region_c pais_c anio_c mes_c zona_c factor_ch idh_ch	idp_ci factor_ci factor_ch /// Identificación
+	  sexo_ci edad_ci relacion_ci civil_ci jefe_ci nconyuges_ch nhijos_ch notropari_ch notronopari_ch nempdom_ch /// Demográficas
+	  clasehog_ch nmiembros_ch miembros_ci nmayor21_ch nmenor21_ch nmayor65_ch nmenor6_ch nmenor1_ch /// Demográficas
+	  afroind_ci afroind_ch afroind_ano_c dis_ci dis_ch /// Género y diversidad 
+	  afro_ci ind_ci noafroind_ci afro_ch ind_ch noafroind_ch disWG_ci /// Género y diversidad 
+          condocup_ci categoinac_ci emp_ci cesante_ci desemp_ci subemp_ci durades_ci pea_ci nempleos_ci antiguedad_ci desalent_ci  /// Empleo
+	  horaspri_ci horastot_ci tiempoparc_ci categopri_ci categosec_ci rama_ci spublico_ci tamemp_ci cotizando_ci instcot_ci	afiliado_ci /// Empleo
+	  formal_ci tipocontrato_ci ocupa_ci pension_ci	pensionsub_ci tipopen_ci instpen_ci	ylmpri_ci /// Empleo
+	  ylmpri_ci ylnmpri_ci ylmsec_ci ylnmsec_ci ylmotros_ci	ylnmotros_ci ylm_ci ylnm_ci ynlm_ci ynlnm_ci ytot_ci ynlm_publico_ci ynlm_privado_ci  /// Ingresos individuo
+	  ylm_ch ylnm_ch ylmnr_ch ynlm_ch ynlnm_ch ynlm_publico_ch ynlm_privado_ch  ytot_ch /// Ingresos del hogar
+	  ylmhopri_ci ylmho_ci /// ingreso por hora
+	  nrylmpri_ci nrylmpri_ch /// No respuesta de ingresos 
+	  remesas_ci remesas_ch ypen_ci ypensub_ci /// Remesas y pensiones
+          aedu_ci eduui_ci eduuc_ci edupre_ci eduac_ci asiste_ci edupub_ci pqnoasis1_ci asispre_ci /// Educación 
+	  luz_ch luzmide_ch combust_ch piso_ch pared_ch techo_ch resid_ch dorm_ch cuartos_ch cocina_ch telef_ch refrig_ch /// Vivienda 
+	  freez_ch auto_ch compu_ch internet_ch cel_ch vivi1_ch vivi2_ch viviprop_ch vivitit_ch vivialq_ch vivialqimp_ch /// Vivienda
+	  aguared_ch aguafconsumo_ch aguafuente_ch aguadist_ch aguadisp1_ch aguadisp2_ch /// Agua y saneamineto
+	  aguatrat_ch aguamala_ch aguamejorada_ch aguamide_ch bano_ch banoex_ch banomejorado_ch sinbano_ch  /// Agua y saneamineto
+	  migrante_ci migrantiguo5_ci miglac_ci /// Migración  
+	  nmiembros_sph_ch yneto_pc_ch bene_cash_ch pensionsub_ch   /// Protección social 
+          ynlm_publico_ch ynlm_privado_ch ynlm_privado_ci ynlm_publico_ci  /// Protección social ingresos
+ 	  salmm_ci lp19_2011 lp31_2011 lp5_2011 lp_ci lpe_ci lp365_2017 lp685_2017 lp14_2017 lp81_2017 tc_c ratio_cpi2011 ratio_cpi2017 cpi_c cpi2011 cpi2017 ppp_c ppp_2011 ppp_2017, first /// Fuente externa
+
 
 
 /*Homologar nombre del identificador de ocupaciones (isco, ciuo, etc.) y de industrias y dejarlo en base armonizada 
 para análisis de trends (en el marco de estudios sobre el futuro del trabajo)*/
-rename p41 codocupa
-rename p40 codindustria
+*rename p41 codocupa
+*rename p40 codindustria
 
 compress
 
-saveold "`base_out'", version(12) replace
+save "`base_out'", replace
 
 log close
 
