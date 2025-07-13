@@ -38,7 +38,7 @@ Fecha última modificación: Junio 2025
 ****************************************************************************/
 
 use `base_in', clear
-destring *, replace
+*destring *, replace
 
 
 		*************************
@@ -61,9 +61,10 @@ label variable region_BID_c "Regiones BID"
 ***************
 ***region_c ***
 ***************
+destring ciudad, gen(_ciudad)
 gen region_c = .
-replace region_c = int(ciudad / 10000)
-gen canton = int(ciudad / 100)
+replace region_c = int(_ciudad / 10000)
+gen canton = int(_ciudad / 100)
 recode region_c (14/16 = 89) (19/22 = 89)
 replace region_c = 23 if canton == 1706
 replace region_c = 24 if inlist(canton, 917, 915, 926)
@@ -88,7 +89,7 @@ label define region_c_lbl ///
     89 "Amazonia" ///
     90 "zonas no delimitadas"
 label values region_c region_c_lbl
-drop canton
+drop canton _ciudad 
 label variable region_c "division politico-administrativa, provincia"
 
 *************
@@ -133,14 +134,17 @@ label variable upm_ci "Unidad Primaria de Muestreo"
 *************
 ****idh_ch***
 *************
-clonevar idh_ch = id_hogar
+duplicates report id_vivienda id_hogar id_persona
+gen idh_ch = id_vivienda+id_hogar
 label variable idh_ch "ID del hogar"
 
 *************
 ****idp_ci***
 *************
-clonevar idp_ci = id_persona 
+gen idp_ci =  id_vivienda+id_hogar+ id_persona
 label variable idp_ci "ID de la persona en el hogar"
+
+duplicates report id_vivienda id_hogar id_persona
 
 ***************
 ***factor_ci***
