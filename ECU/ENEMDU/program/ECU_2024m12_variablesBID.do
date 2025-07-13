@@ -38,7 +38,6 @@ Fecha última modificación: Junio 2025
 ****************************************************************************/
 
 use `base_in', clear
-*destring *, replace
 
 
 		*************************
@@ -134,7 +133,6 @@ label variable upm_ci "Unidad Primaria de Muestreo"
 *************
 ****idh_ch***
 *************
-duplicates report id_vivienda id_hogar id_persona
 gen idh_ch = id_vivienda+id_hogar
 label variable idh_ch "ID del hogar"
 
