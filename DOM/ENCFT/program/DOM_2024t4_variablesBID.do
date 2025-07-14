@@ -931,14 +931,14 @@ label var ynlnm_ch "Ingreso no laboral no monetario del hogar"
 *********************
 ***ynlm_publico_ch***
 *********************
-by idh_ch, sort: egen ynlnm_ch=sum(ynlm_publico_ci) if miembros_ci==1, missing
-label var ynlnm_ch "Ingreso no laboral monetario publico del hogar"
+by idh_ch, sort: egen ynlm_privado_ch=sum(ynlm_publico_ci) if miembros_ci==1, missing
+label var ynlm_publico_ch "Ingreso no laboral monetario publico del hogar"
 
 *********************
 ***ynlm_privado_ch***
 *********************
 by idh_ch, sort: egen ynlm_privado_ch=sum(ynlm_privado_ci) if miembros_ci==1, missing
-label var ynlnm_ch "Ingreso no laboral monetario privado del hogar"
+label var ynlm_privado_ch "Ingreso no laboral monetario privado del hogar"
 
 ***************
 *** ynlm_ch ***
