@@ -28,18 +28,14 @@ log using "`log_file'", replace
 
 
 /***************************************************************************
-                 BASES DE DATOS DE ENCUESTA DE HOGARES - SOCIOMETRO 
+                 BASES DE DATOS DE ENCUESTA DE HOGARES
+				       Script de armonización
 País: Republica Dominicana
+Año: 2024
 Encuesta: ENCFT
-Round: t4
-Autores: Olga Dulce
-Fecha última modificación:06/23/2025
-*****************************************************************************
-							SCL/SCL - IADB
-****************************************************************************/
-/***************************************************************************
-Detalle de procesamientos o modificaciones anteriores:
-Agosto 8 de 2022 / Juan Camilo Perdomo- jcamilop@iadb.org SCL/MIG - IADB
+Ronda: t4
+Última versión:23JUN2025
+Autores: Olga Dulce EDU/SCL - IADB
 ****************************************************************************/
 
 use `base_in', clear
@@ -436,7 +432,7 @@ label var desemp_ci "Desempleado que buscó empleo en el periodo de referencia"
 ***************    
 *Modificacion MGD 06/20/2014: condiciona solo a horas en ocupacion primaria.
 gen subemp_ci=0  
-replace  subemp_ci=1 if (promhora>=1 & promhora<=30) & emp_ci==1 & desea_trabajar_mas_horas==1
+replace  subemp_ci=1 if (horas_trabajo_efect_total>=1 & horas_trabajo_efect_total<=30) & emp_ci==1 & desea_trabajar_mas_horas==1
 label var subemp_ci "Personas en subempleo por horas"
 
 ************
