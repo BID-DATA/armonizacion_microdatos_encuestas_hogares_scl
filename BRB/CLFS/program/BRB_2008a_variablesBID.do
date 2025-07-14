@@ -34,9 +34,9 @@ Modificación 2022: Agustina Thailinger SCL/EDU
 Última modificación: Diciembre 2022
 
 ****************************************************************************/
-/***************************************************************************
-Detalle de procesamientos o modificaciones anteriores:
+***************************************************************************
 ****************************************************************************/
+*/
 
 use `base_in', clear
 
@@ -374,13 +374,15 @@ label variable nmenor1_ch "Miembros menores a 1 año dentro del Hogar"
 * CONDICION DE OCUPACION *
 **************************
 * Nota MGD 1/14/2015: no se recolecta informacion sobre los menores de edad en la encuesta.
-g condocup_ci=.
-replace condocup_ci=1 if actvstat==10
-replace condocup_ci=2 if (worked==2 & condocup_ci!=1) & ((seeking==1 | lstlook==2) & willing==1)
-replace condocup_ci=3 if (condocup_ci~=1 & condocup_ci~=2) & edad>=15
-label define condocup 1"Ocupado" 2"Desocupado" 3"Inactivo" 4"Menores de 15 años"
+gen condocup_ci = .
+replace condocup_ci = 1 if worked == 1
+replace condocup_ci = 2 if worked == 2 & (seeking == 1 | lstlook == 2) & willing == 1
+replace condocup_ci = 3 if missing(condocup_ci) & edad_ci >= 15
+replace condocup_ci = 4 if edad_ci < 15
+label define condocup 1 "Ocupado" 2 "Desocupado" 3 "Inactivo" 4 "Menores de 15 años"
 label values condocup_ci condocup
-label var condocup_ci "Condición de ocupación"
+
+label variable condocup_ci "Condición de ocupación"
 
 **************************
 * CATEGORIA DE INACTIVIDAD  *
@@ -410,14 +412,13 @@ label var nempleos_ci "Numero de empleos"
 label define nempleos_ci 1 "un trabajo" 2 "dos o mas trabajos"
 label values nempleos_ci nempleos_ci
 
-
 ************
 * OCUPADO  *
 ************
-gen emp_ci=0 
-replace emp_ci=1 if condocup_ci==1
-label var emp_ci "Ocupado"
-label define ocupado 1"Ocupado" 0"No ocupado"  
+gen emp_ci = (condocup_ci == 1)
+
+label variable emp_ci "Ocupado"
+label define ocupado 1 "Ocupado" 0 "No ocupado"
 label values emp_ci ocupado
 
 *****************************************
@@ -670,45 +671,27 @@ g tipopen_ci=.
 *******************************
 *******************************
 
-
-
-
-*************************************
-* DUMMIES DE INDIVIDUO Y HOGAR *
-*************************************
-
-/*
-*** Dummy Individual si no reporta el ingreso laboral monetario de la actividad principal
-gen byte nrylmpri_ci=.
-*replace nrylmpri_ci=1 if cq51==9 | (cq51==7 & cq128m>0)
-label var nrylmpri_ci "Identificador de No Respuesta del Ingreso Monetario de la Actividad Principal"
-
-*** Dummy para el Hogar
-capture drop nrylmpri_ch
-sort idh
-egen nrylmpri_ch=sum(nrylmpri_ci) if miembros_ci==1, by(idh_ch)
-replace nrylmpri_ch=1 if nrylmpri_ch>1 & nrylmpri_ch~=. & miembros_ci==1 
-label var nrylmpri_ch "Identificador de Hogares en donde alguno de los miembros No Responde el Ingreso Monetario de la Actividad Principal"
-*/
-
 *************************************
 * INGRESO MONETARIO MENSUAL LABORAL *
 *************************************
 * Nota MGD 01/15: El ingreso se reporta por rangos establecidos en la encuesta,no es variable continua.
-gen ylmpri_ci= 0 if earngs==0 & emp_ci==1
-replace ylmpri_ci=((0+200)/2)*4.3 if earngs==1 & emp_ci==1
-replace ylmpri_ci=((200+299)/2)*4.3 if earngs==2 & emp_ci==1
-replace ylmpri_ci=((300+399)/2)*4.3 if earngs==3 & emp_ci==1
-replace ylmpri_ci=((400+499)/2)*4.3 if earngs==4 & emp_ci==1
-replace ylmpri_ci=((500+599)/2)*4.3 if earngs==5 & emp_ci==1
-replace ylmpri_ci=((600+699)/2)*4.3 if earngs==6 & emp_ci==1
-replace ylmpri_ci=((700+799)/2)*4.3 if earngs==7 & emp_ci==1
-replace ylmpri_ci=((800+899)/2)*4.3 if earngs==8 & emp_ci==1
-replace ylmpri_ci=((900+999)/2)*4.3 if earngs==9 & emp_ci==1
-replace ylmpri_ci=((1000+1300)/2)*4.3 if earngs==10 & emp_ci==1
-replace ylmpri_ci=((1300+1600)/2)*4.3 if earngs==11 & emp_ci==1
+// Crear variable de ingreso laboral principal (mensual) según rangos de ingreso y condición de ocupado
+gen ylmpri_ci = . 
 
-label var ylmpri_ci "Monto mensual de ingreso laboral de la actividad principal"
+replace ylmpri_ci = 0 if inearngs == 0  & emp_ci == 1
+replace ylmpri_ci = ((0 + 200) / 2) * 4.3  if inearngs == 1  & emp_ci == 1
+replace ylmpri_ci = ((200 + 299) / 2) * 4.3  if inearngs == 2  & emp_ci == 1
+replace ylmpri_ci = ((300 + 399) / 2) * 4.3  if inearngs == 3  & emp_ci == 1
+replace ylmpri_ci = ((400 + 499) / 2) * 4.3  if inearngs == 4  & emp_ci == 1
+replace ylmpri_ci = ((500 + 599) / 2) * 4.3  if inearngs == 5  & emp_ci == 1
+replace ylmpri_ci = ((600 + 699) / 2) * 4.3  if inearngs == 6  & emp_ci == 1
+replace ylmpri_ci = ((700 + 799) / 2) * 4.3  if inearngs == 7  & emp_ci == 1
+replace ylmpri_ci = ((800 + 899) / 2) * 4.3  if inearngs == 8  & emp_ci == 1
+replace ylmpri_ci = ((900 + 999) / 2) * 4.3  if inearngs == 9  & emp_ci == 1
+replace ylmpri_ci = ((1000 + 1300) / 2) * 4.3  if inearngs == 10 & emp_ci == 1
+replace ylmpri_ci = ((1300 + 1600) / 2) * 4.3  if inearngs == 11 & emp_ci == 1
+
+label variable ylmpri_ci "Monto mensual de ingreso laboral de la actividad principal"
 
 
 
@@ -807,6 +790,19 @@ label var ylmhopri_ci "Salario horario monetario de la actividad principal"
 gen ylmho_ci=.
 replace ylmho_ci=ylmhopri_ci
 label var ylmho_ci "Salario horario monetario de todas las actividades"
+
+*******************
+*** nrylmpri_ci ***
+*******************
+gen nrylmpri_ci = (ylmpri_ci == . & emp_ci == 1)
+label var nrylmpri_ci "Id no respuesta ingreso de la actividad principal" 
+
+*******************
+*** nrylmpri_ch ***
+*******************
+by idh_ch, sort: egen nrylmpri_ch = max(nrylmpri_ci) if miembros_ci == 1
+
+label variable nrylmpri_ch "Hogares con algún miembro que no respondió por ingresos"
 
 ************************************************
 * RENTA MENSUAL IMPUTADA DE LA VIVIENDA PROPIA *
@@ -1006,7 +1002,6 @@ replace train_ocup2=9 if (occuptr==9999)
 
 * Line of code with indicator edus2c_ci was deletedg nrylmpri_ci=.
 g ylmnr_ch=.
-g nrylmpri_ch=.
 * Variables de vivienda
 gen aguared_ch=.
 gen aguafconsumo_ch = 0
