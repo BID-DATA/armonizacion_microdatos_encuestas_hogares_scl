@@ -35,7 +35,6 @@ Modificación 2022: Agustina Thailinger SCL/EDU
 
 ****************************************************************************/
 ***************************************************************************
-Detalle de procesamientos o modificaciones anteriores:
 ****************************************************************************/
 */
 
@@ -1050,7 +1049,6 @@ replace train_ocup2=9 if (occuptr==9999)
 
 * Line of code with indicator edus2c_ci was deletedg nrylmpri_ci=.
 g ylmnr_ch=.
-g nrylmpri_ch=.
 * Variables de vivienda
 gen aguared_ch=.
 gen aguafconsumo_ch = 0
