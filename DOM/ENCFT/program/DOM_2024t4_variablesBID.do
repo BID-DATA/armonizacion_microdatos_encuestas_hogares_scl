@@ -432,7 +432,7 @@ label var desemp_ci "Desempleado que buscó empleo en el periodo de referencia"
 ***************    
 *Modificacion MGD 06/20/2014: condiciona solo a horas en ocupacion primaria.
 gen subemp_ci=0  
-replace  subemp_ci=1 if (horas_trabajo_efect_total>=1 & horas_trabajo_efect_total<=30) & emp_ci==1 & desea_trabajar_mas_horas==1
+replace  subemp_ci=1 if (promhora>=1 & promhora<=30) & emp_ci==1 & desea_trabajar_mas_horas==1
 label var subemp_ci "Personas en subempleo por horas"
 
 ************
@@ -937,7 +937,7 @@ label var ynlnm_ch "Ingreso no laboral monetario publico del hogar"
 *********************
 ***ynlm_privado_ch***
 *********************
-by idh_ch, sort: egen ynlnm_ch=sum(ynlm_privado_ci) if miembros_ci==1, missing
+by idh_ch, sort: egen ynlm_privado_ch=sum(ynlm_privado_ci) if miembros_ci==1, missing
 label var ynlnm_ch "Ingreso no laboral monetario privado del hogar"
 
 ***************
