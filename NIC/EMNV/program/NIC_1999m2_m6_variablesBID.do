@@ -8,9 +8,9 @@
 
 
 *:':':':':':':':':':':':':':':':':':':':':':':':':':':':':':':':':':':':':':':':':':':':':':':':':':':':':':':':':*
-*Mayra Sáenz Septiembre 2013                                                                                      *
-* Esta base de datos está armonizada pero no es representativa. Se levantó sólo para los damnificados del         *
-* Huracán Mitch.                                                                                                  *
+*Mayra SÃ¡enz Septiembre 2013                                                                                      *
+* Esta base de datos estÃ¡ armonizada pero no es representativa. Se levantÃ³ sÃ³lo para los damnificados del         *
+* HuracÃ¡n Mitch.                                                                                                  *
 *:':':':':':':':':':':':':':':':':':':':':':':':':':':':':':':':':':':':':':':':':':':':':':':':':':':':':':':':':*
 
 
@@ -20,7 +20,7 @@
 
 
 /*
-* (Versión Stata 12)
+* (VersiÃ³n Stata 12)
 clear
 set more off
 *________________________________________________________________________________________________________________*
@@ -28,7 +28,7 @@ set more off
  * Activar si es necesario (dejar desactivado para evitar sobreescribir la base y dejar la posibilidad de 
  * utilizar un loop)
  * Los datos se obtienen de las carpetas que se encuentran en el servidor: \\Sdssrv03\surveys
- * Se tiene acceso al servidor únicamente al interior del BID.
+ * Se tiene acceso al servidor Ãºnicamente al interior del BID.
  * El servidor contiene las bases de datos MECOVI.
  *________________________________________________________________________________________________________________*
  
@@ -52,13 +52,13 @@ log using "`log_file'", replace
 
 /***************************************************************************
                  BASES DE DATOS DE ENCUESTA DE HOGARES - SOCIOMETRO 
-País: Nicaragua
+PaÃ­s: Nicaragua
 Encuesta: EMNV
 Round: Febrero-Junio
 Autores:
-Versión 2013: Mayra Sáenz
-Última versión: Mayra Sáenz - Email: mayras@iadb.org, saenzmayra.a@gmail.com
-Fecha última modificación: 10 de Septiembre de 2013
+VersiÃ³n 2013: Mayra SÃ¡enz
+Ãšltima versiÃ³n: Mayra SÃ¡enz - Email: mayras@iadb.org, saenzmayra.a@gmail.com
+Fecha Ãºltima modificaciÃ³n: 10 de Septiembre de 2013
 
 							SCL/LMK - IADB
 ****************************************************************************/
@@ -93,10 +93,10 @@ Old code can be seen in education section below.
 ************
 * Region_c *
 ************
-*Inclusión Mayra Sáenz - Julio 2013
+*InclusiÃ³n Mayra SÃ¡enz - Julio 2013
 
 gen region_c=  .
-label var region_c "División política"
+label var region_c "DivisiÃ³n polÃ­tica"
 
 foreach v of varlist _all {
 local lowname = lower( "`v'")
@@ -122,7 +122,7 @@ replace region_BID_c=3 if pais=="ECU" | pais=="COL" | pais=="PER" | pais=="VEN" 
 replace region_BID_c=4 if pais=="ARG" | pais=="BRA" | pais=="CHL" | pais=="PRY" | pais=="URU" 
 replace region_BID_c=5 if pais=="HAI"
 label var region_BID_c "Regiones BID"
-label define region_BID_c 1 "Centroamérica_(CID)" 2 "Caribe_(CCB)" 3 "Andinos_(CAN)" 4 "Cono_Sur_(CSC)"
+label define region_BID_c 1 "CentroamÃ©rica_(CID)" 2 "Caribe_(CCB)" 3 "Andinos_(CAN)" 4 "Cono_Sur_(CSC)"
 label value region_BID_c region_BID_c
 
 gen mes_c=mes
@@ -244,7 +244,7 @@ gen internet_ch=.
 ****************
 * Aunque existe la pregunta En el mes pasado algunas personas del Hogar compraron o autosuministraron de>
 * Tel'efonos celulares...
-* No se contabiliza a los miembros del hogar que ya tenían celulares antes del periodo de referencia.
+* No se contabiliza a los miembros del hogar que ya tenÃ­an celulares antes del periodo de referencia.
 
 gen cel_ch=.
 
@@ -280,8 +280,8 @@ by idh_ch:egen byte nmenor21_ch=sum(((relacion_ci>0 & relacion_ci<5)|p02==9) & (
 by idh_ch:egen byte nmayor65_ch=sum(((relacion_ci>0 & relacion_ci<5)|p02==9) & (edad_ci>=65))
 by idh_ch:egen byte nmenor6_ch=sum(((relacion_ci>0 & relacion_ci<5)|p02==9) & (edad_ci<6))
 by idh_ch:egen byte nmenor1_ch=sum(((relacion_ci>0 & relacion_ci<5)|p02==9) & (edad_ci<1)) /*Hay que tener en cuenta que en 
-este año, se pregunto si existen pensionistas en la casa, que tecnicamente son "otros no parientes", pero que en la practica
-no deben ser incluídos en las variables de hogar (eg: _ch)*/
+este aÃ±o, se pregunto si existen pensionistas en la casa, que tecnicamente son "otros no parientes", pero que en la practica
+no deben ser incluÃ­dos en las variables de hogar (eg: _ch)*/
 
 ****************
 ***miembros_ci***
@@ -312,7 +312,7 @@ replace condocup1_ci=3 if p5a05>=6 & p5a05<=11
 replace condocup1_ci=4 if edad_ci<14
 */
 
-/* Mayra Sáenz - Septiembre 2013: Para la primera categoría 1 de condocup_ci, estaba esta observaci'on desde años anteriores: "En las Bananas que se usaron para armar los Apendices del IPES '03
+/* Mayra SÃ¡enz - Septiembre 2013: Para la primera categorÃ­a 1 de condocup_ci, estaba esta observaci'on desde aÃ±os anteriores: "En las Bananas que se usaron para armar los Apendices del IPES '03
 no se cuentan como empleados a aquellos individuos que hayan realizado alguna tarea no formal la semana pasada (p5a02==1). 
 Sin embargo, el Instituto de Estadistica de Nicaragua si los tiene en cuenta para calcular la tasa de empleo, por lo que a 
 de ahora si los incluiremos==> Las nuevas tasas de empleo seran mas altas que las del apendice del 2003"*/
@@ -347,7 +347,7 @@ label var afiliado_ci "Afiliado a la Seguridad Social"
 ****************
 *cotizando_ci***
 ****************
-*En 1999 eliminan las preguntas referentes a si está cotizando al seguro o no.
+*En 1999 eliminan las preguntas referentes a si estÃ¡ cotizando al seguro o no.
 gen cotizando_ci=.
 
 ****************
@@ -373,14 +373,14 @@ label var tipopen_ci "Tipo de pension - variable original de cada pais"
 *** instcot_ci *****
 ********************
 gen instcot_ci=.
-label var instcot_ci "institución a la cual cotiza"
+label var instcot_ci "instituciÃ³n a la cual cotiza"
 
 *************
 *tamemp_ci***
 *************
 gen tamemp_ci= s5p14 if  (s5p14 >=1 &  s5p14 <=7)
 label define tamemp_ci 1 "1 persona" 2 "2-5 personas" 3 "6-10 personas" ///
-4 "11-30 personas" 5 "31-50 personas" 6 "51-100 personas" 7"101 y más personas" 
+4 "11-30 personas" 5 "31-50 personas" 6 "51-100 personas" 7"101 y mÃ¡s personas" 
 label var tamemp_ci "# empleados en la empresa de la actividad principal"
 
 *************
@@ -438,14 +438,14 @@ label var lpe_ci "Linea de indigencia oficial del pais"
 * lp25_ci ***
 *************
 gen lp25_ci = 376.4876
-label var lp25_ci "Linea de pobreza 2.5 dólares, año base 2005"
+label var lp25_ci "Linea de pobreza 2.5 dÃ³lares, aÃ±o base 2005"
 
 ***********
 *lp4_ci ***
 ***********
 gen lp4_ci = 602.3802
 
-label var lp4_ci "Linea de pobreza 4 dólares, año base 2005"
+label var lp4_ci "Linea de pobreza 4 dÃ³lares, aÃ±o base 2005"
 
 gen ocupa_ci=.
 replace ocupa_ci=1 if real(substr(string(s5p8),1,1))==2 | real(substr(string(s5p8),1,1))==3
@@ -475,7 +475,7 @@ replace rama_ci=. if emp_ci==0
 **salmm_ci***
 *************
 /*
-Salario Mínimo Oficial
+Salario MÃ­nimo Oficial
 Fuente: 
 http://www.bcn.gob.ni/estadisticas/economicas_anuales/50_anios/BD/Capitulo_III-Sector_empleo_y_salarios/III_10.pdf
 Conceptos	1999
@@ -483,11 +483,11 @@ Conceptos	1999
 	
  Agropecuario 	 450.0 
  Pesca 	 700.0 
- Minería 	 850.0 
+ MinerÃ­a 	 850.0 
  Industria manufacturera 	 600.0 
  Industria zona franca 	 800.0 
  Electricidad, gas y agua  	 900.0 
- Construcción 	 1,200.0 
+ ConstrucciÃ³n 	 1,200.0 
  Comercio 	 900.0 
  Transporte y comunicaciones 	 900.0 
  Establecimientos financieros 	 1,000.0 
@@ -525,13 +525,13 @@ replace salario=s5p15a/12 if s5p15b==8
 replace salario=. if s5p15b==9 | emp_ci==0 
 /*Se mantiene el criterio de asignar missing a aquellas personas que declaran cobrar con una frecuencia incierta(17).*/
 
-gen agui=s5p18b/12 /*El aguinaldo esta preguntado para todo el año*/
+gen agui=s5p18b/12 /*El aguinaldo esta preguntado para todo el aÃ±o*/
 egen ylmpri_ci=rsum(salario s5p17b agui)
 replace ylmpri_ci=. if (salario==. & s5p17b==. & s5p18b==.) |emp_ci==0 /*INCLUYE LO MISMO QUE INCLUYE EL YLMPRI_CI DEL '93*/
 drop salario agui
 
 /*Para los ingresos laborales no monetarios de la actividad principal, el rubro mensual de uniformes
-* debe ser calculado en base a la p5b25b, que hace referencia a cuántas veces al año recibe los uniformes.
+* debe ser calculado en base a la p5b25b, que hace referencia a cuÃ¡ntas veces al aÃ±o recibe los uniformes.
     recibe |      Freq.     Percent        Cum.
 ------------+-----------------------------------
           1 |        241       42.36       42.36
@@ -559,14 +559,14 @@ egen ylnmpri_ci=rsum(s5p19b s5p20b unif s5p22b)
 replace ylnmpri_ci=. if (s5p19b==. & s5p20b==. & unif==. & s5p22b==.) | emp_ci==0
 /*
 s5p28b:
-           1 Día
+           1 DÃ­a
            2 Semana
            3 Catorcen
            4 Quincena
            5 Mes
            6 Trimestr
            7 Semestre
-           8 Año
+           8 AÃ±o
            9 Otro
           99 Ignorado
 
@@ -584,7 +584,7 @@ replace salariosec=. if s5p28b==9 | emp_ci==0
 
 
 
-gen aguis=s5p31b/12 /*Esta definido por año*/
+gen aguis=s5p31b/12 /*Esta definido por aÃ±o*/
 egen ylmsec_ci=rsum(salariosec s5p30b aguis)
 replace ylmsec_ci=. if (salariosec==. & s5p30b==. & s5p31b==.) |emp_ci==0 
 drop salariosec aguis
@@ -667,7 +667,7 @@ s5p6b:
            1 Dias
            2 Semanas
            3 Meses
-           4 Años
+           4 AÃ±os
            9 Ignorado
 */
 
@@ -685,7 +685,7 @@ s5p10b:
            1 Dias
            2 Semanas
            3 Meses
-           4 Años
+           4 AÃ±os
            9 Ignorado
 */
  
@@ -704,7 +704,7 @@ Variables del Mercado Laboral
 gen desalent_ci=(s5p5==10)
 replace desalent_ci=. if emp_ci==1
 
-*En 1999 eliminan la pregunta: Desea trabajar más horas?
+*En 1999 eliminan la pregunta: Desea trabajar mÃ¡s horas?
 gen subemp_ci=.
 replace subemp_ci=. if emp_ci==0
 
@@ -959,31 +959,107 @@ label variable repiteult_ci "Esta repitendo ultimo grado o curso"
 gen tecnica_ci=( s4p7a==7)
 label var tecnica_ci "=1 formacion terciaria tecnica"
 
-*********
-*raza_ci*
-*********
-
-gen raza_ci=.
-
 
 /*
-Comentario Mayra Sáenz - Septiembre 2013
+Comentario Mayra SÃ¡enz - Septiembre 2013
 Existe la pregunta: La lengua materna que habla desde la ninez en su casa es:
 Espanol 1
 Miskito 2
 Sumo o sumu 3
 Ingles 4
 Otro 5 
-* Sin embargo se genera como missing hasta definir criterios teóricos para
-* la creación de la variable raza_ci.
+* Sin embargo se genera como missing hasta definir criterios teÃ³ricos para
+* la creaciÃ³n de la variable raza_ci.
 */
 
+*******************************************************
+***           VARIABLES DE DIVERSIDAD               ***
+*******************************************************
+	*********
+	*afro_ci*
+	*********
+	gen byte afro_ci = . 	  // se queda como missing (.) si no existe la pregunta
+	
+	*********
+	*ind_ci*
+	*********	
+	gen byte ind_ci =. 		  // se queda como missing (.) si no existe la pregunta
 
+	**************
+	*noafroind_ci*
+	**************
+	gen byte noafroind_ci =.   // se queda como missing (.) si no existe la pregunta
+	replace noafroind_ci =1 if (afro_ci==0 & ind_ci==0)
+	replace noafroind_ci =0 if (afro_ci==1 | ind_ci==1)
+	replace noafroind_ci =. if (afro_ci==. | ind_ci==.) //Esto solo en el caso que se tenga ambas opciones no disponibles. 
+	ta noafroind_ci,m
 
+	************
+	*afroind_ci*
+	************
+	gen byte afroind_ci=. 
+	replace afroind_ci=1 if ind_ci==1 
+	replace afroind_ci=2 if afro_ci==1
+	replace afroind_ci=3 if noafroind_ci == 1
+	ta afroind_ci,m
+	
+	*********
+	*afro_ch*
+	*********
+	gen byte afro_jefe = afro_ci if relacion_ci==1
+	egen afro_ch  = max(afro_jefe), by(idh_ch) 
+	drop afro_jefe
+	
+	********
+	*ind_ch*
+	********	
+	gen byte ind_jefe = ind_ci if relacion_ci==1
+	egen ind_ch = max(ind_jefe), by(idh_ch) 
+	drop ind_jefe
 
-**Verificación de que se encuentren todas las variables del SOCIOMETRO y las nuevas de mercado laboral
+	**************
+	*noafroind_ch*
+	**************
+	gen byte noafroind_jefe = noafroind_ci if relacion_ci==1
+	egen noafroind_ch = max(noafroind_jefe), by(idh_ch) 
+	drop noafroind_jefe
+
+	************
+	*afroind_ch*
+	************
+ 	gen byte afroind_jefe = afroind_ci if jefe_ci==1
+	egen afroind_ch = min(afroind_jefe), by(idh_ch) 
+	drop afroind_jefe 
+
+	********
+	*dis_ci*
+	********
+	gen byte dis_ci=.
+	
+	**********
+	*disWG_ci*
+	**********
+	gen byte disWG_ci=.
+	
+	********
+	*dis_ch*
+	********
+	egen byte dis_ch = max(dis_ci), by(idh_ch) 
+	
+	******************
+	*ISOalpha3_dis_ci*
+	******************
+	gen byte NIC_dis_ci = .
+
+	*******************
+	***afroind_ano_c***
+	*******************
+	gen afroind_ano_c=.	
+
+**VerificaciÃ³n de que se encuentren todas las variables del SOCIOMETRO y las nuevas de mercado laboral
 qui sum factor_ch	idh_ch	idp_c	zona_c	pais_c	anio_c	mes_c	relacion_ci	factor_ci	sexo_ci	edad_ci	civil_ci	///
 jefe_ci	nconyuges_ch	nhijos_ch	notropari_ch	notronopari_ch	nempdom_ch	clasehog_ch	nmiembros_ch	///
+afro_ci ind_ci noafroind_ci afroind_ci afro_ch ind_ch noafroind_ch afroind_ch dis_ci disWG_ci dis_ch NIC_dis_ci /// Diversidad
 miembros_ci	nmayor21_ch	nmenor21_ch	nmayor65_ch	nmenor6_ch	nmenor1_ch	ocupa_ci	rama_ci	horaspri_ci	///
 horastot_ci	ylmpri_ci	ylnmpri_ci	ylmsec_ci	ylnmsec_ci	ylmotros_ci	ylnmotros_ci	nrylmpri_ci	tcylmpri_ci ///
 ylm_ci	ylnm_ci	ynlm_ci	ynlnm_ci	nrylmpri_ch	tcylmpri_ch	ylm_ch	ylnm_ch	ylmnr_ch	ynlm_ch	ynlnm_ch	///
@@ -995,9 +1071,10 @@ edus2c_ci	edupre_ci	eduac_ci	asiste_ci	pqnoasis	repite_ci	repiteult_ci	edupub_ci
 aguared_ch	aguadist_ch	aguamala_ch	aguamide_ch	luz_ch	luzmide_ch	combust_ch	bano_ch	banoex_ch	///
 des1_ch	des2_ch	piso_ch	pared_ch	techo_ch	resid_ch	dorm_ch	cuartos_ch	cocina_ch	telef_ch ///
 refrig_ch	freez_ch	auto_ch	compu_ch	internet_ch	cel_ch	vivi1_ch	vivi2_ch	viviprop_ch	///
-vivitit_ch	vivialq_ch	vivialqimp_ch region_BID_c region_c raza_ci        lp25_ci	       lp4_ci	 ///
+vivitit_ch	vivialq_ch	vivialqimp_ch region_BID_c region_c         lp25_ci	       lp4_ci	 ///
 lp_ci	       lpe_ci	       cotizando_ci	       cotizapri_ci	       cotizasec_ci	       afiliado_ci	///
 tipopen_ci	   instpen_ci	   instcot_ci	   instpen_ci	   tipocontrato_ci 	   condocup_ci 	   cesante_ci ///
+
 tamemp_ci 	   pension_ci 	   ypen_ci 	   pensionsub_ci 	   ypensub_ci 	   salmm_ci	   tecnica_ci	
 
 
