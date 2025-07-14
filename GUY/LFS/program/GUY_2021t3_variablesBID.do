@@ -542,21 +542,40 @@ label val ramasec_ci ramasec_ci
 		**************
 		***INGRESOS***
 		**************
+
+* sustituir variables con la media cuando no declaran un valor puntual.
+foreach v of varlist q6_01 q6_06 q6_11 q6_12 q6_13  {
+	decode `v'b, gen(_`v'b)
+	gen _min`v'b = regexs(1) if regexm(_`v'b,"([0-9]+,[0-9]+)")
+	*gen _max`v'b = regexs(1) if regexm(_`v'b,"([char(160)] [0-9]+,[0-9]+)")
+	gen _max`v'b = trim(substr(_`v'b, strrpos(_`v'b,"$")+1, length(_`v'b)-strrpos(_`v'b,"$")+1))
+	replace _min`v'b = subinstr(_min`v'b, ",", "", .)
+	replace _max`v'b = subinstr(_max`v'b, ",", "", .)
+	destring _min`v'b, replace
+	destring  _max`v'b, replace force
+	replace _min`v'b=1000001*1.25 if trim(substr(_`v'b, -4,4))=="more" //supuesto: +25%
+	replace _min`v'b=1 if (substr(_`v'b,4,3))=="$1 " 
+	egen _mean`v'b = rowmean(_min`v'b _max`v'b)
+	drop _min* _max*  _q6_*
+}
+
 ****************
 * ylmpri_ci    * 
 ****************
 foreach var of varlist q6_01 q6_06 q6_04a q6_04b q6_04c q6_04d q6_04e q6_04f{
-replace `var'=. if `var'<0
+	cap replace `var' = _mean`var'b if `var'==-1   // se imputa con la media q6_01 q6_06
+	cap replace `var'=. if `var'<0
 }
-*
+
+cap drop  ylmpri_ci
 egen ylmpri_ci=rsum(q6_01 q6_06 q6_04a q6_04b q6_04c q6_04d q6_04e q6_04f), missing
 replace ylmpri_ci=. if emp_ci==0
 label var ylmpri_ci "Ingreso laboral monetario actividad principal" 
 
+
 ****************
 * ylnmpri_ci   * 
 **************** 
-
 foreach var of varlist q6_05a-q6_05i{
 replace `var'=. if `var'<0
 }
@@ -566,6 +585,7 @@ replace q6_07=. if q6_07<0
 
 egen ylnmpri_ci=rsum(q6_05a q6_05b q6_05c q6_05d q6_05e q6_05f q6_05g q6_05h q6_05i q6_07 q6_09), missing
 label var ylnmpri_ci "Ingreso laboral NO monetario actividad principal" 
+
 
 ****************
 * ylmsec_ci    * 
@@ -631,24 +651,32 @@ replace q6_24a= q6_24a/6
 replace q6_21 = q6_21/12
 replace q6_22 = q6_22/12
 
-
 foreach var of varlist q6_11 q6_12 q6_13 q6_14 q6_15 q6_16 q6_17 q6_18 q6_19 q6_20a q6_20b q6_21 q6_22  q6_24a q6_24b{
-replace `var'=. if `var'<0
+	cap replace `var' = _mean`var'b if `var'==-1  // se imputa con la media q6_11 q6_12 q6_13
+	cap replace `var'=. if `var'<0
 }
-*
+
+
 *http://www.bankofguyana.org.gy/bog/images/research/Reports/Dec2019.pdf#page=72
 replace q6_20b=q6_20b*208.50
 replace q6_24b=q6_24b*208.50
 
 egen ynlm_ci =rsum(q6_11 q6_12 q6_13 q6_14 q6_15 q6_16 q6_17 q6_18 q6_19 q6_20a q6_20b q6_21 q6_22 q6_24a q6_24b)
 label var ynlm_ci "Ingreso no laboral monetario"  
-
+ 
+ 
 ****************
 * ynlnm_ci     * 
 **************** 
 gen ynlnm_ci=.
 label var ynlnm_ci "Ingreso no laboral no monetario" 
 
+****************
+*   ytot_ci    * 
+**************** 
+egen ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci)
+*bys idh_ch:  egen  ytot_ch=sum(ytot_ci)
+*sum ytot_ch
 
 ****************
 * nrylmpri_ch  * 
@@ -781,6 +809,7 @@ replace antiguedad_ci=(60+119)/2 if q3_40==4
 replace antiguedad_ci=(120+132)/2 if q3_40==5
 label var antiguedad_ci "Antiguedad en la actividad actual en años"
 replace antiguedad_ci=. if  emp_ci!=1 | antiguedad_ci>edad_ci
+
 
 		************************
 		* VARIABLES EDUCATIVAS *
