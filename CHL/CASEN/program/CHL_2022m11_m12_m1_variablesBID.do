@@ -941,8 +941,21 @@ la var asispre_ci "Asiste a educacion prescolar"
 * Line of code with indicator pqnoasis_ci was deleted* Line of code with indicator pqnoasis_ci was deleted******************
 ***pqnoasis1_ci***
 ******************
-gen pqnoasis1_ci=. // No está la pregunta en la encuesta 2020
-label var pqnoasis1_ci "Razones para no asistir a la escuela"
+* pqnoasis1_ci was replaced by razonesnoasis_ci, June 2025 * 
+
+**********************
+***razonesnoasis_ci***
+**********************
+
+gen razonesnoasis_ci=.
+replace razonesnoasis_ci = 1 if e5a == 11 | e5a == 12
+replace razonesnoasis_ci = 2 if e5a == 7 | e5a == 13
+replace razonesnoasis_ci = 3 if e5a == 1 | e5a == 2 | e5a == 3 | e5a == 5 | e5a == 6
+replace razonesnoasis_ci = 4 if e5a == 4 | e5a == 14
+replace razonesnoasis_ci = 5 if e5a == 8 | e5a == 15 | e5a == 16
+
+label define razonesnoasis_ci 1 "Problemas económicos/Por trabajo" 2 "Falta de interés/Problemas de rendimiento" 3 "Cuidados/ Problemas familiares o de salud" 4 "Problemas de acceso"  5 "Otros"
+label value razonesnoasis_ci razonesnoasis_ci
 
 **************
 * Line of code with indicator repite_ci was deleted**************
@@ -1773,7 +1786,7 @@ do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&Exter
   ylm_ch ylnm_ch ylmnr_ch ynlm_ch ynlnm_ch ylmhopri_ci ylmho_ci /// Ingresos del hogar 
   nrylmpri_ci nrylmpri_ch /// No respuesta de ingresos  
   remesas_ci remesas_ch ypen_ci ypensub_ci /// Remesas y pensiones
-  aedu_ci eduui_ci eduuc_ci edupre_ci eduac_ci asiste_ci edupub_ci pqnoasis1_ci asispre_ci /// Educación
+  aedu_ci eduui_ci eduuc_ci edupre_ci eduac_ci asiste_ci edupub_ci razonesnoasis_ci asispre_ci /// Educación
   luz_ch luzmide_ch combust_ch piso_ch pared_ch techo_ch resid_ch dorm_ch cuartos_ch cocina_ch telef_ch refrig_ch /// Vivienda
   freez_ch auto_ch compu_ch internet_ch cel_ch vivi1_ch vivi2_ch viviprop_ch vivitit_ch vivialq_ch vivialqimp_ch /// Vivienda
   aguared_ch aguafconsumo_ch aguafuente_ch aguadist_ch aguadisp1_ch aguadisp2_ch /// Agua y saneamineto
