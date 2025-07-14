@@ -39,11 +39,7 @@ log using "`log_file'", replace
 País: Guatemala
 Encuesta: ENEI
 Round: 11m
-Autores: Mélany Gualavisí
-Última versión: Jillie Chang -jilliec@iadb.org
-Fecha última modificación: abril 2023
 
-							SCL/LMK - IADB
 ****************************************************************************/
 /***************************************************************************
 Detalle de procesamientos o modificaciones anteriores:
@@ -334,67 +330,95 @@ label variable nmenor1_ch "Numero de familiares menores a 1 anio"
 gen miembros_ci=(relacion_ci>=1 & relacion_ci<=5)
 label variable miembros_ci "Miembro del hogar"
 
+*******************************************************
+***           VARIABLES DE DIVERSIDAD               ***
+*******************************************************
+** Pregunta: ¿Se considera usted perteneciente a alguno de los siguientes pueblos indígenas del país:
+**           1 xinca; 2 garifuna; 3 ladino; 4 Afrodescendiente/Creole/Afro mestizo; 5 extranjero; 6 maya
 
-         ******************************
-         *** VARIABLES DE DIVERSIDAD **
-         ******************************
-		 *Nathalia Maya & Antonella Pereira
-		 *Feb 2021	
-
-***************
-***afroind_ci***
-***************
-
-*2021 ppa06 (1 xinca; 2 garifuna; 3 ladino; 4 extranjero; 5 maya) 
-   /* 2022 1 Xinka 1
-           2 Garífuna 1 
-           3 Ladino 
-           4 Afrodescendiente/Creole/Afro mestizo
-           5 Extranjero
-           6 Maya 1 */
-		   
-gen afroind_ci=. 
-replace afroind_ci=1  if p03a06 == 1 | p03a06 ==2 | p03a06 ==6
-replace afroind_ci=2  if p03a06 == 4
-replace afroind_ci=3 if p03a06 ==3 
-replace afroind_ci=9 if p03a06 ==5
-replace afroind_ci=. if p03a06 ==.
-
-label variable afroind_ci "Identificación étnica del individuo"
-label define afroind_ci 1 "Indígena" 2 "Afrodescendiete" 3 "Otros" 9 "No se le pregunta"
-label value afroind_ci afroind_ci
-
-***************
-***afroind_ch***
-***************
+	*********
+	*afro_ci*
+	*********
+	gen byte afro_ci = .
+	replace afro_ci = 1 if p03a06 == 2 | p03a06 == 4
+	replace afro_ci = 0 if p03a06 != 2 & p03a06 != 4 & p03a06 != . 
 	
-* Identificación étnica del hogar según indentificación del jefe de hogar. 
-gen afroind_jefe= afroind_ci if relacion_ci==1 
-egen afroind_ch  = min(afroind_jefe), by(idh_ch) 
-drop afroind_jefe
-* br hogar_num id idh_ch relacion_ci afroind_ci afroind_jefe afroind_ch 
+	*********
+	*ind_ci*
+	*********	
+	gen byte ind_ci = . 		
+	replace ind_ci = 1  if (p03a06 == 1 | p03a06 == 2 | p03a06 == 6)
+	replace ind_ci = 0  if (p03a06 != 1 & p03a06 != 2 & p03a06 != 6) & p03a06 != . 
 
-*******************
-***afroind_ano_c***
-*******************
+	**************
+	*noafroind_ci*
+	**************
+	gen byte noafroind_ci =.   // se queda como missing (.) si no existe la pregunta
+	replace noafroind_ci =1 if (afro_ci==0 & ind_ci==0)
+	replace noafroind_ci =0 if (afro_ci==1 | ind_ci==1)
+	replace noafroind_ci =. if (afro_ci==. | ind_ci==.) //Esto solo en el caso que se tenga ambas opciones no disponibles. 
+	ta noafroind_ci,m
 
-* Identifica el año en que se comenzó a utilizar en cada encuesta la metodología de medición de raza/etnicidad. 
-gen afroind_ano_c=2010
-
-*******************
-***dis_ci***
-*******************
-
-* Identifica si el individuo reporta por lo menos alguna dificultad en una
-* o más de las preguntas del Washington Group Questionnaire
-gen dis_ci=. 
+	************
+	*afroind_ci*
+	************
+	gen byte afroind_ci=. 
+	replace afroind_ci=1 if ind_ci==1 
+	replace afroind_ci=2 if afro_ci==1
+	replace afroind_ci=3 if noafroind_ci == 1
+	ta afroind_ci,m
 	
-*******************
-***dis_ch***
-*******************
+	*********
+	*afro_ch*
+	*********
+	gen byte afro_jefe = afro_ci if relacion_ci==1
+	egen afro_ch  = max(afro_jefe), by(idh_ch) 
+	drop afro_jefe
+	
+	********
+	*ind_ch*
+	********	
+	gen byte ind_jefe = ind_ci if relacion_ci==1
+	egen ind_ch = max(ind_jefe), by(idh_ch) 
+	drop ind_jefe
 
-gen dis_ch=. 
+	**************
+	*noafroind_ch*
+	**************
+	gen byte noafroind_jefe = noafroind_ci if relacion_ci==1
+	egen noafroind_ch = max(noafroind_jefe), by(idh_ch) 
+	drop noafroind_jefe
 
+	************
+	*afroind_ch*
+	************
+ 	gen byte afroind_jefe = afroind_ci if jefe_ci==1
+	egen afroind_ch = min(afroind_jefe), by(idh_ch) 
+	drop afroind_jefe 
+
+	********
+	*dis_ci*
+	********
+	gen byte dis_ci= .
+	replace dis_ci = 1 if (p03a09a > 1 | p03a09b > 1 | p03a09c > 1 | p03a09d > 1 | p03a09e > 1 | p03a09f > 1) & (p03a09a != . & p03a09b != . & p03a09c != . & p03a09d != . & p03a09e != . & p03a09f != .) 
+	replace dis_ci = 0 if p03a09a == 1 & p03a09b == 1 & p03a09c == 1 & p03a09d == 1 & p03a09e == 1 & p03a09f == 1 
+	
+	**********
+	*disWG_ci*
+	**********
+	gen byte disWG_ci=.
+	replace disWG_ci = 1 if (p03a09a > 2 | p03a09b > 2 | p03a09c > 2 | p03a09d > 2 | p03a09e > 2 | p03a09f > 2) & (p03a09a != . & p03a09b != . & p03a09c != . & p03a09d != . & p03a09e != . & p03a09f != .) 
+	replace disWG_ci = 0 if p03a09a <= 2 & p03a09b <= 2 & p03a09c <= 2 & p03a09d <= 2 & p03a09e <= 2 & p03a09f <= 2
+	
+	********
+	*dis_ch*
+	********
+	egen byte dis_ch = max(dis_ci), by(idh_ch) 
+	
+	******************
+	*ISOalpha3_dis_ci*
+	******************
+	gen byte GTM_dis_ci = dis_ci
 
 
 		************************************
@@ -1746,6 +1770,7 @@ do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&Exter
     order region_BID_c region_c pais_c anio_c mes_c zona_c factor_ch idh_ch	idp_ci factor_ci factor_ch /// Identificación 
   sexo_ci edad_ci relacion_ci civil_ci jefe_ci nconyuges_ch nhijos_ch notropari_ch notronopari_ch nempdom_ch /// Demográficas 
   clasehog_ch nmiembros_ch miembros_ci nmayor21_ch nmenor21_ch nmayor65_ch nmenor6_ch nmenor1_ch /// Demográficas 
+  afro_ci ind_ci noafroind_ci afroind_ci afro_ch ind_ch noafroind_ch afroind_ch dis_ci disWG_ci dis_ch GTM_dis_ci /// Diversidad
   condocup_ci categoinac_ci emp_ci cesante_ci desemp_ci subemp_ci durades_ci pea_ci nempleos_ci antiguedad_ci desalent_ci  /// Empleo
   horaspri_ci horastot_ci tiempoparc_ci categopri_ci categosec_ci rama_ci spublico_ci tamemp_ci cotizando_ci instcot_ci	afiliado_ci /// Empleo 
   formal_ci tipocontrato_ci ocupa_ci pension_ci	pensionsub_ci tipopen_ci instpen_ci	ylmpri_ci /// Empleo 
