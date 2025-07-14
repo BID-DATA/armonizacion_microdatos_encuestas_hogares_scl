@@ -32,8 +32,6 @@ log using "`log_file'", replace
 País: Ecuador
 Encuesta: ENEMDU
 Round: m12
-Modificado por: Pablo Cortés Sánchez (pabloacortess96@outlook.com)
-Fecha última modificación: Marzo 2024
 
 ****************************************************************************/
 
@@ -381,46 +379,100 @@ foreach var of local varlist {
 
 	
 	
-         ******************************
-         *** VARIABLES DE DIVERSIDAD **
-         ******************************
-*Nathalia Maya & Antonella Pereira
-*Feb 2021	
+*******************************************************
+***           VARIABLES DE DIVERSIDAD               ***
+*******************************************************
+	*********
+	*afro_ci*
+	*********
+	****Pregunta: p15 (1 indígena, 2 afroecuatoriano, 3 negro, 4 mulato, 5 montubio, 6 mestizo, 7 blanco, 8 otro) (adiciona categorías afroecuatoriano y montubio) 
 
-	***************
-	***afroind_ci***
-	***************
-**Pregunta: p15 (1 indígena, 2 afroecuatoriano, 3 negro, 4 mulato, 5 montuvio, 6 mestizo, 7 blanco, 8 otro) 
-gen afroind_ci=. 
-replace afroind_ci=1  if p15 == 1
-replace afroind_ci=2 if p15 == 2 | p15 == 3 | p15 == 4
-replace afroind_ci=3 if p15 == 5 | p15 == 6| p15 ==7 | p15 == 8
-replace afroind_ci=. if p15==. 
-replace afroind_ci=. if (p15==. & edad_ci<5)
+	gen byte afro_ci = . 
+	replace afro_ci = 1 if p15 == 2 | p15 == 3 | p15 == 4
+	replace afro_ci = 0 if p15 != 2 & p15 != 3 & p15 != 4 & p15 != .
+	
+	tab afro_ci, m
+	
+	*********
+	*ind_ci*
+	*********	
+	gen byte ind_ci = .
+	replace ind_ci = 1 if p15 == 1
+	replace ind_ci = 0 if p15 != 1 & p15 != .
+	
+	tab ind_ci, m
 
-	***************
-	***afroind_ch***
-	***************
-gen afroind_jefe = afroind_ci if relacion_ci==1
-egen afroind_ch  = min(afroind_jefe), by(idh_ch) 
-drop afroind_jefe
+	**************
+	*noafroind_ci*
+	**************
+	gen byte noafroind_ci =.   // se queda como missing (.) si no existe la pregunta
+	replace noafroind_ci =1 if (afro_ci==0 & ind_ci==0)
+	replace noafroind_ci =0 if (afro_ci==1 | ind_ci==1)
+	replace noafroind_ci =. if (afro_ci==. | ind_ci==.) //Esto solo en el caso que se tenga ambas opciones no disponibles. 
+	ta noafroind_ci,m
 
+	************
+	*afroind_ci*
+	************
+	gen byte afroind_ci=. 
+	replace afroind_ci=1 if ind_ci==1 
+	replace afroind_ci=2 if afro_ci==1
+	replace afroind_ci=3 if noafroind_ci == 1
+	ta afroind_ci,m
+	
+	*********
+	*afro_ch*
+	*********
+	gen byte afro_jefe = afro_ci if relacion_ci==1
+	egen afro_ch  = max(afro_jefe), by(idh_ch) 
+	drop afro_jefe
+	
+	********
+	*ind_ch*
+	********	
+	gen byte ind_jefe = ind_ci if relacion_ci==1
+	egen ind_ch = max(ind_jefe), by(idh_ch) 
+	drop ind_jefe
+
+	**************
+	*noafroind_ch*
+	**************
+	gen byte noafroind_jefe = noafroind_ci if relacion_ci==1
+	egen noafroind_ch = max(noafroind_jefe), by(idh_ch) 
+	drop noafroind_jefe
+
+	************
+	*afroind_ch*
+	************
+ 	gen byte afroind_jefe = afroind_ci if jefe_ci==1
+	egen afroind_ch = min(afroind_jefe), by(idh_ch) 
+	drop afroind_jefe 
+
+	********
+	*dis_ci*
+	********
+	gen byte dis_ci=.
+	
+	**********
+	*disWG_ci*
+	**********
+	gen byte disWG_ci=.
+	
+	********
+	*dis_ch*
+	********
+	egen byte dis_ch = max(dis_ci), by(idh_ch) 
+	
+	******************
+	*ISOalpha3_dis_ci*
+	******************
+	gen byte ECU_dis_ci = .
+	
 	*******************
 	***afroind_ano_c***
 	*******************
-gen afroind_ano_c=2010
+	gen afroind_ano_c=2010
 
-	*******************
-	***dis_ci***
-	*******************
-gen dis_ci=. 
-
-	*******************
-	***dis_ch***
-	*******************
-gen dis_ch=. 
-
-	
 			***********************************
 			***VARIABLES DEL MERCADO LABORAL***
 			***********************************
@@ -1087,18 +1139,21 @@ egen ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci)
 	**************
     *pqnoasis1_ci*
     **************
-    g       pqnoasis1_ci = 1 if p09==3
-    replace pqnoasis1_ci = 2 if p09==5
-    replace pqnoasis1_ci = 3 if p09==7  | p09==9
-    replace pqnoasis1_ci = 4 if p09==11
-    replace pqnoasis1_ci = 5 if p09==8  | p09==12 | p09==15
-    replace pqnoasis1_ci = 6 if p09==2
-    replace pqnoasis1_ci = 7 if p09==1 
-    replace pqnoasis1_ci = 8 if p09==10 | p09==13
-    replace pqnoasis1_ci = 9 if p09==4 | p09==6 | p09==14 | p09==16 | p09==17
+* pqnoasis1_ci was replaced by razonesnoasis_ci, June 2025 * 
 
-    label define pqnoasis1_ci 1 "Problemas económicos" 2 "Por trabajo" 3 "Problemas familiares o de salud" 4 "Falta de interés" 5	"Quehaceres domésticos/embarazo/cuidado de niños/as" 6 "Terminó sus estudios" 7	"Edad" 8 "Problemas de acceso"  9 "Otros"
-    label value  pqnoasis1_ci pqnoasis1_ci
+**********************
+***razonesnoasis_ci***
+**********************
+
+    g       razonesnoasis_ci = .
+    replace razonesnoasis_ci = 1 if p09==3 | p09==5
+    replace razonesnoasis_ci = 2 if p09==11 | p09==4
+    replace razonesnoasis_ci = 3 if p09==7  | p09==8 | p09==9 | p09==12 | p09==15
+    replace razonesnoasis_ci = 4 if p09==13 | p09==10
+    replace razonesnoasis_ci = 5 if p09==1 | p09==2 | p09==14 | p09==16 | p09==17
+
+    label define razonesnoasis_ci 1 "Problemas económicos/Por trabajo" 2 "Falta de interés/Problemas de rendimiento" 3 "Cuidados/ Problemas familiares o de salud" 4 "Problemas de acceso"  5 "Otros"
+label value  razonesnoasis_ci razonesnoasis_ci
 	
 	***************
 * Line of code with indicator repite_ci was deleted	***************
@@ -1575,6 +1630,7 @@ lab val grupo_int grupo_int
     order region_BID_c region_c pais_c anio_c mes_c zona_c factor_ch idh_ch	idp_ci factor_ci factor_ch /// Identificación 
   sexo_ci edad_ci relacion_ci civil_ci jefe_ci nconyuges_ch nhijos_ch notropari_ch notronopari_ch nempdom_ch /// Demográficas 
   clasehog_ch nmiembros_ch miembros_ci nmayor21_ch nmenor21_ch nmayor65_ch nmenor6_ch nmenor1_ch /// Demográficas 
+  afro_ci ind_ci noafroind_ci afroind_ci afro_ch ind_ch noafroind_ch afroind_ch dis_ci disWG_ci dis_ch ECU_dis_ci /// Diversidad
   condocup_ci categoinac_ci emp_ci cesante_ci desemp_ci subemp_ci durades_ci pea_ci nempleos_ci antiguedad_ci desalent_ci  /// Empleo
   horaspri_ci horastot_ci tiempoparc_ci categopri_ci categosec_ci rama_ci spublico_ci tamemp_ci cotizando_ci instcot_ci	afiliado_ci /// Empleo 
   formal_ci tipocontrato_ci ocupa_ci pension_ci	pensionsub_ci tipopen_ci instpen_ci	ylmpri_ci /// Empleo 
@@ -1582,7 +1638,7 @@ lab val grupo_int grupo_int
   ylm_ch ylnm_ch ylmnr_ch ynlm_ch ynlnm_ch ylmhopri_ci ylmho_ci /// Ingresos del hogar 
   nrylmpri_ci nrylmpri_ch /// No respuesta de ingresos  
   remesas_ci remesas_ch ypen_ci ypensub_ci /// Remesas y pensiones
-  aedu_ci eduui_ci eduuc_ci edupre_ci eduac_ci asiste_ci edupub_ci pqnoasis1_ci asispre_ci /// Educación
+  aedu_ci eduui_ci eduuc_ci edupre_ci eduac_ci asiste_ci edupub_ci razonesnoasis_ci asispre_ci /// Educación
   luz_ch luzmide_ch combust_ch piso_ch pared_ch techo_ch resid_ch dorm_ch cuartos_ch cocina_ch telef_ch refrig_ch /// Vivienda
   freez_ch auto_ch compu_ch internet_ch cel_ch vivi1_ch vivi2_ch viviprop_ch vivitit_ch vivialq_ch vivialqimp_ch /// Vivienda
   aguared_ch aguafconsumo_ch aguafuente_ch aguadist_ch aguadisp1_ch aguadisp2_ch /// Agua y saneamineto

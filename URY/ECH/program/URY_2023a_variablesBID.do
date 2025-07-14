@@ -31,10 +31,7 @@ log using "`log_file'", replace
                  BASES DE DATOS DE ENCUESTA DE HOGARES 
 País: Uruguay
 Encuesta: ECH
-Autores: Cecilia Giambruno 
 
-
-							SCL/SCL - IADB
 ****************************************************************************/
 /***************************************************************************
 Detalle de procesamientos o modificaciones anteriores:
@@ -318,65 +315,98 @@ label variable miembros_ci "Miembro del hogar"
 									
 *******************************************************
 ***           VARIABLES DE DIVERSIDAD               ***
-*******************************************************				
-*afro_ci
-gen afro_ci=1 if e29_1 == 1
-replace afro_ci=0 if e29_1 == 2
-
-* ind_ci
-gen ind_ci=1 if e29_4==1
-replace ind_ci=0 if e29_4==2
-
-* noafroind_ci
-gen noafroind_ci=0 if e29_4 == 1 | e29_1 == 1
-replace noafroind_ci=1 if e29_4 == 2 & e29_1 == 2
-
-*** afro_ch ***
-gen afro_jefe= afro_ci if relacion_ci==1
-egen afro_ch  = max(afro_jefe), by(idh_ch) 
-drop afro_jefe
-
-* ind_ch
-gen ind_jefe= ind_ci if relacion_ci==1
-egen ind_ch  = max(ind_jefe), by(idh_ch) 
-drop ind_jefe
+*******************************************************
+/*Pregunta: ¿Cree tener ascendencia...?
+e29_1	1 = Si / 2 = No           Afro o negra
+e29_2	1 = Si / 2 = No           Amarilla
+e29_3	1 = Si / 2 = No           Blanca
+e29_4	1 = Si / 2 = No           Indígena
+e29_5  	 						  Otro 
+e29_6   						  Ascendencia principal [NO UTILIZAMOS ESTA VARIABLE PARA CONSTRUIR NUESTRAS 
+															VARIABLES DE IDENTIFICACIÓN ÉTNICO-RACIAL]
+ */
+**Pueden reportar más de una identidad por lo que hay una población afroindigena.
 
 
-* noafroind_ch
-gen noafroind_jefe= noafroind_ci if relacion_ci==1
-egen noafroind_ch  = max(noafroind_jefe), by(idh_ch) 
-drop noafroind_jefe
+	*********
+	*afro_ci*
+	*********
+	gen byte afro_ci = . 	  
+	replace afro_ci = 1 if e29_1 == 1 
+	replace afro_ci = 0 if e29_1 == 2
+	
+	*********
+	*ind_ci*
+	*********	
+	gen byte ind_ci =. 
+	replace ind_ci = 1 if e29_4 == 1 
+	replace ind_ci = 0 if e29_4 == 2
+	
+	**************
+	*noafroind_ci*
+	**************
+	gen byte noafroind_ci =.   // se queda como missing (.) si no existe la pregunta
+	replace noafroind_ci =1 if (afro_ci==0 & ind_ci==0)
+	replace noafroind_ci =0 if (afro_ci==1 | ind_ci==1)
+	replace noafroind_ci =. if (afro_ci==. | ind_ci==.) //Esto solo en el caso que se tenga ambas opciones no disponibles. 
+	ta noafroind_ci,m
 
-*** afroind_ano_c ***
-gen afroind_ano_c=2008
+	************
+	*afroind_ci*
+	************
+	gen byte afroind_ci=. 
+	replace afroind_ci=1 if ind_ci==1 
+	replace afroind_ci=2 if afro_ci==1
+	replace afroind_ci=3 if noafroind_ci == 1
+	ta afroind_ci,m
+	
+	*********
+	*afro_ch*
+	*********
+	gen byte afro_jefe = afro_ci if relacion_ci==1
+	egen afro_ch  = max(afro_jefe), by(idh_ch) 
+	drop afro_jefe
+	
+	********
+	*ind_ch*
+	********	
+	gen byte ind_jefe = ind_ci if relacion_ci==1
+	egen ind_ch = max(ind_jefe), by(idh_ch) 
+	drop ind_jefe
 
-* afroind_ci ***
-gen afroind_ci=. 
-replace afroind_ci=1 if e29_6 == 4 | (e29_4 == 1 & e29_6 == 0)
-replace afroind_ci=2 if e29_6 == 1 | (e29_1 == 1 & e29_6 == 0)
-replace afroind_ci=3 if inlist(e29_6, 2, 3, 5 )| (e29_6 == 0 & (e29_2==1 | e29_3==1 | e29_2==5))
-replace afroind_ci=. if e29_6 ==. 
+	**************
+	*noafroind_ch*
+	**************
+	gen byte noafroind_jefe = noafroind_ci if relacion_ci==1
+	egen noafroind_ch = max(noafroind_jefe), by(idh_ch) 
+	drop noafroind_jefe
 
-label variable afroind_ci "Identificación étnica o racial"
-label define afroind_ci 1"Indígena" 2"Afrodesendiente" 3"Otros"
-label value afroind_ci afroind_ci
+	************
+	*afroind_ch*
+	************
+ 	gen byte afroind_jefe = afroind_ci if jefe_ci==1
+	egen afroind_ch = min(afroind_jefe), by(idh_ch) 
+	drop afroind_jefe 
 
-*** afroind_ch ***
-gen afroind_jefe= afroind_ci if relacion_ci==1
-egen afroind_ch  = min(afroind_jefe), by(idh_ch) 
-drop afroind_jefe
-
-
-*** DISCAPACIDAD ***
-
-gen dis_ci=. 
-
-gen disWG_ci=.
-
-gen ISO3pais_dis_ci =.
-
-gen dis_ch=. 
-
+	********
+	*dis_ci*
+	********
+	gen byte dis_ci=.
+	
+	**********
+	*disWG_ci*
+	**********
+	gen byte disWG_ci=.
+	
+	********
+	*dis_ch*
+	********
+	egen byte dis_ch = max(dis_ci), by(idh_ch) 
+	
+	******************
+	*ISOalpha3_dis_ci*
+	******************
+	gen byte URY_dis_ci = .
 
 *  VARIABLES LABORALES
 
@@ -1211,7 +1241,24 @@ gen byte asiste_ci = (e49 == 3)
 *89. Razones para no asistir a la escuela
 * Se genera como mising porque no hay para todas las preguntas. 
 * Line of code with indicator pqnoasis_ci was deleted
-gen  pqnoasis1_ci=.
+
+****************
+***pqnoasis1_ci***
+****************
+* pqnoasis1_ci was replaced by razonesnoasis_ci, June 2025 * 
+
+**********************
+***razonesnoasis_ci***
+**********************
+gen  razonesnoasis_ci=.
+replace razonesnoasis_ci = 1 if inlist(e202, 7, 9)
+replace razonesnoasis_ci = 2 if inlist(e202, 1, 2)
+replace razonesnoasis_ci = 3 if inlist(e202, 8, 10, 11)
+replace razonesnoasis_ci = 4 if inlist(e202, 3, 4)
+replace razonesnoasis_ci = 5 if inlist(e202, 5, 6)
+
+label define razonesnoasis_ci 1 "Problemas económicos/Por trabajo" 2 "Falta de interés/Problemas de rendimiento" 3 "Cuidados/ Problemas familiares o de salud" 4 "Problemas de acceso"  5 "Otros"
+label value  razonesnoasis_ci razonesnoasis_ci
 	
 *92. Personas que asisten a centros de ensenanza públicos
 gen edupub_ci = 1 if (e581 == 1 | e581a == 1) & (asiste_ci == 1)
@@ -1622,6 +1669,7 @@ lab val grupo_int grupo_int
     order region_BID_c region_c pais_c anio_c mes_c zona_c factor_ch idh_ch	idp_ci factor_ci factor_ch /// Identificación 
   sexo_ci edad_ci relacion_ci civil_ci jefe_ci nconyuges_ch nhijos_ch notropari_ch notronopari_ch nempdom_ch /// Demográficas 
   clasehog_ch nmiembros_ch miembros_ci nmayor21_ch nmenor21_ch nmayor65_ch nmenor6_ch nmenor1_ch /// Demográficas 
+  afro_ci ind_ci noafroind_ci afroind_ci afro_ch ind_ch noafroind_ch afroind_ch dis_ci disWG_ci dis_ch URY_dis_ci /// Diversidad
   condocup_ci categoinac_ci emp_ci cesante_ci desemp_ci subemp_ci durades_ci pea_ci nempleos_ci antiguedad_ci desalent_ci  /// Empleo
   horaspri_ci horastot_ci tiempoparc_ci categopri_ci categosec_ci rama_ci spublico_ci tamemp_ci cotizando_ci instcot_ci	afiliado_ci /// Empleo 
   formal_ci tipocontrato_ci ocupa_ci pension_ci	pensionsub_ci tipopen_ci instpen_ci	ylmpri_ci /// Empleo 
@@ -1629,7 +1677,7 @@ lab val grupo_int grupo_int
   ylm_ch ylnm_ch ylmnr_ch ynlm_ch ynlnm_ch ylmhopri_ci ylmho_ci /// Ingresos del hogar 
   nrylmpri_ci nrylmpri_ch /// No respuesta de ingresos  
   remesas_ci remesas_ch ypen_ci ypensub_ci /// Remesas y pensiones
-  aedu_ci eduui_ci eduuc_ci edupre_ci eduac_ci asiste_ci edupub_ci pqnoasis1_ci asispre_ci /// Educación
+  aedu_ci eduui_ci eduuc_ci edupre_ci eduac_ci asiste_ci edupub_ci  razonesnoasis_ci  asispre_ci /// Educación
   luz_ch luzmide_ch combust_ch piso_ch pared_ch techo_ch resid_ch dorm_ch cuartos_ch cocina_ch telef_ch refrig_ch /// Vivienda
   freez_ch auto_ch compu_ch internet_ch cel_ch vivi1_ch vivi2_ch viviprop_ch vivitit_ch vivialq_ch vivialqimp_ch /// Vivienda
   aguared_ch aguafconsumo_ch aguafuente_ch aguadist_ch aguadisp1_ch aguadisp2_ch /// Agua y saneamineto
