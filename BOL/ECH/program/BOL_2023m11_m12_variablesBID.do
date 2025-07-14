@@ -522,6 +522,17 @@ label var cesante_ci "Desocupado - definicion oficial del pais"
 gen desemp_ci = (condocup_ci == 2)
 label var desemp_ci "Desempleado que buscó empleo en el periodo de referencia"
 
+***************
+***subemp_ci***
+***************    
+* Se considera subempleo visible: quiere trabajar mas horas y esta disponible. 
+gen subemp_ci=.
+/*
+gen subemp_ci=0
+replace subemp_ci=1 if (s06h_52==1 & s06h_53==1)  & horaspri_ci <= 30 & emp_ci==1
+label var subemp_ci "Personas en subempleo por horas"
+*/
+
 ****************
 ***durades_ci***
 ****************
@@ -1432,6 +1443,11 @@ label var ylnm_ch "Ingreso laboral no monetario del hogar"
 by idh_ch, sort: egen ynlnm_ch = sum(ynlnm_ci) if miembros_ci == 1, missing
 label var ynlnm_ch "Ingreso no laboral no monetario del hogar"
 
+****************
+*** ynlm_ch ***
+****************
+by idh_ch, sort: egen ynlm_ch = sum(ynlm_ci) if miembros_ci == 1, missing
+ 
 *****************
 ***ylhopri_ci ***
 *****************
@@ -2022,10 +2038,10 @@ gen migrante_ci = (s01a_09 == 3) if s01a_09 != .
 label var migrante_ci "=1 si es migrante"
 	
 **********************
-*** migantiguo5_ci ***
+*** migrantiguo5_ci ***
 **********************
-gen migantiguo5_ci = .
-label var migantiguo5_ci "=1 si es migrante antiguo (5 anos o mas)"
+gen migrantiguo5_ci = .
+label var migrantiguo5_ci "=1 si es migrante antiguo (5 anos o mas)"
 
 *****************
 *** miglac_ci ***
