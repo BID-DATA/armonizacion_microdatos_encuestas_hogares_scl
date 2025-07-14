@@ -1,16 +1,22 @@
 * (Versión Stata 18)
-clear
-set more off
-*________________________________________________________________________________________________________________*
+/*==============================================================================
+						Armonización de encuestas
+			Script de merge - Unión de módulos en una sola base 
+País: República Dominicana 
+Encuesta: ENCFT
+Año: 2024
+Ronda: m10
+Autores: Olga Dulce EDU/SCL
+Última versión: 30JUN2025
+División: SPL/SCL y SCL/SCL - IADB
+*******************************************************************************/
 
- * Activar si es necesario (dejar desactivado para evitar sobreescribir la base y dejar la posibilidad de 
- * utilizar un loop)
- * Los datos se obtienen de las carpetas que se encuentran en el servidor: ${surveysFolder}
- * Se tiene acceso al servidor únicamente al interior del BID.
- * El servidor contiene las bases de datos MECOVI.
- *________________________________________________________________________________________________________________*
- 
+clear all
+set more off 
 
+/****************************************************************************
+   I. Definir rutas y log file
+****************************************************************************/
 
 global ruta = "${surveysFolder}"
 
@@ -23,19 +29,12 @@ local log_file = "$ruta\harmonized\\`PAIS'\\`ENCUESTA'\log\\`PAIS'_`ANO'`ronda'_
 local base_in  = "$ruta\survey\\`PAIS'\\`ENCUESTA'\\`ANO'\\`ronda'\data_orig\"
 local base_out = "$ruta\survey\\`PAIS'\\`ENCUESTA'\\`ANO'\\`ronda'\data_merge\\`PAIS'_`ANO'`ronda'.dta"
    
+capture log close
+log using "`log_file'", replace 
 
-*capture log close
-*log using "`log_file'", replace 
-
-
-/*************************************************************************************
-                 BASES DE DATOS DE ENCUESTA DE HOGARES - SOCIOMETRO 
-Pais: Republica Dominicana
-Encuesta: ENCFT
-Round: m10
-Autores: Olga Dulce
-							SCL/SCL - IADB
-**************************************************************************************/
+/****************************************************************************
+   II. Unir módulos en una sola base
+*****************************************************************************/
 
 *Conversión de bases de formato excel a stata
 /*
@@ -55,19 +54,38 @@ clear
 
 use "`base_in'\Miembros.dta", clear
 
-merge m:m vivienda using "`base_in'\Vivienda.dta", force
+merge m:1 vivienda using "`base_in'\Vivienda.dta", force
 tab _merge
 drop _merge
 sort vivienda hogar
 
-merge m:m vivienda hogar using "`base_in'\Hogar.dta", force
+merge m:1 vivienda hogar using "`base_in'\Hogar.dta", force
 tab _merge
 drop _merge
 
+/****************************************************************************
+  III. Verificar que merge se haya hecho correctamente y no hayan duplicados
+*****************************************************************************/
+
+duplicates report id_hogar id_persona
+/*Duplicates in terms of id_hogar id_persona OK
+--------------------------------------
+   Copies | Observations       Surplus
+----------+---------------------------
+        1 |        17133             0
+-------------------------------------- */
+tab sexo [iw= factor_expansion ], mi
+/*10,826,490 registros OK*/
+
+/***************************************************************************
+  IV. Guardar la base
+****************************************************************************/
 * Comprime y guarda base
 compress
 drop if periodo ==.
 save "`base_out'",  replace
+
+log close
 
 
 
