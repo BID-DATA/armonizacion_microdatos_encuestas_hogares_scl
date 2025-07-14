@@ -29,15 +29,13 @@ log using "`log_file'", replace
                  BASES DE DATOS DE ENCUESTA DE HOGARES 
 País: Brasil
 Encuesta: PNADC
-Round: anual 2021
+Round: anual 2023
 
 ****************************************************************************
 *****************************************************************************/
 
 
-`base_in', clear
-*cd "C:\Users\JILLIEC\OneDrive - Inter-American Development Bank Group\Microsoft Teams Chat Files\Desktop\New folder"
-*use BRA_2022a.dta, replace
+use `base_in', clear
 
 **********************************
 **** ARMONIZACIÓN PNAD_C 2023 **** 

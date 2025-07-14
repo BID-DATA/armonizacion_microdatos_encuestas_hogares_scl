@@ -445,44 +445,10 @@ label variable miembros_ci "Miembro del hogar"
 	******************
 	gen byte GTM_dis_ci = .
 	
-	******************************
-          *** VARIABLES DE DIVERSIDAD **
-          ******************************
-*Nathalia Maya & Antonella Pereira
-*Julio 2021	
-
-	
-	***************
-	***afroind_ci***
-	***************
-**Pregunta: Usted se considera perteneciente a uno de los siguientes pueblos índigenas del país? (p03a04) (1 kiché; 2 Qeqchí; 3 Kaqchikel; 4 Mam; 98 Otro pueblo índígena, ¿cuál? 5 Garífuna 6 Ladino 7 Extranjero 98 Otro, ¿cual?) 
-gen afroind_ci=. 
-replace afroind_ci=1  if p03a03 != 6 & p03a03 !=8
-replace afroind_ci=3 if p03a03 ==6 
-replace afroind_ci=9 if p03a03 ==8
-replace afroind_ci=. if p03a03 ==.
-
-	***************
-	***afroind_ch***
-	***************
-gen afroind_jefe= afroind_ci if relacion_ci==1
-egen afroind_ch  = min(afroind_jefe), by(idh_ch) 
-drop afroind_jefe
-
 	*******************
 	***afroind_ano_c***
 	*******************
 gen afroind_ano_c=2002
-
-	*******************
-	***dis_ci***
-	*******************
-gen dis_ci=. 
-
-	*******************
-	***dis_ch***
-	*******************
-gen dis_ch=. 
 
 
 	************************************
