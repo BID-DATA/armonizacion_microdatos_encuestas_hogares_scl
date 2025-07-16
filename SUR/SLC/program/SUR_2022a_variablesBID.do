@@ -72,7 +72,7 @@ label value region_BID_c region_BID_c
 	***************
 	***factor_ch***
 	***************
-	gen factor_ch=weight3
+	gen factor_ch=weight2
 	label variable factor_ch "Factor de expansion del hogar"
 	
 	*************
