@@ -1039,7 +1039,7 @@ label var edupre_ci "Ha completado educación preescolar"
 ** asispre_ci **
 ***************
 gen asispre_ci = . 
-replace asispre_ci==1 if (yrscompl==1 | yrscompl==2) & (attdsch==2)
+replace asispre_ci=1 if (yrscompl==1 | yrscompl==2) & (attdsch==2)
 label var asispre_ci "Ha completado educación preescolar"
 
 
