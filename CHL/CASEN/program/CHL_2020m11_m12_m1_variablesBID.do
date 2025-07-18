@@ -22,6 +22,7 @@ log off
 /***************************************************************************
 Detalle de procesamientos o modificaciones anteriores:
 ****************************************************************************/
+*/
 
 use `base_in', clear
 
@@ -333,33 +334,29 @@ gen pea_ci=(emp_ci==1 | desemp_ci==1)
 ****************
 * horaspri_ci  * 
 ****************
-/*no se encontró o10 o10. �Cu�ntas horas trabaja habitualmente por semana en su trabajo, negocio o ac...
-
-gen horaspri_ci= o10
-replace horaspri_ci=. if emp_ci!=1 ``''
-label var horaspri_ci "Horas totales trabajadas en la actividad principal"
+*La variable o10 ¿Cuántas horas trabaja habitualmente...? deja de existir en esta encuesta, para calcular las variables relacionadas a horas laborales se cambia a y2_hrs "Número de horas laborales pactadas con el empleador" 
+gen horaspri_ci = y2_hrs / 4.3 if emp_ci == 1
+label variable horaspri_ci "Horas semanales trabajadas en la actividad principal"
 
 ****************
 * horastot_ci  * 
 ****************
-gen horastot_ci=horaspri_ci /*No existen horas totales solo act princ */
+gen horastot_ci = horaspri_ci /*No existen horas totales solo act princ */
 label var horastot_ci "Horas totales trabajadas en todas las actividades"
-
 
 ****************
 * subemp_ci    * 
 **************** 
-gen subemp_ci=0
-replace subemp_ci=1 if (horaspri_ci<=30)
-label var subemp_ci "Personas en subempleo por horas"
+gen subemp_ci = (horaspri_ci <= 30) if !missing(horaspri_ci)
+label variable subemp_ci "Personas en subempleo por horas (≤30 horas semanales)"
  
 ****************
 *tiempoparc_ci * 
 **************** 
-gen tiempoparc_ci=(horaspri_ci<=30)
-replace tiempoparc_ci=. if emp_ci!=1
-label var tiempoparc_c "Personas que trabajan medio tiempo" 
-*/
+gen tiempoparc_ci = (horaspri_ci <= 30) if emp_ci == 1 & !missing(horaspri_ci)
+label variable tiempoparc_ci "Personas que trabajan medio tiempo (≤30 horas semanales)"
+
+
 ****************
 *categopri_ci  * 
 **************** 
@@ -475,7 +472,7 @@ label var ylmpri_ci "Ingreso laboral monetario actividad principal"
 ****************
 * ylnmpri_ci   * 
 **************** 
-gen ylnmpri_ci=.
+gen ylnmpri_ci = .
 label var ylnmpri_ci "Ingreso laboral NO monetario actividad principal" 
 
 ****************
@@ -763,14 +760,14 @@ label var ynlnm_ch "Ingreso no laboral no monetario del hogar"
 *****************
 * ymlhopri_ci   *
 *****************
-*gen ylmhopri_ci=ylmpri_ci/(horaspri_ci*4.3)
-*label var ylmhopri_ci "Salario monetario de la actividad principal" 
+gen ylmhopri_ci = ylmpri_ci / (horaspri_ci * 4.3)
+label var ylmhopri_ci "Salario monetario de la actividad principal" 
 
 *************
 * ylmho_ci  *
 *************
-*gen ylmho_ci=ylm_ci/(horastot_ci*4.3)
-*label var ylmho_ci "Salario monetario de todas las actividades" 
+gen ylmho_ci = ylm_ci / (horastot_ci * 4.3)
+label var ylmho_ci "Salario monetario de todas las actividades" 
 
 ****************
 * rentaimp_ch  * 
