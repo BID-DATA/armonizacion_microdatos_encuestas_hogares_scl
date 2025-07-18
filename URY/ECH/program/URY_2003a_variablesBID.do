@@ -1322,6 +1322,20 @@ g       pqnoasis1_ci =.
 
 * Line of code with indicator repiteult was deletedlabel var  aedu_ci "Anios de Educacion"
 
+*****************
+****edupub_ci****
+*****************
+
+gen edupub_ci=.
+replace edupub_ci = 1 if (e14 == 1 & e9==1)
+replace edupub_ci = 0 if (e14 == 2 & e9==1)
+
+****************
+***asispre_ci***
+****************
+gen byte asispre_ci = (e11_1 > 0)
+la var asispre_ci "Asiste a educacion prescolar"
+
 ****************
 ***tecnica_ci **
 ****************

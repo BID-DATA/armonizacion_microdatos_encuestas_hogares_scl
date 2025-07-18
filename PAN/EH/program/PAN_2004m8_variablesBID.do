@@ -1074,6 +1074,13 @@ gen eduac_ci=.
 replace eduac_ci=0 if nivel==5
 replace eduac_ci=1 if nivel==4
 
+******************************
+*	asispre_ci
+******************************
+gen asispre_ci=.
+label var asispre_ci "Asistencia a Educacion preescolar"
+notes: la encuesta no tiene codigo de educacion preescolar 
+
 drop nivel grado
 
 

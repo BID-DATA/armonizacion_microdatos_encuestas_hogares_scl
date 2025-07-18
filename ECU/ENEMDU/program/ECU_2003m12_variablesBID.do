@@ -1146,6 +1146,12 @@ egen ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci)
 	gen edupre_ci=.
 	label variable edupre_ci "Educacion preescolar"
 
+	***************
+	***asispre_ci***
+	***************	
+	g asispre_ci=.
+	la var asispre_ci "Asiste a educacion prescolar"
+
 	**************
 	***eduac_ci***
 	**************
