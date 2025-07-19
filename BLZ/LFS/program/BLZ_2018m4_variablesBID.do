@@ -239,6 +239,7 @@ label values clasehog_ch clasehog
 *  NUMERO DE MIEMBROS EN EL HOGAR  *
 *************************************
 egen nmiembros_ch=sum(relacion_ci>0 & relacion_ci<5), by (idh_ch)
+replace nmiembros_ch=. if relacion_ci ==.
 label variable nmiembros_ch "Numero de miembros en el Hogar"
 
 **************************
@@ -851,7 +852,7 @@ label var ylnm_ci "Ingreso mensual NO laboral otras actividades"
 * INGRESO MENSUAL NO LABORAL NO MONETARIO OTRAS ACTIVIDADES  *
 **************************************************************
 gen ynlnm_ci= .
-egen ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci)
+egen ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci), mi
 
 label var ylnm_ci "Ingreso mensual NO laboral NO monetario otras actividades"
 
