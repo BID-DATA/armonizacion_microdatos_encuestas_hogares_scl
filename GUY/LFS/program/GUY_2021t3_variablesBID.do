@@ -542,20 +542,24 @@ label val ramasec_ci ramasec_ci
 		**************
 		***INGRESOS***
 		**************
-
+				 
 * sustituir variables con la media cuando no declaran un valor puntual.
 foreach v of varlist q6_01 q6_06 q6_11 q6_12 q6_13  {
+	
 	decode `v'b, gen(_`v'b)
-	gen _min`v'b = regexs(1) if regexm(_`v'b,"([0-9]+,[0-9]+)")
-	*gen _max`v'b = regexs(1) if regexm(_`v'b,"([char(160)] [0-9]+,[0-9]+)")
-	gen _max`v'b = trim(substr(_`v'b, strrpos(_`v'b,"$")+1, length(_`v'b)-strrpos(_`v'b,"$")+1))
-	replace _min`v'b = subinstr(_min`v'b, ",", "", .)
-	replace _max`v'b = subinstr(_max`v'b, ",", "", .)
-	destring _min`v'b, replace
-	destring  _max`v'b, replace force
-	replace _min`v'b=1000001*1.25 if trim(substr(_`v'b, -4,4))=="more" //supuesto: +25%
-	replace _min`v'b=1 if (substr(_`v'b,4,3))=="$1 " 
+	replace _`v'b= regexr(_`v'b,",", "")    // quitar 1ra ","
+	replace _`v'b= regexr(_`v'b,",", "")    // quitar 2da ","	
+	replace _`v'b= regexr(_`v'b,",", "")    // quitar 3ra ","	
+	* min
+	gen _min`v'b = real(regexs(1)) if regexm(_`v'b,"([0-9]+)")
+	replace  _min`v'b =. if  _min`v'b ==0
+	* max
+	replace _`v'b = regexr(_`v'b,"([0-9]+)", "")
+	gen _max`v'b = real(regexs(1)) if regexm(_`v'b,"([0-9]+)")
+	* mean
 	egen _mean`v'b = rowmean(_min`v'b _max`v'b)
+	replace _mean`v'b = (_min`v'b)*1.25 if (_max`v'b==. & _min`v'b!=.)
+	
 	drop _min* _max*  _q6_*
 }
 
