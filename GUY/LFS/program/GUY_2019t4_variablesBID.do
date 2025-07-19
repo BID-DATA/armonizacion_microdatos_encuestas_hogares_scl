@@ -682,6 +682,10 @@ label var ynlm_ci "Ingreso no laboral monetario"
 gen ynlnm_ci=.
 label var ynlnm_ci "Ingreso no laboral no monetario" 
 
+****************
+*   ytot_ci    * 
+**************** 
+egen ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci), mi
 
 ****************
 * nrylmpri_ch  * 
@@ -721,6 +725,11 @@ label var ynlm_ch "Ingreso no laboral monetario del hogar"
 *************
 gen ynlnm_ch=.
 label var ynlnm_ch "Ingreso no laboral no monetario del hogar"
+
+****************
+*   ytot_ch    * 
+**************** 
+egen double ytot_ch= rowtotal(ylm_ch ylnm_ch ynlm_ch ynlnm_ch), mi
 
 *****************
 * ymlhopri_ci   *
