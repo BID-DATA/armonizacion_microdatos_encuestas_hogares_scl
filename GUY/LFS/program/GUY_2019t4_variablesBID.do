@@ -675,6 +675,7 @@ foreach var of varlist q6_11 q6_12 q6_13 q6_14 q6_15 q6_16 q6_17 q6_18 q6_19 q6_
 egen ynlm_ci =rsum(_dumq6_11 _dumq6_12 _dumq6_13 _dumq6_14 _dumq6_15 _dumq6_16 _dumq6_17 _dumq6_18 _dumq6_19 _dumq6_20a _dumq6_20b _dumq6_21 _dumq6_22 _dumq6_24a _dumq6_24b)
 label var ynlm_ci "Ingreso no laboral monetario"  
 
+drop _dumq*
 
 ****************
 * ynlnm_ci     * 
