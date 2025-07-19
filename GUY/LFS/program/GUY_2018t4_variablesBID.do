@@ -534,14 +534,45 @@ label val rama_ci rama_ci
 		**************
 		***INGRESOS***
 		**************
+* sustituir variables con la media cuando no declaran un valor puntual.
+
+* sustituir variables con la media cuando no declaran un valor puntual.
+foreach v of varlist q6_01 q6_06 q6_11 q6_12 q6_13  {
+	
+	decode `v'b, gen(_`v'b)
+	replace _`v'b= regexr(_`v'b,",", "")    // quitar 1ra ","
+	replace _`v'b= regexr(_`v'b,",", "")    // quitar 2da ","	
+	replace _`v'b= regexr(_`v'b,",", "")    // quitar 3ra ","	
+	* min
+	gen _min`v'b = real(regexs(1)) if regexm(_`v'b,"([0-9]+)")
+	replace  _min`v'b =. if  _min`v'b ==0
+	* max
+	replace _`v'b = regexr(_`v'b,"([0-9]+)", "")
+	gen _max`v'b = real(regexs(1)) if regexm(_`v'b,"([0-9]+)")
+	* mean
+	egen _mean`v'b = rowmean(_min`v'b _max`v'b)
+	replace _mean`v'b = (_min`v'b)*1.25 if (_max`v'b==. & _min`v'b!=.)
+	
+	drop _min* _max*  _q6_*
+	}
+
+/*
+sort ylmpri_ci
+br  q6_01b q6_01 q6_06 q6_04a q6_04b q6_04c q6_04d q6_04e q6_04f _dum* ylmpri_ci
+br  _dum* _dumq*
+br q6_01 q6_01b _meanq6_01b */
+
 ****************
 * ylmpri_ci    * 
 ****************
 foreach var of varlist q6_01 q6_06 q6_04a q6_04b q6_04c q6_04d q6_04e q6_04f{
-replace `var'=. if `var'<0
+	gen _dum`var' = `var'
+	cap replace _dum`var'=. if _dum`var'<0
+	cap replace _dum`var' = _mean`var'b if `var'==-1   // se imputa con la media 
+	
 }
-*
-egen ylmpri_ci=rsum(q6_01 q6_06 q6_04a q6_04b q6_04c q6_04d q6_04e q6_04f), missing
+
+egen ylmpri_ci=rsum(_dumq6_01 _dumq6_06 _dumq6_04a _dumq6_04b _dumq6_04c _dumq6_04d _dumq6_04e _dumq6_04f), missing
 replace ylmpri_ci=. if emp_ci==0
 label var ylmpri_ci "Ingreso laboral monetario actividad principal" 
 
@@ -622,17 +653,20 @@ replace q6_24a= q6_24a/6
 replace q6_21 = q6_21/12
 replace q6_22 = q6_22/12
 
-
-foreach var of varlist q6_11 q6_12 q6_13 q6_14 q6_15 q6_16 q6_17 q6_18 q6_19 q6_20a q6_20b q6_21 q6_22  q6_24a q6_24b{
-replace `var'=. if `var'<0
-}
-*
 *http://www.bankofguyana.org.gy/bog/images/research/Reports/Dec2018.pdf#page=72
 replace q6_20b=q6_20b*208.50
 replace q6_24b=q6_24b*208.50
 
-egen ynlm_ci =rsum(q6_11 q6_12 q6_13 q6_14 q6_15 q6_16 q6_17 q6_18 q6_19 q6_20a q6_20b q6_21 q6_22 q6_24a q6_24b)
-label var ynlm_ci "Ingreso no laboral monetario"  
+foreach var of varlist q6_11 q6_12 q6_13 q6_14 q6_15 q6_16 q6_17 q6_18 q6_19 q6_20a q6_20b q6_21 q6_22  q6_24a q6_24b{
+	gen _dum`var' = `var'
+	cap replace _dum`var'=. if _dum`var'<0
+	cap replace _dum`var' = _mean`var'b if `var'==-1   // se imputa con la media 
+}
+*
+egen ynlm_ci =rsum(_dumq6_11 _dumq6_12 _dumq6_13 _dumq6_14 _dumq6_15 _dumq6_16 _dumq6_17 _dumq6_18 _dumq6_19 _dumq6_20a _dumq6_20b _dumq6_21 _dumq6_22 _dumq6_24a _dumq6_24b)
+label var ynlm_ci "Ingreso no laboral monetario"   
+
+drop _mean*
 
 ****************
 * ynlnm_ci     * 
@@ -640,6 +674,10 @@ label var ynlm_ci "Ingreso no laboral monetario"
 gen ynlnm_ci=.
 label var ynlnm_ci "Ingreso no laboral no monetario" 
 
+****************
+*   ytot_ci    * 
+**************** 
+egen ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci), mi
 
 ****************
 * nrylmpri_ch  * 
@@ -679,6 +717,11 @@ label var ynlm_ch "Ingreso no laboral monetario del hogar"
 *************
 gen ynlnm_ch=.
 label var ynlnm_ch "Ingreso no laboral no monetario del hogar"
+
+****************
+*   ytot_ch    * 
+**************** 
+egen double ytot_ch= rowtotal(ylm_ch ylnm_ch ynlm_ch ynlnm_ch), mi
 
 *****************
 * ymlhopri_ci   *
