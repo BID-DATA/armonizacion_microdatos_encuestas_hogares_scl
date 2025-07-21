@@ -1,18 +1,29 @@
-* (Versión Stata 12)
+* (Versión Stata 18)
+ /***************************************************************************
+					ARMONIZACIÓN DE ENCUESTAS DE HOGARES
+			 Script de merge - Unión de módulos en una sola base 
+			 
+País: Guatemala
+Año: 2023
+Encuesta: ENCOVI
+Ronda: Anual 
+División MIG/SCL - IADB
+Última versión: Marcela G. Rubio - Email: mrubio@iadb.org, marcelarubio28@gmail.com
+Última modificación: Daniela Zuluaga -Email: danielazu2iadb.org da.zuluaga@hotmail.com
+Última modificación: Pablo Cortés MIG/SCL
+Última modificación: Jillie Chang SCL/SCL
+Fecha última modificación: 21JUL2025
+****************************************************************************/
+
+ * Los datos se obtienen de las carpetas que se encuentran en el servidor: ${surveysFolder}
+ * Se tiene acceso al servidor únicamente al interior del BID.
+ 
 clear
 set more off
 
-
-*________________________________________________________________________________________________________________*
-
- * Activar si es necesario (dejar desactivado para evitar sobreescribir la base y dejar la posibilidad de 
- * utilizar un loop)
- * Los datos se obtienen de las carpetas que se encuentran en el servidor: ${surveysFolder}
- * Se tiene acceso al servidor únicamente al interior del BID.
- * El servidor contiene las bases de datos MECOVI.
- *________________________________________________________________________________________________________________*
- 
-
+/****************************************************************************
+   I. Definir rutas y log file
+****************************************************************************/
 
 local PAIS GTM
 local ENCUESTA ENCOVI
@@ -22,79 +33,90 @@ local ronda m8_m12
 global ruta =    "${surveysFolder}\survey\\`PAIS'\\`ENCUESTA'\\`ANO'\\`ronda'\\data_orig\dta\"
 display "$ruta"
 
-
 local log_file = "${surveysFolder}\harmonized\\`PAIS'\\`ENCUESTA'\\log\\`PAIS'_`ANO'`ronda'_mergeBID.log"
 local base_out = "${surveysFolder}\survey\\`PAIS'\\`ENCUESTA'\\`ANO'\\`ronda'\\data_merge\\`PAIS'_`ANO'`ronda'.dta"
 
 capture log close
 log using "`log_file'", replace 
 
+/****************************************************************************
+   II. Unir módulos en una sola base
+*****************************************************************************/
 
-/***************************************************************************
-                 BASES DE DATOS DE ENCUESTA DE HOGARES - SOCIOMETRO 
-País: Guatemala
-Encuesta: ENCOVI
-Round: Anual
-Última versión: Marcela G. Rubio - Email: mrubio@iadb.org, marcelarubio28@gmail.com
-Última modificación: Daniela Zuluaga -Email: danielazu2iadb.org da.zuluaga@hotmail.com
-Fecha última modificación: Octubre de 2017
-
-							SCL/LMK - IADB
-*******************************************************************************/
-
-clear
-set more off
-
+******************************
+*módulo de fuente de energía *
+******************************
 /*
-use "$ruta\otros_gtos_mes_pasado.dta", clear 
+se extrae pregunta: ¿El mes pasado, qué fuente de energía utilizó en su hogar para: Cocinar todos sus alimentos?" 
+Respuesta: 
+1. Regularmente 
+2. Ocasionalmente 
+3. Rara vez 
+9. Nunca 
+Se usa esta pregunta, que es la más parecida a la que se usó en la ENEI 2022 para armonizar combust_ch*/
+ 
+use "$ruta\2023_C01SE_Fuentes.dta", clear
+encode DESC_FUENTES, gen(fuente)
+/*         1 Aserrín o basura
+           2 Baterías 'acumulador' (unidades)
+           3 Biomasa
+           4 Candelas y/o veladoras (unidades)
+           5 Carbón (libras)
+           6 Electricidad (Kw/hr)
+           7 Energía eólica (Kw/hr)
+           8 Energía hídrica (Kw/hr)
+           9 Gas propano (libras)
+          10 Kerosene 'gas corriente' (botellas)
+          11 Leña (si solo la recogen y/o cortan, estime su val
+          12 Panel solar (Kw/hr) */
 
-/* Código de los programas que corresponden al último número de las variables
+sort NO_HOGAR 
+keep NO_HOGAR fuente P01E02
+label copy labels4 P01E02, replace 
+label val P01E02 P01E02
+reshape wide P01E02, i(NO_HOGAR) j(fuente)
+label variable P01E021 "fuente de energía usada para Cocinar el mes pasado - Aserrín o basura"
+label variable P01E022 "fuente de energía usada para Cocinar el mes pasado -  Baterías 'acumulador' "
+label variable P01E023 "fuente de energía usada para Cocinar el mes pasado - Biomasa"
+label variable P01E024 "fuente de energía usada para Cocinar el mes pasado -  Candelas y/o veladoras"
+label variable P01E025 "fuente de energía usada para Cocinar el mes pasado -  Carbón"
+label variable P01E026 "fuente de energía usada para Cocinar el mes pasado - Electricidad"
+label variable P01E027 "fuente de energía usada para Cocinar el mes pasado - Energía eólica"
+label variable P01E028 "fuente de energía usada para Cocinar el mes pasado -  Energía hídrica "
+label variable P01E029 "fuente de energía usada para Cocinar el mes pasado -  Gas propano"
+label variable P01E0210 "fuente de energía usada para Cocinar el mes pasado -  Kerosene gas corriente"
+label variable P01E0211 "fuente de energía usada para Cocinar el mes pasado -  Leña"
+label variable P01E0212 "fuente de energía usada para Cocinar el mes pasado -  Panel solar"
 
-           1 asistencia alimentar
-           2 mi comedor seguro
-           3 insumos agrícolas
-           4 jovenes protagonista
-           5 vaso de atol
-           6 alimentación escolar
-           7 bono de transporte e
-           8 becas escolares
-           9 bolsas escolares
-          10 programa de salud
-          11 programa mi bono seg
-          12 mi bolsa segura
-          13 programa adulto mayo
-          14 otro
-*/
-foreach var of varlist p03c01 p03c02 p03c03a p03c03b p03c04 p03c05 p03c06 p03c07 p03c08a p03c08b p03c09 p03c10 p03c11 p03c12 p03c13a p03c13b p03c14 p03c15 p03c16 dia_enc mes_enc a_enc {
-rename `var' `var'_ 
-}
-reshape wide p03c01_ p03c02_ p03c03a_ p03c03b_ p03c04_ p03c05_ p03c06_ p03c07_ p03c08a_ p03c08b_ p03c09_ p03c10_ p03c11_ p03c12_ p03c13a_ p03c13b_ p03c14_ p03c15_ p03c16_ dia_enc_ mes_enc_ a_enc_, i(region depto area numhog factor pobreza thogar upm) j(id_beneficio) 
+save fuentes_energia_cocina.dta, replace
 
-saveold "$ruta\asistencia_social_reshape.dta"
-*/
-*Modificación Mayra Sáenz (Mayo 16,2016): Se incluye el módulo de equipamiento del hogar
-
-/*
-use "$ruta\equipamientos_del_hogar.dta", clear 
-duplicates	report	numhog
-
-foreach var of varlist p01i01a-a_enc {
-rename `var' `var'_ 
-}
-
-reshape wide p01i01a_ p01i02a_ p01i03a_ p01i04a_ p01i05a_ dia_enc_ mes_enc_ a_enc_, i(region depto area numhog factor pobreza thogar upm) j(id_equipa) 
-
-saveold "$ruta\equipamientos_del_hogar_reshape.dta"
-*/
+************************************
+**** merge de TODOS los módulos ****
+************************************
 
 use "$ruta\2023_Personas.dta", clear
-
 merge m:1 NO_HOGAR using "$ruta\2023_Hogares.dta"
 ta _merge
-
+drop _merge
+merge m:1 NO_HOGAR using "$ruta\fuentes_energia_cocina.dta"
+ta _merge
+drop _merge
 rename *, lower
 
+/****************************************************************************
+  III. Verificar que merge se haya hecho correctamente y no hayan duplicados
+*****************************************************************************/
+duplicates report no_hogar cp
 
+/*
+--------------------------------------
+   Copies | Observations       Surplus
+----------+---------------------------
+        1 |        46017             0
+-------------------------------------- */
+
+/***************************************************************************
+  IV. Guardar la base
+****************************************************************************/
 compress
 saveold "`base_out'", replace
-
