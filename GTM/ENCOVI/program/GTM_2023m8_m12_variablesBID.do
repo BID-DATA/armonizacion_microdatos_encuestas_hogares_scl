@@ -111,15 +111,14 @@ label value sexo_ci sexo_ci
 * parentesco
 gen relacion_ci=1 if ppa05==1
 replace relacion_ci=2 if ppa05==2
-replace relacion_ci=3 if ppa05==3
-replace relacion_ci=4 if ( ppa05==4 | ppa05==5 | ppa05==6 | ppa05==7 | ppa05==8 | ppa05==9 | ppa05==10 )
-replace relacion_ci=5 if ( ppa05==12 | ppa05==13 )
-replace relacion_ci=6 if ppa05==11
+replace relacion_ci=3 if (ppa05==4 | ppa05==3)
+replace relacion_ci=4 if (ppa05==5 | ppa05==6 | ppa05==7 | ppa05==8 | ppa05==9 | ppa05==10  | ppa05==11)
+replace relacion_ci=5 if (ppa05==13 | ppa05==14)
+replace relacion_ci=6 if ppa05==12
 label var relacion_ci "parentesco o relacion con el jefe del hogar"
 label define relacion_ci 1 "jefe(a)" 2 "esposo(a) o compañero(a)" 3 "hijo(a)" 4 "otro pariente" 5 "otro no pariente" 6 "empleada domestica" 
 label value relacion_ci relacion_ci
-
-
+ 
 * ppa03
 * 99 is the top-code, not that age is missing 
 * meses is also available
@@ -194,13 +193,14 @@ label variable nmenor1_ch "numero de niños menores a 1 año dentro del hogar"
 
 *** estado civil para personas de 10 años o mas de ppa03
 gen civil_ci=.  
-replace civil_ci=1 if ppa06==7 /* soltero */
-replace civil_ci=2 if ppa06==1 | ppa06==2 /* union formal o informal */
-replace civil_ci=3 if ppa06==3 | ppa06==4 | ppa06==5 /* separado o divorciado */
-replace civil_ci=4 if ppa06==6 /* viudo */
+replace civil_ci=1 if ppa08==1 /* soltero */
+replace civil_ci=2 if ppa08==2 | ppa08==3 /* union formal o informal */
+replace civil_ci=3 if ppa08==4 | ppa08==5 | ppa08==6 /* separado o divorciado */
+replace civil_ci=4 if ppa08==7 /* viudo */
 label var civil_ci "estado civil"
 label define civil_ci 1 "soltero" 2 "union formal o informal" 3 "divorciado o separado" 4 "viudo"
 label value civil_ci civil_ci
+tab ppa08 civil_ci
 
 *** reported head of household
 gen jefe_ci=0
@@ -213,8 +213,9 @@ capture assert hh==1
 
 
 
-gen miembros_ci=(relacion_ci<6)
+gen byte miembros_ci=(relacion_ci>=1 & relacion_ci<=5)
 label variable miembros_ci "Miembro del hogar"
+tab ppa05 miembros_ci  
 
 
 ***************
