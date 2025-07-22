@@ -821,6 +821,12 @@ label var ynlm_ci "Ingreso no laboral monetario"
 gen ynlnm_ci = .
 label var ynlnm_ci "Ingreso no laboral no monetario"
 
+*************
+***ytot_ci***
+*************
+egen double ytot_ci= rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci), m 
+label var ytot_ci "Ingresos totales a nivel individuo"
+
 ************
 ***ylm_ch***
 ************
