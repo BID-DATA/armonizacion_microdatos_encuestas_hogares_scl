@@ -257,8 +257,7 @@ label value clasehog_ch clasehog_ch
 /*Daniela Zuluaga-Enero 2018: La encuesta solo identifica personas mayores de 15 años, sin embargo hay dos preguntas que permiten identificar el numero total de mujeres (nfemale)
 y el numero total de hombres (nmale) en el hogar. Restandole a estas variables el numero de mujeres mayores de 15 años (nfemales_15) y hombres mayores de 15 años (nmales_15) 
 respectivamente podríamos identificar el numero total de niños en el hogar e incluirlos en la suma de miembros del hogar. Se estaría asumiendo entonces que todos los niños
-hacen parte del hogar. */
-
+hacen parte del hogar. 
 gen ninas=female_total -females_15_years
 gen ninos=males_total -male_15_years
 
@@ -266,7 +265,12 @@ by idh_ch, sort: egen aux=sum(relacion_ci>=1 & relacion_ci<=4)
 egen nmiembros_ch=rowtotal(aux ninos ninas), m
 label variable nmiembros_ch "Numero de familiares en el hogar"
 
-drop ninos ninas aux
+drop ninos ninas aux*/
+
+by idh_ch, sort: egen byte nmiembros_ch=sum(relacion_ci>0 & relacion_ci<=5)
+replace nmiembros_ch=. if relacion_ci ==.
+tab nmiembros_ch, mi
+
 
 *****************
 ***nmayor21_ch***
@@ -302,6 +306,7 @@ label variable nmenor1_ch "Numero de familiares menores a 1 anio"
 ***miembros_ci***
 ****************
 gen miembros_ci=(relacion_ci>=1 & relacion_ci<=5)
+replace miembros_ci=. if relacion_ci==.
 label variable miembros_ci "Miembro del hogar"
 
 			
