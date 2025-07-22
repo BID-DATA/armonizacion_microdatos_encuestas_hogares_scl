@@ -584,8 +584,12 @@ label value tipocontrato_ci tipocontrato_ci
 *****************
 ***nempleos_ci***
 *****************
-gen nempleos_ci=a04a
-replace nempleos_ci=. if pea_ci==0
+gen nempleos_ci=.
+replace nempleos_ci=1 if emp_ci==1 & a04a==1
+replace nempleos_ci= 2 if emp_ci==1 & (a04a>=2 & a04a<=4)
+replace nempleos_ci=. if emp_ci==0
+label var nempleos_ci "Número de empleos" 
+
 
 *****************
 ***spublico_ci***
