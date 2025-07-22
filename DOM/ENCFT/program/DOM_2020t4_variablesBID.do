@@ -565,10 +565,9 @@ label variable categosec_ci "Categoria ocupacional trabajo secundario"
 *****************
 ***nempleos_ci***
 *****************
-
 gen nempleos_ci=.
 replace nempleos_ci=1 if emp_ci==1 & cuantos_trabajos_tiene==1
-replace nempleos_ci=cuantos_trabajos_tiene_cant if emp_ci==1 & cuantos_trabajos_tiene==2
+replace nempleos_ci= 2 if emp_ci==1 & (cuantos_trabajos_tiene>=2 & cuantos_trabajos_tiene<=4)
 replace nempleos_ci=. if emp_ci==0
 label var nempleos_ci "Número de empleos" 
 
