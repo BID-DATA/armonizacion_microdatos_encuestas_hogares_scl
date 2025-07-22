@@ -142,7 +142,7 @@ label variable idh_ch "ID del hogar"
 ************ 
 format %14.0g upa
 sort trimestre upa v1008 v1014 v2003 // A chave de pessoas é composta pelas variáveis: UPA + V1008 + V1014 + V2003 (PNAD CONTÍNUA – CHAVES)
-gen idp_ci = v2003
+egen idp_ci = group(idh_ch v2003)
 label variable idp_ci "ID de la persona en el hogar"
 
 ***************
