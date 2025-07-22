@@ -148,9 +148,9 @@ label values relacion_ci relacion
 ************************************
 * DUMMY PARA NO MIEMBROS DEL HOGAR *
 ************************************
-gen miembros_ci=(relacion_ci>=1 & relacion_ci<=5)
-replace miembros_ci=1 if (relacion_ci>=1 & relacion_ci<=4)
-label variable miembros_ci "Variable dummy que indica las personas que son miembros del Hogar"
+gen byte miembros_ci=(relacion_ci>=1 & relacion_ci<=5) 
+replace miembros_ci=. if relacion_ci==.
+tab miembros_ci
 
 ********************************************
 *  MIEMBROS EN EL HOGAR MENORES DE 5 AÑOS *
@@ -199,6 +199,7 @@ label values civil_ci civil
 *******************
 gen jefe_ci=0
 replace jefe_ci=1 if relacion_ci==1
+replace jefe_ci=. if relacion_ci==.
 label var jefe_ci "Jefe de hogar"
 label define jefe 1"Jefe de Hogar" 0"Otro" 
 label values jefe_ci jefe
@@ -207,30 +208,40 @@ label values jefe_ci jefe
 *  NUMERO DE CONYUGES EN EL HOGAR  *
 ************************************
 egen nconyuges_ch=sum(relacion_ci==2), by (idh_ch)
+replace nconyuges_ch=. if relacion_ci==.
+
 label var nconyuges_ch "Número de Conyuges en el hogar"
 
 ************************************
 *  NUMERO DE HIJOS EN EL HOGAR  *
 ************************************
 egen nhijos_ch=sum(relacion_ci==3), by (idh_ch)
+replace nhijos_ch=. if relacion_ci==.
+
 label var nhijos_ch "Número de hijos en el hogar"
 
 *******************************************
 *  NUMERO DE OTROS PARIENTES EN EL HOGAR  *
 *******************************************
 egen notropari_ch=sum(relacion_ci==4), by (idh_ch)
+replace notropari_ch=. if relacion_ci==.
+
 label var notropari_ch "Número de otros parientes en el hogar"
 
 *******************************************
 *  NUMERO DE OTROS NO PARIENTES EN EL HOGAR  *
 *******************************************
 egen notronopari_ch=sum(relacion_ci==5), by (idh_ch)
+replace notronopari_ch=. if relacion_ci==.
+
 label var notronopari_ch "Número de otros parientes en el hogar"
 
 *************************************
 *  NUMERO DE EMPLEADOS EN EL HOGAR  *
 *************************************
 egen nempdom_ch=sum(relacion_ci==6), by (idh_ch)
+replace  nempdom_ch=. if relacion_ci==.
+
 label var nempdom_ch "Número de empleados en el hogar"
 
 *********************
@@ -253,25 +264,31 @@ label values clasehog_ch clasehog
 *************************************
 *  NUMERO DE MIEMBROS EN EL HOGAR  *
 *************************************
-egen nmiembros_ch=sum(relacion_ci>0 & relacion_ci<5), by (idh_ch)
-label variable nmiembros_ch "Numero de miembros en el Hogar"
+by idh_ch, sort: egen byte nmiembros_ch=sum(relacion_ci>0 & relacion_ci<=5)
+replace nmiembros_ch=. if relacion_ci ==.
 
 ********************************************
 *  MIEMBROS EN EL HOGAR MAYORES DE 21 AÑOS *
 ********************************************
 egen nmayor21_ch=sum((relacion_ci>0 & relacion_ci<5) & (age>=21)), by (idh_ch)
+replace nmayor21_ch=. if relacion_ci ==.
+
 label variable nmayor21_ch "Numero de personas de 21 años o mas dentro del Hogar"
 
 ********************************************
 *  MIEMBROS EN EL HOGAR MENORES DE 21 AÑOS *
 ********************************************
 egen nmenor21_ch=sum((relacion_ci>0 & relacion_ci<5) & (age<21)), by (idh_ch)
+replace nmenor21_ch=. if relacion_ci ==.
+
 label variable nmenor21_ch "Numero de personas menores a 21 años dentro del Hogar"
 
 ********************************************
 *  MIEMBROS EN EL HOGAR MAYORES DE 65 AÑOS *
 ********************************************
 egen nmayor65_ch=sum((relacion_ci>0 & relacion_ci<5) & (age>=65)), by (idh_ch)
+replace nmayor65_ch=. if relacion_ci ==.
+
 label variable nmayor65_ch "Numero de personas de 65 años o mas dentro del Hogar"
 
 ********************************************
@@ -279,6 +296,8 @@ label variable nmayor65_ch "Numero de personas de 65 años o mas dentro del Hoga
 ********************************************
 * No hay menores de 7 años en la encuesta
 egen nmenor6_ch=sum((relacion_ci>0 & relacion_ci<5) & (age<6)), by (idh_ch)
+replace nmenor6_ch=. if relacion_ci ==.
+
 label variable nmenor6_ch "Miembros menores a 6 años dentro del Hogar"
 
 
@@ -287,6 +306,8 @@ label variable nmenor6_ch "Miembros menores a 6 años dentro del Hogar"
 ******************************************
 * No hay menores de 7 años en la encuesta
 egen nmenor1_ch=sum((relacion_ci>0 & relacion_ci<5) & (age<1)),  by (idh_ch)
+replace nmenor1_ch=. if relacion_ci ==.
+
 label variable nmenor1_ch "Miembros menores a 1 año dentro del Hogar"
 
 
