@@ -151,7 +151,8 @@ label value region_BID_c region_BID_c
 *********************
 ***mes(trimmestre)***
 *********************
-g mes_c=trimestre  //dejo el mismo nombre para no modificar dofile de Labels
+g byte mes_c=.
+g byte trimestre_c= trimestre  //dejo el mismo nombre para no modificar dofile de Labels
 label variable mes_c "trimestre de la encuesta"
 
 *****************
