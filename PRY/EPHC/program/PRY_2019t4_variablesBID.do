@@ -661,14 +661,16 @@ label define tipocontrato_ci 1 "Permanente/indefinido" 2 "Temporal" 3 "Sin contr
 label value tipocontrato_ci tipocontrato_ci
 
 
+
 *****************
 ***nempleos_ci***
 *****************
+gen nempleos_ci=.
+replace nempleos_ci=1 if emp_ci==1 & b31==6
+replace nempleos_ci= 2 if emp_ci==1 & (b31==1)
+replace nempleos_ci=. if emp_ci==0
+label var nempleos_ci "Número de empleos"
 
-gen nempleos_ci=0
-replace nempleos_ci=1 if b31==6 
-replace nempleos_ci=2 if b31==1
-replace nempleos_ci=. if pea_ci==0
 
 *****************
 ***spublico_ci***
