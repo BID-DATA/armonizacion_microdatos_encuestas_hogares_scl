@@ -341,7 +341,6 @@ label variable horaspri_ci "Horas semanales trabajadas en la actividad principal
 ****************
 * horastot_ci  * 
 ****************
-**# Bookmark #1
 gen horastot_ci = horaspri_ci /*No existen horas totales solo act princ */
 label var horastot_ci "Horas totales trabajadas en todas las actividades"
 
