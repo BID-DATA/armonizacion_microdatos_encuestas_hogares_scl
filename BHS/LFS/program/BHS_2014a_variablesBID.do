@@ -200,36 +200,42 @@ label value civil_ci civil_ci
 ***jefe_ci***
 *************
 gen jefe_ci=(relacion_ci==1)
+replace jefe_ci =. if relacion_ci==.
 label variable jefe_ci "Jefe de hogar"
 
 ******************
 ***nconyuges_ch***
 ******************
 by idh_ch, sort: egen nconyuges_ch=sum(relacion_ci==2)
+replace nconyuges_ch =. if relacion_ci==.
 label variable nconyuges_ch "Numero de conyuges"
 
 ***************
 ***nhijos_ch***
 ***************
 by idh_ch, sort: egen nhijos_ch=sum(relacion_ci==3)
+replace nhijos_ch =. if relacion_ci==.
 label variable nhijos_ch "Numero de hijos"
 
 ******************
 ***notropari_ch***
 ******************
 by idh_ch, sort: egen notropari_ch=sum(relacion_ci==4)
+replace notropari_ch =. if relacion_ci==.
 label variable notropari_ch "Numero de otros familiares"
 
 ********************
 ***notronopari_ch***
 ********************
 by idh_ch, sort: egen notronopari_ch=sum(relacion_ci==5)
+replace notronopari_ch=. if relacion_ci==.
 label variable notronopari_ch "Numero de no familiares"
 
 ****************
 ***nempdom_ch***
 ****************
 by idh_ch, sort: egen nempdom_ch=sum(relacion_ci==6)
+replace nempdom_ch =. if relacion_ci==.
 label variable nempdom_ch "Numero de empleados domesticos"
 
 *****************
@@ -276,30 +282,35 @@ tab nmiembros_ch, mi
 ***nmayor21_ch***
 *****************
 by idh_ch, sort: egen byte nmayor21_ch=sum((relacion_ci>0 & relacion_ci<=5) & (edad_ci>=21 & edad_ci<=98))
+replace nmayor21_ch =. if relacion_ci==.
 label variable nmayor21_ch "Numero de familiares mayores a 21 anios"
 
 *****************
 ***nmenor21_ch***
 *****************
 by idh_ch, sort: egen byte nmenor21_ch=sum((relacion_ci>0 & relacion_ci<=5) & (edad_ci<21))
+replace nmenor21_ch =. if relacion_ci==.
 label variable nmenor21_ch "Numero de familiares menores a 21 anios"
 
 *****************
 ***nmayor65_ch***
 *****************
 by idh_ch, sort: egen byte nmayor65_ch=sum((relacion_ci>0 & relacion_ci<=5) & (edad_ci>=65 & edad_ci!=.))
+replace nmayor65_ch =. if relacion_ci==.
 label variable nmayor65_ch "Numero de familiares mayores a 65 anios"
 
 ****************
 ***nmenor6_ch***
 ****************
 by idh_ch, sort: egen byte nmenor6_ch=sum((relacion_ci>0 & relacion_ci<=5) & (edad_ci<6))
+replace nmenor6_ch =. if relacion_ci==.
 label variable nmenor6_ch "Numero de familiares menores a 6 anios"
 
 ****************
 ***nmenor1_ch***
 ****************
 by idh_ch, sort: egen byte nmenor1_ch=sum((relacion_ci>0 & relacion_ci<=5) & (edad_ci<1))
+replace nmenor1_ch =. if relacion_ci==.
 label variable nmenor1_ch "Numero de familiares menores a 1 anio"
 
 ****************
