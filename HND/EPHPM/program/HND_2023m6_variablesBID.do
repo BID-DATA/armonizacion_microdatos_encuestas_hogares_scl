@@ -434,7 +434,9 @@ gen pea_ci=(emp_ci==1 | desemp_ci==1)
 	*************
 	*nempleos_ci*
 	*************
-	generat nempleos_ci=ca519
+	gen nempleos_ci= .
+	replace nempleos_ci = 1 if ca519==1 & emp_ci ==1
+	replace nempleos_ci = 2 if ca519>1 & emp_ci ==1 & ca519 != . 
 	replace nempleos_ci=. if emp_ci==0
 
 	***************
