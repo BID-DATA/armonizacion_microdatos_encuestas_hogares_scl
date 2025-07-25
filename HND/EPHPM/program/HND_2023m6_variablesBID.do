@@ -769,6 +769,11 @@ gen pea_ci=(emp_ci==1 | desemp_ci==1)
 	**************
 	egen ynlnm_ci=rsum(ayufes ayufesd ayupes ayupesd alimes bolspra meresc remesp remespd otrosproesp otrosesp), missing
 	label var ynlnm_ci "Ingreso No Laboral No Monetario" 
+	
+	**************
+	***ytot_ci***
+	**************	
+	egen ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci), m
 
 	**************
 	*** ylm_ch ***
