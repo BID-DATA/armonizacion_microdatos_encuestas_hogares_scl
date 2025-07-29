@@ -877,6 +877,38 @@ replace ynlm_ci= 0 if ithn == 0
 replace ynlm_ci= . if ithn == .
 label var ynlm_ci "Ingreso no laboral monetario (otras fuentes)"
 
+*****************
+*ynlm_publico_ci*
+*****************
+egen ynlm_publico_ci=rsum(trnc timas ts), missing
+replace ynlm_publico_ci= . if ithn == 99999999 
+replace ynlm_publico_ci= 0 if ithn == 0
+replace ynlm_publico_ci= . if ithn == .
+label var ynlm_publico_ci "Ingreso no laboral monetario publico (otras fuentes)"
+
+*****************
+*ynlm_publico_ch*
+*****************
+* Ingreso no laboral monetario publico del Hogar
+by idh_ch, sort: egen ynlm_publico_ch=sum(ynlm_publico_ci) if miembros_ci==1, missing
+label var ynlm_publico_ch "Ingreso no laboral monetario publico del Hogar"
+
+*****************
+*ynlm_privado_ci*
+*****************
+egen ynlm_privado_ci=rsum(ia ii id ib tbc tpa tpn tpe tapa tapn tape taprnc te tdp ot), missing
+replace ynlm_privado_ci= . if ithn == 99999999 
+replace ynlm_privado_ci= 0 if ithn == 0
+replace ynlm_privado_ci= . if ithn == .
+label var ynlm_privado_ci "Ingreso no laboral monetario privado (otras fuentes)"
+
+*****************
+*ynlm_privado_ch*
+*****************
+* Ingreso no laboral monetario publico del Hogar
+by idh_ch, sort: egen ynlm_privado_ch=sum(ynlm_privado_ci) if miembros_ci==1, missing
+label var ynlm_privado_ch "Ingreso no laboral monetario privado del Hogar"
+
 ************
 * ynlnm_ci *
 ************
@@ -887,7 +919,12 @@ replace ynlnm_ci= . if ithn == 99999999
 replace ynlnm_ci= 0 if ithn == 0
 replace ynlnm_ci= . if ithn == .
 label var ynlnm_ci "Ingreso no laboral no monetario"
-egen ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci)
+
+*********
+*ytot_ci*
+*********
+*Ingreso total del individuo 
+egen double ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci), mi
 
 
 **********
@@ -1000,6 +1037,12 @@ label var ypen_ci "Valor de la pension contributiva"
 gen ypensub_ci= h9e1 if h9e2==1
 label var ypensub_ci "Valor de la pension subsidiada / no contributiva"
 
+*********
+*ytot_ch*
+*********
+*nueva variable: ingresos totales del hogar
+egen double ytot_ch= rowtotal(ylm_ch ylnm_ch ynlm_ch ynlnm_ch), mi 
+ 
 
 	*****************
 	* VI. educación *
@@ -1620,6 +1663,12 @@ label var miglac_ci "Migrante proveniente de LAC"
 	* PTMC: Avancemos (a partir de 2019 se añadió "Crecemos")
 	* PNC:  Pensionado del régimen no contributivomonto básico
 
+*Número total de personas en el hogar
+*nueva variable
+*(se consideran todos los individuos de la base de datos sean miembros o no del hogar) 
+ 
+bys idh_ch: gen nmiembros_sph_ch=_N 
+	
 * Ingreso del hogar
 egen ingreso_total = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci), missing
 bys idh_ch: egen yhog = sum(ingreso_total)
@@ -1653,6 +1702,17 @@ lab val ptmc_ch ptmc_ch
 
 lab def pnc_ci 1 "Beneficiario PNC" 0 "No beneficiario PNC"
 lab val pnc_ci pnc_ci
+
+*Beneficiario PNC hogar
+bys idh_ch: egen pensionsub_ch = max(pensionsub_ci) 
+
+*Ingreso del hogar neto mensualizado de transferencias publicas per cápita 
+gen double yneto_pc_ch = (ytot_ch - ynlm_publico_ch) / nmiembros_sph_ch
+
+*Persona en el hogar beneficiaria de alguna transferencia publica monetaria
+gen bene_cash_ci = (a9a==1 | a9a==2 | h9e==1 | h9f==1)
+bys idh_ch: egen bene_cash_ch=max(bene_cash_ci)
+
 
 	**************************
 	* IX. referencia externa *
