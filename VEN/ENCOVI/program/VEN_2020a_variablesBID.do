@@ -169,6 +169,7 @@ label value relacion_ci relacion_ci
 ***sexo***
 **********
 gen sexo_ci=s6q3
+replace sexo_ci=. if s6q3  ==.a
 label var sexo_ci "Sexo del Individuo"
 label define sexo_ci 1 "Masculino" 2 "Femenino"
 label value sexo_ci sexo_ci
