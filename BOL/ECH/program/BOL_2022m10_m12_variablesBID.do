@@ -1507,7 +1507,7 @@ label var ynlm_ci "Ingreso no laboral monetario"
 egen ynlnm_ci=rsum(yalimento yotro_bono2), missing
 replace ynlnm_ci=. if yalimento==. & yotro_bono2==.
 label var ynlnm_ci "Ingreso no laboral no monetario" 
-egen ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci)
+egen ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci),mi
 
 
 
