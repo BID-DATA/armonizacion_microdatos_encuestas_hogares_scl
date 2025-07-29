@@ -130,8 +130,10 @@ gen idh_ch=no_hogar
 label var idh_ch "identificador unico del hogar"
 
 * identificador de la persona
-egen idp_ci=group(no_hogar) 
+egen idp_ci=concat(no_hogar cp) 
 label var idp_ci "identificador individual dentro del hogar"
+duplicates report no_hogar cp
+
 
 sort idh_ch idp_ci
 
@@ -265,6 +267,29 @@ label variable afroind_ci "Identificación étnica del individuo"
 label define afroind_ci 1 "Indígena" 2 "Afrodescendiete" 3 "Otros" 9 "No se le pregunta"
 label value afroind_ci afroind_ci
 
+
+***************
+***afro_ci***
+***************
+
+*2021 ppa06 (1 xinca; 2 garifuna; 3 ladino; 4 extranjero; 5 maya) 
+   /* 2022 1 Xinka 1
+           2 Garífuna 1 
+           3 Ladino 
+           4 Afrodescendiente/Creole/Afro mestizo
+           5 Extranjero
+           6 Maya 1 */
+		   
+gen afro_ci=. 
+replace afro_ci=0  if p04a07 == 1 | p04a07 ==2 | p04a07 ==3
+replace afro_ci=1  if p04a07 == 4
+replace afro_ci=0 if p04a07 == 5 | p04a07 == 6
+replace afro_ci=. if p04a07 ==.
+
+label variable afro_ci "Identificación étnica del individuo"
+label define afro_ci  1 "Afrodescendiete" 0 "Otros" 
+label value afro_ci afro_ci
+
 ***************
 ***afroind_ch***
 ***************
@@ -273,7 +298,69 @@ label value afroind_ci afroind_ci
 gen afroind_jefe= afroind_ci if relacion_ci==1 
 egen afroind_ch  = min(afroind_jefe), by(idh_ch) 
 drop afroind_jefe
+
+***************
+***afro_ch***
+***************
+	
+* Identificación étnica del hogar según indentificación del jefe de hogar. 
+gen afro_jefe= afro_ci if relacion_ci==1 
+egen afro_ch  = min(afro_jefe), by(idh_ch) 
+drop afro_jefe
+
 * br hogar_num id idh_ch relacion_ci afroind_ci afroind_jefe afroind_ch 
+
+
+***************
+***ind_ci***
+***************
+
+*2021 ppa06 (1 xinca; 2 garifuna; 3 ladino; 4 extranjero; 5 maya) 
+   /* 2022 1 Xinka 1
+           2 Garífuna 1 
+           3 Ladino 
+           4 Afrodescendiente/Creole/Afro mestizo
+           5 Extranjero
+           6 Maya 1 */
+		   
+gen ind_ci=. 
+replace ind_ci=1  if p04a07 == 1 | p04a07 ==2 | p04a07 ==3
+replace ind_ci=0  if p04a07 == 4
+replace ind_ci=0 if p04a07 == 5 | p04a07 == 6
+replace ind_ci=. if p04a07 ==.
+
+label variable ind_ci "Identificación étnica del individuo"
+label define ind_ci  1 "Indígena" 0 "Otros" 
+label value afro_ci afro_ci
+
+
+***************
+***ind_ch***
+***************
+	
+* Identificación étnica del hogar según indentificación del jefe de hogar. 
+gen ind_jefe= ind_ci if relacion_ci==1 
+egen ind_ch  = min(ind_jefe), by(idh_ch) 
+drop ind_jefe
+
+
+*****************
+***noafroind_ci**
+*****************
+
+		gen byte noafroind_ci = . 
+		replace noafroind_ci = 1 if afro_ci==0 & ind_ci==0
+		replace noafroind_ci = 0 if afro_ci==1 | ind_ci==1
+
+***************
+***noafroind_ch***
+***************
+		gen noafroind_jefe = noafroind_ci if relacion_ci == 1
+		egen noafroind_ch = min(noafroind_jefe), by(idh_ch) 
+		drop noafroind_jefe
+
+
+
 
 *******************
 ***afroind_ano_c***
@@ -286,9 +373,20 @@ gen afroind_ano_c=2014
 ***dis_ci***
 *******************
 
-* Identifica si el individuo reporta por lo menos alguna dificultad en una
-* o más de las preguntas del Washington Group Questionnaire
-gen dis_ci=. 
+gen dis_ci=0
+replace dis_ci=1 if ppa07a > 1 | ppa07b > 1 | ppa07c > 1 | ppa07d > 1 | ppa07e > 1 | ppa07f > 1 
+replace dis_ci= . if ppa07a >= 9 | ppa07b >= 9 | ppa07c >= 9 | ppa07d >= 9 | ppa07e >= 9 | ppa07f >= 9
+replace dis_ci= . if ppa07a == . | ppa07b == . | ppa07c == . | ppa07d == . | ppa07e == . | ppa07f == .
+
+*******************
+***disWG_ci***
+*******************
+
+gen disWG_ci=0
+replace disWG_ci=1 if ppa07a > 2 | ppa07b > 2 | ppa07c > 2 | ppa07d > 2 | ppa07e > 2 | ppa07f > 2 
+replace disWG_ci= . if ppa07a >= 9 | ppa07b >= 9 | ppa07c >= 9 | ppa07d >= 9 | ppa07e >= 9 | ppa07f >= 9
+replace disWG_ci= . if ppa07a == . | ppa07b == . | ppa07c == . | ppa07d == . | ppa07e == . | ppa07f == .
+
 	
 *******************
 ***dis_ch***
@@ -1154,13 +1252,9 @@ egen ylm_ci= rsum(ylmpri_ci ylmsec_ci), missing
 replace ylm_ci=. if ylmpri_ci==. & ylmsec_ci==.
 label var ylm_ci "Ingreso laboral monetario total"
 
-*************
-***ylnm_ci***
-*************
 
-egen ylnm_ci=rsum(ylnmpri_ci ylnmsec_ci), missing
-replace ylnm_ci=. if ylnmpri_ci==. &  ylnmsec_ci==.
-label var ylnm_ci "Ingreso laboral NO monetario total"  
+
+
 
 *************
 ***ynlm_ci **
@@ -1204,12 +1298,60 @@ g `var'tdp3=`var'/12
 egen ynlm_ci=rsum(*tdp3*), missing
 label var ynlm_ci "Ingreso no laboral monetario" 
 
+
+*************
+*** ynlm_privado_ci **
+*************
+
+foreach var of varlist p11a01b p11a02b p11a03b p11a04b rem{
+g `var'tdp3_priv=`var'/3
+}
+
+foreach var of varlist p11b01b p11b02b p11b03b p11b04b p11b05b p11b06b p11b07b p11b08b {
+g `var'tdp3_priv =`var'/12
+}
+
+
+egen ynlm_privado_ci = rsum(*tdp3_priv*), missing
+label var ynlm_privado_ci "Ingreso no laboral monetario privado" 
+
+
+*************
+*** ynlm_publico_ci **
+*************
+
+foreach var of varlist p11a05b p11a06b {
+g `var'tdp3_publ =`var'/3
+}
+
+egen ynlm_publico_ci = rsum(*tdp3_publ*), missing
+label var ynlm_publico_ci  "Ingreso no laboral monetario privado" 
+
+
+
+*************
+*** ynlm_privado_ch **
+*************
+egen ynlm_privado_ch = total(ynlm_privado_ci), by(idh_ch)
+
+
+*************
+*** ynlm_publico_ch **
+*************
+egen ynlm_publico_ch = total(ynlm_publico_ci), by(idh_ch)
+
+
 **************
 ***ynlnm_ci***
 **************
 gen ynlnm_ci=.
 label var ynlnm_ci "Ingreso no laboral no monetario" 
-                                                                                                                      
+
+***************
+***ylnm_ci***
+***************
+egen ylnm_ci=rowtotal(ylnmpri_ci ylnmsec_ci ylnmotros_ci), mi
+
 ************************
 *** HOUSEHOLD INCOME ***
 ************************
@@ -1310,8 +1452,25 @@ label var ylmho_ci "Salario monetario de todas las actividades"
 	
 
 
+
+***************
+***ytot_ci ***
+***************
 	
-	          
+egen double ytot_ci= rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci), mi 	
+	
+	
+***************
+***ytot_ch ***
+***************	
+egen double ytot_ch= rowtotal(ylm_ch ylnm_ch ynlm_ch ynlnm_ch), mi 	
+	
+	
+***************
+*** yneto_pc_ch ***
+***************		
+gen double yneto_pc_ch = .
+* ylm_publico_ch no se identifica
 
          ******************************
          *** VARIABLES DE EDUCACIÓN  **
@@ -1592,6 +1751,31 @@ la var edupub_ci "Personas que asisten a centros de ensenanza publicos"
 	gen miglac_ci=.
 	label var miglac_ci "=1 si es migrante proveniente de un pais LAC"
 
+	
+	
+
+**************************************
+*** VARIABLES DE PROTECCION SOCIAL ***
+**************************************
+
+* MIEMBROS DEL HOGAR
+	gen x = 1
+	bys idh_ch: egen nmiembros_sph_ch= sum(x)
+	
+**********************
+	*** bene_cash_ch ***
+**********************	
+gen bene_cash_ch = .
+*No hay forma de distinguir si las transferencias son públicas 	p10b11g p11a03a
+
+
+**********************
+*** pensionsub_ch ***
+**********************	
+bys idh_ch: egen pensionsub_ch = max(pensionsub_ci)  
+
+
+
 
 /*_____________________________________________________________________________________________________*/
 * verificación de que se encuentren todas las variables del sociometro y las nuevas de mercado laboral
@@ -1601,8 +1785,7 @@ la var edupub_ci "Personas que asisten a centros de ensenanza publicos"
 
 do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&ExternalVars_Harmonized_DataBank.do"
 
-
-cap order region_BID_c region_c pais_c anio_c mes_c zona_c factor_ch idh_ch	idp_ci factor_ci factor_ch /// Identificación
+ order region_BID_c region_c pais_c anio_c mes_c zona_c factor_ch idh_ch	idp_ci factor_ci factor_ch /// Identificación
 	  sexo_ci edad_ci relacion_ci civil_ci jefe_ci nconyuges_ch nhijos_ch notropari_ch notronopari_ch nempdom_ch /// Demográficas
 	  clasehog_ch nmiembros_ch miembros_ci nmayor21_ch nmenor21_ch nmayor65_ch nmenor6_ch nmenor1_ch /// Demográficas
 	  afroind_ci afroind_ch afroind_ano_c dis_ci dis_ch /// Género y diversidad 
@@ -1610,8 +1793,9 @@ cap order region_BID_c region_c pais_c anio_c mes_c zona_c factor_ch idh_ch	idp_
           condocup_ci categoinac_ci emp_ci cesante_ci desemp_ci subemp_ci durades_ci pea_ci nempleos_ci antiguedad_ci desalent_ci  /// Empleo
 	  horaspri_ci horastot_ci tiempoparc_ci categopri_ci categosec_ci rama_ci spublico_ci tamemp_ci cotizando_ci instcot_ci	afiliado_ci /// Empleo
 	  formal_ci tipocontrato_ci ocupa_ci pension_ci	pensionsub_ci tipopen_ci instpen_ci	ylmpri_ci /// Empleo
-	  ylmpri_ci ylnmpri_ci ylmsec_ci ylnmsec_ci ylmotros_ci	ylnmotros_ci  ylm_ci ylnm_ci ynlm_ci ynlnm_ci nrylmpri_ci ytot_ci /// Ingresos individuo
-	  ylm_ch ylnm_ch ylmnr_ch ynlm_ch ynlnm_ch ylmhopri_ci ylmho_ci /// Ingresos del hogar
+	  ylmpri_ci ylnmpri_ci ylmsec_ci ylnmsec_ci ylmotros_ci	ylnmotros_ci ylm_ci ylnm_ci ynlm_ci ynlnm_ci ytot_ci ynlm_publico_ci ynlm_privado_ci  /// Ingresos individuo
+	  ylm_ch ylnm_ch ylmnr_ch ynlm_ch ynlnm_ch ynlm_publico_ch ynlm_privado_ch  ytot_ch /// Ingresos del hogar
+	  ylmhopri_ci ylmho_ci /// ingreso por hora
 	  nrylmpri_ci nrylmpri_ch /// No respuesta de ingresos 
 	  remesas_ci remesas_ch ypen_ci ypensub_ci /// Remesas y pensiones
           aedu_ci eduui_ci eduuc_ci edupre_ci eduac_ci asiste_ci edupub_ci pqnoasis1_ci asispre_ci /// Educación 
@@ -1619,12 +1803,12 @@ cap order region_BID_c region_c pais_c anio_c mes_c zona_c factor_ch idh_ch	idp_
 	  freez_ch auto_ch compu_ch internet_ch cel_ch vivi1_ch vivi2_ch viviprop_ch vivitit_ch vivialq_ch vivialqimp_ch /// Vivienda
 	  aguared_ch aguafconsumo_ch aguafuente_ch aguadist_ch aguadisp1_ch aguadisp2_ch /// Agua y saneamineto
 	  aguatrat_ch aguamala_ch aguamejorada_ch aguamide_ch bano_ch banoex_ch banomejorado_ch sinbano_ch  /// Agua y saneamineto
-	  migrante_ci migrantiguo5_ci miglac_ci /// Migración
-	  nmiembros_sph_ch  y_hog_ci y_hog_ch y_pc_net_ch ptmc_ci ptmc_ch ing_ptmc_ci /// Protección social
-	  ing_ptmc_ch pnc_elegible_ci  pnc_ci pnc_ch ing_pnc_ci ing_pnc_ch potrot_ci  /// Protección social 
-	  potrot_ch ing_otrot_ci  ing_otrot_ch pcasht_ch  /// Protección social
- 	  salmm_ci lp19_2011 lp31_2011 lp5_2011 lp_ci lpe_ci lp365_2017 lp685_2017 lp14_2017 lp81_2017  tc_c ratio_cpi2011 ratio_cpi2017 cpi_c cpi2011 cpi2017 ppp_c ppp_2011 ppp_2017, first /// Fuente externa
- 
+	  migrante_ci migrantiguo5_ci miglac_ci /// Migración  
+	  nmiembros_sph_ch yneto_pc_ch bene_cash_ch pensionsub_ch   /// Protección social 
+          ynlm_publico_ch ynlm_privado_ch ynlm_privado_ci ynlm_publico_ci  /// Protección social ingresos
+ 	  salmm_ci lp19_2011 lp31_2011 lp5_2011 lp_ci lpe_ci lp365_2017 lp685_2017 lp14_2017 lp81_2017 tc_c ratio_cpi2011 ratio_cpi2017 cpi_c cpi2011 cpi2017 ppp_c ppp_2011 ppp_2017, first /// Fuente externa
+
+
 
 
 
