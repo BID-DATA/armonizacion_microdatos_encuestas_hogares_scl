@@ -475,8 +475,9 @@ gen pea_ci = (emp_ci == 1 | desemp_ci == 1)
 *****************
 ***nempleos_ci***
 *****************
-gen nempleos_ci = 4009
-replace nempleos_ci = . if v4009 == .
+gen nempleos_ci=1 if v4009==1
+replace nempleos_ci=2 if v4009==2 | v4009==3
+replace nempleos_ci=. if v4009==.
 label var nempleos_ci "Número de empleos"
 
 *******************
