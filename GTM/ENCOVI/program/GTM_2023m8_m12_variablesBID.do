@@ -1253,6 +1253,7 @@ label var ylm_ci "Ingreso laboral monetario total"
 
 
 
+
 *************
 ***ynlm_ci **
 *************
@@ -1343,7 +1344,12 @@ egen ynlm_publico_ch = total(ynlm_publico_ci), by(idh_ch)
 **************
 gen ynlnm_ci=.
 label var ynlnm_ci "Ingreso no laboral no monetario" 
-                                                                                                                      
+
+***************
+***ylnm_ci***
+***************
+egen ylnm_ci=rowtotal(ylnmpri_ci ylnmsec_ci ylnmotros_ci), mi
+
 ************************
 *** HOUSEHOLD INCOME ***
 ************************
@@ -1442,6 +1448,7 @@ label var ylmhopri_ci "Salario monetario de la actividad principal"
 gen ylmho_ci=ylm_ci/(horastot_ci*4.3)
 label var ylmho_ci "Salario monetario de todas las actividades" 
 	
+
 
 
 ***************
