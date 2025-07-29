@@ -111,15 +111,14 @@ label value sexo_ci sexo_ci
 * parentesco
 gen relacion_ci=1 if ppa05==1
 replace relacion_ci=2 if ppa05==2
-replace relacion_ci=3 if ppa05==3
-replace relacion_ci=4 if ( ppa05==4 | ppa05==5 | ppa05==6 | ppa05==7 | ppa05==8 | ppa05==9 | ppa05==10 )
-replace relacion_ci=5 if ( ppa05==12 | ppa05==13 )
-replace relacion_ci=6 if ppa05==11
+replace relacion_ci=3 if (ppa05==4 | ppa05==3)
+replace relacion_ci=4 if (ppa05==5 | ppa05==6 | ppa05==7 | ppa05==8 | ppa05==9 | ppa05==10  | ppa05==11)
+replace relacion_ci=5 if (ppa05==13 | ppa05==14)
+replace relacion_ci=6 if ppa05==12
 label var relacion_ci "parentesco o relacion con el jefe del hogar"
 label define relacion_ci 1 "jefe(a)" 2 "esposo(a) o compañero(a)" 3 "hijo(a)" 4 "otro pariente" 5 "otro no pariente" 6 "empleada domestica" 
 label value relacion_ci relacion_ci
-
-
+ 
 * ppa03
 * 99 is the top-code, not that age is missing 
 * meses is also available
@@ -194,13 +193,14 @@ label variable nmenor1_ch "numero de niños menores a 1 año dentro del hogar"
 
 *** estado civil para personas de 10 años o mas de ppa03
 gen civil_ci=.  
-replace civil_ci=1 if ppa06==7 /* soltero */
-replace civil_ci=2 if ppa06==1 | ppa06==2 /* union formal o informal */
-replace civil_ci=3 if ppa06==3 | ppa06==4 | ppa06==5 /* separado o divorciado */
-replace civil_ci=4 if ppa06==6 /* viudo */
+replace civil_ci=1 if ppa08==1 /* soltero */
+replace civil_ci=2 if ppa08==2 | ppa08==3 /* union formal o informal */
+replace civil_ci=3 if ppa08==4 | ppa08==5 | ppa08==6 /* separado o divorciado */
+replace civil_ci=4 if ppa08==7 /* viudo */
 label var civil_ci "estado civil"
 label define civil_ci 1 "soltero" 2 "union formal o informal" 3 "divorciado o separado" 4 "viudo"
 label value civil_ci civil_ci
+tab ppa08 civil_ci
 
 *** reported head of household
 gen jefe_ci=0
@@ -213,8 +213,9 @@ capture assert hh==1
 
 
 
-gen miembros_ci=(relacion_ci<6)
+gen byte miembros_ci=(relacion_ci>=1 & relacion_ci<=5)
 label variable miembros_ci "Miembro del hogar"
+tab ppa05 miembros_ci  
 
 
 ***************
@@ -404,8 +405,35 @@ gen luzmide_ch=.
 replace luzmide_ch=1 if p01a05f==1
 replace luzmide_ch=0 if p01a05f==2
 
+****************
+** combust_ch **
+****************
 
-gen combust_ch=.
+*/En el 2022 se utilizaba la variable  p02b05 ¿Qué fuente de energía utiliza principal-mente este hogar para cocinar? Electricidad 1 Gas Propano 2 Gas corriente o kerosene  3 Leña 4 Carbón  5 No cocina 6 */
+* donde combust_ch = 1 si la respuesta es 1, 2 o 3 
+*En el 2023, se  utilizó la pregunta más próxima P01E02: El mes pasado, qué fuente de energía utilizó en su hogar para Cocinar todos sus alimentos? 
+/*
+P01E021 "fuente de energía usada para Cocinar el mes pasado - Aserrín o basura"
+P01E022 "fuente de energía usada para Cocinar el mes pasado -  Baterías 'acumulador' "
+P01E023 "fuente de energía usada para Cocinar el mes pasado - Biomasa"
+P01E024 "fuente de energía usada para Cocinar el mes pasado -  Candelas y/o veladoras"
+P01E025 "fuente de energía usada para Cocinar el mes pasado -  Carbón"
+P01E026 "fuente de energía usada para Cocinar el mes pasado - Electricidad"
+P01E027 "fuente de energía usada para Cocinar el mes pasado - Energía eólica"
+P01E028 "fuente de energía usada para Cocinar el mes pasado -  Energía hídrica "
+P01E029 "fuente de energía usada para Cocinar el mes pasado -  Gas propano"
+P01E0210 "fuente de energía usada para Cocinar el mes pasado -  Kerosene gas corriente"
+P01E0211 "fuente de energía usada para Cocinar el mes pasado -  Leña"
+P01E0212 "fuente de energía usada para Cocinar el mes pasado -  Panel solar"
+
+Para cada opción las alternativas son 
+1. Regularmente 2. Ocasionalmente 3. Rara vez 9. Nunca
+Se consideraron las categorías 1, 2. 
+*/
+gen combust_ch=0
+replace combust_ch = 1 if inlist(p01e026,1,2) | inlist(p01e029,1,2) | inlist(p01e0210,1,2) 
+replace combust_ch = . if p01e021==9& p01e022==9& p01e023==9& p01e024==9& p01e025==9& p01e026==9& p01e027==9& p01e028==9& p01e029==9& p01e0210==9& p01e0211==9& p01e0212==9
+
 
 gen des1_ch=.
 replace des1_ch=0 if p01d16==5

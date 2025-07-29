@@ -1177,9 +1177,7 @@ label variable eduac_ci "Superior universitario vs superior no universitario"
 ***************
 
 gen asiste_ci=.
-
-replace asiste_ci=1 if ed07>=1 & ed07<=9 /*ed07 for 2004*/
-replace asiste_ci=0 if ed07==10
+replace asiste_ci=1 if ed07==2
 label variable asiste_ci "Asiste actualmente a la escuela"
 
 *****************

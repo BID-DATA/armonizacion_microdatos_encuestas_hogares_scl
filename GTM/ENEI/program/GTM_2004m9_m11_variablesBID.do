@@ -32,11 +32,7 @@ log using "`log_file'", replace
 País: Guatemala
 Encuesta: ENEI
 Round: m9_m11
-Autores: 
-Última versión: Mayra Sáenz E-mail: mayras@iadb.org / saenzmayra.a@gmail.com
-Fecha última modificación: 24 de Septiembre de 2013
 
-							SCL/LMK - IADB
 ****************************************************************************/
 /***************************************************************************
 Detalle de procesamientos o modificaciones anteriores:
@@ -363,44 +359,96 @@ label variable nmenor1_ch "Numero de familiares menores a 1 anio"
 gen miembros_ci=(relacion_ci>=1 & relacion_ci<=5)
 label variable miembros_ci "Miembro del hogar"
 
-		  ******************************
-          *** VARIABLES DE DIVERSIDAD **
-          ******************************
-*Nathalia Maya & Antonella Pereira
-*Julio 2021	
+*******************************************************
+***           VARIABLES DE DIVERSIDAD               ***
+*******************************************************
+** Pregunta: ¿Se considera usted perteneciente a alguno de los siguientes pueblos indígenas del país:
+**            1 kiché 2 Qeqchí 3 Kaqchikel 4 Mam 5 Garífuna 6 Ladino 7 Xinca 8 Extranjero ..... 98 Otro ¿cual?
 
+	*********
+	*afro_ci*
+	*********
+	gen byte afro_ci = .
+	replace afro_ci = 1 if p03a03 == 5 
+	replace afro_ci = 0 if p03a03 != 5 & p03a03 != . 
 	
-	***************
-	***afroind_ci***
-	***************
-**Pregunta: Usted se considera perteneciente a uno de los siguientes pueblos índigenas del país? (p03a04) (1 kiché; 2 Qeqchí; 3 Kaqchikel; 4 Mam; 98 Otro pueblo índígena, ¿cuál? 5 Garífuna 6 Ladino 7 Extranjero 98 Otro, ¿cual?) 
-gen afroind_ci=. 
-replace afroind_ci=1  if p03a03 != 6 & p03a03 !=8
-replace afroind_ci=3 if p03a03 ==6 
-replace afroind_ci=9 if p03a03 ==8
-replace afroind_ci=. if p03a03 ==.
+	*********
+	*ind_ci*
+	*********	
+	gen byte ind_ci = . 		
+	replace ind_ci = 1  if (p03a03 != 6 & p03a03 !=8) & p03a03 != . 
+	replace ind_ci = 0  if (p03a03 == 6 | p03a03 == 8) & p03a03 != . 
 
-	***************
-	***afroind_ch***
-	***************
-gen afroind_jefe= afroind_ci if relacion_ci==1
-egen afroind_ch  = min(afroind_jefe), by(idh_ch) 
-drop afroind_jefe
+	**************
+	*noafroind_ci*
+	**************
+	gen byte noafroind_ci =.   // se queda como missing (.) si no existe la pregunta
+	replace noafroind_ci =1 if (afro_ci==0 & ind_ci==0)
+	replace noafroind_ci =0 if (afro_ci==1 | ind_ci==1)
+	replace noafroind_ci =. if (afro_ci==. | ind_ci==.) //Esto solo en el caso que se tenga ambas opciones no disponibles. 
+	ta noafroind_ci,m
 
+	************
+	*afroind_ci*
+	************
+	gen byte afroind_ci=. 
+	replace afroind_ci=1 if ind_ci==1 
+	replace afroind_ci=2 if afro_ci==1
+	replace afroind_ci=3 if noafroind_ci == 1
+	ta afroind_ci,m
+	
+	*********
+	*afro_ch*
+	*********
+	gen byte afro_jefe = afro_ci if relacion_ci==1
+	egen afro_ch  = max(afro_jefe), by(idh_ch) 
+	drop afro_jefe
+	
+	********
+	*ind_ch*
+	********	
+	gen byte ind_jefe = ind_ci if relacion_ci==1
+	egen ind_ch = max(ind_jefe), by(idh_ch) 
+	drop ind_jefe
+
+	**************
+	*noafroind_ch*
+	**************
+	gen byte noafroind_jefe = noafroind_ci if relacion_ci==1
+	egen noafroind_ch = max(noafroind_jefe), by(idh_ch) 
+	drop noafroind_jefe
+
+	************
+	*afroind_ch*
+	************
+ 	gen byte afroind_jefe = afroind_ci if jefe_ci==1
+	egen afroind_ch = min(afroind_jefe), by(idh_ch) 
+	drop afroind_jefe 
+
+	********
+	*dis_ci*
+	********
+	gen byte dis_ci=.
+	
+	**********
+	*disWG_ci*
+	**********
+	gen byte disWG_ci=.
+	
+	********
+	*dis_ch*
+	********
+	egen byte dis_ch = max(dis_ci), by(idh_ch) 
+	
+	******************
+	*ISOalpha3_dis_ci*
+	******************
+	gen byte GTM_dis_ci = .
+	
 	*******************
 	***afroind_ano_c***
 	*******************
 gen afroind_ano_c=2002
-
-	*******************
-	***dis_ci***
-	*******************
-gen dis_ci=. 
-
-	*******************
-	***dis_ch***
-	*******************
-gen dis_ch=. 
 
 
 	************************************
@@ -1305,6 +1353,12 @@ label variable eduuc_ci "Universitaria incompleta o mas"
 gen byte edupre_ci= .
 label variable edupre_ci "Educacion preescolar"
 
+******************************
+*	asispre_ci:
+******************************
+g byte asispre_ci = 0 
+replace asispre_ci = 1 if p03a07a == 1 & p03a05==1
+la var asispre_ci "Asiste a Educacion preescolar"
 
 **************
 ***eduac_ci***

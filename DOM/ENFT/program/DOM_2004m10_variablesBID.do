@@ -1176,6 +1176,14 @@ gen byte eduac_ci=1 if ult_nivel_alcanzado==5
 replace eduac_ci=0 if ult_nivel_alcanzado==4
 label variable eduac_ci "Superior universitario vs superior no universitario"
 
+****************
+***asispre_ci***
+****************
+g asispre_ci=.
+replace asispre_ci=1 if se_matriculo==1
+recode asispre_ci (.=0)
+la var asispre_ci "Asiste a educacion prescolar"	
+label variable asispre_ci "Asistencia a Educacion preescolar"
 
 ***************
 ***asiste_ci***

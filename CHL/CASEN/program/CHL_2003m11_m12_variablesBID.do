@@ -1108,6 +1108,12 @@ gen edupre_ci=(e7t==1)
 replace edupre_ci=. if e7t == . | e7t == 99
 label variable edupre_ci "Educacion preescolar"
 
+***************
+***asispre_ci***
+***************
+g asispre_ci=.
+replace asispre_ci = 1 if (e4 == 1 & e7t == 1)
+la var asispre_ci "Asiste a educacion prescolar"
 
 **************
 ***eduac_ci***
@@ -1122,7 +1128,17 @@ foreach var of varlist edu* {
 replace `var'=. if  aedu_ci==.
 }
 
+***************
+***edupub_ci***
+***************
+gen edupub_ci=.
+replace edupub_ci=1 if inlist(e8_dep, 2) & asiste_ci==1 //Municipales
+replace edupub_ci=0 if inlist(e8_dep, 3, 4) & asiste_ci==1 // Particular pagado, particular subvencionado
+label var edupub_ci "Personas que asisten a centros de enseñanza públicos"
+
+
 * Line of code with indicator repiteult was deleted
+
 
 
 /************************************************************************************************************

@@ -72,7 +72,7 @@ label value region_BID_c region_BID_c
 	***************
 	***factor_ch***
 	***************
-	gen factor_ch=weight3
+	gen factor_ch=weight2
 	label variable factor_ch "Factor de expansion del hogar"
 	
 	*************
@@ -1043,23 +1043,21 @@ egen ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci)
 	******************
     ***pqnoasis1_ci***
     ******************
+* pqnoasis1_ci was replaced by razonesnoasis_ci, June 2025 * 
+
+**********************
+***razonesnoasis_ci***
+**********************	
+	g razonesnoasis_ci =.
 	
-	g pqnoasis1_ci =.
-	
-	**desc q3_24 "What is the main reason why you did not continue studying?"
-	**Daniela Zuluaga- Enero 2018: Se agrega la variable pqnoasis1_ci cuya sintaxis fue elaborada por Mayra Saenz**
     
-    replace pqnoasis1_ci = 1 if q03_24==2
-    replace pqnoasis1_ci = 2 if q03_24==3
-    replace pqnoasis1_ci = 3 if q03_24==4
-    replace pqnoasis1_ci = 4 if q03_24==1
-    *replace pqnoasis1_ci = 5 if q03_24==
-    *replace pqnoasis1_ci = 6 if q03_24==
-    *replace pqnoasis1_ci = 7 if q03_24== 
-    *replace pqnoasis1_ci = 8 if q03_24==
-    replace pqnoasis1_ci = 9 if q03_24==5 
-    label define pqnoasis1_ci 1 "Problemas económicos" 2 "Por trabajo" 3 "Problemas familiares o de salud" 4 "Falta de interés" 5	"Quehaceres domésticos/embarazo/cuidado de niños/as" 6 "Terminó sus estudios" 7	"Edad" 8 "Problemas de acceso"  9 "Otros"
-    label value  pqnoasis1_ci pqnoasis1_ci
+    replace razonesnoasis_ci = 1 if q03_24==2 | q03_24==3
+    replace razonesnoasis_ci = 2 if q03_24==1
+    replace razonesnoasis_ci = 3 if q03_24==4
+    replace razonesnoasis_ci = 5 if q03_24==5
+
+    label define razonesnoasis_ci 1 "Problemas económicos/Por trabajo" 2 "Falta de interés/Problemas de rendimiento" 3 "Cuidados/ Problemas familiares o de salud" 4 "Problemas de acceso"  5 "Otros"
+label value  razonesnoasis_ci razonesnoasis_ci
 	
 	***************
 * Line of code with indicator repite_ci was deleted	***************
@@ -1480,7 +1478,7 @@ do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&Exter
   ylm_ch ylnm_ch ylmnr_ch ynlm_ch ynlnm_ch ylmhopri_ci ylmho_ci /// Ingresos del hogar 
   nrylmpri_ci nrylmpri_ch /// No respuesta de ingresos  
   remesas_ci remesas_ch ypen_ci ypensub_ci /// Remesas y pensiones
-  aedu_ci eduui_ci eduuc_ci edupre_ci eduac_ci asiste_ci edupub_ci pqnoasis1_ci asispre_ci /// Educación
+  aedu_ci eduui_ci eduuc_ci edupre_ci eduac_ci asiste_ci edupub_ci  razonesnoasis_ci  asispre_ci /// Educación
   luz_ch luzmide_ch combust_ch piso_ch pared_ch techo_ch resid_ch dorm_ch cuartos_ch cocina_ch telef_ch refrig_ch /// Vivienda
   freez_ch auto_ch compu_ch internet_ch cel_ch vivi1_ch vivi2_ch viviprop_ch vivitit_ch vivialq_ch vivialqimp_ch /// Vivienda
   aguared_ch aguafconsumo_ch aguafuente_ch aguadist_ch aguadisp1_ch aguadisp2_ch /// Agua y saneamineto
