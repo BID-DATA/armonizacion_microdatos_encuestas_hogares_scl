@@ -727,6 +727,7 @@ egen ynlnm_ci=rsum(p56_c3 p56_c4 p56_c5 p56_c6 p56_c7 p56_c8), missing
 replace ynlnm_ci=. if  p56_c3==999999 & p56_c4==999999 & p56_c5==999999 & p56_c6==99999 & p56_c7==99999 & p56_c8==99999
 label var ynlnm_ci "Ingreso no laboral no monetario"
 
+
 ******************************
 *	ylm_ch 
 ******************************

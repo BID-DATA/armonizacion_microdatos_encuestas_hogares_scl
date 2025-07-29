@@ -1518,6 +1518,7 @@ label var categoinac_ci "Condición de inactividad"
 *faltan las variables de LMK
 gen tcylmpri_ci =.
 gen tcylmpri_ch =.
+gen instcot_ci = .
 * Line of code with indicator repiteult was deleted
 
 

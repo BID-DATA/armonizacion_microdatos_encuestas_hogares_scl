@@ -596,9 +596,10 @@ tab subemp_ci
 	*nempleos_ci*
 	*************
 	
-	gen nempleos_ci=pp03d
+	gen nempleos_ci=.
 	replace nempleos_ci=1 if pp03c==1
-	replace nempleos_ci=. if emp_ci!=1
+	replace nempleos_ci=2 if pp03c>1 & pp03c!=.
+	replace nempleos_ci=. if pp03c==.
 	
 
 	*************

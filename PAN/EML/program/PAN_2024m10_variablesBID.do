@@ -1207,6 +1207,11 @@ use `base_in', clear
 	gen lpe_ci =64.54 if zona_c==0
 	replace lpe_ci =75.84 if zona_c==1
 	label var lpe_ci "Linea de indigencia oficial del pais (mensual)"
+	
+	*********
+	*ytot_ci***
+	*********	
+	egen ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci), mi	
 
 /*_____________________________________________________________________________________________________*/
 * Asignación de etiquetas e inserción de variables externas: tipo de cambio, Indice de Precios al 
@@ -1217,7 +1222,6 @@ use `base_in', clear
 do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&ExternalVars_Harmonized_DataBank.do"
 
 *_____________________________________________________________________________________________________*
-egen ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci)
 
 
 /*_____________________________________________________________________________________________________*/
