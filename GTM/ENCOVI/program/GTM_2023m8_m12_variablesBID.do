@@ -130,7 +130,6 @@ gen idh_ch=no_hogar
 label var idh_ch "identificador unico del hogar"
 
 * identificador de la persona
-drop idp_ci
 egen idp_ci=concat(no_hogar cp) 
 label var idp_ci "identificador individual dentro del hogar"
 duplicates report no_hogar cp
