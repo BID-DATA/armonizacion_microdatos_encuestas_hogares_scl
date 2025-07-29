@@ -882,7 +882,7 @@ label val ramasec_ci ramasec_ci
 *****************
 ***ylmotros_ci***
 *****************
-	egen ylmotros_ci= rsum(imdi imdies), m
+	egen ylmotros_ci= rowtotal(imdi imdies), m
 	la var ylmotros_ci "Ingreso laboral monetario de otros trabajos" 
 
 ******************
@@ -894,20 +894,20 @@ label val ramasec_ci ramasec_ci
 ************
 ***ylm_ci***
 ************
-	egen ylm_ci = rsum(ylmpri_ci ylmsec_ci ylmotros_ci), m
+	egen ylm_ci = rowtotal(ylmpri_ci ylmsec_ci ylmotros_ci), m
 	*YL -> Incremento el ingreso laboral de inactivos & desocupados
 	la var ylm_ci "Ingreso laboral monetario total"  
 
 *************
 ***ylnm_ci***
 *************
-	egen ylnm_ci = rsum(ylnmpri_ci ylnmsec_ci ylnmotros_ci), m
+	egen ylnm_ci = rowtotal(ylnmpri_ci ylnmsec_ci ylnmotros_ci), m
 	la var ylnm_ci "Ingreso laboral NO monetario total"  
 
 *************
 ***ynlm_ci***
 *************
-	egen ynlm_ci = rsum(iof1 iof2  iof3h iof3i iof6 iof1es iof2es  iof3hes iof3ies iof6es), m
+	egen ynlm_ci = rowtotal(iof1 iof2  iof3h iof3i iof6 iof1es iof2es  iof3hes iof3ies iof6es), m
 	la var ynlm_ci "Ingreso no laboral monetario"  
    
 **************
@@ -915,7 +915,7 @@ label val ramasec_ci ramasec_ci
 **************
 	g ynlnm_ci = .
 	la var ynlnm_ci "Ingreso no laboral no monetario" 
-egen ytot_ci = rsum(ylm_ci ylnm_ci ynlm_ci ynlnm_ci), m
+egen ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci)
 
 
 
