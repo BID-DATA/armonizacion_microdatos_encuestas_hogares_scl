@@ -107,29 +107,27 @@ label var pais_c "Acrónimo del país"
 ******************************
 *  IDENTIFICADOR DEL HOGAR   *
 ******************************
+duplicates report _all
+duplicates tag, gen(dup)
+br if dup>0  //2 personas con todas las variables duplicadas. Se eliminan
+duplicates drop
 
-tostring hhno, replace
-gen hh_id = string(real(hhno),"%03.0f")
-
-egen idh_ch= concat(edno hh_id rndno)
-drop if idh_ch=="..."
-destring idh_ch, replace
-sort idh
-
+egen idh_ch= concat(hhno edno rndno)
 label var idh_ch "Identificador Unico del Hogar"
-tostring idh_ch, replace
-
 
 *******************************
 * IDENTIFICADOR DEL INDIVIDUO *
 *******************************
-egen idp_ci= concat(idh indivno)
-destring idp_ci, replace
-sort idp_ci
-
+egen idp_ci= concat(idh indivno age sex tind)
 label var idp_ci "Identificador Individual dentro del Hogar"
-tostring idp_ci, replace
 
+duplicates report idp_ci idh_ch
+sort idp_ci idh_ch
+duplicates list idp_ci idh_ch idh indivno age sex tind
+
+display date("04apr2016", "DMY")
+drop if  idp_ci =="1421681...89" & dedate==20548
+duplicates report  idp_ci idh_ch
 
 ************************************
 *  RELACION CON EL JEFE DE HOGAR   *
@@ -213,7 +211,7 @@ replace nconyuges_ch=. if relacion_ci==.
 label var nconyuges_ch "Número de Conyuges en el hogar"
 
 ************************************
-*  NUMERO DE HIJOS EN EL HOGAR  *
+*  NUMERO DE HIJOS EN EL HOGAingR  *
 ************************************
 egen nhijos_ch=sum(relacion_ci==3), by (idh_ch)
 replace nhijos_ch=. if relacion_ci==.
@@ -723,29 +721,58 @@ g tipopen_ci=.
 *******************************
 *******************************
 *******************************
+/*
+UNEMPLOYED
+32c. If you are unemployed, what are your main sources of livelihood? Pension Investment Remittance Disability/Unemployment benefits Multiple sources-Local contribution from relatives / friends Other public assistance Not Stated
+uearngs  : 32d. How much do you obtain a week  from this source? main earnings
+u2earngs : 32d. How much do you obtain a week  from this source? second earnings
+
+EMPLOYED 
+earngs: 40a. What were your wages or earnings last week? 
+avgerns: 40b. What were your average wages or earnings last week? 
+
+INACTIVE
+scincome:  pension, inevestment, remittance, disability, multiple source, other public assistance, etc   main
+inearngs:  51b. How much do you obtain a week from this source? 									     main
+sc2income:  pension, inevestment, remittance, disability, multiple source, other public assistance, etc  second
+in2earngs:  51b. How much do you obtain a week from this source? 										 second
+*/
+
+cap drop _*
+
+foreach v of varlist avgearns earngs uearngs u2earngs inearngs in2earng {
+	decode `v', gen(_`v')
+	
+	* min
+	gen _min`v' = real(regexs(1)) if regexm(_`v',"([0-9]+)")
+	replace _min`v' = _min`v'*0.75 if _`v'=="under $200"
+	replace _min`v'= 0 if `v'==0
+	* max
+	replace _`v' = regexr(_`v',"([0-9]+)", "")
+	gen _max`v' = real(regexs(1)) if regexm(_`v',"([0-9]+)")
+	replace _max`v' =  _min`v'*1.25 if _`v'=="over $"
+	replace _max`v'= 0 if `v'==0
+	* mean
+	egen _mean`v' = rowmean(_min`v' _max`v')
+	replace _mean`v'= 0 if _`v'=="none"
+	replace _mean`v'= 0 if `v'==0
+}
+
+*br avgearns earngs uearngs u2earngs inearngs in2earng _mean*
+*br _meanavgearns _meanearngs if _meanavgearns != _meanearngs
 
 *************************************
 * INGRESO MONETARIO MENSUAL LABORAL *
 *************************************
-* Nota MGD 01/15: El ingreso se reporta por rangos establecidos en la encuesta,no es variable continua.
-// Crear variable de ingreso laboral principal (mensual) según rangos de ingreso y condición de ocupado
+cap drop ylmpri_ci 
 gen ylmpri_ci = . 
+replace ylmpri_ci = max(_meanavgearns,_meanearngs)*4 
+*replace ylmpri_ci = _meanearngs*4 
 
-replace ylmpri_ci = 0 if inearngs == 0  & emp_ci == 1
-replace ylmpri_ci = ((0 + 200) / 2) * 4.3  if inearngs == 1  & emp_ci == 1
-replace ylmpri_ci = ((200 + 299) / 2) * 4.3  if inearngs == 2  & emp_ci == 1
-replace ylmpri_ci = ((300 + 399) / 2) * 4.3  if inearngs == 3  & emp_ci == 1
-replace ylmpri_ci = ((400 + 499) / 2) * 4.3  if inearngs == 4  & emp_ci == 1
-replace ylmpri_ci = ((500 + 599) / 2) * 4.3  if inearngs == 5  & emp_ci == 1
-replace ylmpri_ci = ((600 + 699) / 2) * 4.3  if inearngs == 6  & emp_ci == 1
-replace ylmpri_ci = ((700 + 799) / 2) * 4.3  if inearngs == 7  & emp_ci == 1
-replace ylmpri_ci = ((800 + 899) / 2) * 4.3  if inearngs == 8  & emp_ci == 1
-replace ylmpri_ci = ((900 + 999) / 2) * 4.3  if inearngs == 9  & emp_ci == 1
-replace ylmpri_ci = ((1000 + 1300) / 2) * 4.3  if inearngs == 10 & emp_ci == 1
-replace ylmpri_ci = ((1300 + 1600) / 2) * 4.3  if inearngs == 11 & emp_ci == 1
+sum  ylmpri_ci , d					 
 
-label variable ylmpri_ci "Monto mensual de ingreso laboral de la actividad principal"
-
+*sort ylmpri_ci
+*br ylmpri_ci  _meanavgearns _meanearngs avgearns earngs
 
 *******************************
 * INGRESO MENSUAL NO MONETARIO*
@@ -786,48 +813,55 @@ label var ylm_ci "Ingreso mensual todas actividades"
 *************************************************
 * INGRESO MENSUAL NO MONETARIO TODAS ACTIVIDADES*
 *************************************************
-gen ylnm_ci= ylnmpri_ci + ylnmsec_ci + ylnmotros_ci
+egen ylnm_ci= rowtotal(ylnmpri_ci  ylnmsec_ci  ylnmotros_ci), mi
 label var ylnm_ci "Ingreso mensual NO monetario todas actividades"
 
 *************************************************
 * INGRESO MENSUAL NO LABORAL OTRAS ACTIVIDADES  *
 *************************************************
-gen ynlm_ci=. 
-*replace ynlm_ci= if apgvthlp==1
+egen ynlm_ci=rowtotal(_meanuearngs _meanu2earngs _meaninearng _meanin2earng),mi
+replace  ynlm_ci =  ynlm_ci*4
 label var ynlm_ci "Ingreso mensual NO laboral otras actividades"
+
 
 **************************************************************
 * INGRESO MENSUAL NO LABORAL NO MONETARIO OTRAS ACTIVIDADES  *
 **************************************************************
 gen ynlnm_ci= .
 label var ynlnm_ci "Ingreso mensual NO laboral NO monetario otras actividades"
-egen ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci)
 
+*****************************
+*   INGRESO TOTAL INDIVIDUO *
+*****************************
+egen ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci), mi
 
 ************************************
 * INGRESO MENSUAL LABORAL DEL HOGAR*
 ************************************
-gen ylm_ch=.
-bys idh_ch: replace ylm_ch=sum(ylm_ci) if miembros_ci==1 
-label var ylm_ch "Ingreso Laboral Monetario del Hogar (Bruto)"
+by idh_ch, sort: egen ylm_ch=sum(ylm_ci) if miembros_ci==1, missing
+label var ylm_ch "Ingreso laboral monetario del hogar"
 
 **************************************************
 * INGRESO MENSUAL LABORAL NO MONETARIO DEL HOGAR *
 **************************************************
-egen ylnm_ch=sum(ylnm_ci) if miembros_ci==1, by(idh_ch)
+by idh_ch : egen ylnm_ch=sum(ylnm_ci) if miembros_ci==1, missing
 label var ylnm_ch "Ingreso Laboral No Monetario del Hogar"
 
 **************************************************
 * INGRESO MENSUAL NO LABORAL MONETARIO DEL HOGAR *
 **************************************************
-egen ynlm_ch=sum(ynlm_ci) if miembros_ci==1, by(idh_ch)
-label var ynlm_ch "Ingreso No Laboral Monetario del Hogar"
+by idh_ch, sort: egen ynlm_ch=sum(ynlm_ci) if miembros_ci==1, missing
 
 *****************************************************
 * INGRESO MENSUAL NO LABORAL NO MONETARIO DEL HOGAR *
 *****************************************************
-egen ynlnm_ch=sum(ynlnm_ci) if miembros_ci==1, by(idh_ch)
+by idh_ch, sort: egen ynlnm_ch=sum(ynlnm_ci) if miembros_ci==1, missing
 label var ynlnm_ch "Ingreso No Laboral No Monetario del Hogar"
+
+*******************
+*** ytot_ch ***
+*******************
+egen double ytot_ch= rowtotal(ylm_ch ylnm_ch ynlm_ch ynlnm_ch), mi
 
 *****************************************************
 * INGRESO LABORAL POR HORA EN LA ACTIVIDAD PRINCIPA *
@@ -855,6 +889,8 @@ label var nrylmpri_ci "Id no respuesta ingreso de la actividad principal"
 by idh_ch, sort: egen nrylmpri_ch = max(nrylmpri_ci) if miembros_ci == 1
 
 label variable nrylmpri_ch "Hogares con algún miembro que no respondió por ingresos"
+
+
 
 ************************************************
 * RENTA MENSUAL IMPUTADA DE LA VIVIENDA PROPIA *
@@ -1208,3 +1244,34 @@ saveold "`base_out'", replace
 
 
 log close
+
+/*
+**revisión de pobreza
+
+	gen byte pob =1
+	bys	anio_c idh_ch, sort: egen byte nmiembros=sum(pob)    //se quita relacion_ci==1 
+	gen double 	pc_ytot_ch=ytot_ch/nmiembros    //todas los encuestados
+	
+	
+	* pobreza extrema	
+	gen  byte  extreme_ppp2017 =0 if pc_ytot_ch>lp365_2017 | pc_ytot_ch !=.
+			replace extreme_ppp2017  =1 if pc_ytot_ch<lp365_2017 & pc_ytot_ch>0
+	* pobreza moderada
+	gen  byte  moderate_ppp2017  =0 if pc_ytot_ch!=.
+	replace moderate_ppp2017  =1 if pc_ytot_ch>=lp365_2017  & pc_ytot_ch<lp685_2017
+	* pobreza total
+	gen byte totalpoor_ppp2017 = 0 if pc_ytot_ch!=.
+    replace totalpoor_ppp2017=1 if extreme_ppp2017 ==1 |  moderate_ppp2017==1
+	* no pobre
+	gen  byte  notpoor_ppp2017  =0 if pc_ytot_ch!=.
+	replace  notpoor_ppp2017  =1 if pc_ytot_ch>=lp685_2017 & pc_ytot_ch!=.
+										
+sort idh_ch idp_ci 
+*br idh_ch idp_ci ytot_ci ytot_ch _mean* avgearns earngs uearngs u2earngs inearngs in2earng 
+*br idh_ch idp_ci ytot_ci ylm_ci ylnm_ci ynlm_ci ynlnm_ci _mean* avgearns earngs uearngs u2earngs inearngs in2earng 
+
+										
+ br idh_ch idp_ci relacion_ci ytot_ci ylm_ci ylnm_ci ynlm_ci ynlnm_ci ylm_ch ylnm_ch ynlm_ch ynlnm_ch ytot_ch _mean* avgearns earngs uearngs u2earngs inearngs in2earng   lp365_2017 lp685_2017 pc_ytot_ch
+ 
+ collapse (sum) extreme=extreme_ppp2017 moderate=moderate_ppp2017 totalpoor=totalpoor_ppp2017 notpoor=notpoor_ppp2017 (mean) extreme_ppp2017 moderate_ppp2017 totalpoor_ppp2017 notpoor_ppp2017 [iw=factor_ci]
+ */
