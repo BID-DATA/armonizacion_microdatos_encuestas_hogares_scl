@@ -41,6 +41,7 @@ Cesar Lins (SCL/GDI) Marzo 2021
 Agustina Thailinger (SCL/EDU) Junio 2022
 Agustina Thailinger (SCL/EDU) Mayo  2023
 Nicolás García Balus (SCL/SPH) Octubre 2024
+Pablo Cortés Sánchez (SCL/MIG) Octubre 2025
 ****************************************************************************/
 
 /***************************************************************************
@@ -201,6 +202,11 @@ tostring idh_ch, replace
 
 tostring idh_ch, replace
 
+
+******************
+*nmiembros_sph_ch *
+******************
+bys idh_ch: gen nmiembros_sph_ch=_N 
 
 ********
 *idp_ci*
@@ -366,10 +372,34 @@ gen miembros_ci=(relacion_ci>=1 & relacion_ci<=5)
 *****************************
 * Maria Antonella Pereira & Nathalia Maya - Marzo 2021	
 
+
 ************
 *afroind_ci*
 ************
 gen afroind_ci=. 
+
+
+************
+*afro_ci*
+************
+gen afro_ci=. 
+
+************
+*afro_ch*
+************
+gen afro_ch=. 
+
+
+************
+*ind_ci*
+************
+gen ind_ci=. 
+
+************
+*ind_ch*
+************
+gen ind_ch=. 
+
 
 ************
 *afroind_ch*
@@ -381,6 +411,19 @@ gen afroind_ch=.
 ***************
 gen afroind_ano_c=.		
 
+
+***************
+*noafroind_ci *
+***************
+gen noafroind_ci =.		
+
+
+***************
+*noafroind_ch *
+***************
+gen noafroind_ch =.		
+
+
 ********
 *dis_ci*
 ********
@@ -390,6 +433,12 @@ gen dis_ci=.
 *dis_ch*
 ********
 gen dis_ch=. 
+
+
+********
+*disWG_ci*
+********
+gen disWG_ci=. 
 	
 ***********************************
 ***VARIABLES DEL MERCADO LABORAL***
@@ -718,13 +767,13 @@ replace ylm_ci=. if ylmpri_ci==. &  ylmotros_ci==.
 *********
 *ylnm_ci*
 *********
-gen ylnm_ci=.
+gen ylnm_ci=. 
 label var ylnm_ci "Ingreso laboral NO monetario total"  	
 
 *********
 *ynlm_ci*
 *********
-gen ynlm_ci=.
+gen ynlm_ci= t_vi
 replace ynlm_ci = t_vi
 replace ynlm_ci=. if ynlm_ci<0
 
@@ -733,6 +782,24 @@ replace ynlm_ci=. if ynlm_ci<0
 **********
 gen ynlnm_ci=.
 egen ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci)
+
+**********
+*ynlm_publico_ci*
+**********
+gen ynlm_publico_ci = v5_m
+
+
+**********
+*ynlm_publico_ch*
+**********
+by idh_ch, sort: egen ynlm_publico_ch = sum(ynlm_publico_ci) if miembros_ci==1, missing
+
+
+
+**********
+*ynlm_privado_ci*
+**********
+gen ynlm_privado_ci = t_vi - ynlm_publico_ci
 
 
 **********************
@@ -770,7 +837,20 @@ by idh_ch, sort: egen ynlm_ch=sum(ynlm_ci) if miembros_ci==1, missing
 **********
 *ynlnm_ch*
 **********
-gen ynlnm_ch=.
+gen double ynlnm_ch= .
+
+**********
+*ytot_ch*
+**********
+egen double ytot_ch= rowtotal(ylm_ch ylnm_ch ynlm_ch ynlnm_ch), mi 
+
+
+**********
+*yneto_pc_ch*
+**********
+
+gen double yneto_pc_ch = (ytot_ch - ynlm_publico_ch) / nmiembros_sph_ch 
+
 
 ****
 *NA*
@@ -810,6 +890,15 @@ label var yoficial_ch "Ingreso del hogar total generado por el país"
 
 gen ypeoficial_ch=ipcf
 label var ypeoficial_ch "Ingreso per cápita generado por el país"
+
+******************
+*bene_cash_ch  *
+******************
+by idh_ch, sort: egen bene_cash_ch_2 = sum(v5_m) 
+
+gen bene_cash_ch = 0
+gen bene_cash_ch = 1 if bene_cash_ch_2 > 0 
+
 
 /*Anulo estas lineas porque lo solucione antes* 
 replace  ypeoficial_ch=subinstr(ypeoficial_ch,",",".",.)
@@ -1334,6 +1423,14 @@ label value tamemp_ci tamemp_ci
 gen pension_ci=1 if (v2_m>0 & v2_m<.) 
 recode pension_ci .=0 
 label var pension_ci "1=Recibe pension contributiva"
+
+*************
+*pension_ch*
+*************
+by idh_ch, sort: egen pension_ch_intermediate = sum(pension_ci)
+gen pension_ch = 0 
+replace pension_ch = 1 if  pension_ch_intermediate > 0
+
 
 *********
 *ypen_ci*
