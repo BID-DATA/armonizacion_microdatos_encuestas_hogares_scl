@@ -434,7 +434,9 @@ gen pea_ci=(emp_ci==1 | desemp_ci==1)
 	*************
 	*nempleos_ci*
 	*************
-	generat nempleos_ci=ca519
+	gen nempleos_ci= .
+	replace nempleos_ci = 1 if ca519==1 & emp_ci ==1
+	replace nempleos_ci = 2 if ca519>1 & emp_ci ==1 & ca519 != . 
 	replace nempleos_ci=. if emp_ci==0
 
 	***************
@@ -769,6 +771,11 @@ gen pea_ci=(emp_ci==1 | desemp_ci==1)
 	**************
 	egen ynlnm_ci=rsum(ayufes ayufesd ayupes ayupesd alimes bolspra meresc remesp remespd otrosproesp otrosesp), missing
 	label var ynlnm_ci "Ingreso No Laboral No Monetario" 
+	
+	**************
+	***ytot_ci***
+	**************	
+	egen ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci), m
 
 	**************
 	*** ylm_ch ***

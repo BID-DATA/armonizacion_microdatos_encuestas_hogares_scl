@@ -67,14 +67,15 @@ la var idh_ch "Household ID"
 tostring idh_ch, replace
 
 
-
 ******************************
 *	idp_cI
 ******************************
-egen idp_ci= concat(idh_ch ind_no)
+duplicates report island hhno ind_no sex age
+egen idp_ci= concat(island hhno ind_no sex age)
 la var idp_ci "Individual ID"
 tostring idp_ci, replace
 
+duplicates report idh_ch idp_ci
 
 ***************
 ***factor_ch***
@@ -200,36 +201,42 @@ label value civil_ci civil_ci
 ***jefe_ci***
 *************
 gen jefe_ci=(relacion_ci==1)
+replace jefe_ci =. if relacion_ci==.
 label variable jefe_ci "Jefe de hogar"
 
 ******************
 ***nconyuges_ch***
 ******************
 by idh_ch, sort: egen nconyuges_ch=sum(relacion_ci==2)
+replace nconyuges_ch =. if relacion_ci==.
 label variable nconyuges_ch "Numero de conyuges"
 
 ***************
 ***nhijos_ch***
 ***************
 by idh_ch, sort: egen nhijos_ch=sum(relacion_ci==3)
+replace nhijos_ch =. if relacion_ci==.
 label variable nhijos_ch "Numero de hijos"
 
 ******************
 ***notropari_ch***
 ******************
 by idh_ch, sort: egen notropari_ch=sum(relacion_ci==4)
+replace notropari_ch =. if relacion_ci==.
 label variable notropari_ch "Numero de otros familiares"
 
 ********************
 ***notronopari_ch***
 ********************
 by idh_ch, sort: egen notronopari_ch=sum(relacion_ci==5)
+replace notronopari_ch=. if relacion_ci==.
 label variable notronopari_ch "Numero de no familiares"
 
 ****************
 ***nempdom_ch***
 ****************
 by idh_ch, sort: egen nempdom_ch=sum(relacion_ci==6)
+replace nempdom_ch =. if relacion_ci==.
 label variable nempdom_ch "Numero de empleados domesticos"
 
 *****************
@@ -257,8 +264,7 @@ label value clasehog_ch clasehog_ch
 /*Daniela Zuluaga-Enero 2018: La encuesta solo identifica personas mayores de 15 años, sin embargo hay dos preguntas que permiten identificar el numero total de mujeres (nfemale)
 y el numero total de hombres (nmale) en el hogar. Restandole a estas variables el numero de mujeres mayores de 15 años (nfemales_15) y hombres mayores de 15 años (nmales_15) 
 respectivamente podríamos identificar el numero total de niños en el hogar e incluirlos en la suma de miembros del hogar. Se estaría asumiendo entonces que todos los niños
-hacen parte del hogar. */
-
+hacen parte del hogar. 
 gen ninas=female_total -females_15_years
 gen ninos=males_total -male_15_years
 
@@ -266,42 +272,53 @@ by idh_ch, sort: egen aux=sum(relacion_ci>=1 & relacion_ci<=4)
 egen nmiembros_ch=rowtotal(aux ninos ninas), m
 label variable nmiembros_ch "Numero de familiares en el hogar"
 
-drop ninos ninas aux
+drop ninos ninas aux*/
+
+by idh_ch, sort: egen byte nmiembros_ch=sum(relacion_ci>0 & relacion_ci<=5)
+replace nmiembros_ch=. if relacion_ci ==.
+tab nmiembros_ch, mi
+
 
 *****************
 ***nmayor21_ch***
 *****************
 by idh_ch, sort: egen byte nmayor21_ch=sum((relacion_ci>0 & relacion_ci<=5) & (edad_ci>=21 & edad_ci<=98))
+replace nmayor21_ch =. if relacion_ci==.
 label variable nmayor21_ch "Numero de familiares mayores a 21 anios"
 
 *****************
 ***nmenor21_ch***
 *****************
 by idh_ch, sort: egen byte nmenor21_ch=sum((relacion_ci>0 & relacion_ci<=5) & (edad_ci<21))
+replace nmenor21_ch =. if relacion_ci==.
 label variable nmenor21_ch "Numero de familiares menores a 21 anios"
 
 *****************
 ***nmayor65_ch***
 *****************
 by idh_ch, sort: egen byte nmayor65_ch=sum((relacion_ci>0 & relacion_ci<=5) & (edad_ci>=65 & edad_ci!=.))
+replace nmayor65_ch =. if relacion_ci==.
 label variable nmayor65_ch "Numero de familiares mayores a 65 anios"
 
 ****************
 ***nmenor6_ch***
 ****************
 by idh_ch, sort: egen byte nmenor6_ch=sum((relacion_ci>0 & relacion_ci<=5) & (edad_ci<6))
+replace nmenor6_ch =. if relacion_ci==.
 label variable nmenor6_ch "Numero de familiares menores a 6 anios"
 
 ****************
 ***nmenor1_ch***
 ****************
 by idh_ch, sort: egen byte nmenor1_ch=sum((relacion_ci>0 & relacion_ci<=5) & (edad_ci<1))
+replace nmenor1_ch =. if relacion_ci==.
 label variable nmenor1_ch "Numero de familiares menores a 1 anio"
 
 ****************
 ***miembros_ci***
 ****************
 gen miembros_ci=(relacion_ci>=1 & relacion_ci<=5)
+replace miembros_ci=. if relacion_ci==.
 label variable miembros_ci "Miembro del hogar"
 
 			
@@ -711,6 +728,7 @@ gen byte formal_ci=afiliado_ci
 label var formal_ci "1=afiliado o cotizante / PEA"
 
 g formal_1=.
+
 **************
 ***INGRESOS***
 **************
@@ -718,19 +736,69 @@ g formal_1=.
 ***************
 ***ylmpri_ci***
 ***************
-*Asalariados
-recode i77a1_main_job (99999999999=.)
-recode  i78a_first_business (99999999999=.) (1000000000=.)
-/*g main_job= i77a1_main_job
-replace main_job= i77a1_main_job*365 if i79_often_paid==1
-replace main_job= i77a1_main_job*24.3 if i79_often_paid==3
-replace main_job= i77a1_main_job*52.1 if i79_often_paid==2
-replace main_job= i77a1_main_job if i79_often_paid==4*/
 
-egen ylmpri_aux=rsum( i77a1_main_job i78a_first_business), m 
+*********************************************
+*********************************************
+
+************************
+/* Comentario 24JUL2025:
+************************
+
+variables de ingresos identificadas son:
+****************************************
+
+i79_ofted_paid
+i77a1_main_job       principal
+i78a_first_business  principal
+i78b_second_businest  secundario
+i79a2_second_job      secundario
+i79b1_onw_busin      principal
+i79b2_source         otro
+total_income_all 
+
+br island hhno ind_no sex age i77a1_main_job i78a_first_business   i78b_second_businest i79_often_paid i79a2_second_job i79b1_own_busin i79b2_source total_income_all ingresos ingresos_family
+*/
+
+/*validación
+*************
+total_income_all contiene todos los ingresos obtenidos por el hogar. Se contrasta la variable creada ingreso_family con total_income_all y la suma de todos los ingresos considerados hace match con la variable total_income_all*/
+
+
+*Existen varios conceptos de ingresos con números muy grandes 1.000e+11. Se identificó que los que repsonde con  99999997952 son missing values.
+
+foreach v of varlist i77a1_main_job  i78a_first_business i78b_second_businest i79a2_second_job i79b1_own_busin i79b2_source {	
+	cap drop _`v' 
+	gen _`v' = `v'
+	replace _`v' = . if _`v' == 99999997952
+	format _`v' %20.0g	
+	
+}
+
+/*
+cap drop _ingresos
+cap drop _ingreso_family 
+egen _ingresos=rsum(_i77a1_main_job _i78a_first_business _i79b1_own_busin _i79b2_source _i78b_second_businest _i79a2_second_job), m 
+bysort idh_ch: egen _ingreso_family = sum(_ingresos)
+format _ingreso_family %20.0g
+
+sort idh_ch idp_ci
+cap br idh_ch idp_ci island hhno ind_no sex age _i77a1_main_job _i78a_first_business   _i78b_second_businest  _i79a2_second_job _i79b1_own_busin _i79b2_source total_income_all _ingresos _ingreso_family emp_ci  i77a1_main_job  i78a_first_business i78b_second_businest i79a2_second_job i79b1_own_busin i79b2_source ytot_ci ytot_ch
+*/
+
+*********************************************
+*********************************************
+* se quita esta condición replace ylmpri_ci=. if emp_ci~=1
+
+
+*Asalariados y cuenta propia
+********************************
+egen ylmpri_aux=rsum(_i77a1_main_job _i78a_first_business _i79b1_own_busin), m 
 g ylmpri_ci=ylmpri_aux/12
-replace ylmpri_ci=. if emp_ci~=1
 label var ylmpri_ci "Ingreso laboral monetario actividad principal" 
+
+/*
+br island hhno ind_no sex age i77a1_main_job i78a_first_business   i78b_second_businest i79_often_paid i79a2_second_job i79b1_own_busin i79b2_source total_income_all ingresos ingreso_family emp_ci ylmpri_ci employ total_income_all if ytot_ci ==.| ytot_ci ==0
+*/
 
 *******************
 *** nrylmpri_ci ***
@@ -751,16 +819,16 @@ label var ylnmpri_ci "Ingreso laboral NO monetario actividad principal"
 ***************
 ***ylmsec_ci***
 ***************
-
+/* anterior
 recode  i79a2_second_job (99999999999=.)
 recode i78b_second_businest (99999999999=.)
-/*g second_job= i79a2_second_job
+g second_job= i79a2_second_job
 replace second_job= i79a2_second_job*365 if i79_often_paid==1
 replace second_job= i79a2_second_job*24.3 if i79_often_paid==3
 replace second_job= i79a2_second_job*52.1 if i79_often_paid==2
 replace second_job= i79a2_second_job if i79_often_paid==4
 */
-egen ylmsec_aux= rsum(i79a2_second_job i78b_second_businest), m
+egen ylmsec_aux= rsum(_i79a2_second_job _i78b_second_businest), m
 g ylmsec_ci=ylmsec_aux/12
 replace ylmsec_ci=. if emp_ci~=1
 label var ylmsec_ci "Ingreso laboral monetario segunda actividad" 
@@ -769,7 +837,6 @@ label var ylmsec_ci "Ingreso laboral monetario segunda actividad"
 ******************
 ****ylnmsec_ci****
 ******************
-
 gen ylnmsec_ci=.
 label var ylnmsec_ci "Ingreso laboral NO monetario actividad secundaria"
 
@@ -789,16 +856,7 @@ label var tcylmpri_ci "Identificador de top-code del ingreso de la actividad pri
 *****************
 ***ylmotros_ci***
 *****************
-recode   i79b2_source (99999999999=.)
-/*g oth_job= i79b2_source
-replace oth_job= i79b2_source*365 if i79_often_paid==1
-replace oth_job= i79b2_source*24.3 if i79_often_paid==3
-replace oth_job= i79b2_source*52.1 if i79_often_paid==2
-replace oth_job= i79b2_source if i79_often_paid==4
-*/
-gen ylmotros_ci=  i79b2_source/12
-replace ylmotros_ci=. if emp_ci~=1
-label var ylmotros_ci "Ingreso laboral monetario de otros trabajos" 
+gen ylmotros_ci=.
 
 ******************
 ***ylnmotros_ci***
@@ -829,18 +887,17 @@ label var ylnm_ci "Ingreso laboral NO monetario total"
 *************
 ***ynlm_ci***
 *************
-
-gen ynlm_ci=. 
+gen ynlm_ci=  _i79b2_source/12
+*replace ylmotros_ci=. if emp_ci~=1
 label var ynlm_ci "Ingreso no laboral monetario"  
 
 
 **************
 ***ynlnm_ci***
 **************
-
 gen ynlnm_ci=.
 label var ynlnm_ci "Ingreso no laboral no monetario" 
-egen ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci)
+egen ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci), mi
 
 
 
@@ -861,7 +918,7 @@ label var remesas_ci "Remesas mensuales reportadas por el individuo"
 *******************
 *** nrylmpri_ch ***
 *******************
-by idh_ch, sort: egen nrylmpri_ch=sum(nrylmpri_ci) if miembros_ci==1, missing
+by idh_ch, sort: egen nrylmpri_ch=sum(nrylmpri_ci) , missing
 replace nrylmpri_ch=1 if nrylmpri_ch>0 & nrylmpri_ch<.
 replace nrylmpri_ch=. if nrylmpri_ch==.
 label var nrylmpri_ch "Hogares con algún miembro que no respondió por ingresos"
@@ -869,32 +926,32 @@ label var nrylmpri_ch "Hogares con algún miembro que no respondió por ingresos
 **************
 *** ylm_ch ***
 **************
-by idh_ch, sort: egen ylm_ch=sum(ylm_ci) if miembros_ci==1, missing
+by idh_ch, sort: egen ylm_ch=sum(ylm_ci) , missing
 label var ylm_ch "Ingreso laboral monetario del hogar"
 
 ****************
 *** ylmnr_ch ***
 ****************
-by idh_ch, sort: egen ylmnr_ch=sum(ylm_ci) if miembros_ci==1, missing
+by idh_ch, sort: egen ylmnr_ch=sum(ylm_ci) , missing
 replace ylmnr_ch=. if nrylmpri_ch==1
 label var ylmnr_ch "Ingreso laboral monetario del hogar"
 
 ***************
 *** ylnm_ch ***
 ***************
-by idh_ch, sort: egen ylnm_ch=sum(ylnm_ci) if miembros_ci==1, missing
+by idh_ch, sort: egen ylnm_ch=sum(ylnm_ci) , missing
 label var ylnm_ch "Ingreso laboral no monetario del hogar"
 
 *******************
 *** remesas_ch ***
 *******************
-by idh_ch, sort: egen remesas_ch=sum(remesas_ci) if miembros_ci==1, missing
+by idh_ch, sort: egen remesas_ch=sum(remesas_ci) , missing
 label var remesas_ch "Remesas mensuales del hogar" 
 
 ***************
 *** ynlm_ch ***
 ***************
-by idh_ch, sort: egen ynlm_ch=sum(ynlm_ci) if miembros_ci==1, missing
+by idh_ch, sort: egen ynlm_ch=sum(ynlm_ci) , missing
 label var ynlm_ch "Ingreso no laboral monetario del hogar"
 
 ****************
@@ -933,6 +990,12 @@ label var rentaimp_ch "Rentas imputadas del hogar"
 	g ylmho_ci = ylm_ci / (horastot_ci * 4.3)
 	la var ylmho_ci "Salario monetario de todas las actividades" 
 
+**************
+***ytot_ch ***
+**************
+egen double ytot_ch= rowtotal(ylm_ch ylnm_ch ynlm_ch ynlnm_ch), mi
+	
+	
 ****************************
 ***VARIABLES DE EDUCACION***
 ****************************
@@ -1449,3 +1512,4 @@ saveold "`base_out'", replace
 
 
 log close
+

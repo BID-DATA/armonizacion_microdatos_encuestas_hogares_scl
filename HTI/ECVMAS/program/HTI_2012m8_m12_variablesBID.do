@@ -78,7 +78,7 @@ label variable idh_ch "ID del hogar"
 * Identificador de persona *
 ****************************
 sort hh_id2new i_id3
-egen idp_ci=group(idh_ch i_id3)
+gen idp_ci=i_id3
 label variable idp_ci "ID de la persona en el hogar"
 
 ***************************
