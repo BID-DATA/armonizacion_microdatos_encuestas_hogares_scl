@@ -1207,6 +1207,7 @@ la var eduui_ci "Universitaria o Terciaria Incompleta"
 g byte eduuc_ci=(aedu_ci>=17)
 replace eduuc_ci=. if aedu_ci==.
 la var eduuc_ci "Universitaria o Terciaria Completa"
+
 ******************************
 *	edupre_ci 
 ******************************
@@ -1214,6 +1215,11 @@ g byte edupre_ci=.
 replace edupre_ci=1 if (p02==3 & aedu_ci ~=.)
 replace edupre_ci=0 if (p02~=3 & aedu_ci ~=.)
 la var edupre_ci "Asiste a Educacion preescolar"
+
+***************
+***asipre_ci***
+***************
+gen byte asispre_ci= .
 
 ******************************
 *	pqnoasis 

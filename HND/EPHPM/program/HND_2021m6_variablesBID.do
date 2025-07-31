@@ -235,22 +235,24 @@ label variable notronopari_ch "Numero de no familiares"
 by idh_ch, sort: egen nempdom_ch = sum(relacion_ci == 6)
 label variable nempdom_ch "Numero de empleados domesticos"
 
-*****************
+****************
 ***clasehog_ch***
 *****************
-gen byte clasehog_ch = 0
+gen byte clasehog_ch=0
 **** unipersonal
-replace clasehog_ch = 1 if nhijos_ch == 0 & nconyuges_ch == 0 & notropari_ch == 0 & notronopari_ch == 0
+replace clasehog_ch=1 if nhijos_ch==0 & nconyuges_ch==0 & notropari_ch==0 & notronopari_ch==0
 **** nuclear   (child with or without spouse but without other relatives)
-replace clasehog_ch = 2 if (nhijos_ch > 0 | nconyuges_ch > 0) & (notropari_ch == 0 & notronopari_ch == 0)
+replace clasehog_ch=2 if (nhijos_ch>0 | nconyuges_ch>0) & (notropari_ch==0 & notronopari_ch==0)
 **** ampliado
-replace clasehog_ch = 3 if ((clasehog_ch == 2 & notropari_ch > 0) & notronopari_ch == 0) | (notropari_ch > 0 &notronopari_ch == 0) 
+replace clasehog_ch=3 if ((clasehog_ch ==2 & notropari_ch>0) & notronopari_ch==0) |(notropari_ch>0 & notronopari_ch==0) 
 **** compuesto  (some relatives plus non relative)
-replace clasehog_ch = 4 if (clasehog_ch == 2 | clasehog_ch == 3) & notropari_ch > 0
+replace clasehog_ch=4 if ((nconyuges_ch>0 | nhijos_ch>0 | notropari_ch>0) & (notronopari_ch>0))
 **** corresidente
-replace clasehog_ch = 5 if nhijos_ch == 0 & nconyuges_ch == 0 & notropari_ch == 0 & notronopari_ch > 0
+replace clasehog_ch=5 if nhijos_ch==0 & nconyuges_ch==0 & notropari_ch==0 & notronopari_ch>0
+
 label variable clasehog_ch "Tipo de hogar"
-label define clasehog_ch 1 " Unipersonal" 2 "Nuclear" 3 "Ampliado" 4 "Compuesto" 5 " Corresidente"
+label define clasehog_ch 1 " Unipersonal" 2 "Nuclear" 3 "Ampliado" 
+label define clasehog_ch 4 "Compuesto" 5 " Corresidente", add
 label value clasehog_ch clasehog_ch
 
 ******************
