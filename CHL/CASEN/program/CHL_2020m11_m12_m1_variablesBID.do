@@ -347,7 +347,7 @@ label var horastot_ci "Horas totales trabajadas en todas las actividades"
 ****************
 * subemp_ci    * 
 **************** 
-gen subemp_ci = (horaspri_ci <= 30) if !missing(horaspri_ci)
+gen subemp_ci =  .
 label variable subemp_ci "Personas en subempleo por horas (≤30 horas semanales)"
  
 ****************
