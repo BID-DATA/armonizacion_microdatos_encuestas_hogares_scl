@@ -1416,6 +1416,40 @@ gen ylmnr_ch=.
 gen rentaimp_ch=.
 gen combust_ch=.
 
+
+
+ ******************************
+		 *** VARIABLES DE MIGRACION *** 
+         ******************************
+		 * Variables incluidas por SCL/MIG Fernando Morales
+
+	*******************
+	*** migrante_ci ***
+	*******************
+	
+	gen migrante_ci=.
+	replace migrante_ci = 1 if p08a01d >= 30
+	label var migrante_ci "=1 si es migrante"
+	
+
+	**********************
+	*** migrantiguo5_ci ***
+	**********************
+	
+	gen migrantiguo5_ci=.
+	label var migrantiguo5_ci "=1 si es migrante antiguo (5 anos o mas)"
+		
+	**********************
+	*** miglac_ci ***
+	**********************
+	
+	gen miglac_ci=.
+	label var miglac_ci "=1 si es migrante proveniente de un pais LAC"
+
+	
+	
+
+
 /*_____________________________________________________________________________________________________*/
 * Asignación de etiquetas e inserción de variables externas: tipo de cambio, Indice de Precios al 
 * Consumidor (2011=100), Paridad de Poder Adquisitivo (PPA 2011),  líneas de pobreza
