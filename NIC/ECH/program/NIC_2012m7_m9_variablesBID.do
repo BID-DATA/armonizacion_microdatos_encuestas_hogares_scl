@@ -1490,6 +1490,29 @@ g ybenefdes_ci=.
 label var ybenefdes_ci "Monto de seguro de desempleo"
 
 
+******************************
+*** VARIABLES DE MIGRACION ***
+******************************
+
+	*******************
+	*** migrante_ci ***
+	*******************
+	gen migrante_ci=.
+
+
+	**********************
+	*** migrantiguo5_ci **
+	**********************
+	gen migrantiguo5_ci=.
+	label var migrantiguo5_ci "=1 si es migrante antiguo (5 anos o mas)"
+		
+	**********************
+	*** miglac_ci ***
+	**********************
+	gen miglac_ci=.
+	label var miglac_ci "=1 si es migrante proveniente de un pais LAC"
+
+
 /*_____________________________________________________________________________________________________*/
 * Asignación de etiquetas e inserción de variables externas: tipo de cambio, Indice de Precios al 
 * Consumidor (2011=100), líneas de pobreza

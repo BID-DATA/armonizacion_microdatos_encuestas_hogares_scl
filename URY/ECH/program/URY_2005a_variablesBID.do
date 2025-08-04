@@ -23,7 +23,7 @@ local base_in  = "$ruta\survey\\`PAIS'\\`ENCUESTA'\\`ANO'\\`ronda'\data_merge\\`
 local base_out = "$ruta\harmonized\\`PAIS'\\`ENCUESTA'\data_arm\\`PAIS'_`ANO'`ronda'_BID.dta"
                                                     
 capture log close
-log using "`log_file'", replace 
+*log using "`log_file'", replace 
 
 
 /***************************************************************************
@@ -1417,6 +1417,31 @@ gen atencion_ci=.
 label var atencion_ci "Dificultad de acceso a salud por problemas de atencion"
 lab def atencion_ci 0 "No" 1 "Si"
 lab val atencion_ci atencion_ci
+
+
+******************************
+*** VARIABLES DE MIGRACION ***
+******************************
+
+	*******************
+	*** migrante_ci ***
+	*******************
+	gen migrante_ci=.
+
+
+	**********************
+	*** migrantiguo5_ci **
+	**********************
+	gen migrantiguo5_ci=.
+	label var migrantiguo5_ci "=1 si es migrante antiguo (5 anos o mas)"
+		
+	**********************
+	*** miglac_ci ***
+	**********************
+	gen miglac_ci=.
+	label var miglac_ci "=1 si es migrante proveniente de un pais LAC"
+
+
 
 
 /*_____________________________________________________________________________________________________*/
