@@ -799,6 +799,9 @@ replace remesas_ci=hh_r09b*41.63*1.29 if hh_r09c==4
 replace remesas_ci=remesas_ci/12
 label var remesas_ci "Remesas mensuales reportadas por el individuo" 
 
+by idh_ch, sort: egen remesas_ch=sum(remesas_ci) if miembros_ci==1, missing
+label var remesas_ch "Remesas mensuales del hogar" 
+
 gen ynlm_ci=remesas_ci
 label var ynlm_ci "Ingreso no laboral monetario"  
 
