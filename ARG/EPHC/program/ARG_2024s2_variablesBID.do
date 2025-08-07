@@ -897,7 +897,7 @@ label var ypeoficial_ch "Ingreso per cápita generado por el país"
 by idh_ch, sort: egen bene_cash_ch_2 = sum(v5_m) 
 
 gen bene_cash_ch = 0
-gen bene_cash_ch = 1 if bene_cash_ch_2 > 0 
+replace bene_cash_ch = 1 if bene_cash_ch_2 > 0 
 
 
 /*Anulo estas lineas porque lo solucione antes* 
