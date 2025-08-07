@@ -1428,7 +1428,7 @@ gen combust_ch=.
 	*******************
 	
 	gen migrante_ci=.
-	replace migrante_ci = 1 if p08a01d >= 30
+	replace migrante_ci = 1 if P08A01D >= 30
 	label var migrante_ci "=1 si es migrante"
 	
 
