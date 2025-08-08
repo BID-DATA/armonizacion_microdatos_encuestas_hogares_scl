@@ -344,9 +344,17 @@ tostring idh_ch, replace
 *	idp_ci
 ******************************
 
-destring nper, gen (idp_ci)
-label var idp_ci "ID de la persona en el hogar"
+
+gen new_id = nper + "_" + hogar
+
+g idp_ci= new_id
+la var idp_ci "Individual ID"
 tostring idp_ci, replace
+
+drop new_id
+
+
+
 
 
 ******************************

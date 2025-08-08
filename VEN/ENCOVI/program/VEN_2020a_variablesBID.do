@@ -1432,19 +1432,8 @@ label var ybenefdes_ci "Monto de seguro de desempleo"
 	gen migrante_ci=(s6q6!=1) if (s6q6!=.a | s6q6!=.)
 	label var migrante_ci "=1 si es migrante"
 	
-	**********************
-	*** migantiguo5_ci ***
-	**********************
 	
-	gen migantiguo5_ci=.
-	label var migantiguo5_ci "=1 si es migrante antiguo (5 anos o mas)"
-		
-	**********************
-	*** migrantelac_ci ***
-	**********************
 	
-	gen migrantelac_ci=(migrante_ci==1 & (inlist(s6q6,2,3,4,5,6,7,8) | inlist(s6q6_os,"Haití","Nicaragua","República Dominicana"))) if migrante_ci!=.
-	label var migrantelac_ci "=1 si es migrante proveniente de un pais LAC"
 	
 	**********************
 	*** migrantiguo5_ci ***
@@ -1453,13 +1442,15 @@ label var ybenefdes_ci "Monto de seguro de desempleo"
 	gen migrantiguo5_ci=.
 	label var migrantiguo5_ci "=1 si es migrante antiguo (5 anos o mas)"
 		
-	**********************
-	*** migrantelac_ci ***
-	**********************
 	
-	gen miglac_ci=(migrante_ci==1 & (inlist(s6q6,2,3,4,5,6,7,8) | inlist(s6q6_os,"Haití","Nicaragua","República Dominicana"))) if migrante_ci!=.
-	replace miglac_ci = 0 if miglac_ci != 1 & migrante_ci == 1
+
+	**********************
+	*** miglac_ci ***
+	**********************
+	gen miglac_ci = 0 if migrante_ci == 1
+	replace miglac_ci=(migrante_ci==1 & (inlist(s6q6,2,3,4,5,6,7,8) | inlist(s6q6_os,"Haití","Nicaragua","República Dominicana"))) if migrante_ci !=.
 	replace miglac_ci = . if migrante_ci == 0
+
 	label var miglac_ci "=1 si es migrante proveniente de un pais LAC"
 
 	

@@ -93,9 +93,14 @@ tostring idh_ch, replace
 *	idp_cI
 ******************************
 
-g idp_ci= id
+gen new_id = string(hogar_num) + "_" + string(id)
+
+g idp_ci= new_id
 la var idp_ci "Individual ID"
 tostring idp_ci, replace
+
+drop new_id
+
 
 
 **********

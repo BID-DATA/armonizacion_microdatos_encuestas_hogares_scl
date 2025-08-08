@@ -1109,6 +1109,40 @@ gen tecnica_ci=(s4p18a==8)
 label var tecnica_ci "=1 formacion terciaria tecnica"
 
 
+
+	 *** VARIABLES DE MIGRACION *** 
+         ******************************
+		 * Variables incluidas por SCL/MIG Fernando Morales
+
+	*******************
+	*** migrante_ci ***
+	*******************
+	
+	gen migrante_ci=.
+	replace migrante_ci = 1 if s6p1a == 3
+	label var migrante_ci "=1 si es migrante"
+	
+
+	**********************
+	*** migrantiguo5_ci ***
+	**********************
+	
+	gen migrantiguo5_ci=(migrante_ci==1 & inlist(s6p6,3)) if migrante_ci!=. 
+	replace migrantiguo5_ci = 0 if s6p6 != . & migrante_ci==1  & s6p6!=3
+	replace migrantiguo5_ci = . if migrante_ci==0
+	label var migrantiguo5_ci "=1 si es migrante antiguo (5 anos o mas)"
+		
+		
+	**********************
+	*** miglac_ci ***
+	**********************
+	
+	gen miglac_ci=.
+	label var miglac_ci "=1 si es migrante proveniente de un pais LAC"
+
+
+
+
 /*_____________________________________________________________________________________________________*/
 * Asignación de etiquetas e inserción de variables externas: tipo de cambio, Indice de Precios al 
 * Consumidor (2011=100), líneas de pobreza
