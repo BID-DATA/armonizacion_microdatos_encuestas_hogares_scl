@@ -1027,7 +1027,7 @@ replace aedu_ci= 0 if nivel_ultimo_ano_aprobado==9
 replace aedu_ci= 0 if nivel_ultimo_ano_aprobado==10
 replace aedu_ci= . if nivel_ultimo_ano_aprobado==99
 replace aedu_ci= ultimo_ano_aprobado if nivel_ultimo_ano_aprobado==2 
-replace aedu_ci = ultimo_ano_aprobado+8 if nivel_ultimo_ano_aprobado == 3 | nivel_ultimo_ano_aprobado == 4  
+replace aedu_ci = ultimo_ano_aprobado+6 if nivel_ultimo_ano_aprobado == 3 | nivel_ultimo_ano_aprobado == 4  
 replace aedu_ci = ultimo_ano_aprobado+12 if nivel_ultimo_ano_aprobado == 5  
 replace aedu_ci = ultimo_ano_aprobado+12+4 if nivel_ultimo_ano_aprobado==6 | nivel_ultimo_ano_aprobado==7 
 replace aedu_ci = ultimo_ano_aprobado+12+4+2 if nivel_ultimo_ano_aprobado==8 
