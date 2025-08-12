@@ -1060,7 +1060,7 @@ replace aedu_ci= 0 if nivel_ultimo_ano_aprobado==10
 replace aedu_ci= . if nivel_ultimo_ano_aprobado==99
 replace aedu_ci= ultimo_ano_aprobado if nivel_ultimo_ano_aprobado==2 
 replace aedu_ci = ultimo_ano_aprobado+6 if nivel_ultimo_ano_aprobado == 3  
-replace aedu_ci = ultimo_ano_aprobado+8 if nivel_ultimo_ano_aprobado == 4  
+replace aedu_ci = ultimo_ano_aprobado+6 if nivel_ultimo_ano_aprobado == 4  
 replace aedu_ci = ultimo_ano_aprobado+12 if nivel_ultimo_ano_aprobado == 5  
 replace aedu_ci = ultimo_ano_aprobado+12+4 if nivel_ultimo_ano_aprobado==6 | nivel_ultimo_ano_aprobado==7 
 replace aedu_ci = ultimo_ano_aprobado+12+4+2 if nivel_ultimo_ano_aprobado==8 
@@ -1121,26 +1121,23 @@ replace asispre_ci=0 if nivel_se_matriculo!=1 & asiste_centro_educativo ==1
 label variable asispre_ci "Asistencia a Educacion preescolar"
 	
 **************
-***pqnoasis***
-**************
-*ver que labels cambiaron en esta nueva encuesta
-* Line of code with indicator pqnoasis_ci was deleted* Line of code with indicator pqnoasis_ci was deleted* Line of code with indicator pqnoasis_ci was deleted* Line of code with indicator pqnoasis_ci was deleted
-**************
 *pqnoasis1_ci*
 **************
-g		pqnoasis1_ci = .						
-replace pqnoasis1_ci = 1 if porque_no_estudia==8
-replace pqnoasis1_ci = 2 if porque_no_estudia==7
-replace pqnoasis1_ci = 3 if porque_no_estudia==9  | porque_no_estudia==11
-replace pqnoasis1_ci = 4 if porque_no_estudia==12
-replace pqnoasis1_ci = 6 if porque_no_estudia==2
-replace pqnoasis1_ci = 7 if porque_no_estudia==10 
-replace pqnoasis1_ci = 8 if porque_no_estudia==3
-replace pqnoasis1_ci = 9 if porque_no_estudia==4  | porque_no_estudia==5 | porque_no_estudia==6
+* pqnoasis1_ci was replaced by razonesnoasis_ci, June 2025 * 
 
-label define pqnoasis1_ci 1 "Problemas económicos" 2 "Por trabajo" 3 "Problemas familiares o de salud" 4 "Falta de interés" 5	"Quehaceres domésticos/embarazo/cuidado de niños/as" 6 "Terminó sus estudios" 7	"Edad" 8 "Problemas de acceso"  9 "Otros"
-label value  pqnoasis1_ci pqnoasis1_ci
 
+**********************
+***razonesnoasis_ci***
+**********************
+g razonesnoasis_ci = .						
+replace razonesnoasis_ci = 1 if porque_no_estudia==8 | porque_no_estudia==7
+replace razonesnoasis_ci = 2 if porque_no_estudia==4 | porque_no_estudia==12
+replace razonesnoasis_ci = 3 if porque_no_estudia==11
+replace razonesnoasis_ci = 4 if porque_no_estudia==3
+replace razonesnoasis_ci = 5 if porque_no_estudia==2 | porque_no_estudia==5 | porque_no_estudia==6 | porque_no_estudia==9 | porque_no_estudia==10  |porque_no_estudia==13
+
+label define razonesnoasis_ci 1 "Problemas económicos/Por trabajo" 2 "Falta de interés/Problemas de rendimiento" 3 "Cuidados/ Problemas familiares o de salud" 4 "Problemas de acceso"  5 "Otros"
+label value  razonesnoasis_ci razonesnoasis_ci
 
 
 			**********************************
