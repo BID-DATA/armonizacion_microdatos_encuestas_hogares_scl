@@ -1514,75 +1514,11 @@ label var ypensub_ci "Valor de la pension subsidiada / no contributiva"
 	***VARIABLES DE EDUCACION***
 	****************************
 
-/*En esta sección es sólo para personas de 4 años o más de edad*/
+****************
+****aedu_ci****
+***************
 
-/*
- s5_02a
-11. NINGUNO
-12. CURSO DE ALFABETIZACIÓN
-13. EDUCACIÓN INICIAL O PRE-ESCOLAR (PRE KINDER/KINDER)
-81.OTROS CURSOS (Duración menor a 1 año)
-
-PRIMARIA
-21.BÁSICO (1 A 5 AÑOS)
-22.INTERMEDIO (1 A 3 AÑOS)
-23.MEDIO (1 A 4 AÑOS)
-31. PRIMARIA (1 A 8 AÑOS)
-41. PRIMARIA (1 A 6 AÑOS)
-
-
-SECUNDARIA
-32. SECUNDARIA (1 A 4 AÑOS)
-42. SECUNDARIA (1 A 6 AÑOS)
-
-EDUCACIÓN SUPERIOR
-71. NORMAL (ESCUELA SUP. DE FORMACIÒN DE MAESTROS)
-72. UNIVERSIDAD PÚBLICA (Licenciatura)
-73. UNIVERSIDAD PRIVADA (Licenciatura)
-74.POSTGRADO DIPLOMADO
-75. POSTGRADO MAESTRÍA,
-76. POSTGRADO DOCTORADO
-77. TÉCNICO DE UNIVERSIDAD
-78 TÉCNICO DE INSTITUTO (Duración mayor o igual a 1 año)
-79. INSTITUTOS DE FORMACIÓN MILITAR Y POLICIAL
-
-		  
-*No se consideran por no ser educación formal sino "Alternativa" o "No formal"
-EDUCACIÓN DE ADULTOS(Sistema Antiguo)
-51. EDUCACIÓN BÁSICA DE ADULTOS (EBA)
-52. CENTRO DE EDUCACIÓN MEDIA DE ADULTOS (CEMA)
-61.EDUCACIÓN JUVENIL ALTERNATIVA (EJA)
-62.EDUCACIÓN PRIMARIA DE ADULTOS (EPA)
-63.EDUCACIÓN SECUNDARIA DE ADULTOS (ESA)
-64.PROGRAMA NACIONAL DE POST ALFABETIZACIÓN
-65.EDUCACIÓN ESPECIAL
-80. EDUCACIÓN TÉCNICA DE ADULTOS (ETA)	  
-*/
-
-
-/* Opcion 2
-gen aedu_ci = .
-* Ninguno o preescolar
-replace aedu_ci = 0 if s05a_02a==11 | s05a_02a==12 | s05a_02a==13 | s05a_02a==81
-
-* Primaria & Secundaria
-* Sistema escolar antiguo
-replace aedu_ci = s05a_02c if s05a_02a==21
-replace aedu_ci = s05a_02c+5 if s05a_02a==22
-replace aedu_ci = s05a_02c+8 if s05a_02a==23
-* Sistema escolar anterior
-replace aedu_ci = s05a_02c if s05a_02a==31
-replace aedu_ci = s05a_02c+8 if s05a_02a==32
-* Sistema escolar actual
-replace aedu_ci = s05a_02c if s05a_02a==41
-replace aedu_ci = s05a_02c+6 if s05a_02a==42
-
-* Superior
-replace aedu_ci = s05a_02c+12 if (s05a_02a>=71 & s05a_02a<=73) | (s05a_02a>=77 & s05a_02a<=79)
-replace aedu_ci = s05a_02c+17 if (s05a_02a>=74 & s05a_02a<=76)
-recode aedu_ci 25=22
-*/
-
+* Corregido agosto 2025 // Cambia la codificación de los niveles 
 gen aedu_ci = .
 
 * Ninguno o preescolar
@@ -1602,32 +1538,26 @@ replace aedu_ci = s03a_02c + 8     if (s03a_02a == 32)
 replace aedu_ci = s03a_02c + 6     if (s03a_02a == 42)
 
 * Educacion para adultos 
-replace aedu_ci = s03a_02c + 3     if (s03a_02a == 52)
+replace aedu_ci = s03a_02c + 6     if (s03a_02a == 52) // 
 
 ** La educación Alternativa para jóvenes y adultos no hace parte de la educación formal (es preparatiorio para ello)
 
-replace aedu_ci = 0 if (s03a_02a >= 61 & s03a_02a <= 65)
+replace aedu_ci = . if (s03a_02a >= 61 & s03a_02a <= 65) // Missing y no 0
 
 * Superior
-
-replace aedu_ci = s03a_02c + 12     	if s03a_02c <= 5 & (s03a_02a == 71 | s03a_02a == 72) // normal, universidad y técnico-tecnológico
-replace aedu_ci = s03a_02c + 12 		if s03a_02a >=76 & s03a_02a <= 81
-replace aedu_ci = s03a_02c + 12 + 5 	if s03a_02c <= 5 & (s03a_02a == 73 | s03a_02a == 74) // postgrado, maestria
-replace aedu_ci = s03a_02c + 12 + 5 + 2 if s03a_02c <= 5 & (s03a_02a == 75) // doctorado
+replace aedu_ci = s03a_02c + 12     	if s03a_02c <= 5 & (s03a_02a == 71 | s03a_02a == 72 | s03a_02a == 74 | s03a_02a >=78) // normal, técncia <--
+replace aedu_ci = s03a_02c + 14 	if s03a_02a >=76 
+replace aedu_ci = s03a_02c + 12 + 5 	if s03a_02c <= 5 & (s03a_02a == 75 | s03a_02a == 76) // postgrado, maestria
+replace aedu_ci = s03a_02c + 12 + 5 + 2 if s03a_02c <= 5 & (s03a_02a == 77) // doctorado
 
 * Terminación nivel
-
-replace aedu_ci = 12+5   if s03a_02a == 71 & s03a_02c == 8 //Terminó escuela normal
-replace aedu_ci = 12+5   if s03a_02a == 72 & s03a_02c == 8 //Terminó universidad
-replace aedu_ci = 12+5+1 if s03a_02a == 73 & s03a_02c == 8 //Terminó posgrado
-replace aedu_ci = 12+5+2 if s03a_02a == 74 & s03a_02c == 8 //Terminó maestria
-replace aedu_ci = 12+5+2+4 if s03a_02a == 75 & s03a_02c == 8 //Terminó doctorado
-
-
-**Imputando los valores perdidos**
-
-replace aedu_ci = 12 if s03a_02a == 72 &aedu_ci == .
-replace aedu_ci = 8 if s03a_02a == 32 &aedu_ci == .
+replace aedu_ci = 12+4   if s03a_02a == 78 & s03a_02c == 8 
+replace aedu_ci = 12+5   if (s03a_02a == 71 | s03a_02a == 74) & s03a_02c == 8 
+replace aedu_ci = 12+2   if (s03a_02a == 72 |s03a_02a == 79 |s03a_02a == 81 |s03a_02a == 82) & s03a_02c == 8 //Terminó técnico medio
+replace aedu_ci = 12+3   if (s03a_02a == 73| s03a_02a == 80) & s03a_02c == 8 //Terminó técnico superior
+replace aedu_ci = 12+5+1 if s03a_02a == 75 & s03a_02c == 8 //Terminó posgrado
+replace aedu_ci = 12+5+2 if s03a_02a == 76 & s03a_02c == 8 //Terminó maestria
+replace aedu_ci = 12+5+5 if s03a_02a == 77 & s03a_02c == 8 //Terminó doctorado
 
 ***************
 ***edupre_ci***
