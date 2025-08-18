@@ -1514,7 +1514,7 @@ label var ypensub_ci "Valor de la pension subsidiada / no contributiva"
 	***VARIABLES DE EDUCACION***
 	****************************
 
-***************
+****************
 ****aedu_ci****
 ***************
 
