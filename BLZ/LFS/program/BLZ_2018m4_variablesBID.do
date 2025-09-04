@@ -140,8 +140,7 @@ label values relacion_ci relacion
 ************************************
 
 * Create a dummy indicating this person's income should NOT be included 
-gen miembros_ci=(relacion_ci>=1 & relacion_ci<=5)
-replace miembros_ci=1 if (relacion_ci>=1 & relacion_ci<=4)
+gen miembros_ci= 1
 label variable miembros_ci "Variable dummy que indica las personas que son miembros del Hogar"
 
 *******************************
@@ -860,7 +859,7 @@ label var ylnm_ci "Ingreso mensual NO laboral NO monetario otras actividades"
 * INGRESO MENSUAL LABORAL DEL HOGAR*
 ************************************
 *gen ylm_ch=.
-egen ylm_ch=sum(ylm_ci) if miembros_ci==1, by(idh_ch)
+bysort idh_ch: egen double ylm_ch = total(ylm_ci) if miembros_ci == 1, mi
 label var ylm_ch "Ingreso Laboral Monetario del Hogar (Bruto)"
 
 **************************************************
