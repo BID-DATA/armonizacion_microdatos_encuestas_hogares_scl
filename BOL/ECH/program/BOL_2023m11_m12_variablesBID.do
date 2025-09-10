@@ -405,57 +405,50 @@ bysort idh_ch (jefe_ci s01a_09): replace afroind_ch = 1 if jefe_ci == 1 & s01a_0
 	*******************************
 	***SITUACIÓN DE DISCAPACIDAD***
 	*******************************
+
+	********
+	*dis_ci*
+	********
+	foreach var in  s02a_04a s02a_04b s02a_04c s02a_04d s02a_04e s02a_04f {
+	tab `var', m nolab
+	}
+
+	gen byte dis_ci = 0
 	
-*************
-***dis_ci***
-**************
-/*
+	foreach i in a b c d e f  {
+		forvalues j=2/4 {
+			recode dis_ci 0=1 if s02a_04`i'==`j'
+		}
+	}
 
-Opciones pregunta s02a_11
-
-A. ver, aún con los anteojos o lentes puestos?
-B. oir, aún cuando utiliza algún dispositivo auditivo?
-C. caminar o subir gradas?
-D. a prender, recordar, concentrarse, razonar para desarrollar actividades de la vida d iaria?
-E. autocuidado personal como vestirse, bañarse o comer?
-F. hablar, comunicarse o conversar, aún cuando utilice lengua de señas u otro medio de comunicación?
-
-No entra como variable de discapacidad:
-G. a daptarse, comprender la realidad o tiene alteraciones o trastornos mentales o psíquicos?
-
-*/
+	recode dis_ci nonmiss=. if s02a_04a>=. & s02a_04b>=. & s02a_04c>=. & s02a_04d>=. & s02a_04e>=. & s02a_04f>=.
 	
-* En 2022 no se realizan las reguntas WG 	
-gen dis_ci = .
+	tab dis_ci, m 
+	
+	**********
+	*disWG_ci*
+	**********
+	gen byte disWG_ci = 0
+	
+	foreach i in a b c d e f  {
+		forvalues j=3/4 {
+			recode disWG_ci 0=1 if s02a_04`i'==`j'
+		}
+	}
 
-**************
-***disWG_ch***
-**************
-gen disWG_ci = .
-
-*********************
-***ISO3pais_dis_ci***
-*********************
-gen BOL_dis_ci = .
-
-/*
-foreach i in a b c d e f {
-forvalues j = 2/4 { 
-recode dis_ci 0=1 if s02a_11`i'==`j'
-}
-}
-recode dis_ci nonmiss=. if s02a_11a==9 & s02a_11b==9 & s02a_11c==9 & s02a_11d==9 & s02a_11e==9 & s02a_11f==9 
-recode dis_ci nonmiss=. if s02a_11a>=. & s02a_11b>=. & s02a_11c>=. & s02a_11d>=. & s02a_11e>=. & s02a_11f>=.
-
-*/
-
-*************
-***dis_ch***
-**************	
-* gen dis_ch = sum(dis_ci), by(idh_ch) 
-gen dis_ch = .
-
-
+	recode dis_ci nonmiss=. if s02a_04a>=. & s02a_04b>=. & s02a_04c>=. & s02a_04d>=. & s02a_04e>=. & s02a_04f>=.
+	
+	tab disWG_ci, m 
+	
+	********
+	*dis_ch*
+	********
+	egen byte dis_ch = max(dis_ci), by(idh_ch) 
+	
+	******************
+	*ISOalpha3_dis_ci*
+	******************
+	gen byte BOL_dis_ci = dis_ci
 
 
 	************************************
