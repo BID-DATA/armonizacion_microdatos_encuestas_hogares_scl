@@ -12,6 +12,7 @@ set more off
  
 
 *GitHub
+*Github
 
 global ruta = "${surveysFolder}"
 
