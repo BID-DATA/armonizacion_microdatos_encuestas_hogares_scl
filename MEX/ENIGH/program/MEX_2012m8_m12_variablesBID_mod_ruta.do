@@ -13,7 +13,6 @@ set more off
 
 global survey_folder "C:\Users\maria\OneDrive\Documents\GitHub\armonizacion_microdatos_encuestas_hogares_scl"
 
-
 local PAIS MEX
 local ENCUESTA ENIGH
 local ANO "2012"
