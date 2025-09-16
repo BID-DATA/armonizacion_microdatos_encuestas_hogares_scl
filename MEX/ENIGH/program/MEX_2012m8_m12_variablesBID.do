@@ -10,9 +10,19 @@ set more off
  * El servidor contiene las bases de datos MECOVI.
  *________________________________________________________________________________________________________________*
  
-
-*GitHub
-*Github
+ * === Helper: estandarizar llaves ===
+capture program drop std_keys
+program define std_keys
+    syntax varlist(min=1)
+    foreach v of local varlist {
+        capture confirm string variable `v'
+        if _rc {
+            tostring `v', replace force
+        }
+        replace `v' = strtrim(`v')
+        replace `v' = subinstr(`v'," ","",.)
+		}
+end
 
 global ruta = "${surveysFolder}"
 
@@ -3639,6 +3649,8 @@ egen ylm_ci=rsum(ylmpri_ci ylmsec_ci), missing
 *************
 
 gen ylnm_ci=.
+std_keys folioviv foliohog
+
 
 *************
 *ylmotros_ci*
@@ -3662,6 +3674,15 @@ egen ynlm_ci=rsum(ing_rent ing_tran otros), missing //CONEVAL no incluye otros
 ***ynlnm_ci***
 *************
 *No se incluye el alquiler estimado
+* --- Ensure numeric versions of inputs for ynlnm ---
+foreach v in autocons pago_esp reg_esp redan reg_espn {
+    capture confirm string variable `v'
+    if !_rc {
+        destring `v', replace force
+        display as text "`v' was string and has been converted to numeric"
+    }
+}
+
 egen ynlnm = rsum(autocons pago_esp reg_esp redan reg_espn), missing
 
 gen ynlnm_ci= ynlnm/nmiembros_ch

@@ -23,9 +23,6 @@ program define std_keys
         }
         replace `v' = strtrim(`v')
         replace `v' = subinstr(`v'," ","",.)
-        * Si INEGI exige ceros fijos, descomenta 1 de estas:
-        * replace `v' = string(real(`v'), "%02.0f") if regexm(`v',"^[0-9]+$")
-        * replace `v' = string(real(`v'), "%03.0f") if regexm(`v',"^[0-9]+$")
     }
 end
 

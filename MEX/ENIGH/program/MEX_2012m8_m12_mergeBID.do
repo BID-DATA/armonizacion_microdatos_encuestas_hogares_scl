@@ -12,6 +12,22 @@ set more off
  * El servidor contiene las bases de datos MECOVI.
  *________________________________________________________________________________________________________________*
  
+ * === Helper: estandarizar llaves ===
+capture program drop std_keys
+program define std_keys
+    syntax varlist(min=1)
+    foreach v of local varlist {
+        capture confirm string variable `v'
+        if _rc {
+            tostring `v', replace force
+        }
+        replace `v' = strtrim(`v')
+        replace `v' = subinstr(`v'," ","",.)
+    }
+end
+
+
+
 global ruta = "${surveysFolder}\\survey\MEX\ENIGH\2012\m8_m12\data_orig"
 
 local PAIS MEX
@@ -110,7 +126,12 @@ la cual se encuentra a nivel de hogar (folio).*/
 use "$ruta\Ingresos.dta", clear
 
 ************
-gen str folio= folioviv + foliohog
+*gen str folio= folioviv + foliohog
+
+std_keys folioviv foliohog
+capture drop folio
+gen str folio = folioviv + foliohog
+
 destring mes_*, replace
 /*Las variables mes_1 mes_2 mes_3 mes_4 mes_5 mes_6 definen
 los meses a los que corresponden cada uno de los ingresos de 
@@ -324,7 +345,11 @@ label value base base
 *Nos quedamos con los gastos monetarios
 keep if tipo_gasto=="G1" | tipo_gasto=="G2"
 
-gen str folio= folioviv + foliohog
+*gen str folio= folioviv + foliohog
+std_keys folioviv foliohog
+capture drop folio
+gen str folio = folioviv + foliohog
+
 
 /*En el caso de la información de gasto, para deflactar se 
 utiliza la decena de levantamiento de la encuesta, la cual 
@@ -867,7 +892,10 @@ append using "$ruta\G_person.dta"
 *Nos quedamos con los ingresos no monetarios
 keep if tipo_gasto=="G3" | tipo_gasto=="G4" | tipo_gasto=="G5" | tipo_gasto=="G6" | tipo_gasto=="G7"
 
-gen str folio= folioviv + foliohog
+*gen str folio= folioviv + foliohog
+std_keys folioviv foliohog
+capture drop folio
+gen str folio = folioviv + foliohog
 
 /*En el caso de la información de ingreso no monetario, para 
 deflactar se utiliza la decena de levantamiento de la 
@@ -1433,7 +1461,11 @@ sort folioviv
 merge folioviv using "$ruta\Hogares_.dta" 
 drop _merge
 
-gen str folio= folioviv + foliohog
+*gen str folio= folioviv + foliohog
+std_keys folioviv foliohog
+capture drop folio
+gen str folio = folioviv + foliohog
+
 sort folio, stable
 order folio, first
 saveold "$ruta\Vivi_Hog.dta", replace
@@ -1442,7 +1474,10 @@ saveold "$ruta\Vivi_Hog.dta", replace
 use "$ruta\Concen.dta", clear
 
 
-gen str folio= folioviv + foliohog
+*gen str folio= folioviv + foliohog
+std_keys folioviv foliohog
+capture drop folio
+gen str folio = folioviv + foliohog
 
 keep folio* tot_integ tam_loc factor est_dis upm educacion
 
@@ -1542,27 +1577,107 @@ use "$ruta\Trabajos.dta",clear
 * Modificación Mayra Sáenz: Se unifica con la base de personas con la de ingresos, de vivienda y de gastos
 *_________________________________________________________________________________________________________*
 
-
+* ================== BASE PERSONAS (master) ==================
 use "$ruta\Pobla12.dta", clear //Base nueva
-gen str folio= folioviv + foliohog
-order folio, first
-sort folio numren, stable
+*gen str folio= folioviv + foliohog
+*order folio, first
+*sort folio numren, stable
 
+std_keys folioviv foliohog numren
+isid folioviv foliohog numren
+
+* Merge con HOGARES (nivel hogar)
+merge m:1 folioviv foliohog using "$ruta\Hogares.dta", keep(match master)
+rename _merge _merge_ph
+
+* Crear folio (solo para ordenar/by y para merges con archivos que traen 'folio')
+capture drop folio
+gen str folio = folioviv + foliohog
+order folio, first
+sort folioviv foliohog numren, stable
+
+* ================== MERGES NIVEL PERSONA ==================
 merge 1:1 folioviv foliohog numren using "$ruta\trabajos_reshape.dta", keep (match master)
-drop _merge
+*drop _merge
+rename _merge _merge_trab
 
 merge 1:1 folio numren using "$ruta\ingreso_deflactado12_per.dta" , keep (match master)
 rename _merge _merge_ing
-sort folio numren, stable
+*sort folio numren, stable
 
 merge 1:1 folioviv foliohog numren using "$ruta\edu_gtosmp", keep (match master)
-drop _merge
+*drop _merge
+rename _merge _merge_edump
 
-merge m:1 folio using "$ruta\gtos_autoc12.dta", keep (match master)
-drop _merge
+* ================== MERGES NIVEL HOGAR ==================
+* Resolver conflicto de tipos en 'autocons'
+preserve
+    use "$ruta\gtos_autoc12.dta", clear
+    std_keys folioviv foliohog
+    rename autocons autocons_autoc
+    save "$ruta\gtos_autoc12_noconf.dta", replace
+restore
 
-merge m:1 folio using "$ruta\edu_gtosmh", keep (match master)
-drop _merge
+merge m:1 folioviv foliohog using "$ruta\gtos_autoc12_noconf.dta", keep(match master)
+rename _merge _merge_gtaut
+
+merge m:1 folio using "$ruta\edu_gtosmh.dta", keep(match master)
+rename _merge _merge_edumh
+
+*merge m:1 folio using "$ruta\gtos_autoc12.dta", keep (match master)
+*drop _merge
+
+*merge m:1 folio using "$ruta\edu_gtosmh", keep (match master)
+*drop _merge
+
+
+* ================== AJUSTES PESO (rellenar faltantes con factor_hog) ==================
+* Asegurar que ambos sean numéricos
+capture confirm string variable peso
+if !_rc {
+    destring peso, replace force
+}
+capture confirm string variable factor_hog
+if !_rc {
+    destring factor_hog, replace force
+}
+
+* Rellenar faltantes de peso con factor_hog
+gen byte peso_was_missing = missing(peso)
+replace peso = factor_hog if peso_was_missing & !missing(factor_hog)
+
+* Evidencia
+count if missing(peso)
+display "Missing peso (después de rellenar con factor_hog): " r(N)
+count if peso_was_missing & !missing(peso)
+display "Pesos rellenados desde factor_hog: " r(N)
+
+* ================== EVIDENCIA ADICIONAL ==================
+count if missing(edad)
+display "Missing edad: " r(N)
+
+count if missing(factor_hog)
+display "Missing factor_hog: " r(N)
+
+* Estados de merges
+tab _merge_ph
+tab _merge_ing
+tab _merge_trab
+tab _merge_gtaut
+tab _merge_edumh
+
+* ===== Asserts (evidencia dura) =====
+assert !missing(edad)
+assert !missing(factor_hog)
+assert !missing(peso)
+
+
+* ================== Cálculos (lógica original) ==================
+* (Opcional) verifica que tot_integ exista
+capture confirm variable tot_integ
+if _rc {
+    display as error "Advertencia: 'tot_integ' no existe; no se calcularán indicadores per cápita."
+}
 
 *Modificación Mayra Sáenz: Total Ingreso monetario del hogar
 bys folio: egen ing_monh = sum(ing_mon)
@@ -1577,7 +1692,9 @@ label var  gct "Gasto corriente total"
 label var  intt "Ingreso neto total"
 label var  gnt "Gasto neto total"
 
-*Información per capita
+* Información per cápita (solo si existe tot_integ)
+capture assert !missing(tot_integ)
+if !_rc {
 
 gen double ictpc= ict/tot_integ
 gen double gctpc= gct/tot_integ
@@ -1588,6 +1705,7 @@ label var  ictpc "Ingreso corriente total per capita"
 label var  gctpc "Gasto corriente totalper capita"
 label var  intpc "Ingreso neto total per capita"
 label var  gntpc "Gasto neto total per capita"
+}
 
 saveold "`base_out'", replace
 
