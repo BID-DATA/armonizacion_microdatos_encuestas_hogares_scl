@@ -9,8 +9,8 @@ set more off
 * === RUTAS (las que pediste) ===
 global ruta   "C:\Users\maria\OneDrive\Documents\GitHub\armonizacion_microdatos_encuestas_hogares_scl\MEX\ENIGH\2012\m8_m12\data_merge"
 local base_in  "$ruta\MEX_2012m8_m12_BID_original.dta"
-local base_out "$ruta\MEX_2012m8_m12_FIXED.dta"
-local audit    "$ruta\audit_ENIGH2012_m8m12.csv"
+local base_out "$ruta\MEX_2012m8_m12_BID.dta"
+local audit    "$ruta\check\audit_ENIGH2012_m8m12.csv"
 
 * === VARIABLES DE INTERÉS ===
 local vnum  peso factor_hog factor_ch factor_ci edad edad_ci
