@@ -1619,9 +1619,7 @@ gen str folio= folioviv + foliohog
 sort folio numren, stable
 
 * Traer FACTOR (hogar) y otras del concentrado, a nivel persona
-merge m:1 folioviv foliohog using "$ruta\concen.dta", keepusing(factor estrato tam_hog)
-drop if _merge==2
-drop _merge
+merge m:1 folioviv foliohog using "$ruta\concen.dta", keepusing(factor estrato tam_hog est_dis upm) nogen
 
 merge 1:1 folioviv foliohog numren using "$ruta\trabajos_.dta"
 drop _merge
