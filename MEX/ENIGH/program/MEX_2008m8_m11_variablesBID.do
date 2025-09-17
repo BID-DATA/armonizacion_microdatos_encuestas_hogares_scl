@@ -377,18 +377,11 @@ Fuente:http://www.inegi.org.mx/inegi/contenidos/espanol/prensa/comunicados/ocupb
 *afiliado_ci****
 ****************
 *destring PRES_* SERVMED_* INSCR_* INSCR_* INST_* ATEMED TAM_EMP  CONTRATO, replace
-rename pres_* PRES_*
-rename servmed_* SERVMED_*
-rename inscr_* INSCR_*
-rename inst_* INST_*
-rename atemed* ATEMED*
-rename tam_emp_1* TAM_EMP_1*
-rename contrato_1* CONTRATO_1*
 
-destring PRES_* SERVMED_* INSCR_* INST_* ATEMED TAM_EMP_1  CONTRATO_1, replace
+destring pres_* servmed_* inscr_* inst_* atemed tam_emp_1  contrato_1, replace
 gen afiliado_ci=0     if condocup_ci==1 | condocup_ci==2 /*se pregunta todas las personas pero me quedo con la pea*/	
-*replace afiliado_ci=1 if (PRES_8==8) | (INSCR_1 == 1  & (SERVMED_3==3 | SERVMED_5==5 | SERVMED_6==6 | SERVMED_7==7)) 
-replace afiliado_ci=1 if (PRES_8_1==8) | (INSCR_1 == 1  & (SERVMED_3==3 | SERVMED_5==5 | SERVMED_6==6 | SERVMED_7==7)) 
+*replace afiliado_ci=1 if (pres_8==8) | (inscr_1 == 1  & (servmed_3==3 | servmed_5==5 | servmed_6==6 | servmed_7==7)) 
+replace afiliado_ci=1 if (pres_8_1==8) | (inscr_1 == 1  & (servmed_3==3 | servmed_5==5 | servmed_6==6 | servmed_7==7))  
 label var afiliado_ci "Afiliado a la Seguridad Social"
 *Nota: seguridad social comprende solo los que en el futuro me ofrecen una pension.
 ****************
@@ -3149,13 +3142,14 @@ gen categopri_ci=.
 *replace categopri_ci=2 if PERSONAL_CARGO==2
 *Modificación Mayra Sáenz - Agosto 2015
 *replace categopri_ci=1 if PERSONAL_CARGO1==1 & condocup_ci==1
-replace categopri_ci=1 if PERSONAL_1==1 & TRAB_1_1>0  & condocup_ci==1
-replace categopri_ci=2 if categopri_ci!=1 & INDEP_1==1 & condocup_ci==1
-*replace categopri_ci=3 if SUBOR==1
-replace categopri_ci=3 if SUBOR_1==1 & condocup_ci==1
-*replace categopri_ci=4 if PAGO== 2 
-replace categopri_ci=4 if PAGO_1== 2 & condocup_ci==1
+replace categopri_ci=1 if personal_1==1 & trab_1_1>0  & condocup_ci==1
+replace categopri_ci=2 if categopri_ci!=1 & indep_1==1 & condocup_ci==1
+*replace categopri_ci=3 if subor==1
+replace categopri_ci=3 if subor_1==1 & condocup_ci==1
+*replace categopri_ci=4 if pago== 2 
+replace categopri_ci=4 if pago_1== 2 & condocup_ci==1
 /*
+
 g categopri_ci=.
 replace categopri_ci = 1 if (PERSONAL_CARGO1==1 & TRAB_11 >=1) 
 replace categopri_ci = 2 if (INDEP1 ==1 & PERSONAL_CARGO1==2) |  (INDEP1 ==1 & PERSONAL_CARGO1==1 & TRAB_31 >=1) 
@@ -3173,11 +3167,12 @@ tab categopri_ci
 ******************************
 
 gen categosec_ci=. 
-replace categosec_ci=1 if PERSONAL_2==1 
-replace categosec_ci=2 if PERSONAL_2 ==2  
-replace categosec_ci=3 if SUBOR_2==1 
-replace categosec_ci=4 if PAGO_2== 2 
+replace categosec_ci=1 if personal_2==1 
+replace categosec_ci=2 if personal_2 ==2  
+replace categosec_ci=3 if subor_2==1 
+replace categosec_ci=4 if pago_2== 2 
 replace categosec_ci=. if emp_ci!=1
+
 label var categosec_ci "Categoria ocupacional trabajo secundario"
 label define categosec_ci 1"Patron" 2"Cuenta propia" 3"Empleado" 4"Familiar no remunerado"
 label value categosec_ci categosec_ci
@@ -3210,11 +3205,11 @@ label value tipocontrato_ci tipocontrato_ci
 */
 
 * Corregido por categopri_ci e incorporando todas las categorias MGD 06/17/2014
-destring CONTRATO_1 TIPOCONTR_1, replace
+destring contrato_1 tipocontr_1, replace
 g tipocontrato_ci=.
-replace tipocontrato_ci=1 if (CONTRATO_1==1 & TIPOCONTR_1==2) & categopri_ci==3
-replace tipocontrato_ci=2 if (CONTRATO_1==1 & TIPOCONTR_1==1) & categopri_ci==3
-replace tipocontrato_ci=3 if (CONTRATO_1==2 | tipocontrato_ci==.) & categopri_ci==3      
+replace tipocontrato_ci=1 if (contrato_1==1 & tipocontr_1==2) & categopri_ci==3
+replace tipocontrato_ci=2 if (contrato_1==1 & tipocontr_1==1) & categopri_ci==3
+replace tipocontrato_ci=3 if (contrato_1==2 | tipocontrato_ci==.) & categopri_ci==3      
 label var tipocontrato_ci "Tipo de contrato segun su duracion en act principal"
 label define tipocontrato_ci 1 "Permanente/indefinido" 2 "Temporal" 3 "Sin contrato/verbal" 
 label value tipocontrato_ci tipocontrato_ci
@@ -3245,8 +3240,8 @@ label var firmapeq_ci "1=5 o menos trabajadores"
 *	spublico_ci
 ******************************
 *2015, 10 Incorporacion MLO
-destring CLAS_EMP_1 , replace
-gen spublico_ci=(CLAS_EMP_1 ==3 & condocup_ci==1)
+destring clas_emp_1 , replace
+gen spublico_ci=(clas_emp_1 ==3 & condocup_ci==1) 
 
 
 
@@ -3259,9 +3254,10 @@ gen spublico_ci=(CLAS_EMP_1 ==3 & condocup_ci==1)
 **************
 
 
-tostring CMO_1, replace
-gen ocupa=real(substr(CMO_1,1,2))
-destring CMO_1, replace
+tostring cmo_1, replace
+gen ocupa=real(substr(cmo_1,1,2))
+destring cmo_1, replace 
+
 /*
 *tostring CMO, replace
 *gen ocupa=real(substr(CMO,1,2))
@@ -3286,7 +3282,7 @@ replace ocupa_ci=4 if (ocupa==71 | ocupa==72) & emp_ci==1
 replace ocupa_ci=5 if (ocupa==13 |ocupa==14 | ocupa==81 | ocupa==82 |ocupa==83) & emp_ci==1
 replace ocupa_ci=6 if (ocupa==41) & emp_ci==1
 replace ocupa_ci=7 if (ocupa>=52 & ocupa<=55) & emp_ci==1
-replace ocupa_ci=8 if (CMO_1>=8310 & CMO_1<=8312) & emp_ci==1
+replace ocupa_ci=8 if (cmo_1>=8310 & cmo_1<=8312) & emp_ci==1
 replace ocupa_ci=9 if (ocupa==99 |ocupa==98) & emp_ci==1
 
 
@@ -3294,8 +3290,8 @@ replace ocupa_ci=9 if (ocupa==99 |ocupa==98) & emp_ci==1
 ***rama_ci***
 *************
 
-tostring SCIAN_1, replace
-gen ramat=real(substr(SCIAN_1,1,3))
+tostring scian_1, replace
+gen ramat=real(substr(scian_1,1,3))
 *tostring SCIAN, replace
 *gen ramat=real(substr(SCIAN,1,3))
 gen rama_ci=1 if ramat>=111 & ramat<=115
@@ -3341,9 +3337,9 @@ gen tamemp_ci = 1 if TAM_EMP==1 | TAM_EMP==2
 replace tamemp_ci = 2 if (TAM_EMP>=3 & TAM_EMP<=7)
 replace tamemp_ci = 3 if (TAM_EMP>7 & TAM_EMP<12)
 */
-gen tamemp_ci = 1 if TAM_EMP_1==1 | TAM_EMP_1==2
-replace tamemp_ci = 2 if (TAM_EMP_1>=3 & TAM_EMP_1<=7)
-replace tamemp_ci = 3 if (TAM_EMP_1>7 & TAM_EMP_1<12)
+gen tamemp_ci = 1 if tam_emp_1==1 | tam_emp_1==2
+replace tamemp_ci = 2 if (tam_emp_1>=3 & tam_emp_1<=7)
+replace tamemp_ci = 3 if (tam_emp_1>7 & tam_emp_1<12) 
 
 label define tamemp_ci 1 "Pequeña" 2 "Mediana" 3 "Grande"
 label value tamemp_ci tamemp_ci
@@ -3352,54 +3348,52 @@ label var tamemp_ci "Tamaño de empresa"
 *******************
 ***categoinac_ci***
 *******************
-
-gen categoinac_ci =1 if (BUSTRAB_3==3 & condocup_ci==3)
-replace categoinac_ci = 2 if  (BUSTRAB_5==5 & condocup_ci==3)
-replace categoinac_ci = 3 if  (BUSTRAB_4==4 & condocup_ci==3)
+gen categoinac_ci =1 if (bustrab_3==3 & condocup_ci==3)
+replace categoinac_ci = 2 if  (bustrab_5==5 & condocup_ci==3)
+replace categoinac_ci = 3 if  (bustrab_4==4 & condocup_ci==3)
 replace categoinac_ci = 4 if  ((categoinac_ci ~=1 & categoinac_ci ~=2 & categoinac_ci ~=3) & condocup_ci==3)
-label var categoinac_ci "Categoría de inactividad"
-label define categoinac_ci 1 "jubilados o pensionados" 2 "Estudiantes" 3 "Quehaceres domésticos" 4 "Otros" 
+label var categoinac_ci "categoría de inactividad"
+label define categoinac_ci 1 "jubilados o pensionados" 2 "estudiantes" 3 "quehaceres domésticos" 4 "otros" 
 
 *******************
 ***formal***
 *******************
 gen formal=1 if cotizando_ci==1
 
-replace formal=1 if afiliado_ci==1 & (cotizando_ci!=1 | cotizando_ci!=0) & condocup_ci==1 & pais_c=="BOL"   /* si se usa afiliado, se restringiendo a ocupados solamente*/
-replace formal=1 if afiliado_ci==1 & (cotizando_ci!=1 | cotizando_ci!=0) & condocup_ci==1 & pais_c=="CRI"
-replace formal=1 if afiliado_ci==1 & (cotizando_ci!=1 | cotizando_ci!=0) & condocup_ci==1 & pais_c=="GUA" & anio_c>1998
-replace formal=1 if afiliado_ci==1 & (cotizando_ci!=1 | cotizando_ci!=0) & condocup_ci==1 & pais_c=="PAN"
-replace formal=1 if afiliado_ci==1 & (cotizando_ci!=1 | cotizando_ci!=0) & condocup_ci==1 & pais_c=="PRY" & anio_c<=2006
-replace formal=1 if afiliado_ci==1 & (cotizando_ci!=1 | cotizando_ci!=0) & condocup_ci==1 & pais_c=="DOM"
-replace formal=1 if afiliado_ci==1 & (cotizando_ci!=1 | cotizando_ci!=0) & condocup_ci==1 & pais_c=="MEX" & anio_c>=2008
+replace formal=1 if afiliado_ci==1 & (cotizando_ci!=1 | cotizando_ci!=0) & condocup_ci==1 & pais_c=="bol"   /* si se usa afiliado, se restringiendo a ocupados solamente*/
+replace formal=1 if afiliado_ci==1 & (cotizando_ci!=1 | cotizando_ci!=0) & condocup_ci==1 & pais_c=="cri"
+replace formal=1 if afiliado_ci==1 & (cotizando_ci!=1 | cotizando_ci!=0) & condocup_ci==1 & pais_c=="gua" & anio_c>1998
+replace formal=1 if afiliado_ci==1 & (cotizando_ci!=1 | cotizando_ci!=0) & condocup_ci==1 & pais_c=="pan"
+replace formal=1 if afiliado_ci==1 & (cotizando_ci!=1 | cotizando_ci!=0) & condocup_ci==1 & pais_c=="pry" & anio_c<=2006
+replace formal=1 if afiliado_ci==1 & (cotizando_ci!=1 | cotizando_ci!=0) & condocup_ci==1 & pais_c=="dom"
+replace formal=1 if afiliado_ci==1 & (cotizando_ci!=1 | cotizando_ci!=0) & condocup_ci==1 & pais_c=="mex" & anio_c>=2008
 
 gen byte formal_ci=1 if formal==1 & (condocup_ci==1 | condocup_ci==2)
 recode formal_ci .=0 if (condocup_ci==1 | condocup_ci==2)
-label var formal_ci "1=afiliado o cotizante / PEA"
+label var formal_ci "1=afiliado o cotizante / pea"
 
 
 ******************************************************************************
-*	EDUCATION
+*	education
 ******************************************************************************
 
 ******************************
 *	aedu_ci
 ******************************
-gen nivel_ed = N_INSTR161
-gen grado_ed = N_INSTR162
+gen nivel_ed = n_instr161
+gen grado_ed = n_instr162
 
 gen aedu_ci = .
 replace aedu_ci = 0 if nivel_ed == 0 | nivel_ed == 1 
 replace aedu_ci = grado_ed if nivel_ed == 2
 replace aedu_ci = grado_ed + 6 if nivel_ed == 3
-replace aedu_ci = grado_ed + 6 if nivel_ed == 6 & ANTEC_ESC == 1
+replace aedu_ci = grado_ed + 6 if nivel_ed == 6 & antec_esc == 1
 replace aedu_ci = grado_ed + 9 if nivel_ed == 4
-replace aedu_ci = grado_ed + 9 if nivel_ed == 6 & ANTEC_ESC == 2
+replace aedu_ci = grado_ed + 9 if nivel_ed == 6 & antec_esc == 2
 replace aedu_ci = grado_ed + 12 if nivel_ed == 5 | nivel_ed == 7
-replace aedu_ci = grado_ed + 12 if nivel_ed == 6 & ANTEC_ESC == 3
+replace aedu_ci = grado_ed + 12 if nivel_ed == 6 & antec_esc == 3
 replace aedu_ci = grado_ed + 12 + 5 if nivel_ed == 8
 replace aedu_ci = grado_ed + 12 + 5 + 2 if nivel_ed == 9
-
 
 ******************************
 * Line of code with indicator eduno_ci was deleted******************************
@@ -3434,7 +3428,7 @@ replace aedu_ci = grado_ed + 12 + 5 + 2 if nivel_ed == 9
 ******************************
 gen byte eduui_ci = (aedu_ci > 12 & aedu_ci < 16) & (nivel_ed == 5)
 replace eduui_ci = 1 if (aedu_ci > 12 & aedu_ci < 17) & (nivel_ed == 7)
-replace eduui_ci = 1 if (aedu_ci > 12 & aedu_ci < 15 & nivel_ed == 6 & (ANTEC_ESC == 3 | ANTEC_ESC == 2)) 
+replace eduui_ci = 1 if (aedu_ci > 12 & aedu_ci < 15 & nivel_ed == 6 & (antec_esc == 3 | antec_esc == 2)) 
 replace eduui_ci = . if aedu_ci == .
 label var eduui_ci "Universitaria o Terciaria Incompleta"
 
@@ -3443,7 +3437,7 @@ label var eduui_ci "Universitaria o Terciaria Incompleta"
 ******************************
 gen byte eduuc_ci = (aedu_ci >= 16) & (nivel_ed == 5)
 replace eduuc_ci = 1 if (aedu_ci >= 17) & (nivel_ed == 7)
-replace eduuc_ci = 1 if (aedu_ci >= 15  & nivel_ed == 6 & (ANTEC_ESC == 3 | ANTEC_ESC == 2))
+replace eduuc_ci = 1 if (aedu_ci >= 15  & nivel_ed == 6 & (antec_esc == 3 | antec_esc == 2))
 replace eduuc_ci = 1 if nivel_ed == 8 | nivel_ed == 9
 replace eduuc_ci = . if aedu_ci == .
 label var eduuc_ci "Universitaria o Terciaria Completa"
@@ -3457,28 +3451,29 @@ label var edupre_ci "Educacion preescolar"
 ******************************
 *	asispre_ci
 ******************************
-g asispre_ci = (ANTEC_ESC == 1 & nivel == 1)
-la var asispre_ci "Asiste a educacion prescolar"	
+
+g asispre_ci = (antec_esc == 1 & nivel == 1)
+la var asispre_ci "asiste a educacion prescolar"	
 	
 ******************************
 *	eduac_ci
 ******************************
 gen byte eduac_ci=.
-replace eduac_ci = 0 if nivel_ed == 6 & ANTEC_ESC ==3 | nivel_ed == 5
+replace eduac_ci = 0 if nivel_ed == 6 & antec_esc ==3 | nivel_ed == 5
 replace eduac_ci = 1 if nivel_ed >= 7 & nivel_ed <= 9
-label var eduac_ci "Superior universitario vs. no universitario"
+label var eduac_ci "superior universitario vs. no universitario"
 
 ******************************
 *	asiste_ci
 ******************************
 
-gen asiste_ci = (ANTEC_ESC==1)
-replace asiste_ci = . if ANTEC_ESC != 1 & ANTEC_ESC != 2
-label var asiste_ci "Personas que actualmente asisten a la escuela"
+gen asiste_ci = (antec_esc==1)
+replace asiste_ci = . if antec_esc != 1 & antec_esc != 2
+label var asiste_ci "personas que actualmente asisten a la escuela"
 
 ******************************
-* Line of code with indicator pqnoasis_ci was deleted******************************
-* Line of code with indicator pqnoasis_ci was deleted* Line of code with indicator pqnoasis_ci was deleted*NA
+* line of code with indicator pqnoasis_ci was deleted******************************
+* line of code with indicator pqnoasis_ci was deleted* line of code with indicator pqnoasis_ci was deleted*na
 
 **************
 *pqnoasis1_ci*
@@ -3486,31 +3481,31 @@ label var asiste_ci "Personas que actualmente asisten a la escuela"
 g       pqnoasis1_ci = .
 
 ******************************
-* Line of code with indicator repite_ci was deleted******************************
-* Line of code with indicator repite_ci was deleted*NA
+* line of code with indicator repite_ci was deleted******************************
+* line of code with indicator repite_ci was deleted*na
 
 ******************************
-* Line of code with indicator repiteult was deleted* Line of code with indicator repiteult was deleted
+* line of code with indicator repiteult was deleted* line of code with indicator repiteult was deleted
 ******************************
 *	edupub_ci
 ******************************
 gen edupub_ci=.
-replace edupub_ci=1 if TIPOESC == 1 
-replace edupub_ci=0 if TIPOESC == 2 | TIPOESC == 3
-label var edupub_ci "Personas que asisten a centros de ensenanza publicos"
+replace edupub_ci=1 if tipoesc == 1 
+replace edupub_ci=0 if tipoesc == 2 | tipoesc == 3
+label var edupub_ci "personas que asisten a centros de ensenanza publicos"
 
 
 ******************************************************************************
-*	INFRAESTRUCTURE VARIABLES 
+*	infraestructure variables 
 ******************************************************************************
 ************
 *aguared_ch*
 ************
-destring AGUA* , replace
+destring agua* , replace
 gen aguared_ch=.
-replace aguared_ch=1 if AGUA13 ==1 | AGUA13 ==2
-replace aguared_ch=0 if AGUA13 >=3
-label var aguared_ch "Acceso a una fuente de agua por red"
+replace aguared_ch=1 if agua13 ==1 | agua13 ==2
+replace aguared_ch=0 if agua13 >=3
+label var aguared_ch "acceso a una fuente de agua por red"
 
 *****************
 *aguafconsumo_ch*
@@ -3522,46 +3517,46 @@ gen aguafconsumo_ch = 0
 *****************
 
 gen aguafuente_ch = 0
-replace aguafuente_ch = 1 if (AGUA13==1 | AGUA13==2)
-replace aguafuente_ch = 2 if AGUA13==4
-replace aguafuente_ch = 6 if AGUA13==5
-replace aguafuente_ch = 7 if AGUA13==3 
-replace aguafuente_ch = 10 if (AGUA13==6 | AGUA13==7) |(AGUA13 ==. & jefe_ci ==1)
+replace aguafuente_ch = 1 if (agua13==1 | agua13==2)
+replace aguafuente_ch = 2 if agua13==4
+replace aguafuente_ch = 6 if agua13==5
+replace aguafuente_ch = 7 if agua13==3 
+replace aguafuente_ch = 10 if (agua13==6 | agua13==7) |(agua13 ==. & jefe_ci ==1)
 
 *************
 *aguadist_ch*
 *************
 gen aguadist_ch=0
-replace aguadist_ch= 1 if AGUA13==1
-replace aguadist_ch= 2 if AGUA13==2
-replace aguadist_ch= 3 if (AGUA13 ==3|AGUA13==4)
-label var aguadist_ch "Ubicacion de la principal fuente de agua"
+replace aguadist_ch= 1 if agua13==1
+replace aguadist_ch= 2 if agua13==2
+replace aguadist_ch= 3 if (agua13 ==3|agua13==4)
+label var aguadist_ch "ubicacion de la principal fuente de agua"
 
 
 **************
 *aguadisp1_ch*
 **************
-destring AGUA14, replace
+destring agua14, replace
 gen aguadisp1_ch =9
 
 **************
 *aguadisp2_ch*
 **************
-destring AGUA14, replace
+destring agua14, replace
 gen aguadisp2_ch = .
-replace aguadisp2_ch = 1 if (AGUA14==1 | AGUA14==2 | AGUA14==3 | AGUA14==8)
-replace aguadisp2_ch = 2 if (AGUA14==4 | AGUA14==5 | AGUA14==6)  
-replace aguadisp2_ch = 3 if AGUA14==7
+replace aguadisp2_ch = 1 if (agua14==1 | agua14==2 | agua14==3 | agua14==8)
+replace aguadisp2_ch = 2 if (agua14==4 | agua14==5 | agua14==6)  
+replace aguadisp2_ch = 3 if agua14==7
 
 *************
-*aguamala_ch*  Altered
+*aguamala_ch*  altered
 *************
 gen aguamala_ch = 2
 replace aguamala_ch = 0 if aguafuente_ch<=7
 replace aguamala_ch = 1 if aguafuente_ch>7 & aguafuente_ch!=10
 
 *****************
-*aguamejorada_ch*  Altered
+*aguamejorada_ch*  altered
 *****************
 gen aguamejorada_ch = 2
 replace aguamejorada_ch = 0 if aguafuente_ch>7 & aguafuente_ch!=10
@@ -3571,32 +3566,32 @@ replace aguamejorada_ch = 1 if aguafuente_ch<=7
 ***aguamide_ch***
 *****************
 gen aguamide_ch=.
-label var aguamide_ch "Usan medidor para pagar consumo de agua"
+label var aguamide_ch "usan medidor para pagar consumo de agua"
 
 *****************
-*bano_ch         *  Altered
+*bano_ch         *  altered
 *****************
-destring EXCUS, replace
-destring DRENAJE, replace
-destring ADM_AG, replace
+destring excus, replace
+destring drenaje, replace
+destring adm_ag, replace
 gen bano_ch=.
-replace bano_ch=0 if EXCUS==2
-replace bano_ch=1 if DRENAJE==1 & EXCUS==1 
-replace bano_ch=2 if DRENAJE==2 & EXCUS==1 
-replace bano_ch=4 if (DRENAJE==4 | DRENAJE==3) & EXCUS==1
-replace bano_ch=6 if DRENAJE==5 & EXCUS==1 | (DRENAJE==. & jefe_ci ==1)
+replace bano_ch=0 if excus==2
+replace bano_ch=1 if drenaje==1 & excus==1 
+replace bano_ch=2 if drenaje==2 & excus==1 
+replace bano_ch=4 if (drenaje==4 | drenaje==3) & excus==1
+replace bano_ch=6 if drenaje==5 & excus==1 | (drenaje==. & jefe_ci ==1)
 
 ***************
 ***banoex_ch***
 ***************
-destring USO_COM, replace
+destring uso_com, replace
 gen banoex_ch=.
-replace banoex_ch=1 if USO_COM==2
-replace banoex_ch=0 if USO_COM==1
-label var banoex_ch "Servicio higiénico de uso exclusivo del hogar"
+replace banoex_ch=1 if uso_com==2
+replace banoex_ch=0 if uso_com==1
+label var banoex_ch "servicio higiénico de uso exclusivo del hogar"
 
 *****************
-*banomejorado_ch*  Altered
+*banomejorado_ch*  altered
 *****************
 gen banomejorado_ch= 2
 replace banomejorado_ch =1 if bano_ch<=3 & bano_ch!=0
@@ -3606,9 +3601,9 @@ replace banomejorado_ch =0 if (bano_ch ==0 | bano_ch>=4) & bano_ch!=6
 *sinbano_ch*
 ************
 gen sinbano_ch = 3
-replace sinbano_ch = 0 if EXCUS == 1
-replace sinbano_ch = 1 if EXCUS == 2 & DRENAJE <=4
-replace sinbano_ch = 3 if EXCUS == 2 & DRENAJE ==5
+replace sinbano_ch = 0 if excus == 1
+replace sinbano_ch = 1 if excus == 2 & drenaje <=4
+replace sinbano_ch = 3 if excus == 2 & drenaje ==5
 *label var sinbano_ch "= 0 si tiene baño en la vivienda o dentro del terreno"
 
 *************
@@ -3624,36 +3619,36 @@ gen aguatrat_ch =9
 ******************************
 *	luz_ch
 ******************************
-gen luz_ch=(ELECT==1)
-*NA
+gen luz_ch=(elect==1)
+*na
 ******************************
 *	luzmide_ch
 ******************************
 gen luzmide_ch=.
-*NA
+*na
 
 ******************************
 *	combust_ch
 ******************************
 gen combust_ch=.
-replace combust_ch=1 if COMBUS==1 | COMBUS==2 |COMBUS==5
-replace combust_ch=0 if COMBUS>1 & COMBUS< 5  |COMBUS==6
-label var combust_ch "Principal combustible usado es gas o electric"
+replace combust_ch=1 if combus==1 | combus==2 |combus==5
+replace combust_ch=0 if combus>1 & combus< 5  |combus==6
+label var combust_ch "principal combustible usado es gas o electric"
 ******************************
 *	des1_ch
 ******************************
 gen des1_ch=.
-replace des1_ch=0 if DRENAJE==5
-replace des1_ch=1 if DRENAJE==1 | DRENAJE==2
-replace des1_ch=2 if DRENAJE==3
-replace des1_ch=3 if DRENAJE==4
+replace des1_ch=0 if drenaje==5
+replace des1_ch=1 if drenaje==1 | drenaje==2
+replace des1_ch=2 if drenaje==3
+replace des1_ch=3 if drenaje==4
 
-/*Tipo de desagüe incluyendo la
-definición de "Unimproved" del MDG
-0 No corresponde: El hogar no tiene servicio higiénico.
-1 El desagüe está conectado a la red general o a una cámara séptica
-2 El desagüe está conectado a un pozo ciego o es una letrina.
-3 El desagüe se comunica con la superficie: desemboca en un río o en la calle.*/
+/*tipo de desagüe incluyendo la
+definición de "unimproved" del mdg
+0 no corresponde: el hogar no tiene servicio higiénico.
+1 el desagüe está conectado a la red general o a una cámara séptica
+2 el desagüe está conectado a un pozo ciego o es una letrina.
+3 el desagüe se comunica con la superficie: desemboca en un río o en la calle.*/
 
 ******************************
 *	des2_ch
@@ -3663,64 +3658,64 @@ replace des2_ch=0 if des1_ch==0
 replace des2_ch=1 if (des1_ch==1 | des1_ch==2)
 replace des2_ch=2 if des1_ch==3 
 
-/*des2_ch Tipo de desagüe sin incluir la definición de "Unimproved" del MDG
-0 No corresponde: El hogar no tiene servicio higiénico.
-1 El desagüe está conectado a la red general, a una cámara o fosa séptica, o a un pozo ciego o letrina.
-2 Cualquier otro caso.*/
+/*des2_ch tipo de desagüe sin incluir la definición de "unimproved" del mdg
+0 no corresponde: el hogar no tiene servicio higiénico.
+1 el desagüe está conectado a la red general, a una cámara o fosa séptica, o a un pozo ciego o letrina.
+2 cualquier otro caso.*/
 
 ******************************
 *	piso_ch
 ******************************
 gen piso_ch=.
-replace piso_ch=0 if PISOS==1
-replace piso_ch=1 if PISOS>=2 & PISOS<=6
+replace piso_ch=0 if pisos==1
+replace piso_ch=1 if pisos>=2 & pisos<=6
 
 ******************************
 *	pared_ch
 ******************************
 gen pared_ch=.
-replace pared_ch=0 if PARED==1 | PARED==2 | PARED==4 | PARED==5
-replace pared_ch=1 if PARED==3 | PARED>=6 & PARED<=8
-label var pared_ch "Material Pared"
+replace pared_ch=0 if pared==1 | pared==2 | pared==4 | pared==5
+replace pared_ch=1 if pared==3 | pared>=6 & pared<=8
+label var pared_ch "material pared"
 
 /*
-1 Material de desecho.
-2 Lamina de cartón.
-3 Lamina metálica o de asbesto.
-4 Carrizo bambú o palma.
-5 Embarro o Bajareque.
-6 Madera.
-7 Adobe.
-8 Tabique, ladrillo, block, piedra o concreto.
+1 material de desecho.
+2 lamina de cartón.
+3 lamina metálica o de asbesto.
+4 carrizo bambú o palma.
+5 embarro o bajareque.
+6 madera.
+7 adobe.
+8 tabique, ladrillo, block, piedra o concreto.
 */
 
 ******************************
 *	techo_ch
 ******************************
 gen techo_ch=.
-replace techo_ch=0 if TECHOS==1 | TECHOS==2 | TECHOS==5 
-replace techo_ch=1 if TECHOS==3 | TECHOS==3 | (TECHOS>=6 & TECHOS<=9)
+replace techo_ch=0 if techos==1 | techos==2 | techos==5 
+replace techo_ch=1 if techos==3 | techos==3 | (techos>=6 & techos<=9)
 
 /*
-1 Material de desecho.
-2 Lamina de cartón.
-3 Lamina metálica.
-4 Lamina de asbesto.
-5 Palma o paja.
-6 Madera o tejamanil.
-7 Terrado con viguería.
-8 Teja.
-9 Losa de concreto o viguetas con bovedilla.
+1 material de desecho.
+2 lamina de cartón.
+3 lamina metálica.
+4 lamina de asbesto.
+5 palma o paja.
+6 madera o tejamanil.
+7 terrado con viguería.
+8 teja.
+9 losa de concreto o viguetas con bovedilla.
 */
 
 ******************************
 *	resid_ch
 ******************************
 gen resid_ch=.
-replace resid_ch=0 if ELI_BA==1 | ELI_BA==4
-replace resid_ch=1 if ELI_BA==2 | ELI_BA==3
-replace resid_ch=2 if ELI_BA==5 
-replace resid_ch=3 if ELI_BA==6
+replace resid_ch=0 if eli_ba==1 | eli_ba==4
+replace resid_ch=1 if eli_ba==2 | eli_ba==3
+replace resid_ch=2 if eli_ba==5 
+replace resid_ch=3 if eli_ba==6
 
 /*
 1 la tiran a un contenedor la recoge un camión o carrito de basura?
@@ -3737,75 +3732,75 @@ replace resid_ch=3 if ELI_BA==6
 ******************************
 *	dorm_ch
 ******************************
-gen dorm_ch=DORMI
-label var dorm_ch "#Habitaciones exclusivamente para dormir" 
+gen dorm_ch=dormi
+label var dorm_ch "#habitaciones exclusivamente para dormir" 
 ******************************
 *	cuartos_ch
 ******************************
-gen cuartos_ch=CUART
-label var cuartos_ch "#Habitaciones en el hogar"
+gen cuartos_ch=cuart
+label var cuartos_ch "#habitaciones en el hogar"
 notes: cuartos_ch esta indicando cuartos, contando cocina pero no bano 
 ******************************
 *	cocina_ch
 ******************************
 gen cocina_ch=.
-replace cocina_ch=1 if CUA_COC==1
-replace cocina_ch=0 if CUA_COC==2
-label var cocina_ch "Si existe un cuarto separado y exclusivo para cocinar"
+replace cocina_ch=1 if cua_coc==1
+replace cocina_ch=0 if cua_coc==2
+label var cocina_ch "si existe un cuarto separado y exclusivo para cocinar"
 ******************************
 *	telef_ch
 ******************************
-gen telef_ch=(SERV1_1==1)
-label var telef_ch "Hogar con sc telefonico fijo"
+gen telef_ch=(serv1_1==1)
+label var telef_ch "hogar con sc telefonico fijo"
 ******************************
 *	refrig_ch
 ******************************
-gen refrig_ch=(EQH4_10==1)
+gen refrig_ch=(eqh4_10==1)
 ******************************
 *	freez_ch
 ******************************
 gen freez_ch=.
-*NA
+*na
 ******************************
 *	auto_ch
 ******************************
-gen auto_ch=(VEHI2_1==1 | VEHI2_2==1 | VEHI2_3==1 )
+gen auto_ch=(vehi2_1==1 | vehi2_2==1 | vehi2_3==1 )
 ******************************
 *	compu_ch
 ******************************
-gen compu_ch=(EQH4_17==1)
+gen compu_ch=(eqh4_17==1)
 ******************************
 *	internet_ch
 ******************************
-gen internet_ch=(SERV1_4==1)
+gen internet_ch=(serv1_4==1)
 ******************************
 *	cel_ch
 ******************************
-gen cel_ch=(SERV1_2==1) 
+gen cel_ch=(serv1_2==1) 
 ******************************
 *	vivi1_ch
 ******************************
 gen vivi1_ch=.
-label var vivi1_ch "Tipo vivienda"
-label define vivi1_ch 1"Casa" 2"Dpto" 3"Otr"
-*NA
+label var vivi1_ch "tipo vivienda"
+label define vivi1_ch 1"casa" 2"dpto" 3"otr"
+*na
 ******************************
 *	vivi2_ch
 ******************************
 gen vivi2_ch=.
-*NA
+*na
 ******************************
 *	viviprop_ch
 ******************************
-*Modificado Mayra Sáenz - Agosto 2015
-g TENENCIA = TEN27
+*modificado mayra sáenz - agosto 2015
+g tenencia = ten27
 
 gen viviprop_ch=.
-replace viviprop_ch=0 if TENENCIA==1
-replace viviprop_ch=1 if TENENCIA==4   
-replace viviprop_ch=2 if TENENCIA==3
-replace viviprop_ch=3 if TENENCIA==2 | TENENCIA==5 | TENENCIA==6
-label var viviprop_ch "Propiedad de la vivienda" 
+replace viviprop_ch=0 if tenencia==1
+replace viviprop_ch=1 if tenencia==4   
+replace viviprop_ch=2 if tenencia==3
+replace viviprop_ch=3 if tenencia==2 | tenencia==5 | tenencia==6
+label var viviprop_ch "propiedad de la vivienda" 
 
 /*
 1 es rentada?
@@ -3813,26 +3808,26 @@ label var viviprop_ch "Propiedad de la vivienda"
 3 es propia pero la están pagando?
 4 es propia?
 5 esta intestada o en litigio?
-6 Otra situación.
+6 otra situación.
 */
 
 ******************************
 *	vivitit_ch
 ******************************
 gen vivitit_ch=.
-*NA
+*na
 ******************************
 *	vivialq_ch
 ******************************
 gen vivialq_ch= .
-*gen vivialq_ch= GAS_TRID003/3
-label var vivialq_ch "Alquiler mensual"
+*gen vivialq_ch= gas_trid003/3
+label var vivialq_ch "alquiler mensual"
 ******************************
 *	vivialqimp_ch
 ******************************
-gen vivialqimp_ch=ESTIM31TRI/3
+gen vivialqimp_ch=estim31tri/3
 replace vivialqimp=0 if vivialqimp<0
-label var vivialqimp_ch "Alquiler mensual imputado"
+label var vivialqimp_ch "alquiler mensual imputado"
 
 *************************************************************************************
 *******************************INGRESOS**********************************************
@@ -4265,7 +4260,7 @@ label var rtasot "Rentas y otros"
 * Consumidor (2011=100), líneas de pobreza
 /*_____________________________________________________________________________________________________*/
 
-
+/*
 do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&ExternalVars_Harmonized_DataBank.do"
 
 /*_____________________________________________________________________________________________________*/
@@ -4298,7 +4293,7 @@ rename SCIAN_1 codindustria
 destring codocupa codindustria, replace
 compress
 
-
+*/
 saveold "`base_out'", replace
 
 
