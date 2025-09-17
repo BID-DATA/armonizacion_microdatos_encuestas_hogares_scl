@@ -11,7 +11,7 @@ set more off
  *________________________________________________________________________________________________________________*
  
 
-/*
+
 global ruta = "${surveysFolder}"
 
 local PAIS MEX
@@ -27,22 +27,6 @@ local base_out = "$ruta\harmonized\\`PAIS'\\`ENCUESTA'\\data_arm\\`PAIS'_`ANO'`r
                     
 capture log close
 log using "`log_file'", replace 
-*/
-
-global survey_folder "C:\Users\maria\OneDrive\Documents\GitHub\armonizacion_microdatos_encuestas_hogares_scl"
-
-local PAIS MEX
-local ENCUESTA ENIGH
-local ANO "2008"
-local ronda m8_m11
-
-local log_file  "$survey_folder\\log\\`PAIS'\\`ENCUESTA'\\`PAIS'_`ANO'`ronda'_variablesBID.log"
-local base_in  = "$survey_folder\\`PAIS'\\`ENCUESTA'\\`ANO'\\`ronda'\data_merge\\`PAIS'_`ANO'`ronda'.dta"
-local base_out = "$survey_folder\\`PAIS'\\`ENCUESTA'\\`ANO'\\`ronda'\data_merge\\`PAIS'_`ANO'`ronda'_BID.dta"
-                                     
-capture log close
-log using "`log_file'", replace 
-
 
 /***************************************************************************
                  BASES DE DATOS DE ENCUESTA DE HOGARES - SOCIOMETRO 
