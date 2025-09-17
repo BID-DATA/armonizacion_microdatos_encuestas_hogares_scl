@@ -11,7 +11,7 @@ set more off
  *________________________________________________________________________________________________________________*
  
 
-
+/*
 global ruta = "${surveysFolder}"
 
 local PAIS MEX
@@ -25,6 +25,21 @@ local base_in  = "$ruta\survey\\`PAIS'\\`ENCUESTA'\\`ANO'\\`ronda'\data_merge\\`
 local base_out = "$ruta\harmonized\\`PAIS'\\`ENCUESTA'\\data_arm\\`PAIS'_`ANO'`ronda'_BID.dta"
 
                     
+capture log close
+log using "`log_file'", replace 
+*/
+
+global survey_folder "C:\Users\maria\OneDrive\Documents\GitHub\armonizacion_microdatos_encuestas_hogares_scl"
+
+local PAIS MEX
+local ENCUESTA ENIGH
+local ANO "2008"
+local ronda m8_m11
+
+local log_file  "$survey_folder\\log\\`PAIS'\\`ENCUESTA'\\`PAIS'_`ANO'`ronda'_variablesBID.log"
+local base_in  = "$survey_folder\\`PAIS'\\`ENCUESTA'\\`ANO'\\`ronda'\data_merge\\`PAIS'_`ANO'`ronda'.dta"
+local base_out = "$survey_folder\\`PAIS'\\`ENCUESTA'\\`ANO'\\`ronda'\data_merge\\`PAIS'_`ANO'`ronda'_BID.dta"
+                                     
 capture log close
 log using "`log_file'", replace 
 
@@ -63,14 +78,6 @@ egen ing_10_m=	sum(ING_1)	if CLAVE>="P062" & CLAVE<="P076",						by (FOLIOVIV FO
 
 use `base_in', clear
 
-foreach x of varlist  folioviv-com_fis_2 factor-tam_hog est_dis-conapo  {
-local upname =  upper("`x'")
-rename `x' `upname'
-}
-
-
-
-
 ******************************************************************************
 *	HOUSEHOLD VARIABLES
 ******************************************************************************
@@ -80,6 +87,7 @@ rename `x' `upname'
 ************
 *Inclusión Marcela G. Rubio - Agosto 2015
 
+rename ubica_geo UBICA_GEO
 gen region_c=real(substr(UBICA_GEO,1,2))
 label define region_c ///
 1 "Aguascalientes" ///
@@ -154,7 +162,7 @@ label define zona_c 1 "Urbana" 0 "Rural"
 label value zona_c zona_c*/
 
 *Modificación Mayra Sáenz - Agosto 2015 Se reemplaza la clasificación de zona por la que consta en la sintaxis de CONEVAL
-
+rename estrato ESTRATO
 destring ESTRATO, replace
 gen byte zona_c= 1 if ESTRATO<=2
 replace zona_c = 0 if (ESTRATO>2 & ESTRATO!=.)
@@ -194,6 +202,7 @@ label variable mes_c "Mes de la encuesta"
 *	relacion_ci
 ******************************
 gen relacion_ci=.
+rename parentesco PARENTESCO
 replace relacion_ci=1 if PARENTESCO==101
 replace relacion_ci=2 if PARENTESCO>=201 & PARENTESCO<=204
 replace relacion_ci=3 if PARENTESCO>=301 & PARENTESCO<=305
@@ -227,6 +236,7 @@ gen estrato_ci=.
 ******************************
 *	sexo_ci
 ******************************
+rename sexo SEXO
 gen sexo_ci=SEXO
 ******************************
 *	edad_ci
@@ -236,6 +246,7 @@ gen edad_ci=EDAD
 *	civil_ci
 ******************************
 gen civil_ci=.
+rename edocony EDOCONY
 replace civil_ci=1 if EDOCONY==6
 replace civil_ci=2 if EDOCONY==1 | EDOCONY==5
 replace civil_ci=3 if EDOCONY==2 | EDOCONY==3
@@ -342,12 +353,15 @@ gen dis_ch=.
 trabajon=trabajo
 verificn=verifica
 */
-
+rename trabajo TRABAJO
 gen trabajon=(TRABAJO)
+rename verifica VERIFICA
 gen verificn=(VERIFICA)
+rename motivo MOTIVO
 gen mot_ausen=(MOTIVO)
 generat condocup_ci=.
 replace condocup_ci=1 if (trabajon==1) | (verificn>=1 & verificn<=4) | (verificn==5 & mot_ausen <=6)
+rename bustrab_1 BUSTRAB_1
 replace condocup_ci=2 if BUSTRAB_1==1 
 replace condocup_ci=3 if condocup_ci!=1 & condocup_ci!=2
 replace condocup_ci=4 if edad<12
@@ -363,7 +377,15 @@ Fuente:http://www.inegi.org.mx/inegi/contenidos/espanol/prensa/comunicados/ocupb
 *afiliado_ci****
 ****************
 *destring PRES_* SERVMED_* INSCR_* INSCR_* INST_* ATEMED TAM_EMP  CONTRATO, replace
-destring PRES_* SERVMED_* INSCR_* INSCR_* INST_* ATEMED TAM_EMP_1  CONTRATO_1, replace
+rename pres_* PRES_*
+rename servmed_* SERVMED_*
+rename inscr_* INSCR_*
+rename inst_* INST_*
+rename atemed* ATEMED*
+rename tam_emp_1* TAM_EMP_1*
+rename contrato_1* CONTRATO_1*
+
+destring PRES_* SERVMED_* INSCR_* INST_* ATEMED TAM_EMP_1  CONTRATO_1, replace
 gen afiliado_ci=0     if condocup_ci==1 | condocup_ci==2 /*se pregunta todas las personas pero me quedo con la pea*/	
 *replace afiliado_ci=1 if (PRES_8==8) | (INSCR_1 == 1  & (SERVMED_3==3 | SERVMED_5==5 | SERVMED_6==6 | SERVMED_7==7)) 
 replace afiliado_ci=1 if (PRES_8_1==8) | (INSCR_1 == 1  & (SERVMED_3==3 | SERVMED_5==5 | SERVMED_6==6 | SERVMED_7==7)) 
@@ -3046,7 +3068,8 @@ gen desemp2_ci=.
 label var desemp2_ci "des1 + no trabajaron ni buscaron en la ult semana pero esperan respuesta de solicit"
  
 gen desemp3_ci=.
-label var desemp3_ci "des2 + no tienen trabajo pero buscaron antes de la semana pasada"
+label var desemp3_ci "des2 + no tienen trabajo pero buscaron antes de la semana pasada"RENAME
+
 
 ******************************
 *	pea1_ci, pea2_ci, pea3_ci
@@ -3090,12 +3113,18 @@ label var subemp_ci "Dispuestas a trabajar mas, pero trabajan 30hs o menos(seman
 *	horaspri_ci
 ******************************
 *gen horaspri_ci=HTRAB if emp_ci==1 & HTRAB<148
+rename htrab_1 HTRAB_1
+
 gen horaspri_ci=HTRAB_1 if emp_ci==1 & HTRAB_1<148
 label var horaspri_ci "Hs totales (semanales) trabajadas en act. principal"
 *NA
 ******************************
 *	horastot_ci
 ******************************
+rename htrab_2 HTRAB_2
+rename otro_trab_1 OTRO_TRAB_1
+rename otro_trab_2 OTRO_TRAB_2
+
 replace HTRAB_2=0 if OTRO_TRAB_1!=1 | OTRO_TRAB_2!=1
 gen horastot_ci=HTRAB_1+HTRAB_2 if emp_ci==1 &  (HTRAB_1+HTRAB_2<148)
 label var horastot_ci "Hs totales (semanales)trabajadas en toda actividad"

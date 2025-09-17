@@ -315,14 +315,14 @@ la cual se encuentra a nivel de hogares (folio).*/
 
 *Se unen las 3 bases de gasto contenidas en la ENIGH 2008
 
-use "$ruta\G_diario.dta", clear
+use "$ruta\g_diario.dta", clear
 g base = 1
 
 append using "$ruta\gastos.dta"
 
 replace base = 2 if base ==.
 
-append using "$ruta\G_educa.dta"
+append using "$ruta\g_educa.dta"
 
 replace base = 3 if base ==.
 
@@ -882,7 +882,7 @@ a nivel de hogar (folio).*/
 
 *No Monetario
 
-use "$ruta\Nomon.dta", clear
+use "$ruta\nomon.dta", clear
 gen str folio= folioviv + foliohog
 
 /*En el caso de la información de gasto no monetario, para 
@@ -1493,13 +1493,13 @@ la cual se encuentra a nivel de hogar (folio).*/
 
 *Genero el identificador en la base de hogares.
 
-use "$ruta\Hogares.dta" , clear
+use "$ruta\hogares.dta" , clear
 gen str folio= folioviv + foliohog
 saveold "$ruta\Hogares_.dta", replace
 
 
 
-use "$ruta\Concen.dta", clear
+use "$ruta\concen.dta", clear
 
 gen str folio= folioviv + foliohog
 
@@ -1614,8 +1614,14 @@ saveold "$ruta\trabajos_.dta", replace
 *====================================================================================*
 
 use "$ruta\pobla08.dta", clear //Base nueva
+isid folioviv foliohog numren
 gen str folio= folioviv + foliohog
 sort folio numren, stable
+
+* Traer FACTOR (hogar) y otras del concentrado, a nivel persona
+merge m:1 folioviv foliohog using "$ruta\concen.dta", keepusing(factor estrato tam_hog)
+drop if _merge==2
+drop _merge
 
 merge 1:1 folioviv foliohog numren using "$ruta\trabajos_.dta"
 drop _merge
@@ -1666,6 +1672,23 @@ label var  gntpc "Gasto neto total per capita"
 
 gen factorp=factor*tam_hog
 
+* === Normalizar nombres críticos que consumirá variablesBID.do ===
+capture confirm variable FOLIOVIV
+if _rc {
+    capture rename folioviv FOLIOVIV
+    capture rename foliohog FOLIOHOG
+    capture rename numren   NUMREN
+}
+
+capture confirm variable FACTOR
+if _rc {
+    capture rename factor FACTOR
+}
+
+capture confirm variable EDAD
+if _rc {
+    capture rename edad EDAD
+}
 
 
 saveold "`base_out'", replace
