@@ -26,7 +26,6 @@ local base_out = "${surveysFolder}\survey\\`PAIS'\\`ENCUESTA'\\`ANO'\\`ronda'\\d
 capture log close
 log using "`log_file'", replace 
 
-
 /***************************************************************************
                  BASES DE DATOS DE ENCUESTA DE HOGARES - SOCIOMETRO 
 País: Mexico
@@ -315,14 +314,14 @@ la cual se encuentra a nivel de hogares (folio).*/
 
 *Se unen las 3 bases de gasto contenidas en la ENIGH 2008
 
-use "$ruta\g_diario.dta", clear
+use "$ruta\G_diario.dta", clear
 g base = 1
 
 append using "$ruta\gastos.dta"
 
 replace base = 2 if base ==.
 
-append using "$ruta\g_educa.dta"
+append using "$ruta\G_educa.dta"
 
 replace base = 3 if base ==.
 
@@ -882,7 +881,7 @@ a nivel de hogar (folio).*/
 
 *No Monetario
 
-use "$ruta\nomon.dta", clear
+use "$ruta\Nomon.dta", clear
 gen str folio= folioviv + foliohog
 
 /*En el caso de la información de gasto no monetario, para 
@@ -1493,13 +1492,13 @@ la cual se encuentra a nivel de hogar (folio).*/
 
 *Genero el identificador en la base de hogares.
 
-use "$ruta\hogares.dta" , clear
+use "$ruta\Hogares.dta" , clear
 gen str folio= folioviv + foliohog
 saveold "$ruta\Hogares_.dta", replace
 
 
 
-use "$ruta\concen.dta", clear
+use "$ruta\Concen.dta", clear
 
 gen str folio= folioviv + foliohog
 
@@ -1614,31 +1613,31 @@ saveold "$ruta\trabajos_.dta", replace
 *====================================================================================*
 
 use "$ruta\pobla08.dta", clear //Base nueva
-isid folioviv foliohog numren
 gen str folio= folioviv + foliohog
 sort folio numren, stable
 
-* Traer FACTOR (hogar) y otras del concentrado, a nivel persona
-merge m:1 folioviv foliohog using "$ruta\concen.dta", keepusing(factor estrato tam_hog est_dis upm) nogen
-
 merge 1:1 folioviv foliohog numren using "$ruta\trabajos_.dta"
+drop if _merge==2
 drop _merge
 
 merge 1:1 folio numren using "$ruta\ingreso_deflactado08_per.dta"
-rename _merge _merge_ing
-sort folio numren, stable
+drop if _merge==2
+drop _m
 
 merge 1:1 folioviv foliohog numren using "$ruta\edu_gtosmp"
+drop if _merge==2
 drop _merge
 
 merge 1:1 folioviv foliohog numren using "$ruta\edu_gtosnmp"
+drop if _merge==2
 drop _merge
 
-
 merge m:1 folio using "$ruta\gtos_autoc08.dta"
+drop if _merge==2
 drop _merge
 
 merge m:1 folio using "$ruta\edu_gtosmh.dta"
+drop if _merge==2
 drop _merge
 
 *Modificación Mayra Sáenz: Total Ingreso monetario del hogar
@@ -1670,24 +1669,15 @@ label var  gntpc "Gasto neto total per capita"
 
 gen factorp=factor*tam_hog
 
-* === Normalizar nombres críticos que consumirá variablesBID.do ===
-capture confirm variable FOLIOVIV
-if _rc {
-    capture rename folioviv FOLIOVIV
-    capture rename foliohog FOLIOHOG
-    capture rename numren   NUMREN
-}
 
-capture confirm variable FACTOR
-if _rc {
-    capture rename factor FACTOR
-}
+* === LAST STEP: attach CONCEN to the person-level base ===
+merge m:1 folioviv foliohog using "$ruta\concen.dta", ///
+    keepusing(factor estrato tam_hog est_dis upm) nogen
 
-capture confirm variable EDAD
-if _rc {
-    capture rename edad EDAD
-}
+* (optional, if later you need region): if UBICA_GEO/ubica_geo is in CONCEN, add it to keepusing()
+* capture destring estrato, replace   // ensure numeric
 
+drop if missing(numren)
 
 saveold "`base_out'", replace
 
