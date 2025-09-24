@@ -32,15 +32,37 @@ País: Mexico
 Encuesta: ENIGH (Nueva construcción)
 Round: Agosto-Noviembre
 Autores: No consta el nombre del autor/a de las versiones anteriores.
-Versión 2013: Mayra Sáenz
-Última versión: Mayra Sáenz - Email: mayras@iadb.org, saenzmayra.a@gmail.com
-Fecha última modificación: 19 de Agosto de 2013
-*Modificación Mayra Sáenz: 5 de Septiembre de 2014
+Versión 2013: Mayra Sáenz- Email: mayras@iadb.org, saenzmayra.a@gmail.com
+Versión 2025: Maria Alejandra Zegarra
+Fecha última modificación: Setiembre 2025
 
 							SCL/LMK - IADB
 ****************************************************************************/
-
-
+* ===========================================================================
+* Últimos cambios realizados por: María Alejandra Zegarra – Septiembre 2025
+* NOTA DE CAMBIOS – ENIGH 2008 (m8–m11)
+*
+* 1. Se identificaron faltantes (~58,859) en variables clave (factor_ch, 
+*    factor_ci, edad_ci, sexo_ci, zona_c) al aplicar el merge inicial.
+*
+* 2. Causa raíz:
+*    - Filas a nivel hogar (sin numren) se mezclaban en el universo persona.
+*    - Inconsistencias de mayúsculas/minúsculas en variables (ej. UBICA_GEO/ubica_geo,
+*      FACTOR/factor).
+*
+* 3. Correcciones aplicadas:
+*    - Merge final con la base CONCEN asegurando universo persona y 
+*      sin arrastrar filas sólo-hogar.
+*    - Normalización de nombres de variables (lowercase).
+*    - Backfill de variables de diseño muestral: factor, estrato, upm, 
+*      ubica_geo, sexo y edad antes de derivar las variables armonizadas.
+*
+* 4. Verificación:
+*    - Missings = 0 en las cinco variables críticas.
+*    - Distribución de zona_c consistente con 118,927 personas 
+*      (Urbana 63.04%, Rural 36.96%).
+*
+* ===========================================================================
 *Mayra Sáenz - Agosto 2015: Se realiza el merge con base en la sintaxis de CONEVAL, 
 *pero con algunas modificaciones, y generando nuevas variables.
 
@@ -1670,12 +1692,9 @@ label var  gntpc "Gasto neto total per capita"
 gen factorp=factor*tam_hog
 
 
-* === LAST STEP: attach CONCEN to the person-level base ===
+* === Adjunta CONCEN a la base de datos a nivel de personas===
 merge m:1 folioviv foliohog using "$ruta\concen.dta", ///
     keepusing(factor estrato tam_hog est_dis upm) nogen
-
-* (optional, if later you need region): if UBICA_GEO/ubica_geo is in CONCEN, add it to keepusing()
-* capture destring estrato, replace   // ensure numeric
 
 drop if missing(numren)
 

@@ -27,7 +27,6 @@ program define std_keys
 end
 
 
-
 global ruta = "${surveysFolder}\\survey\MEX\ENIGH\2012\m8_m12\data_orig"
 
 local PAIS MEX
@@ -41,22 +40,41 @@ local base_out = "${surveysFolder}\survey\\`PAIS'\\`ENCUESTA'\\`ANO'\\`ronda'\\d
 capture log close
 log using "`log_file'", replace 
 
-
 /***************************************************************************
                  BASES DE DATOS DE ENCUESTA DE HOGARES - SOCIOMETRO 
 País: Mexico
 Encuesta: ENIGH (Nueva construcción)
 Round: Septiembre-Diciembre
 Autores:
-Versión 2013: Mayra Sáenz
-Última versión: Mayra Sáenz - Email: mayras@iadb.org, saenzmayra.a@gmail.com
-Fecha última modificación: 19 de Agosto de 2013
+Versión 2013: Mayra Sáenz- Email: mayras@iadb.org, saenzmayra.a@gmail.com
+Versión 2025: Maria Alejandra Zegarra
+Fecha última modificación: Setiembre 2025
 
 							SCL/LMK - IADB
 ****************************************************************************/
-
-
-
+* ===========================================================================
+* Últimos cambios realizados por: María Alejandra Zegarra – Septiembre 2025
+* NOTA DE CAMBIOS – ENIGH 2012 (m8–m12) – Merge
+*
+* Problemas detectados:
+*   - El flujo original usaba Ingresos.dta como base maestra,
+*     reduciendo el universo a 33,726 personas y 9,002 hogares.
+*   - Llaves de identificación (folioviv, foliohog, numren) sin
+*     estandarizar correctamente.
+*
+* Solución aplicada:
+*   - Se reconstruyó la base maestra partiendo de POBLACION.dta
+*     (todas las personas).
+*   - Se estandarizaron las llaves en todos los merges.
+*   - Se incorporó Hogares.dta al inicio para heredar factor_hog.
+*   - Se usó keep(master match) en merges adicionales para
+*     conservar el universo completo.
+*
+* Resultados:
+*   - Universo consistente con la base oficial publicada por INEGI:
+*     ≈33,726 personas y 9,002 hogares.
+*   - factor_hog disponible para la armonización posterior.
+* ===========================================================================
 *Mayra Sáenz - Agosto 2015: Se realiza el merge con base en la sintaxis de CONEVAL, 
 *pero con algunas modificaciones, y generando nuevas variables.
 

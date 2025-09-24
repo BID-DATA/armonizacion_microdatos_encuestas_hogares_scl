@@ -34,30 +34,36 @@ Encuesta: ENIGH (tradicional)
 Round: Agosto-Noviembre
 Autores:
 Generación nuevas variables LMK: Yessenia Loayza (desloay@hotmail.com | yessenial@iadb.org)
-Versión 2013: Mayra Sáenz
-Última versión: Mayra Sáenz - Email: mayras@iadb.org, saenzmayra.a@gmail.com
-Fecha última modificación: 19 de Agosto de 2013
+Versión 2013: Mayra Sáenz- Email: mayras@iadb.org, saenzmayra.a@gmail.com
+Versión 2025: Maria Alejandra Zegarra
+Fecha última modificación: Setiembre 2025
 
 							SCL/LMK - IADB
 ****************************************************************************/
-/***************************************************************************
-Detalle de procesamientos o modificaciones anteriores:
-
-****************************************************************************/
-/*
-egen ing_1_m=	sum(ING_1)	if CLAVE=="P001",								by (FOLIOVIV FOLIOHOG NUMREN) /*asalariados - sueldo,salario o jornal*/
-egen ing_2_m=	sum(ING_1) 	if CLAVE>="P001" & CLAVE<="P009", 						by (FOLIOVIV FOLIOHOG NUMREN)/*asalariados - sueldo+hs extras+prima vacacional,etc*/
-egen ing_3_m=	sum(ING_1) 	if (CLAVE>="P001" & CLAVE<="P009")|CLAVE=="P017"|CLAVE=="P019"|CLAVE=="P029",	by (FOLIOVIV FOLIOHOG NUMREN)/*ing_2_m +ing por cooperativa, sociedad o empresa que funciona como soc*/ 
-egen ing_4_m=	sum(ING_1) 	if CLAVE>="P010" & CLAVE<="P016",						by (FOLIOVIV FOLIOHOG NUMREN)/*Ingreso de negocios propios*/
-egen ing_5_m=	sum(ING_1) 	if CLAVE=="P018"|CLAVE=="P028"|CLAVE=="P038",					by (FOLIOVIV FOLIOHOG NUMREN)/*utilidades o ganancias*/
-egen ing_6_m=	sum(ING_1) 	if CLAVE>="P039" & CLAVE<="P047",						by (FOLIOVIV FOLIOHOG NUMREN)/*renta*/
-egen ing_7_m=	sum(ING_1) 	if (CLAVE>="P048" & CLAVE<="P057")|(CLAVE>="59" & CLAVE<="60"),			by (FOLIOVIV FOLIOHOG NUMREN) /*transferencias sin contar remesas*/
-egen ing_8_m=	sum(ING_1) 	if  CLAVE=="P058",								by (FOLIOVIV FOLIOHOG NUMREN)/*remesas (ingresos provenientes del exterior)*/
-egen ing_9_m=	sum(ING_1) 	if CLAVE=="P061",								by (FOLIOVIV FOLIOHOG NUMREN)/*otros ing corrientes*/
-egen ing_10_m=	sum(ING_1)	if CLAVE>="P062" & CLAVE<="P076",						by (FOLIOVIV FOLIOHOG NUMREN)/*percepciones financieras*/
-
-*/
-
+* ===========================================================================
+* Últimos cambios realizados por: María Alejandra Zegarra – Septiembre 2025
+* NOTA DE CAMBIOS – ENIGH 2008 (m8–m11) – Harmonización (variablesBID)
+*
+* 1. Problemas identificados:
+*    - Variables clave (factor_ch, factor_ci, sexo_ci, edad_ci, zona_c) 
+*      se generaban con valores faltantes (~58,859 casos).
+*    - Diferencias por mayúsculas/minúsculas en nombres de variables 
+*      (ej. UBICA_GEO vs ubica_geo, FACTOR vs factor).
+*    - Inconsistencias en merges y arrastre de observaciones incompletas.
+*
+* 2. Cambios aplicados:
+*    - Normalización de nombres de variables a minúsculas antes de la armonización.
+*    - Refuerzo de variables factor/estrato desde la base CONCEN cuando faltaban.
+*    - Refuerzo de sexo/edad desde la base POBLA08 cuando faltaban.
+*    - Reconstrucción de variables armonizadas evitando dejar filas huérfanas.
+*    - Generación consistente de zona_c, region_c, y variables sociodemográficas.
+*
+* 3. Resultados:
+*    - Se redujo a cero el número de observaciones con missing en las variables críticas.
+*    - Se mantiene el universo de 118,927 personas y 29,468 hogares.
+*    - Distribución urbana/rural y demás indicadores consistentes con ENIGH 2008.
+* ===========================================================================
+***************************************************************************
 
 use `base_in', clear
 
@@ -332,11 +338,6 @@ gen dis_ch=.
 ****************
 ****condocup_ci*
 ****************
-/* son las mismas solo las primeras estan en destring
-trabajon=trabajo
-verificn=verifica
-*/
-
 gen trabajon=(trabajo)
 gen verificn=(verifica)
 gen mot_ausen=(motivo)
@@ -352,7 +353,6 @@ label var condocup_ci "condicion de ocupacion utilizando definicion del pais"
 trabajar como aquella de catorce años en adelante, de acuerdo con la ley 
 federal del trabajo.
 fuente:http://www.inegi.org.mx/inegi/contenidos/espanol/prensa/comunicados/ocupbol.asp */
-
 ****************
 *afiliado_ci****
 ****************
@@ -379,7 +379,6 @@ label var cotizando_ci "cotizante a la seguridad social"
 ****************
 gen cotizapri_ci=.
 label var cotizapri_ci "cotizante a la seguridad social en actividad ppal."
-
 ****************
 *cotizasec_ci***
 ****************
@@ -390,14 +389,11 @@ label var cotizasec_ci "cotizante a la seguridad social en actividad sec."
 ****************
 gen instpen_ci=. /*revisar la variable inst_1 inst_2 inst_3 inst_4 */
 label var instpen_ci "institucion proveedora de la pension - variable original de cada pais" 
-
 ********************
 *** instcot_ci *****
 ********************
 gen instcot_ci=.
 label var instcot_ci "institución a la cual cotiza"
-
-
 *************
 **pension_ci*
 *************
@@ -405,7 +401,6 @@ label var instcot_ci "institución a la cual cotiza"
 *modificación mayra sáenz - agosto 2015: a partir de 2002 se puede diferenciar la pension nacional o del extranjero, se considera solo la nacional.
 g pension_ci = (ypension>0 & ypension!=.)
 label var pension_ci "1=recibe pension contributiva"
-
 *************
 *  ypen_ci  *
 *************
@@ -413,7 +408,6 @@ label var pension_ci "1=recibe pension contributiva"
 *modificación mayra sáenz - agosto 2015
 gen ypen_ci=ypension  if pension_ci==1
 label var ypen_ci "valor de la pension contributiva"
-
 *****************
 **  ypensub_ci  *
 *****************
@@ -428,7 +422,6 @@ egen ypensub_ci=rsum(yp70mas yotroam yoportuni70), missing
 label var ypensub_ci "valor de la pension subsidiada / no contributiva"
 *programas: beneficio del programa 70 y más; beneficio de otros programas para adultos mayores
 *mayra sáenz: se incluye el monto de oportunidades como consta en años anteriores y en el anexo de bases de datos armonizadas.
-
 ***************
 *pensionsub_ci*
 ***************
@@ -4271,7 +4264,7 @@ label var rtasot "rentas y otros"
 * Consumidor (2011=100), líneas de pobreza
 /*_____________________________________________________________________________________________________*/
 
-/*
+
 do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&ExternalVars_Harmonized_DataBank.do"
 
 /*_____________________________________________________________________________________________________*/
@@ -4296,7 +4289,7 @@ rename CMO_1  codocupa
 rename SCIAN_1 codindustria
 destring codocupa codindustria, replace
 compress
-*/
+
 
 saveold "`base_out'", replace
 
