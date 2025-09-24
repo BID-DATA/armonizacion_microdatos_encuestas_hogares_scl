@@ -57,14 +57,10 @@ Fecha última modificación: Setiembre 2025
 * NOTA DE CAMBIOS – ENIGH 2012 (m8–m12) – Merge
 *
 * Problemas detectados:
-*   - El flujo original usaba Ingresos.dta como base maestra,
-*     reduciendo el universo a 33,726 personas y 9,002 hogares.
 *   - Llaves de identificación (folioviv, foliohog, numren) sin
 *     estandarizar correctamente.
 *
 * Solución aplicada:
-*   - Se reconstruyó la base maestra partiendo de POBLACION.dta
-*     (todas las personas).
 *   - Se estandarizaron las llaves en todos los merges.
 *   - Se incorporó Hogares.dta al inicio para heredar factor_hog.
 *   - Se usó keep(master match) en merges adicionales para
