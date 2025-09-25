@@ -11,7 +11,6 @@ set trace on
  * El servidor contiene las bases de datos MECOVI.
  *________________________________________________________________________________________________________________*
 
- /*
 global ruta = "${surveysFolder}\\survey\MEX\ENIGH\2024\m8_m12\data_orig"
 
 local PAIS MEX
@@ -24,24 +23,7 @@ local base_out = "${surveysFolder}\survey\\`PAIS'\\`ENCUESTA'\\`ANO'\\`ronda'\\d
 
 capture log close
 log using "`log_file'", replace 
-*/
 
-
-global survey_folder "C:\Users\maria\OneDrive\Documents\GitHub\armonizacion_microdatos_encuestas_hogares_scl"
-                           
-local PAIS MEX
-local ENCUESTA ENIGH
-local ANO "2024"
-local ronda m8_m12
-
-
-global ruta "$survey_folder\\`PAIS'\\`ENCUESTA'\\`ANO'\\`ronda'\data_orig"
-
-local log_file  "$survey_folder\\log\\`PAIS'\\`ENCUESTA'\\`PAIS'_`ANO'`ronda'_mergeBID.log"
-local base_out  "$survey_folder\\`PAIS'\\`ENCUESTA'\\`ANO'\\`ronda'\data_merge\\`PAIS'_`ANO'`ronda'.dta"
-
-capture log close
-log using "`log_file'", replace 
 
 /***************************************************************************
                  BASES DE DATOS DE ENCUESTA DE HOGARES - SOCIOMETRO 
@@ -1147,8 +1129,6 @@ use "$ruta\trabajos.dta",clear
 *_________________________________________________________________________________________________________*
 * Modificación Mayra Sáenz: Se unifica con la base de personas con la de ingresos, de vivienda y de gastos
 *_________________________________________________________________________________________________________*
-
-
 use "$ruta\poblacion.dta", clear //Base nueva
 gen str folio= folioviv + foliohog
 order folio, first
@@ -1178,14 +1158,15 @@ egen double ict=rsum(ing_monh nomon)  if parentesco=="101" | parentesco=="102" /
 label var  ict "Ingreso corriente total"
 
 
- global survey_folder "C:\Users\maria\OneDrive\Documents\GitHub\armonizacion_microdatos_encuestas_hogares_scl"
-                           
+global ruta = "${surveysFolder}\\survey\MEX\ENIGH\2024\m8_m12\data_orig"
+
 local PAIS MEX
 local ENCUESTA ENIGH
 local ANO "2024"
 local ronda m8_m12
 
-local base_out  "$survey_folder\\`PAIS'\\`ENCUESTA'\\`ANO'\\`ronda'\data_merge\\`PAIS'_`ANO'`ronda'.dta"
+local log_file = "${surveysFolder}\harmonized\\`PAIS'\\`ENCUESTA'\\log\\`PAIS'_`ANO'`ronda'_mergeBID.log"
+local base_out = "${surveysFolder}\survey\\`PAIS'\\`ENCUESTA'\\`ANO'\\`ronda'\\data_merge\\`PAIS'_`ANO'`ronda'.dta"
 
 saveold "`base_out'", replace
 
