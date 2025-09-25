@@ -94,9 +94,7 @@ Fecha última modificación: Setiembre 2025
    (iii) Merge principal a nivel persona: m:1 folioviv foliohog numren usando aguinaldo.dta.
    (iv) Aplicar filtros de claves (P009/P016), deflactación 2024 con `_defl_si`.
    (v) Construir agregados/etiquetas mínimas para pasar a variablesBID.do.
-
-
- **************************************************************************************************/
+**************************************************************************************************/
 
 *********************************************************
 *Parte VII 

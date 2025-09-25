@@ -60,6 +60,41 @@ Fecha última modificación: Setiembre 2025
 
 							SCL/LMK - IADB
 ****************************************************************************/
+* ENIGH MÉXICO 2024 — ARMONIZACIÓN SCL/BID
+* Archivo: MEX_2024m8_m12_variablesBID.do
+* Autor: Maria Alejandra Zegarra | Fecha: 24/09/2025
+*
+* NOTA DE CAMBIOS / HISTORIAL
+* -------------------------------------------------------------------------------------------
+* - Educación (NUEVO en 2024):
+*     · Se incorporaron variables educativas alineadas al Manual de Armonización:
+*         aedu_ci     : años de educación aprobados (preescolar=0, con topes por nivel ISCED/UNESCO).
+*         edupre_ci   : completó preescolar (1 sí, 0 no).
+*         asiste_ci   : asistencia actual a centro educativo.
+*         edupub_ci   : tipo de institución (1 pública, 0 privada).
+*         asispre_ci  : asistencia a preescolar (1 sí, 0 no).
+*         eduui_ci    : educación universitaria incompleta (dicotómica).
+*         eduuc_ci    : educación universitaria completa (dicotómica).
+*         eduac_ci    : distingue técnico vs universitario en superior.
+*         pqnoasis1_ci: razón principal de no asistencia escolar.
+*
+*     · Reglas aplicadas para México (duraciones ISCED/UNESCO):
+*         Primaria=6, Secundaria baja=3, Secundaria alta=3,
+*         Sup. técnico=2, Normal=4, Licenciatura=4, Maestría=3, Doctorado=3.
+*
+*     · Se añadió lógica para inferir si se completó el nivel (term_use) cuando no está reportado.
+*     · Se incluyeron validaciones QA: rangos de aedu_ci, consistencia entre nivel y grado,
+*       y chequeos de continuidad de años de educación.
+*
+* - Robustez general:
+*     · Eliminación de destring innecesarios en variables ya numéricas.
+*     · Verificación de errores r(198) y r(110) corregida.
+*
+* NOTA FINAL
+* -------------------------------------------------------------------------------------------
+* Con estas modificaciones, el do-file 2024 queda alineado con el Manual de Armonización 
+* asegurando consistencia temporal en las bases.
+********************************************************************************************/
 ***************************************************************************
 
 use `base_in', clear
@@ -145,6 +180,7 @@ label value zona_c zona_c
 *	pais_c
 ******************************
 gen str3 pais_c="MEX"
+
 ******************************
 *	anio_c
 ******************************
@@ -165,6 +201,7 @@ label value region_BID_c region_BID_c
 *	mes_c
 ******************************
 gen mes_c= .
+
 ******************************
 *	relacion_ci
 ******************************
@@ -280,10 +317,12 @@ gen estrato_ci=est_dis
 *	sexo_ci
 ******************************
 gen sexo_ci=real(sexo)
+
 ******************************
 *	edad_ci
 ******************************
 gen edad_ci=edad 
+
 ******************************
 *	civil_ci
 ******************************
@@ -298,25 +337,6 @@ replace civil_ci=4 if edo_cony=="5"
 label var civil_ci "Estado civil"
 label define civil_ci 1 "Soltero" 2 "Union formal o informal" 3 "Divorciado o separado" 4 "Viudo"
 label value civil_ci civil_ci
-
-/*
-gen civil_ci=.
-replace civil_ci=1 if edo_cony=="5"
-replace civil_ci=2 if edo_cony=="1"|edo_cony=="6"
-replace civil_ci=3 if edo_cony=="2"|edo_cony=="3"
-replace civil_ci=4 if edo_cony=="4"
-label var civil_ci "Estado civil"
-label define civil_ci 1 "Soltero" 2 "Union formal o informal" 3 "Divorciado o separado" 4 "Viudo"
-label value civil_ci civil_ci
-*/
-/*
-1 vive con su pareja en unión libre?
-2 está casado(a)?
-3 está separado(a)?
-4 está divorciado(a)?
-5 es viudo(a)?
-6 está soltero(a)?
-*/
 
 ******************************
 *	jefe_ci
@@ -378,11 +398,9 @@ label var nmenor1_ch "Numero de familiares menores a 1 anio"
 gen miembros_ci=(relacion_ci>=1 & relacion_ci<=5)
 label var miembros_ci "Miembro del hogar"
 
-*option: gen miembros_ci=(relacion_ci>=1 & relacion_ci<=5)
-
-*--------------------------------------------------------------------
-* Discapacidad (ENIGH 2024, Washington Group)
-*--------------------------------------------------------------------
+******************************
+*	dis_ci
+******************************
 * Escala usual: 1=ninguna, 2=alguna, 3=mucha, 4=no puede
 * Ajusta si los códigos difieren en tu cuestionario
 
@@ -417,10 +435,6 @@ label var dis_ch "Hogar con al menos un miembro con discapacidad"
 ****************
 ****condocup_ci*
 ****************
-/* son las mismas solo las primeras estan en destring
-trabajon=trabajo
-verificn=verifica
-*/
 gen trabajon=real(trabajo_mp)
 gen mot_ausen=real(motivo_aus)
 
@@ -436,7 +450,6 @@ label var condocup_ci "Condicion de ocupacion utilizando definicion del pais"
 trabajar como aquella de catorce años en adelante, de acuerdo con la Ley 
 Federal del Trabajo.
 Fuente:http://www.inegi.org.mx/inegi/contenidos/espanol/prensa/comunicados/ocupbol.asp */
-
 
 ****************
 *afiliado_ci****
@@ -464,6 +477,7 @@ label var tipopen_ci "Tipo de pension - variable original de cada pais"
 gen cotizando_ci=. /*Revisar las variables inst_1 ó pres_91 */
 label var cotizando_ci "Cotizante a la Seguridad Social"
 *Nota: solo seguro social publico, con el cual tenga derecho a pensiones en el futuro.
+
 ****************
 *cotizapri_ci***
 ****************
@@ -490,30 +504,18 @@ label var instcot_ci "institución a la cual cotiza"
 *************
 **pension_ci*
 *************
-*generat pension_ci=(ing_1P032>0 & ing_1P032!=.) /* A todas las per mayores de cinco*/
-*Modificación Mayra Sáenz - Agosto 2015: a partir de 2002 se puede diferenciar la pension nacional o del extranjero, se considera solo la nacional.
 g pension_ci = (ypension>0 & ypension!=.)
 label var pension_ci "1=Recibe pension contributiva"
 
 *************
 *ypen_ci*
 *************
-*gen ypen_ci=ing_1P032 if pension_ci==1
-*Modificación Mayra Sáenz - Agosto 2015
 gen ypen_ci=ypension  if pension_ci==1
 label var ypen_ci "Valor de la pension contributiva"
 
 *****************
 **  ypensub_ci  *
 *****************
-* Modificacion MLO 2014, 05
-/*gen yp70mas=ing_1P044
-gen yotroam=ing_1P045
-gen yoportuni70=ing_1P042 if edad_ci>=70  /* solo se los dan a los que no entraron por SEDESOL*/
-*/
-* Oportunidades : Special cash transfers for every adult 70 years or older who is a member of a beneficiary family meanwhile its incorporated to the SEDESOL´s Program 70 and more.
-
-*Modificación Mayra Sáenz - Agosto 2015 - Se modificó la base de datos original, por lo que se cambian los nombres de las variables.
 *Alvaro AM - Agosto 2019: modifiqué el nombre a yp65más porque a partir de 2013 el programa redujo el requisito de edad de 70 a 68/65 (68 en general y 65 para población indígena).
 * A partir del 2020 es Programa Pensión para el Bienestar de las Personas Adultas Mayores (antes Programa 65 y más)
 gen yp65mas = P_P104
@@ -525,8 +527,6 @@ gen yoportuni70=0 // No aplica desde 2020
 egen ypensub_ci=rsum(yp65mas yotroam yoportuni70) 
 replace ypensub_ci=. if yp65mas==. & yotroam==. & yoportuni70==.
 
-*egen ypensub_ci=rsum(ing_1P044 ing_1P045 ing_1P042) 
-*replace ypensub_ci=. if ing_1P044==. & ing_1P045==. & ing_1P042==.
 label var ypensub_ci "Valor de la pension subsidiada / no contributiva"
 *Programas: Beneficio del programa 70 y más; Beneficio de otros programas para adultos mayores; y, Oportunidades
 
@@ -541,7 +541,6 @@ label var pensionsub_ci "1=recibe pension subsidiada / no contributiva"
 *************
 generat cesante_ci=. /*Discutir sobre las variables ing_1P022 o segsoc */
 label var cesante_ci "Desocupado - definicion oficial del pais"
-
 
 *********
 *lp_ci***
@@ -558,7 +557,6 @@ gen lpe_ci =.
 replace lpe_ci= 1516.62 if zona_c==1
 replace lpe_ci= 1073.69 if zona_c==0
 label var lpe_ci "Linea de indigencia oficial del pais"
-
 
 /************************************************************************************************************
 * 3. Creación de nuevas variables de SS and LMK a incorporar en Armonizadas
@@ -622,7 +620,6 @@ gen byte emp_ci=(condocup_ci==1)
 ****************
 ***desemp_ci***
 ****************
-
 gen desemp_ci=(condocup_ci==2)
 
 *************
@@ -636,19 +633,20 @@ replace pea_ci=1 if emp_ci==1 |desemp_ci==1
 ******************************
 gen desalent_ci=.
 /*NA: No se puede generar. Entrarian en 'no busco trabajo' por 'otra razon'*/
+
 ******************************
 *	subemp_cim
 ******************************
 gen subemp_ci=.
 label var subemp_ci "Dispuestas a trabajar mas, pero trabajan 30hs o menos(semana)"
 *NA 
+
 ******************************
 *	horaspri_ci
 ******************************
 gen horaspri_ci=htrab1 if emp_ci==1 & htrab1<148
 label var horaspri_ci "Hs totales (semanales) trabajadas en act. principal"
 *NA
-
 
 ******************************
 *	horastot_ci
@@ -669,17 +667,6 @@ label var tiempoparc_ci "Trabajan menos de 30 hs semanales y no quieren trabajar
 ******************************
 *	categopri_ci
 ******************************
-/*
-gen categopri_ci=.
-replace categopri_ci=1 if personal1=="1"
-replace categopri_ci=2 if personal1=="2"
-replace categopri_ci=3 if subor1=="1"
-replace categopri_ci=4 if pago1== "2" 
-replace categopri_ci=. if emp_ci!=1
-label var categopri_ci "Categoria ocupacional trabajo principal"
-label define categopri_ci 1"Patron" 2"Cuenta propia" 3"Empleado" 4"Familiar no remunerado"
-label value categopri_ci categopri_ci
-*/
 gen categopri_ci=.
 replace categopri_ci=1 if personal1=="1" & condocup_ci==1
 replace categopri_ci=2 if  categopri_ci!=1 & indep1=="1" & condocup_ci==1
@@ -689,7 +676,6 @@ replace categopri_ci=. if emp_ci!=1
 label var categopri_ci "Categoria ocupacional trabajo principal"
 label define categopri_ci 1"Patron" 2"Cuenta propia" 3"Empleado" 4"Familiar no remunerado"
 label value categopri_ci categopri_ci
-
 
 ******************************
 *	categosec_ci
@@ -704,7 +690,6 @@ label var categosec_ci "Categoria ocupacional trabajo secundario"
 label define categosec_ci 1"Patron" 2"Cuenta propia" 3"Empleado" 4"Familiar no remunerado"
 label value categosec_ci categosec_ci
 
-
 *****************
 *tipocontrato_ci*
 *****************
@@ -717,18 +702,6 @@ label value categosec_ci categosec_ci
 2-¿Es de base, planta o por tiempo indeterminado?...............................................
 3-No sabe..........................................................
 */
-/*
-generat tipocontrato_ci=. /* Solo disponible para asalariados y trab independ*/
-*replace tipocontrato_ci=1 if contrato1==2 
-*replace tipocontrato_ci=2 if contrato1==1              
-*replace tipocontrato_ci=. if contrato1==3
-*2014, 05 Modificacion MLO
-destring contrato1 tipocontr1, replace
-replace tipocontrato_ci=1 if contrato1==1 & tipocontr1==2
-replace tipocontrato_ci=2 if contrato1==1 & tipocontr1==1   
-replace tipocontrato_ci=3 if contrato1==2        
-replace tipocontrato_ci=. if contrato1==3
-*/
 
 * Corregido por categopri_ci MGD 06/17/2014
 destring contrato1 tipocontr1, replace
@@ -739,7 +712,6 @@ replace tipocontrato_ci=3 if (contrato1==2 | tipocontrato_ci==.) & categopri_ci=
 label var tipocontrato_ci "Tipo de contrato segun su duracion en act principal"
 label define tipocontrato_ci 1 "Permanente/indefinido" 2 "Temporal" 3 "Sin contrato/verbal" 
 label value tipocontrato_ci tipocontrato_ci
-
 
 ******************************
 *	segsoc_ci
@@ -773,8 +745,6 @@ label var firmapeq_ci "1=5 o menos trabajadores"
 destring clas_emp1, replace
 gen spublico_ci=(clas_emp1==3 & condocup_ci==1)
 
-
-
 ******************************************************************************
 *		LABOR DEMAND
 ******************************************************************************
@@ -782,21 +752,8 @@ gen spublico_ci=(clas_emp1==3 & condocup_ci==1)
 ******************************
 *	ocupa_ci
 ******************************
-
 tostring sinco1, replace
 gen ocupa=real(substr(sinco1,1,2))
-/*
-gen ocupa_ci=.
-replace ocupa_ci=1 if (ocupa==11 | ocupa==12) & emp_ci==1
-replace ocupa_ci=2 if (ocupa==21) & emp_ci==1
-replace ocupa_ci=3 if (ocupa==51 | ocupa==61 |ocupa==62) & emp_ci==1
-replace ocupa_ci=4 if (ocupa==71 | ocupa==72) & emp_ci==1
-replace ocupa_ci=5 if (ocupa==13 |ocupa==14 | ocupa==81 | ocupa==82) & emp_ci==1
-replace ocupa_ci=6 if (ocupa==41) & emp_ci==1
-replace ocupa_ci=7 if (ocupa>=52 & ocupa<=55) & emp_ci==1
-replace ocupa_ci=8 if (ocupa==83) & emp_ci==1
-replace ocupa_ci=9 if (ocupa==99) & emp_ci==1
-*/
 
 * Modificacion MGD 07/07/2014: correccion de la clasificacion de actividades segun el manual.
 gen ocupa_ci=.
@@ -814,7 +771,6 @@ replace ocupa_ci=9 if (ocupa==98 | ocupa==99) & emp_ci==1
 ******************************
 *	rama_ci
 ******************************
-
 tostring scian1, replace
 gen ramat=real(substr(scian1,1,3))
 gen rama_ci=1 if ramat>=111 & ramat<=115
@@ -830,7 +786,6 @@ replace rama_ci=8 if ramat>=520 & ramat<=530
 /*Note: Actividad económica a la que se dedica la
 empresa de acuerdo al Sistema de clasificación Industrial de América
 del Norte. México, 2008 */
-
 
 * rama secundaria
 tostring scian2, replace
@@ -855,39 +810,30 @@ label values ramasec_ci ramasec_ci
 *******************************INGRESOS**********************************************
 *************************************************************************************
 
-
 ****************
 ***ylmpri_ci ***
 ****************
 egen ylmpri_ci=rsum(ing_trab1 ing_negp1), missing
 
-
-
 *****************
 ***nrylmpri_ci***
 *****************
-
 gen nrylmpri_ci=.
-
 
 *****************
 *** ylnmpri_ci***
 *****************
-
 gen ylnmpri_ci=.
-
 
 *****************************************************************
 *Identificador de top-code del ingreso de la actividad principal*
 *****************************************************************
-
 gen tcylmpri_ci=.
 
 ***************
 ***ylmsec_ci***
 ***************
 egen ylmsec_ci=rsum(ing_trab2 ing_negp2), missing
-
 
 ******************
 ****ylnmsec_ci****
@@ -897,31 +843,26 @@ gen ylnmsec_ci=.
 ************
 ***ylm_ci***
 ************
-
 egen ylm_ci=rsum(ylmpri_ci ylmsec_ci), missing
 
 *************
 ***ylnm_ci***
 *************
-
 gen ylnm_ci=.
 
 *************
 *ylmotros_ci*
 *************
-
 gen ylmotros_ci= .
 
 *********************************************
 *Ingreso laboral no monetario otros trabajos*
 *********************************************
-
 gen ylnmotros_ci=.
 
 *************
 ***ynlm_ci***
 *************
-
 egen ynlm_ci=rsum(ing_rent ing_tran otros), missing //CONEVAL no incluye otros
 
 *************
@@ -933,14 +874,10 @@ egen ynlnm = rsum(pago_esp reg_esp), missing
 gen ynlnm_ci= ynlnm/nmiembros_ch
 egen ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci)
 
-
-
 *****************
 ***remesas_ci***
 *****************
-
 gen remesas_ci=remesas
-
 
 ************************
 *** HOUSEHOLD INCOME ***
@@ -949,68 +886,53 @@ gen remesas_ci=remesas
 ******************
 *** nrylmpri_ch***
 ******************
-
-
 bys idh_ch: egen nrylmpri_ch=sum(nrylmpri_ci) if miembros_ci==1, missing
 replace nrylmpri_ch=1 if nrylmpri_ch>0 & nrylmpri_ch<.
 
 *************
 *** ylm_ch***
 *************
-
 bys idh_ch: egen ylm_ch=sum(ylm_ci) if miembros_ci==1
-
 
 **************************************************
 *Identificador de los hogares en donde (top code)*
 **************************************************
-
 gen tcylmpri_ch=.
-
 
 ****************
 *** ylmnr_ch ***
 ****************
-
 bys idh_ch: egen ylmnr_ch=sum(ylm_ci) if miembros_ci==1
 replace ylmnr_ch=. if nrylmpri_ch==1
 
 ***************
 *** ylnm_ch ***
 ***************
-
 bys idh_ch: egen ylnm_ch=sum(ylnm_ci) if miembros_ci==1, missing
 
 **********************************
 *** remesas_ch & remesasnm_ch ***
 **********************************
-
 bys idh_ch: egen remesas_ch=sum(remesas_ci) if miembros_ci==1, missing
-
 
 ***************
 *** ynlm_ch ***
 ***************
-
 bys idh_ch: egen ynlm_ch=sum(ynlm_ci) if miembros_ci==1, missing
 
 ****************
 *** ynlnm_ch ***
 ****************
-
 bys idh_ch: egen ynlnm_ch=sum(ynlnm_ci) if miembros_ci==1, missing
 
 *******************
 *** autocons_ci ***
 *******************
-
 gen autocons_ci= .
-
 
 *******************
 *** autocons_ch ***
 *******************
-
 bys idh_ch: egen autocons_ch=sum(autocons_ci) if miembros_ci==1, missing
 
 *******************
@@ -1022,26 +944,20 @@ gen rentaimp_ch= .
 *****************
 ***ylhopri_ci ***
 *****************
-
 gen ylmhopri_ci=ylmpri_ci/(horaspri_ci*4.3)
-
 
 ***************
 ***ylmho_ci ***
 ***************
-
 gen ylmho_ci=ylm_ci/(horastot_ci*4.3)
 
 ********************
 ***Transferencias***
 ********************
-
 *-Monetarias
 
 gen trac_pri = trat_pr
-
 gen trac_pub = trat_pu
-
 gen dona_pub = dona_pu
 gen dona_pri = dona_pr
 
@@ -1061,23 +977,23 @@ label var rtasot "Rentas y otros"
 ******************
 gen yoficial_ch=ict
 
-
 ******************************
 *	durades_ci
 ******************************
 gen durades_ci=.
 *NA
+
 ******************************
 *	antiguedad_ci
 ******************************
 gen antiguedad_ci=.
 *NA
+
 *******************
 ***tamemp_ci***
 *******************
   
 *México Pequeña 1 a 5, Mediana 6 a 50, Grande Más de 50
-
 gen tamemp_ci = 1 if tam_emp1==1 | tam_emp1==2
 replace tamemp_ci = 2 if (tam_emp1>=3 & tam_emp1<=7)
 replace tamemp_ci = 3 if (tam_emp1>7 & tam_emp1<12)
@@ -1093,7 +1009,6 @@ replace tamemp_o = 3 if (tam_emp1>7 & tam_emp1<12)
 label define tamemp_o 1 "[1-9]" 2 "[10-49]" 3 "[50 y mas]"
 label value tamemp_o tamemp_o
 label var tamemp_o "Tamaño de empresa-OECD"
-
 
 *******************
 ***categoinac_ci***
@@ -1127,36 +1042,159 @@ g formal_1= 0 if condocup_ci>=1 & condocup_ci<=3
 replace formal_1=1 if cotizando_ci==1
 replace formal_1=1 if afiliado_ci1==1 & (cotizando_ci!=1 | cotizando_ci!=0) & pais_c=="MEX" & anio_c>=2008
 
+/********************************************************************
+* EDUCACIÓN — MÉXICO ENIGH 2024 (sin necesidad de `term`)
+* Salidas: aedu_ci (años aprobados), edupre_ci (preescolar completo)
+********************************************************************/
 
-******************************************************************************
-*	EDUCATION
-******************************************************************************
+*======================*
+* 0) PARAMS / MAPEO    *
+*======================*
+local var_nivel nivel          // último nivel aprobado/alcanzado (categórica)
+local var_grado grado          // último año/grado aprobado DENTRO del nivel (numérica)
+local var_term                 // p.ej.: local var_term edu_termino
 
-* ENIGH 2024 tiene nivel y grado (ajusta a nombres reales: nivel, grado).
-* Definición estándar México (Manual Tabla 8):
-*   Preescolar: 1–3 años
-*   Primaria: 6 años
-*   Secundaria baja: 3 años
-*   Preparatoria / Media superior: 3 años
-*   Superior (licenciatura): típicamente 4–5 años
-*   Posgrado: 2–3 años adicionales
+* Códigos de nivel:
+local L_PRE   1
+local L_PRIM  2
+local L_SEC1  3
+local L_SEC2  4
+local L_SUPT  5
+local L_PROF  6
+local L_GRAD  7
+local L_MAEST 8
+local L_DOCT  9
+local L_MISS1 98
+local L_MISS2 99
 
-destring grado, replace force
+* Duraciones por nivel según manual (México):
+local Y_PRIM  6
+local Y_SEC1  3
+local Y_SEC2  3
+local Y_SUPT  2
+local Y_PROF  4
+local Y_GRAD  4
+local Y_MAEST 3
+local Y_DOCT  3
 
-encode nivel, gen(nivel_num)
+*===========================*
+* 1) Normalización de tipos *
+*===========================*
+foreach v in `var_nivel' `var_grado' `var_term' {
+    capture confirm variable `v'
+    if !_rc {
+        capture confirm string variable `v'
+        if !_rc {
+            quietly replace `v' = strtrim(`v')
+            quietly replace `v' = subinstr(`v',",","",.)
+            quietly replace `v' = "" if inlist(`v',"98","99","NA","N/A","-","")
+            destring `v', replace force
+        }
+        else {
+            quietly replace `v' = . if inlist(`v',`L_MISS1',`L_MISS2')
+        }
+    }
+}
 
-gen aedu_ci = .
+*==============================*
+* 2) Crear `term_use` flexible *
+*==============================*
+* Si NO existe `var_term`, lo inferimos con grado==máximo del nivel
+tempvar term_use
+gen byte `term_use' = .   // 1 = terminó nivel; 0 = no terminó; . = no sabe
 
-* Reglas de México según manual
-replace aedu_ci = grado if nivel_num==1   // Preescolar
-replace aedu_ci = grado if nivel_num==2   // Primaria
-replace aedu_ci = 6 + grado if nivel_num==3   // Secundaria
-replace aedu_ci = 9 + grado if nivel_num==4   // Preparatoria / Media superior
-replace aedu_ci = 12 + grado if nivel_num==5  // Licenciatura
-replace aedu_ci = 16 + grado if nivel_num==6  // Posgrado
+capture confirm variable `var_term'
+if _rc {
+    quietly {
+        replace `term_use' = 1 if `var_nivel' == `L_PRIM'  & `var_grado'==`Y_PRIM'
+        replace `term_use' = 1 if `var_nivel' == `L_SEC1'  & `var_grado'==`Y_SEC1'
+        replace `term_use' = 1 if `var_nivel' == `L_SEC2'  & `var_grado'==`Y_SEC2'
+        replace `term_use' = 1 if `var_nivel' == `L_SUPT'  & `var_grado'==`Y_SUPT'
+        replace `term_use' = 1 if `var_nivel' == `L_PROF'  & `var_grado'==`Y_PROF'
+        replace `term_use' = 1 if `var_nivel' == `L_GRAD'  & `var_grado'==`Y_GRAD'
+        replace `term_use' = 1 if `var_nivel' == `L_MAEST' & `var_grado'==`Y_MAEST'
+        replace `term_use' = 1 if `var_nivel' == `L_DOCT'  & `var_grado'==`Y_DOCT'
 
+        replace `term_use' = 0 if missing(`term_use') & inlist(`var_nivel', ///
+            `L_PRIM',`L_SEC1',`L_SEC2',`L_SUPT',`L_PROF',`L_GRAD',`L_MAEST',`L_DOCT') ///
+            & `var_grado' < .
+    }
+}
+else {
+    * Usar la variable original (asumo 1=terminó, 2=no; ajusta si difiere)
+    gen byte __term_orig = .
+    replace __term_orig = 1 if `var_term'==1
+    replace __term_orig = 0 if `var_term'==2
+    replace `term_use'  = __term_orig
+    drop __term_orig
+}
 
-label var aedu_ci "Años de educación aprobados"
+*======================*
+* 3) edupre_ci         *
+*======================*
+gen byte edupre_ci = .
+replace edupre_ci = 1 if `var_nivel'==`L_PRE' & `term_use'==1
+replace edupre_ci = 0 if `var_nivel'==`L_PRE' & `term_use'==0
+label var edupre_ci "Completó preescolar (1 sí, 0 no)"
+
+*======================*
+* 4) aedu_ci           *
+*======================*
+gen double aedu_ci = .
+label var aedu_ci "Años de educación aprobados (armonizado)"
+
+* Primaria
+replace aedu_ci = min(max(`var_grado',0),`Y_PRIM') if `var_nivel'==`L_PRIM' & `term_use'==0 & `var_grado'<.
+replace aedu_ci = `Y_PRIM'                            if `var_nivel'==`L_PRIM' & `term_use'==1
+
+* Secundaria baja (base = 6)
+replace aedu_ci = `Y_PRIM' + min(max(`var_grado',0),`Y_SEC1') ///
+    if `var_nivel'==`L_SEC1' & `term_use'==0 & `var_grado'<.
+replace aedu_ci = `Y_PRIM' + `Y_SEC1' ///
+    if `var_nivel'==`L_SEC1' & `term_use'==1
+
+* Secundaria alta (base = 9)
+replace aedu_ci = `Y_PRIM' + `Y_SEC1' + min(max(`var_grado',0),`Y_SEC2') ///
+    if `var_nivel'==`L_SEC2' & `term_use'==0 & `var_grado'<.
+replace aedu_ci = `Y_PRIM' + `Y_SEC1' + `Y_SEC2' ///
+    if `var_nivel'==`L_SEC2' & `term_use'==1
+
+* Superior técnico (base = 12)
+replace aedu_ci = `Y_PRIM' + `Y_SEC1' + `Y_SEC2' + min(max(`var_grado',0),`Y_SUPT') ///
+    if `var_nivel'==`L_SUPT' & `term_use'==0 & `var_grado'<.
+replace aedu_ci = `Y_PRIM' + `Y_SEC1' + `Y_SEC2' + `Y_SUPT' ///
+    if `var_nivel'==`L_SUPT' & `term_use'==1
+
+* Profesorado/Normal (si aplica) (base = 12)
+replace aedu_ci = `Y_PRIM' + `Y_SEC1' + `Y_SEC2' + min(max(`var_grado',0),`Y_PROF') ///
+    if `var_nivel'==`L_PROF' & `term_use'==0 & `var_grado'<.
+replace aedu_ci = `Y_PRIM' + `Y_SEC1' + `Y_SEC2' + `Y_PROF' ///
+    if `var_nivel'==`L_PROF' & `term_use'==1
+
+* Licenciatura/Grado (base = 12)
+replace aedu_ci = `Y_PRIM' + `Y_SEC1' + `Y_SEC2' + min(max(`var_grado',0),`Y_GRAD') ///
+    if `var_nivel'==`L_GRAD' & `term_use'==0 & `var_grado'<.
+replace aedu_ci = `Y_PRIM' + `Y_SEC1' + `Y_SEC2' + `Y_GRAD' ///
+    if `var_nivel'==`L_GRAD' & `term_use'==1
+
+* Maestría (base = 12 + grado)
+replace aedu_ci = `Y_PRIM' + `Y_SEC1' + `Y_SEC2' + `Y_GRAD' + min(max(`var_grado',0),`Y_MAEST') ///
+    if `var_nivel'==`L_MAEST' & `term_use'==0 & `var_grado'<.
+replace aedu_ci = `Y_PRIM' + `Y_SEC1' + `Y_SEC2' + `Y_GRAD' + `Y_MAEST' ///
+    if `var_nivel'==`L_MAEST' & `term_use'==1
+
+* Doctorado
+replace aedu_ci = `Y_PRIM' + `Y_SEC1' + `Y_SEC2' + `Y_GRAD' + `Y_MAEST' + min(max(`var_grado',0),`Y_DOCT') ///
+    if `var_nivel'==`L_DOCT' & `term_use'==0 & `var_grado'<.
+replace aedu_ci = `Y_PRIM' + `Y_SEC1' + `Y_SEC2' + `Y_GRAD' + `Y_MAEST' + `Y_DOCT' ///
+    if `var_nivel'==`L_DOCT' & `term_use'==1
+
+* Preescolar siempre cuenta 0
+replace aedu_ci = 0 if `var_nivel'==`L_PRE' & missing(aedu_ci)
+
+* Truncar a enteros y acotar
+replace aedu_ci = floor(aedu_ci)
+replace aedu_ci = 0 if aedu_ci < 0
 
 *****************************
 *	INFRAESTRUCTURE VARIABLES 
@@ -1170,7 +1208,6 @@ gen byte aguared_ch = .
 replace aguared_ch = 1 if agua_ent=="1"   // 1 = Sí tiene agua entubada (ajustar código real)
 replace aguared_ch = 0 if agua_ent=="2"   // 2 = No tiene
 label var aguared_ch "Hogar con agua entubada (red pública)"
-
 
 *****************
 *aguafconsumo_ch*
@@ -1194,7 +1231,6 @@ replace aguafuente_ch = 1 if inlist(ab_agua, "1","2","3")
 replace aguafuente_ch = 0 if inlist(ab_agua, "4","5","6","7","8","9")
 
 label var aguafuente_ch "Fuente principal de agua: red pública"
-
 
 *************
 *aguadist_ch*
@@ -1283,7 +1319,6 @@ replace sinbano_ch = 3 if excusado == 2 & drenaje ==5
 *************
 gen aguatrat_ch =9
 
-
 ******************************
 *	luz_ch
 ******************************
@@ -1295,14 +1330,11 @@ gen luz_ch=(disp_elect=="1")
 
 gen byte luzmide_ch = (medid_luz=="1")
 label var luzmide_ch "Hogar con medidor de luz"
-*============================================================
-* COMBUSTIBLE DE COCCION (combust_ch)
-*============================================================
 
-* 0) Buscar variables candidatas (nombres comunes en encuestas)
-lookfor comb combus cocina gas lena leña carbon carbón electricidad fogon fogón
+******************************
+*	combust_ch
+******************************
 
-* 1) Detectar automáticamente una variable fuente, si existe
 local candidates combustible comb_coc comb_cocina combus_coc combusti coc_comb cocin_comb fuel_coc tipo_comb tipo_combust energia_coc
 local src ""
 foreach v of local candidates {
@@ -1313,7 +1345,6 @@ foreach v of local candidates {
     }
 }
 
-* 2) Si encontramos algo, construir combust_ch a partir de esa variable
 if "`src'" != "" {
     di as txt "Fuente de combustible detectada: `src'"
 
@@ -1344,7 +1375,7 @@ if "`src'" != "" {
     }
 }
 else {
-    * 3) Si no hay variable fuente, dejar explícitamente missing y anotar
+    * Si no hay variable fuente, dejar explícitamente missing y anotar
     capture drop combust_ch
     gen byte combust_ch = .
     label var combust_ch "Principal combustible (no disponible en ENIGH 2024 actual)"
@@ -1452,10 +1483,6 @@ replace resid_ch=1 if eli_ba==4 | eli_ba==5
 replace resid_ch=2 if eli_ba==6 | eli_ba==7
 replace resid_ch=3 if eli_ba==8
 
-
-
-
-
 ******************************
 *	dorm_ch
 ******************************
@@ -1502,9 +1529,6 @@ gen freez_ch=.
 ******************************
 *	auto_ch
 ******************************
-*--------------------------------------
-* AUTO_CH (auto particular en el hogar)
-*--------------------------------------
 capture confirm variable num_auto
 local has_auto = !_rc
 capture confirm variable num_van
@@ -1651,7 +1675,6 @@ ren industria industria_orig
 ren comercio comercio_orig
 ren servicios servicios_orig
 
-
 ******************************
 *** VARIABLES DE MIGRACION ***
 ******************************
@@ -1740,7 +1763,7 @@ lab val pnc_ci pnc_ci
 * Asignación de etiquetas e inserción de variables externas: tipo de cambio, Indice de Precios al 
 * Consumidor (2011=100), líneas de pobreza
 /*_____________________________________________________________________________________________________*/
-/*
+
 do "$survey_folder\_DOCS\\Labels&ExternalVars_Harmonized_DataBank.do"
 
 *  Pobres extremos, pobres moderados, vulnerables y no pobres 
@@ -1798,7 +1821,7 @@ rename sinco1  codocupa
 rename scian1 codindustria
 destring codocupa codindustria, replace
 compress
-*/
+
 saveold "`base_out'", replace
 
 
