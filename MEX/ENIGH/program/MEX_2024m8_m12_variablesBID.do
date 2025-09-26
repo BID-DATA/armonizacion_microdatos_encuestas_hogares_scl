@@ -861,6 +861,7 @@ use "`base_in'", clear
 	gen miglac_ci=.
 	label var miglac_ci "=1 si es migrante proveniente de un pais LAC"	
 
+	
 ****************************
 ***VARIABLES DE EXTERNAS***
 ****************************
