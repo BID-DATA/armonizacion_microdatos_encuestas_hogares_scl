@@ -13,9 +13,8 @@ set more off
 * El servidor contiene las bases de datos MECOVI.
 *________________________________________________________________________________________________________________*
 
-global surveysFolder "C:\Users\j.torresgomez\Dropbox\BID\BID2025_Pepe\Tarea1_Excel\8_Peru_2024\survey\PER\ENAHO\2024\a"
-global out ="${surveysFolder}\data_merge"
-/*
+
+
 global ruta = "${surveysFolder}"
 
 local PAIS PER
@@ -31,7 +30,7 @@ capture log close
 cap log using "`log_file'", replace 
 
 cap log off
-*/
+
 /***************************************************************************
                  BASES DE DATOS DE ENCUESTA DE HOGARES - SOCIOMETRO 
 Pais: Peru
@@ -48,7 +47,7 @@ Detalle de procesamientos o modificaciones anteriores:
 ****************************************************************************/
 
 
-use "$out\PER_2024a.dta", clear
+use "`base_in'", clear
 
 
 ********************************************************************************
@@ -108,14 +107,12 @@ use "$out\PER_2024a.dta", clear
 	* pais_c: acrónimo ISO del nombre del país de residencia   *
 	************************************************************
 	gen str3 pais_c="PER"
-	label variable pais_c "Pais"
 
 	
 	******
 	*anio_c : año de la entrevista de campo de la encuesta*
 	******
 	gen int anio_c=2024
-	label variable anio_c "Anio de la encuesta"
 		
 		
 	******
@@ -123,7 +120,6 @@ use "$out\PER_2024a.dta", clear
 	******
 	tostring fecent, replace 
 	gen int mes_c=real(substr(fecent,5,2))
-	label variable mes_c "Mes de la encuesta"
 		
 		
 	******
@@ -133,9 +129,7 @@ use "$out\PER_2024a.dta", clear
 	gen byte zona_c= 0 if estrato>=6 /* Rural */
 	replace  zona_c= 1 if estrato<6  /* Urbano */
 
-	label variable zona_c "Zona del pais"
-	label define zona_c 1 "Urbana" 0 "Rural"
-	label value zona_c zona_c
+
 	* Con esta separación se obtiene alrededor de 80% de urbanidad - consistente con cifras oficiales
 	
 	
@@ -175,14 +169,12 @@ use "$out\PER_2024a.dta", clear
 	*Factor de expansion del hogar (factor_ch) : factor de ponderación de los hogares*
 	*******************************************
 	gen factor_ch= factor07
-	label variable factor_ch "Factor de expansion del hogar"
 	
 	
 	***********
 	*factor_ci: factor de ponderación a la población total * 
 	***********
 	gen factor_ci=facpob07
-	label variable factor_ci "Factor de expansion del individuo"
 	
 
 	
@@ -196,8 +188,6 @@ use "$out\PER_2024a.dta", clear
 	*sexo_ci: sexo del individuo*
 	*********
 	gen byte sexo_ci=p207
-	label define sexo_ci 1 "Hombre" 2 "Mujer"
-	label value sexo_ci sexo_ci
 
 	
 	*********
@@ -208,7 +198,7 @@ use "$out\PER_2024a.dta", clear
 		*/
 	gen int edad_ci=p208a
 	replace edad_ci=. if edad_ci==99
-	label variable edad_ci "Edad del individuo"	
+
 
 	
 	**************
@@ -252,11 +242,18 @@ use "$out\PER_2024a.dta", clear
 	replace relacion_ci = 5 if p203 == 9 | p203 == 10
 	replace relacion_ci = 6 if p203 == 8
 
-	label variable relacion_ci "Relacion con el jefe del hogar"
-	label define relacion_ci 1 "Jefe/a" 2 "Esposo/a" 3 "Hijo/a" 4 "Otros parientes" 5 "Otros no parientes"
-	label define relacion_ci 6 "Empleado/a domestico/a", add
+	*************
+	*miembros_ci: Variable dicotómica que identifica a los miembros del 
+	*hogar.
+	*************
+	gen miembros_ci=(relacion_ci>=1 & relacion_ci<=5)
+	replace miembros_ci=. if relacion_ci==.
+	label variable miembros_ci "Miembro del hogar"
 
-	label value relacion_ci relacion_ci
+	*************
+	*miembros_one_ci: Variable dicotómica que identifica a los miembros del 
+	*hogar.
+	*************	
 	
 	
 	**************
@@ -286,10 +283,7 @@ use "$out\PER_2024a.dta", clear
 	replace civil_ci = 3 if p209 == 4 | p209 == 5
 	replace civil_ci = 4 if p209 == 3
 
-	label variable civil_ci "Estado civil"
-	label define civil_ci 1 "Soltero" 2 "Union formal o informal"
-	label define civil_ci 3 "Divorciado o separado" 4 "Viudo" , add
-	label value civil_ci civil_ci
+
 		
 		
 	**********
@@ -298,7 +292,6 @@ use "$out\PER_2024a.dta", clear
 	gen byte jefe_ci=.
 	replace jefe_ci = 1 if (relacion_ci==1)
 	replace jefe_ci = 0 if (relacion_ci!=1) & (relacion_ci!=.)
-	label variable jefe_ci "Jefe de hogar"
 		
 		
 	****************
@@ -306,7 +299,6 @@ use "$out\PER_2024a.dta", clear
 	**************
 	by idh_ch, sort: egen nconyuges_ch=sum(relacion_ci==2)
     replace nconyuges_ch =. if relacion_ci==.
-	label variable nconyuges_ch "Numero de conyuges"
 	
 	***********
 	*nhijos_ch: Variable que indica el número de hijos/as en el hogar.
@@ -314,7 +306,6 @@ use "$out\PER_2024a.dta", clear
 	* Se construye a partir de la clasificación de la variable de relacion_ci
 	by idh_ch, sort: egen byte nhijos_ch=sum(relacion_ci==3)
 	replace nhijos_ch =. if relacion_ci==.          
-	label variable nhijos_ch "Numero de hijos"
 
 	
 	**************
@@ -323,7 +314,6 @@ use "$out\PER_2024a.dta", clear
 	*Se construye a partir de la clasificación de la variable de relacion_ci
 	by idh_ch, sort: egen byte notropari_ch=sum(relacion_ci==4)
 	replace notropari_ch =. if relacion_ci==.
-	label variable notropari_ch "Numero de otros familiares"
 
 		
 	****************
@@ -331,7 +321,6 @@ use "$out\PER_2024a.dta", clear
 	****************
 	by idh_ch, sort: egen byte notronopari_ch=sum(relacion_ci==5)
 	replace notronopari_ch =. if relacion_ci==.
-	label variable notronopari_ch "Numero de no familiares"
 
 		
 	************
@@ -340,7 +329,6 @@ use "$out\PER_2024a.dta", clear
 	*Se aproxima a esta medida usando la relacion de parentesco.
 		by idh_ch, sort: egen nempdom_ch=sum(relacion_ci==6) // la categoria 6 dice "Empleado/a domestico/a"
 	replace nempdom_ch =. if relacion_ci==.
-	label variable nempdom_ch "Numero de empleados domesticos"  
 
 	
 	*************
@@ -381,10 +369,6 @@ use "$out\PER_2024a.dta", clear
 		**** corresidente
 	replace clasehog_ch=5 if nhijos_ch==0 & nconyuges_ch==0 & notropari_ch==0 & notronopari_ch>0
 
-	label variable clasehog_ch "Tipo de hogar"
-	label define clasehog_ch 1 " Unipersonal" 2 "Nuclear" 3 "Ampliado" 
-	label define clasehog_ch 4 "Compuesto" 5 " Corresidente", add
-	label value clasehog_ch clasehog_ch
 
 	
 	**************
@@ -392,48 +376,35 @@ use "$out\PER_2024a.dta", clear
 	**************
 	by idh_ch, sort: egen byte nmiembros_ch=sum(relacion_ci>0 & relacion_ci<=5)
 	replace nmiembros_ch=. if relacion_ci ==.
-	label variable nmiembros_ch "Numero de familiares en el hogar"
 
 	
-	*************
-	*miembros_ci: Variable dicotómica que identifica a los miembros del 
-	*hogar.
-	*************
-	gen miembros_ci=(relacion_ci>=1 & relacion_ci<=5)
-	replace miembros_ci=. if relacion_ci==.
-	label variable miembros_ci "Miembro del hogar"
 
 	
 	*************
 	*nmayor21_ch: Indica el número total de miembros del hogar con 21 años o más de edad. *
 	*************
 	by idh_ch, sort: egen byte nmayor21_ch=sum((relacion_ci>0 & relacion_ci<=5) & (edad_ci>=21 & edad_ci<=98))
-	label variable nmayor21_ch "Numero de familiares mayores a 21 anios"
 
 	*************
 	*nmenor21_ch: Indica el número total de miembros del hogar con menos de 
 	*21 años.
 	*************
 	by idh_ch, sort: egen byte nmenor21_ch=sum((relacion_ci>0 & relacion_ci<=5) & (edad_ci<21))
-	label variable nmenor21_ch "Numero de familiares menores a 21 anios"
 
 	*************
 	*nmayor65_ch: Indica el número total de miembros del hogar con 65 años o más de edad.*
 	*************
 	by idh_ch, sort: egen byte nmayor65_ch=sum((relacion_ci>0 & relacion_ci<=5) & (edad_ci>=65 & edad_ci!=.))
-	label variable nmayor65_ch "Numero de familiares mayores a 65 anios"
 
 	************
 	*nmenor6_ch: Indica el número total de miembros del hogar con menos de 6 años.*
 	************
 	by idh_ch, sort: egen byte nmenor6_ch=sum((relacion_ci>0 & relacion_ci<=5) & (edad_ci<6))
-	label variable nmenor6_ch "Numero de familiares menores a 6 anios"
 
 	************
 	*nmenor1_ch: Indica el número total de miembros del hogar con menos de 1 año.
 	************
 	by idh_ch, sort: egen byte nmenor1_ch=sum((relacion_ci>0 & relacion_ci<=5) & (edad_ci<1))
-	label variable nmenor1_ch "Numero de familiares menores a 1 anio"
 
 
 
@@ -1077,24 +1048,8 @@ use "$out\PER_2024a.dta", clear
 	***************
 	gen byte edupre_ci=(p301a==2) //Individuos con educación inicial completa
 	replace edupre_ci=. if aedu_ci==.
-	label variable edupre_ci "Educacion preescolar"
+
 	
-	**************
-* Line of code with indicator edupi_ci was deleted	**************
-	**************
-* Line of code with indicator edupc_ci was deleted	**************
-	**************
-* Line of code with indicator edusi_ci was deleted	**************
-	**************
-* Line of code with indicator edusc_ci was deleted	**************
-	***************
-* Line of code with indicator edus1i_ci was deleted	***************
-	***************
-* Line of code with indicator edus1c_ci was deleted	***************
-	***************
-* Line of code with indicator edus2i_ci was deleted	***************
-	***************
-* Line of code with indicator edus2c_ci was deleted	***************
 
 
 	**************
