@@ -28,7 +28,6 @@ local base_out = "$ruta\harmonized\\`PAIS'\\`ENCUESTA'\data_arm\\`PAIS'_`ANO'`ro
 capture log close
 log using "`log_file'", replace 
 
-
 /***************************************************************************
                  BASES DE DATOS DE ENCUESTA DE HOGARES - SOCIOMETRO 
 País: Mexico
@@ -576,18 +575,18 @@ use "`base_in'", clear
 	*piso_ch*
 	***********
 	* NOTA: REVISANDO METODOLÓGIA AÚN NO CREAR
-	*gen byte piso_ch  = .
+	gen byte piso_ch  = .
 		
 	***********
 	*pared_ch*
 	***********
-	*gen pared_ch=.	
+	gen pared_ch=.	
 	* NOTA: REVISANDO METODOLÓGIA AÚN NO CREAR
 	
 	***********
 	*techo_ch*
 	***********
-	*gen techo_ch=.
+	gen techo_ch=.
 	* NOTA: REVISANDO METODOLÓGIA AÚN NO CREAR
 	
 	***********
@@ -865,45 +864,147 @@ use "`base_in'", clear
 ****************************
 ***VARIABLES DE EXTERNAS***
 ****************************
-	/*Falta 
-	****************
-	 *tipo_bienestar*
-	****************	
-	gen byte tipo_bienestar = . 
-	replace tipo_bienestar  = 1 
-	replace tipo_bienestar  = 2
 
-	****************
-	 * pobre_ine _ci*
-	****************	
-	gen byte pobre_ine _ci= . 
-	replace pobre_ine _ci= 0 if …
-	replace pobre_ine _ci= 1 if …
+	* -- Asegurar tipos numéricos solo para variables que existen
+	foreach v in nmiembros_ch ing_cor ing_cor_tri ing_tri ingtot_tri ///
+				gasto_mon_tri gasto_tri gtot_tri gasto_mon gmon g_mensual {
+		capture confirm variable `v'
+		if !_rc {                           // solo si la variable existe
+			capture confirm numeric variable `v'
+			if _rc {                        // existe pero es string u otro tipo
+				capture noisily destring `v', replace force
+			}
+		}
+	}
 
-	****************
-	 * bienestar_agregado *
-	****************	
-	gen bienestar_agregado = . 
-	replace bienestar_agregado = …
+	* -- 0) Si ya tienes ypc mensual per cápita, úsalo directo (sin exit)
+	capture confirm variable ypc_ch
+	if !_rc {
+		capture drop bienestar_agregado
+		gen double bienestar_agregado = ypc_ch
+		label var bienestar_agregado "Ingreso mensual per cápita (de ypc_ch)"
+	}
+	else {
+		capture confirm variable ypc_ci
+		if !_rc {
+			capture drop bienestar_agregado
+			gen double bienestar_agregado = ypc_ci
+			label var bienestar_agregado "Ingreso mensual per cápita (de ypc_ci)"
+		}
+		else {
+			* -- 1) Asegurar tamaño del hogar
+			capture confirm numeric variable nmiembros_ch
+			if _rc {
+				di as error "Falta nmiembros_ch. Debes generarla antes (por relacion_ci)."
+				error 498
+			}
 
-	****************
-	* lpe_ci *
-	****************	
-	gen lpe_ci = . 
-	replace lpe_ci = …
-	
-	****************
-	 * ln_ci *
-	****************	
-	gen ln_ci = . 
-	replace ln_ci = …
-	*/
-	
+			* -- 2) Buscar ingreso TRIMESTRAL de CONCENTRADO (candidatos comunes)
+			tempvar ytri_h ymon_h
+			gen double `ytri_h' = .
+
+			foreach cand in ing_cor ing_cor_tri ing_tri ingtot_tri {
+				capture confirm variable `cand'
+				if !_rc replace `ytri_h' = `cand' if missing(`ytri_h')
+			}
+
+			* -- 3) Si no hubo ingreso trimestral, buscar GASTO (trimestral o mensual)
+			if missing(`ytri_h') {
+				tempvar gtri_h gmon_h
+				gen double `gtri_h' = .
+				foreach gcand in gasto_mon_tri gasto_tri gtot_tri {
+					capture confirm variable `gcand'
+					if !_rc replace `gtri_h' = `gcand' if missing(`gtri_h')
+				}
+				gen double `gmon_h' = .
+				foreach gmcand in gasto_mon gmon g_mensual {
+					capture confirm variable `gmcand'
+					if !_rc replace `gmon_h' = `gmcand' if missing(`gmon_h')
+				}
+
+				if missing(`gtri_h') & !missing(`gmon_h') {
+					gen double `ymon_h' = `gmon_h'
+					di as txt "Welfare: GASTO mensual (concentrado)."
+				}
+				else if !missing(`gtri_h') {
+					gen double `ymon_h' = `gtri_h'/3
+					di as txt "Welfare: GASTO trimestral/3."
+				}
+				else {
+					di as error "No se encontró ingreso/gasto en el concentrado. Agrega merge desde tablas de detalle."
+					error 498
+				}
+			}
+			else {
+				gen double `ymon_h' = `ytri_h'/3
+				di as txt "Welfare: INGRESO trimestral/3."
+			}
+
+			* -- 5) Per cápita
+			capture drop bienestar_agregado
+			gen double bienestar_agregado = `ymon_h'/nmiembros_ch
+			replace bienestar_agregado = . if nmiembros_ch<=0 | missing(nmiembros_ch)
+			label var bienestar_agregado "Welfare mensual per cápita (ingreso/gasto)"
+		}
+	}
+
+	* -- Welfare por día (para PPP)
+	tempvar w_day
+	gen double `w_day' = bienestar_agregado / 30.4167
+	label var `w_day' "Welfare pc diario (derivado de mensual)"
+
+	*===========================================================*
+	* MERGE con líneas internacionales PPP-2017 (LCU por día)
+	*===========================================================*
+	* Llaves
+	capture confirm variable anio_c
+	if _rc gen int anio_c = 2024
+	capture confirm variable pais_c
+	if _rc gen str3 pais_c = "MEX"
+
+	preserve
+		tempfile _pl
+		use "$survey_folder\_DOCS\data_externa\poverty\International_Poverty_Lines\5_International_Poverty_Lines_LAC_long_PPP17.dta", clear
+
+		keep pais_c anio_c ppp_wdi tc_wdi ppp_2011 ppp_2017 cpi* lp*
+
+		save "`_pl'", replace
+	restore
+
+	merge m:1 pais_c anio_c using "`_pl'", keepusing(lp365_2017 lp685_2017) nogen
+
+	*===========================================================*
+	* lpe_ci / ln_ci / pobre_ine_ci / tipo_bienestar
+	*===========================================================*
+	capture drop lpe_ci ln_ci
+	gen double lpe_ci = lp365_2017   // PPP17 baja ($3.65), LCU/día
+	gen double ln_ci  = lp685_2017   // PPP17 alta ($6.85), LCU/día
+	label var lpe_ci "Línea int. PPP17 $3.65 (LCU/día)"
+	label var ln_ci  "Línea int. PPP17 $6.85 (LCU/día)"
+
+	capture drop bienestar_agregado_day
+	gen double bienestar_agregado_day = `w_day'
+	label var bienestar_agregado_day "Welfare pc diario (PPP)"
+
+	capture drop pobre_ine_ci
+	gen byte pobre_ine_ci = .
+	replace pobre_ine_ci = 1 if `w_day' < ln_ci  & `w_day' < .
+	replace pobre_ine_ci = 0 if `w_day' >= ln_ci & `w_day' < .
+	label var pobre_ine_ci "Pobre (PPP17 alta: y_pc_diario < ln_ci)"
+
+	capture drop tipo_bienestar
+	gen byte tipo_bienestar = .
+	replace tipo_bienestar = 2 if `w_day' < ln_ci  & `w_day' < .   // 2 = pobre
+	replace tipo_bienestar = 1 if `w_day' >= ln_ci & `w_day' < .   // 1 = no pobre
+	label define tb 1 "No pobre" 2 "Pobre"
+	label values tipo_bienestar tb
+	label var tipo_bienestar "Tipo de bienestar (internacional, PPP17)"
+
+
 local log_file = "$ruta\harmonized\\`PAIS'\\`ENCUESTA'\log\\`PAIS'_`ANO'`ronda'_variablesBID.log"
 local base_in  = "$ruta\survey\\`PAIS'\\`ENCUESTA'\\`ANO'\\`ronda'\data_merge\\`PAIS'_`ANO'`ronda'.dta"
 local base_out = "$ruta\harmonized\\`PAIS'\\`ENCUESTA'\data_arm\\`PAIS'_`ANO'`ronda'_BID.dta"
-
-  
+   
 saveold "`base_out'", version(12) replace
 
 cap log close
