@@ -128,7 +128,7 @@ gen estrato_ci=.
 *****************************
 *unidad primaria de muestreo*
 *****************************
-gen upm_ci=...
+gen upm_ci=.
 
 ***************
 ****idh_ch*****
