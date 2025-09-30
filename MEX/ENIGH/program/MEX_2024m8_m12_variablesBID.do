@@ -791,6 +791,7 @@ use "`base_in'", clear
 	else {
 		replace migrante_ci = 1 if lower(trim(pais_nac))!="mexico" & pais_nac!=""
 		replace migrante_ci = 0 if lower(trim(pais_nac))=="mexico"	
+		}
 		
 	**********************
 	*** migantiguo5_ci ***
@@ -895,26 +896,3 @@ local base_out = "$ruta\harmonized\\`PAIS'\\`ENCUESTA'\data_arm\\`PAIS'_`ANO'`ro
 saveold "`base_out'", version(12) replace
 
 cap log close
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
