@@ -28,6 +28,7 @@ local base_out = "$ruta\harmonized\\`PAIS'\\`ENCUESTA'\data_arm\\`PAIS'_`ANO'`ro
 capture log close
 log using "`log_file'", replace 
 
+
 /***************************************************************************
                  BASES DE DATOS DE ENCUESTA DE HOGARES - SOCIOMETRO 
 País: Mexico
@@ -56,7 +57,7 @@ use "`base_in'", clear
 	6 "Colima" ///
 	7 "Chiapas" ///
 	8 "Chihuahua" ///
-	9 "Distrito Federal" ///
+	9 "Ciudad de México" /// 
 	10 "Durango" ///
 	11 "Guanajuato" ///
 	12 "Guerrero" ///
@@ -97,7 +98,7 @@ use "`base_in'", clear
 	******************************
 	*	anio_c
 	******************************
-	gen int anio_c=2022
+	gen int anio_c=2024
 
 	******************************
 	*	mes_c
@@ -107,8 +108,9 @@ use "`base_in'", clear
 	******************************
 	*	zona_c
 	******************************
-	gen zona_c= 1      if tam_loc<="3"
-	replace zona_c = 0 if tam_loc=="4"
+	gen byte zona_c = .
+	replace zona_c = 1 if substr(folioviv,3,1)!="6" & !missing(folioviv)
+	replace zona_c = 0 if substr(folioviv,3,1)=="6"
 
 	***************
 	***estrato_ci***
@@ -135,15 +137,15 @@ use "`base_in'", clear
 	tostring idp_ci, replace
 
 	******************************
-	*	factor_ci
-	******************************
-	gen factor_ci=factor
-
-	******************************
 	*	factor_ch
 	******************************
 	gen factor_ch=factor
 
+	******************************
+	*	factor_ci
+	******************************
+	gen factor_ci=factor
+	
 ******************************************************************************
 *	DEMOGRAPHIC VARIABLES
 ******************************************************************************
@@ -169,6 +171,18 @@ use "`base_in'", clear
 	replace relacion_ci=6 if parentesco>="401" & parentesco<="461"
 	replace relacion_ci=. if parentesco=="999" | parentesco=="."
 
+	******************************
+	*	miembros_ci
+	******************************
+	gen byte miembros_ci = (relacion_ci>=1 & relacion_ci<=5)
+	replace miembros_ci = . if relacion_ci==.	
+	
+	******************************
+	*	miembros_one_ci
+	******************************
+	gen byte miembros_one_ci = 1
+    replace miembros_one_ci = inrange(relacion_ci,1,5) if relacion_ci<.
+	
 	******************************
 	*	civil_ci
 	******************************
@@ -206,21 +220,11 @@ use "`base_in'", clear
 	*	nmiembros_ch & nmayor21_ch & nmenor21_ch & nmayor65_ch & nmenor6_ch & nmenor1_ch  
 	***************************************************************************************
 	by idh_ch, sort: egen byte nmiembros_ch=sum(relacion_ci>0 & relacion_ci<=5)
-
 	by idh_ch, sort: egen byte nmayor21_ch=sum((relacion_ci>0 & relacion_ci<=5) & (edad_ci>=21 & edad_ci<=98))
-
 	by idh_ch, sort: egen byte nmenor21_ch=sum((relacion_ci>0 & relacion_ci<=5) & (edad_ci<21))
-
 	by idh_ch, sort: egen byte nmayor65_ch=sum((relacion_ci>0 & relacion_ci<=5) & (edad_ci>=65 & edad_ci!=.))
-
 	by idh_ch, sort: egen byte nmenor6_ch=sum((relacion_ci>0 & relacion_ci<=5) & (edad_ci<6))
-
 	by idh_ch, sort: egen byte nmenor1_ch=sum((relacion_ci>0 & relacion_ci<=5) & (edad_ci<1))
-
-	******************************
-	*	miembros_ci
-	******************************
-	gen miembros_ci=(relacion_ci>=1 & relacion_ci<=5)
 
 *****************************
 ***VARIABLES DE DIVERSIDAD***
@@ -228,76 +232,101 @@ use "`base_in'", clear
 	*********
 	* afro_ci
 	*********
-	capture confirm variable afro_ci
-	if _rc gen byte afro_ci = .     
+	gen byte afro_ci = .
+	destring afrod, replace
+	replace afro_ci = 1 if afrod == 1
+	replace afro_ci = 0 if afrod == 2
 
 	********
 	* ind_ci   
 	********
-	capture confirm variable ind_ci
-	if _rc gen byte ind_ci = .     
-
-	****************
-	* noafroind_ci  
-	****************
-	capture confirm variable noafroind_ci
-	if _rc gen byte noafroind_ci = .
-	replace noafroind_ci = 1 if afro_ci==0 & ind_ci==0
-	replace noafroind_ci = 0 if inlist(afro_ci,1) | inlist(ind_ci,1)
+	gen byte ind_ci = .
+	destring hablaind, replace
+	replace ind_ci = 1 if hablaind == 1
+	replace ind_ci = 0 if hablaind == 2
 
 	************
 	* afroind_ci 
 	************
-	capture confirm variable afroind_ci
-	if _rc gen byte afroind_ci = .
-	replace afroind_ci = 1 if inlist(afro_ci,1) | inlist(ind_ci,1)
+	gen byte afroind_ci = .
+	replace afroind_ci = 1 if afro_ci==1 | ind_ci==1
 	replace afroind_ci = 0 if afro_ci==0 & ind_ci==0
+	
+	****************
+	* noafroind_ci  
+	****************
+	gen byte noafroind_ci = .
+	replace noafroind_ci = 1 if afro_ci==0 & ind_ci==0
+	replace noafroind_ci = 0 if afro_ci==1 | ind_ci==1
 
-	* Alias opcional si tu diccionario espera 'indi_ci' además de 'ind_ci'
-	capture confirm variable indi_ci
-	if _rc {
-		gen byte indi_ci = ind_ci
-	}
 	*********
-	* afro_ch (característica del/la jefe/a)
+	* afro_ch 
 	*********
-	gen byte afro_jefe = afro_ci if jefe_ci==1
-	egen byte afro_ch  = max(afro_jefe), by(idh_ch)
-	drop afro_jefe
+	gen  byte _afro_j = afro_ci     if jefe_ci==1
+	egen byte afro_ch = max(_afro_j), by(idh_ch)
+	drop _afro_j
 
 	********
-	* ind_ch (característica del/la jefe/a)
+	* ind_ch 
 	********
-	gen byte ind_jefe = ind_ci if jefe_ci==1
-	egen byte ind_ch  = max(ind_jefe), by(idh_ch)
-	drop ind_jefe
+	gen  byte _ind_j = ind_ci       if jefe_ci==1
+	egen byte ind_ch  = max(_ind_j), by(idh_ch)
+	drop _ind_j
 
 	****************
-	* noafroind_ch (característica del/la jefe/a)
+	* noafroind_ch 
 	****************
-	gen byte noafroind_jefe = noafroind_ci if jefe_ci==1
-	egen byte noafroind_ch  = max(noafroind_jefe), by(idh_ch)
-	drop noafroind_jefe
+	gen  byte _noai_j = noafroind_ci if jefe_ci==1
+	egen byte noafroind_ch = max(_noai_j), by(idh_ch)
+	drop _noai_j
 
 	************
-	* afroind_ch (característica del/la jefe/a)
+	* afroind_ch 
 	************
-	gen byte afroind_jefe = afroind_ci if jefe_ci==1
-	egen byte afroind_ch  = max(afroind_jefe), by(idh_ch)
-	drop afroind_jefe
+	gen  byte _aind_j = afroind_ci  if jefe_ci==1
+	egen byte afroind_ch = max(_aind_j), by(idh_ch)
+	drop _aind_j
+	
+	****************
+	* afroind_ano_c
+	****************
+	gen int afroind_ano_c = 2024
 
 	********
 	* dis_ci 
 	********
-	capture confirm variable dis_ci
-	if _rc gen byte dis_ci = . 
+	gen byte dis_ci = .
+	local wg disc_ver disc_oir disc_brazo disc_camin disc_apren disc_vest disc_habla disc_acti
+	foreach v of local wg {
+		replace `v' = "" if `v' == "&"
+		destring `v', replace
+		}
+		
+	replace dis_ci = 1 if inlist(disc_ver,2,3,4)  | inlist(disc_oir,2,3,4)   | ///
+						 inlist(disc_brazo,2,3,4) | inlist(disc_camin,2,3,4) | ///
+						 inlist(disc_apren,2,3,4) | inlist(disc_vest,2,3,4)  | ///
+						 inlist(disc_habla,2,3,4) | inlist(disc_acti,2,3,4)
 
+	replace dis_ci = 0 if dis_ci==. & ///
+		disc_ver==1 & disc_oir==1 & disc_brazo==1 & disc_camin==1 & ///
+		disc_apren==1 & disc_vest==1 & disc_habla==1 & disc_acti==1
+
+	
 	**********
 	* disWG_ci 
 	**********
-	capture confirm variable disWG_ci
-	if _rc gen byte disWG_ci = .
+	gen byte disWG_ci = .
+	replace disWG_ci = 1 if inlist(disc_ver,3,4)  | inlist(disc_oir,3,4)   | ///
+							inlist(disc_brazo,3,4)| inlist(disc_camin,3,4) | ///
+							inlist(disc_apren,3,4)| inlist(disc_vest,3,4)  | ///
+							inlist(disc_habla,3,4)| inlist(disc_acti,3,4)
 
+	replace disWG_ci = 0 if disWG_ci==. & ///
+		inlist(disc_ver,1,2)   & inlist(disc_oir,1,2)   & inlist(disc_brazo,1,2) & ///
+		inlist(disc_camin,1,2) & inlist(disc_apren,1,2) & inlist(disc_vest,1,2)  & ///
+		inlist(disc_habla,1,2) & inlist(disc_acti,1,2)
+
+						  
 	********
 	* dis_ch 
 	********
@@ -306,9 +335,8 @@ use "`base_in'", clear
 	******************
 	* ISOalpha3_dis_ci 
 	******************
-	capture confirm variable MEX_dis_ci
-	if _rc gen byte MEX_dis_ci = dis_ci
-
+	gen byte MEX_dis_ci = dis_ci
+	
 ****************************
 ***VARIABLES DE MERCADO LABORAL***
 * NOTA: Actualmente se está revisando el manual
@@ -754,61 +782,121 @@ use "`base_in'", clear
 	*******************
 	*** migrante_ci ***
 	*******************
-	gen migrante_ci=.
-	
+	gen byte migrante_ci = .
+	capture confirm numeric variable pais_nac
+	if !_rc {
+		replace migrante_ci = 1 if pais_nac!=484 & pais_nac<.
+		replace migrante_ci = 0 if pais_nac==484
+	}
+	else {
+		replace migrante_ci = 1 if lower(trim(pais_nac))!="mexico" & pais_nac!=""
+		replace migrante_ci = 0 if lower(trim(pais_nac))=="mexico"	
+		
 	**********************
 	*** migantiguo5_ci ***
 	**********************
-	gen migantiguo5_ci=.
-		
+	gen byte migrantiguo5_ci = .
+	destring residencia, replace
+    replace migrantiguo5_ci = 0 if inrange(residencia,1,32)
+    replace migrantiguo5_ci = 1 if inlist(residencia,33,34)	
+	
 	**********************
 	*** migrantelac_ci ***
 	**********************
-	gen migrantelac_ci=.
+	local LAC "32 68 76 152 170 188 214 218 222 320 340 484 558 591 600 604 858 862 192 328 388 308 44 84 212 500 780 740 533"
+
+	capture drop migrantelac_ci
+	gen byte migrantelac_ci = .
+	capture confirm numeric variable pais_nac
+	if !_rc {
+		replace migrantelac_ci = 1 if inlist(pais_nac, `LAC') & pais_nac!=484
+		replace migrantelac_ci = 0 if pais_nac==484 | (!inlist(pais_nac, `LAC') & pais_nac<.)
+	}
 	
-	**********************
-	*** migrantiguo5_ci ***
-	**********************
-	gen migrantiguo5_ci=.
-		
 	**********************
 	*** miglac_ci ***
 	**********************
-	gen miglac_ci=.
+	gen byte miglac_ci = .
+	capture confirm numeric variable pais5
+	if !_rc {
+		replace miglac_ci = 1 if inlist(pais5, `LAC') & pais5!=484
+		replace miglac_ci = 0 if pais5==484 | (!inlist(pais5, `LAC') & pais5<.)
+	}
 
 ****************************
 ***VARIABLES DE EXTERNAS***
 ****************************
 	****************
-	 *tipo_bienestar*
+	* bienestar_agregado *
 	****************	
-	gen byte tipo_bienestar = . 
+	tempvar ytri_h gtri_h ymon_h gmon_h
+	gen double `ytri_h' = .
+	foreach y in ing_cor ing_cor_tri ing_tri ingtot_tri {
+		capture confirm variable `y'
+		if !_rc replace `ytri_h' = `y' if missing(`ytri_h')
+	}
+	gen double `gtri_h' = .
+	foreach g in gasto_mon_tri gasto_tri gtot_tri {
+		capture confirm variable `g'
+		if !_rc replace `gtri_h' = `g' if missing(`gtri_h')
+	}
+	gen double `gmon_h' = .
+	foreach gm in gasto_mon gmon g_mensual {
+		capture confirm variable `gm'
+		if !_rc replace `gmon_h' = `gm' if missing(`gmon_h')
+	}
 
-	****************
-	 * pobre_ine _ci*
-	****************	
-	gen byte pobre_ine _ci= . 
+	gen double `ymon_h' = .
+	replace `ymon_h' = `ytri_h'/3 if `ytri_h'<.
+	replace `ymon_h' = `gmon_h'   if missing(`ymon_h') & `gmon_h'<.
+	replace `ymon_h' = `gtri_h'/3 if missing(`ymon_h') & `gtri_h'<.
 
-	****************
-	 * bienestar_agregado *
-	****************	
-	gen bienestar_agregado = . 
+	capture drop bienestar_agregado
+	gen double bienestar_agregado = `ymon_h'/nmiembros_ch
+	replace bienestar_agregado = . if nmiembros_ch<=0 | missing(nmiembros_ch)
+
 
 	****************
 	* lpe_ci *
 	****************	
-	gen lpe_ci = . 
+	* LÍNEAS CONEVAL 2024 (dic-2024, mensual pc) – embebidas por ZONA
+	* Valores: LPE (U: 2363.67, R: 1799.71)
+	gen double lpe_ci = .
+	replace lpe_ci = 1799.71 if zona_c==0
+	replace lpe_ci = 2363.67 if zona_c==1
 	
 	****************
-	 * ln_ci *
+	* ln_ci *
 	****************	
-	gen ln_ci = . 
-	
+	* Valores: LN (U: 4640.16, R: 3334.24)\
+	gen double ln_ci  = .
+	replace ln_ci  = 3334.24 if zona_c==0
+	replace ln_ci  = 4640.16 if zona_c==1
+
+	****************
+	* pobre_ine _ci*
+	****************	
+	capture drop pobre_ine_ci tipo_bienestar
+	gen byte pobre_ine_ci = .
+	replace pobre_ine_ci = 1 if bienestar_agregado < ln_ci  & bienestar_agregado<. & ln_ci<.
+	replace pobre_ine_ci = 0 if bienestar_agregado >= ln_ci & bienestar_agregado<. & ln_ci<.
+	label var pobre_ine_ci "Pobre (CONEVAL): welfare_mensual_pc < ln_ci"
+
+	****************
+	*tipo_bienestar*
+	****************	
+	gen byte tipo_bienestar = .
+	replace tipo_bienestar = 2 if pobre_ine_ci==1      // 2=Pobre
+	replace tipo_bienestar = 1 if pobre_ine_ci==0      // 1=No pobre
+	label define tb 1 "No pobre" 2 "Pobre"
+	label values tipo_bienestar tb
+	label var tipo_bienestar "Tipo de bienestar (CONEVAL 2024)"
 
 
 local log_file = "$ruta\harmonized\\`PAIS'\\`ENCUESTA'\log\\`PAIS'_`ANO'`ronda'_variablesBID.log"
 local base_in  = "$ruta\survey\\`PAIS'\\`ENCUESTA'\\`ANO'\\`ronda'\data_merge\\`PAIS'_`ANO'`ronda'.dta"
 local base_out = "$ruta\harmonized\\`PAIS'\\`ENCUESTA'\data_arm\\`PAIS'_`ANO'`ronda'_BID.dta"
+     
    
 saveold "`base_out'", version(12) replace
 
