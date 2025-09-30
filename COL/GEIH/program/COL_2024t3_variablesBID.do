@@ -145,6 +145,129 @@ g factor_ci=fex_c18
 g factor_ch=fex_c18
 
 
+		****************************
+		***VARIABLES DEMOGRAFICAS***
+		****************************
+
+*************
+***sexo_ci***
+*************
+	g sexo_ci = p3271
+
+
+**********
+***edad***
+**********
+	g edad_ci = p6040
+	
+*****************
+***relacion_ci***
+*****************
+	g 		relacion_ci = 1 if p6050 == 1
+	replace relacion_ci = 2 if p6050 == 2
+	replace relacion_ci = 3 if p6050 == 3
+	replace relacion_ci = 4 if inlist(p6050,4,5,6,7,8,9)
+	replace relacion_ci = 5 if p6050 == 11 | p6050 == 12 | p6050 == 13 
+	replace relacion_ci = 6 if p6050 == 10
+	
+*********************
+****Estado Civil*****
+*********************
+	g 		civil_ci = .
+	replace civil_ci = 1 if p6070 == 6
+	replace civil_ci = 2 if p6070==1 | p6070==2 | p6070==3
+	replace civil_ci = 3 if p6070==4 
+	replace civil_ci = 4 if p6070==5
+
+*************
+***jefe_ci***
+*************
+	g jefe_ci = relacion_ci == 1
+
+******************
+***nconyuges_ch***
+******************
+	bys idh_ch: egen nconyuges_ch = sum(relacion_ci == 2)
+	
+
+***************
+***nhijos_ch***
+***************
+	bys idh_ch: egen nhijos_ch = sum(relacion_ci == 3)
+	
+
+******************
+***notropari_ch***
+******************
+	bys idh_ch: egen notropari_ch = sum(relacion_ci == 4)
+	
+********************
+***notronopari_ch***
+********************
+	bys idh_ch: egen notronopari_ch = sum(relacion_ci == 5)
+	
+****************
+***nempdom_ch***
+****************
+	bys idh_ch: egen nempdom_ch = sum(relacion_ci == 6)
+
+*****************
+***clasehog_ch***
+*****************
+	g byte clasehog_ch = 0
+**** unipersonal
+	replace clasehog_ch = 1 if nhijos_ch == 0 & nconyuges_ch == 0 & notropari_ch == 0 & notronopari_ch == 0
+**** nuclear (child with or without spouse but without other relatives)
+	replace clasehog_ch = 2 if (nhijos_ch > 0 | nconyuges_ch > 0) & (notropari_ch == 0 & notronopari_ch == 0)
+**** ampliado
+	replace clasehog_ch = 3 if notropari_ch > 0 & notronopari_ch == 0
+**** compuesto (some relatives plus non relative)
+	replace clasehog_ch = 4 if ((nconyuges_ch > 0 | nhijos_ch > 0 | notropari_ch > 0) & (notronopari_ch > 0))
+**** corresidente
+	replace clasehog_ch = 5 if nhijos_ch == 0 & nconyuges_ch == 0 & notropari_ch == 0 & notronopari_ch > 0
+
+******************
+***nmiembros_ch***
+******************
+by idh_ch, sort: egen byte nmiembros_ch=sum(relacion_ci>0 & relacion_ci<=5)
+	
+*****************
+***miembros_ci***
+*****************
+gen byte miembros_ci=(relacion_ci>=1 & relacion_ci<=5) 
+replace miembros_ci=. if relacion_ci==.
+
+*****************
+*miembros_one_ci*
+*****************
+gen byte miembros_one_ci=(p6050>=1 & p6050<=13)
+replace miembros_one_ci=0 if p6050==10
+replace miembros_one_ci=. if p6050==.
+	
+*****************
+***nmayor21_ch***
+*****************
+by idh_ch, sort: egen byte nmayor21_ch=sum((relacion_ci>0 & relacion_ci<=5) & (edad_ci>=21 & edad_ci<=98))
+	
+*****************
+***nmenor21_ch***
+*****************
+by idh_ch, sort: egen byte nmenor21_ch=sum((relacion_ci>0 & relacion_ci<=5) & (edad_ci<21))
+	
+*****************
+***nmayor65_ch***
+*****************
+by idh_ch, sort: egen byte nmayor65_ch=sum((relacion_ci>0 & relacion_ci<=5) & (edad_ci>=65 & edad_ci!=.))
+	
+****************
+***nmenor6_ch***
+****************
+by idh_ch, sort: egen byte nmenor6_ch=sum((relacion_ci>0 & relacion_ci<=5) & (edad_ci<6))
+
+****************
+***nmenor1_ch***
+****************
+by idh_ch, sort: egen byte nmenor1_ch=sum((relacion_ci>0 & relacion_ci<=5) & (edad_ci<1))
 
 
 
