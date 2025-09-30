@@ -47,7 +47,102 @@ Detalle de procesamientos o modificaciones anteriores:
 
 use "`base_in'", clear
 
+		
+		**********************************
+		***VARIABLES DEL IDENTIFICACION***
+		**********************************
 
+**************
+**Region_BID**
+**************
+gen region_BID_c=.
+replace region_BID_c=3 
+
+***************
+***region_c ***
+***************
+gen region_c=real(dpto)
+label define region_c       /// 
+	5  "Antioquia"	        ///
+	8  "Atlantico"	        ///
+	11 "Bogota, D.C"	    ///
+	13 "Bolivar" 	        ///
+	15 "Boyace"	            ///
+	17 "Caldas"	            ///
+	18 "Caqueta"	        ///
+	19 "Cauca"	            ///
+	20 "Cesar"	            ///
+	23 "Cordoba"	        ///
+	25 "Cundinamarca"       ///
+	27 "Choco"	            ///
+	41 "Huila"	            ///
+	44 "La Guajira"	        ///
+	47 "Magdalena"	        ///
+	50 "Meta"	            ///
+	52 "Narino"	            ///
+	54 "Norte de Santander"	///
+	63 "Quindio"	        ///
+	66 "Risaralda"	        ///
+	68 "Santander"	        ///
+	70 "Sucre"	            ///
+	73 "Tolima"	            ///
+	76 "Valle"	
+label value region_c region_c
+
+************
+****pais_c****
+************
+g str3 pais_c = "COL"
+
+**********
+***anio_c***
+**********
+g anio_c = 2024
+
+**********
+***mes_c***
+**********
+
+destring mes, replace
+gen mes_c=mes
+
+**********
+***zona_c***
+**********
+destring clase, replace
+g zona_c = clase == 1
+
+*********
+*estrato*
+*********
+gen estrato_ci=.
+	
+*****************************
+*unidad primaria de muestreo*
+*****************************
+gen upm_ci=.
+
+***************
+****idh_ch*****
+***************
+gen idh_ch = idh
+tostring idh_ch, replace
+
+**************
+****idp_ci****
+**************
+g idp_ci=orden
+tostring idp_ci, replace
+
+***************
+***factor_ci***
+***************
+g factor_ci=fex_c18
+
+***************
+***factor_ch***
+***************
+g factor_ch=fex_c18
 
 
 
