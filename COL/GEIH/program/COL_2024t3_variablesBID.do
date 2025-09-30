@@ -370,6 +370,107 @@ egen byte dis_ch = max(dis_ci), by(idh_ch)
 gen byte COL_dis_ci = dis_ci
 
 
+			****************************
+			***VARIABLES DE EDUCACION***
+			****************************
+			
+**************
+***aedu_ci***
+**************	
+	g aedu_ci = . 
+* 0 años de educacion 
+	replace aedu_ci = 0 if p3042 == 1 | p3042 == 2 
+	replace aedu_ci = 0 if p3042 == 3 & p3042s1 == 0 
+*Primaria
+	replace aedu_ci = 1 if p3042 == 3 & p3042s1 == 1
+	replace aedu_ci = 2 if p3042 == 3 & p3042s1 == 2
+	replace aedu_ci = 3 if p3042 == 3 & p3042s1 == 3
+	replace aedu_ci = 4 if p3042 == 3 & p3042s1 == 4
+	replace aedu_ci = 5 if p3042 == 3 & p3042s1 == 5
+	replace aedu_ci = 5 if p3042 == 4 & p3042s1 == 0
+*Secundaria (se incluye normalista como otra modalidad de secundaria)
+	replace aedu_ci = 6  if p3042 == 4 & p3042s1 == 1
+	replace aedu_ci = 7  if p3042 == 4 & p3042s1 == 2
+	replace aedu_ci = 8  if p3042 == 4 & p3042s1 == 3
+	replace aedu_ci = 9  if p3042 == 4 & p3042s1 == 4	
+	replace aedu_ci = 9  if p3042 == 5 & p3042s1 == 0	
+	replace aedu_ci = 9  if p3042 == 6 & p3042s1 == 0
+	replace aedu_ci = 9  if p3042 == 7 & p3042s1 == 0
+	replace aedu_ci = 9  if p3042 == 7 & p3042s1 == 1
+		
+	replace aedu_ci = 10 if p3042 == 5 & p3042s1 == 1
+	replace aedu_ci = 10 if p3042 == 6 & p3042s1 == 1
+	replace aedu_ci = 10 if p3042 == 7 & p3042s1 == 2
+	replace aedu_ci = 10 if p3042 == 7 & p3042s1 == 3
+	replace aedu_ci = 11 if p3042 == 5 & p3042s1 == 2
+	replace aedu_ci = 11 if p3042 == 6 & p3042s1 == 2
+	replace aedu_ci = 11 if p3042 == 7 & p3042s1 == 4
+	
+*Superior
+	replace aedu_ci = 12 if p3042 == 7 & p3042s1 == 5
+	replace aedu_ci = 11+ trunc(p3042s1/2) if p3042>=8 & p3042<=13
+	
+*Missing
+	replace aedu_ci =. if p3042==99
+	replace aedu_ci =. if p3042s1==99
+
+***************
+***edupre_ci***
+***************
+	g byte edupre_ci =.
+
+**************
+***eduui_ci***
+**************
+* Nota: normalista es una modalidad especial que no hace parte de superior pero es postsecundaria
+
+	g byte eduui_ci = (inlist(p3042, 8, 9, 10, 11, 12, 13) & inlist(p3043, 2, 3, 4)) 
+	replace eduui_ci = . if aedu_ci == .
+
+***************
+***eduuc_ci***
+***************
+* Nota: normalista es una modalidad especial que no hace parte de superior pero es postsecundaria
+
+	g byte eduuc_ci = (inlist(p3042, 8, 9, 10, 11, 12, 13) & inlist(p3043, 5, 6, 7, 8, 9, 10))
+	replace eduuc_ci = . if aedu_ci == .
+
+**************
+***eduac_ci***
+**************
+
+	gen byte eduac_ci = .
+	replace eduac_ci = 1 if (inlist(p3042, 10, 11, 12, 13) & inlist(p3043, 7, 8, 9, 10))
+	replace eduac_ci = 0 if (inlist(p3042, 8, 9 ) & inlist(p3043, 5, 6))
+
+
+***************
+***asiste_ci***
+***************
+	g asiste_ci = 1 if p6170 == 1
+	replace asiste_ci = 0 if p6170 == 2
+	
+
+***************
+***edupub_ci***
+***************
+	g edupub_ci =.
+	replace edupub=1 if p3041 == 1 & p6170==1
+	replace edupub_ci = 0 if p3041 == 2 & p6170==1
+	
+	
+***************
+***asispre_ci**
+***************
+	g asispre_ci= (p6170==1 & p3042==2 & p3042s1 <2)
+	
+		
+**************
+*pqnoasis1_ci*
+**************
+g pqnoasis1_ci = .
+
+
 		****************************
 		***VARIABLES DE VIVIENDA***
 		****************************	
@@ -401,8 +502,7 @@ replace piso_ch = . if p4020 ==.
 *pared_ch*
 ***********
 g pared_ch = (p4010 >= 1 & p4010 <= 3)
-replace pared_ch = . if p4010 == .
-gen pared_ch=.		
+replace pared_ch = . if p4010 == .	
 	
 ***********
 *techo_ch*
