@@ -370,3 +370,158 @@ egen byte dis_ch = max(dis_ci), by(idh_ch)
 gen byte COL_dis_ci = dis_ci
 
 
+		****************************
+		***VARIABLES DE VIVIENDA***
+		****************************	
+	
+***********
+*luz_ch*
+***********
+g luz_ch = p4030s1 == 1 
+replace luz_ch=. if p4030s1==.	
+	
+***********
+*luzmide_ch*
+***********
+g luzmide_ch = .			
+	
+************
+*combust_ch*
+************
+g combust_ch = (p5080 == 1 | p5080 == 3 | p5080 == 4)
+replace combust_ch =. if p5080==.			
+	
+**********
+*piso_ch*
+**********
+g piso_ch = (p4020 != 1 & p4020 != .)
+replace piso_ch = . if p4020 ==.	
+	
+***********
+*pared_ch*
+***********
+g pared_ch = (p4010 >= 1 & p4010 <= 3)
+replace pared_ch = . if p4010 == .
+gen pared_ch=.		
+	
+***********
+*techo_ch*
+***********
+g techo_ch = .	
+	
+**********
+*resid_ch*
+**********
+g resid_ch = 0		 if p5040 == 1
+replace resid_ch = 1 if p5040 == 4
+replace resid_ch = 2 if p5040 == 2 | p5040 == 3
+replace resid_ch = 3 if p5040 == 5
+replace resid_ch = . if p5040 == .	
+
+*************
+***dorm_ch***
+*************
+g dorm_ch = p5010
+	
+****************
+***cuartos_ch***
+****************
+g cuartos_ch = p5000
+	
+***************
+***cocina_ch***
+***************
+g cocina_ch = 0 if p5070 >= 2 & p5070 <= 6
+replace cocina_ch = 1 if p5070 == 1
+	
+**************
+***telef_ch***
+**************
+g telef_ch =.
+*g telef_ch = p5210s1 == 1
+*replace telef_ch = . if p5210s1 == .
+	
+***************
+***refrig_ch***
+***************
+g refrig_ch =.
+*g refrig_ch = p5210s5 == 1
+*replace refrig_ch = . if p5210s5 == .
+	
+**************
+***freez_ch***
+**************
+g freez_ch = .
+	
+*************
+***auto_ch***
+*************
+g auto_ch =.
+*g auto_ch = p5210s22 == 1
+*replace auto_ch = . if p5210s22 == .
+	
+**************
+***compu_ch***
+**************
+g compu_ch =.
+*g compu_ch = p5210s16 == 1
+*replace compu_ch = . if p5210s16 == .
+	
+*****************
+***internet_ch***
+*****************
+g internet_ch =.
+*g internet_ch = p5210s3 == 1
+*replace internet_ch = . if p5210s3 == . 
+	
+************
+***cel_ch***
+************
+g cel_ch =.
+*g cel_ch = 0
+*replace cel_ch = p5220==1
+*replace cel_ch = . if p5220 == .
+	
+
+**************
+***vivi1_ch***
+**************
+g vivi1_ch = 1     	 if p4000 == 1
+replace vivi1_ch = 2 if p4000 == 2
+replace vivi1_ch = 3 if p4000 == 3 | p4000 == 4 | p4000 == 5 | p4000 == 6
+replace vivi1_ch = . if p4000 == .
+	
+**************
+***vivi2_ch***
+**************
+g vivi2_ch = (p4000 == 1 | p4000 == 2)
+replace vivi2_ch = . if p4000 == .
+	
+
+*****************
+***viviprop_ch***
+*****************
+g viviprop_ch = 0 if p5090 == 3
+replace viviprop_ch = 1 if p5090 == 1
+replace viviprop_ch = 2 if p5090 == 2
+replace viviprop_ch = 3 if p5090 == 4 | p5090 == 5 | p5090 == 6
+replace viviprop_ch = . if p5090 == .
+	
+****************
+***vivitit_ch***
+****************
+g vivitit_ch = .
+	
+****************
+***vivialq_ch***
+****************
+g vivialq_ch = p5140 if p5140 >= 10000
+	
+*******************
+***vivialqimp_ch***
+*******************
+g vivialqimp_ch = p5130 if p5130 >= 10000 
+
+
+
+
