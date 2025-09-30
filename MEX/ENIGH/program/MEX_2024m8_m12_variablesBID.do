@@ -241,9 +241,9 @@ use "`base_in'", clear
 	* ind_ci   
 	********
 	gen byte ind_ci = .
-	destring hablaind, replace
-	replace ind_ci = 1 if hablaind == 1
-	replace ind_ci = 0 if hablaind == 2
+	destring etnia, replace
+	replace ind_ci = 1 if etnia == 1
+	replace ind_ci = 0 if etnia== 2
 
 	************
 	* afroind_ci 
