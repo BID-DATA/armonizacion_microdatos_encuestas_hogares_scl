@@ -270,5 +270,103 @@ by idh_ch, sort: egen byte nmenor6_ch=sum((relacion_ci>0 & relacion_ci<=5) & (ed
 by idh_ch, sort: egen byte nmenor1_ch=sum((relacion_ci>0 & relacion_ci<=5) & (edad_ci<1))
 
 
+	*****************************
+	***VARIABLES DE DIVERSIDAD***
+	*****************************
+	
+*********
+*afro_ci*
+*********
+**Pregunta: De acuerdo con su cultura, pueblo o rasgos físicos, … es o se reconoce como:(P6080)
+*1- Indigena 2- Gitano - Rom 3- Raizal del archipiélago de San Andrés y providencia 
+*4- Palenquero de San basilio o descendiente 5- Negro(a), mulato(a), Afrocolombiano(a) o Afrodescendiente 
+*6- Ninguno de los anteriores (mestizo, blanco, etc)
+tab p6080, m
+	
+gen byte afro_ci = . 	  
+replace afro_ci = 1 if p6080 == 3 | p6080 == 4 | p6080 == 5
+replace afro_ci = 0 if p6080 != 3 & p6080 != 4 & p6080 != 5 & p6080 != .
+tab afro_ci, m
+	
+*********
+*ind_ci*
+*********	
+gen byte ind_ci =. 
+replace ind_ci = 1 if p6080 == 1
+replace ind_ci = 0 if p6080 != 1 & p6080 != .
+	
+tab ind_ci, m
+
+**************
+*noafroind_ci*
+**************
+gen byte noafroind_ci =.   // se queda como missing (.) si no existe la pregunta
+replace noafroind_ci =1 if (afro_ci==0 & ind_ci==0)
+replace noafroind_ci =0 if (afro_ci==1 | ind_ci==1)
+replace noafroind_ci =. if (afro_ci==. | ind_ci==.) //Esto solo en el caso que se tenga ambas opciones no disponibles. 
+tab noafroind_ci,m
+
+************
+*afroind_ci*
+************
+gen byte afroind_ci=. 
+replace afroind_ci=1 if ind_ci==1 
+replace afroind_ci=2 if afro_ci==1
+replace afroind_ci=3 if noafroind_ci == 1
+ta afroind_ci,m
+	
+*********
+*afro_ch*
+*********
+gen byte afro_jefe = afro_ci if relacion_ci==1
+egen afro_ch  = max(afro_jefe), by(idh_ch) 
+drop afro_jefe
+	
+********
+*ind_ch*
+********	
+gen byte ind_jefe = ind_ci if relacion_ci==1
+egen ind_ch = max(ind_jefe), by(idh_ch) 
+drop ind_jefe
+
+**************
+*noafroind_ch*
+**************
+gen byte noafroind_jefe = noafroind_ci if relacion_ci==1
+egen noafroind_ch = max(noafroind_jefe), by(idh_ch) 
+drop noafroind_jefe
+
+************
+*afroind_ch*
+************
+gen byte afroind_jefe = afroind_ci if jefe_ci==1
+egen afroind_ch = min(afroind_jefe), by(idh_ch) 
+drop afroind_jefe 
+
+********
+*dis_ci*
+********
+gen byte dis_ci = .
+replace dis_ci = 1 if p1906s1<=3 | p1906s2<=3 | p1906s3<=3 | p1906s4<=3 | p1906s5<=3 | p1906s6<=3 | p1906s7<=3
+replace dis_ci = 0 if p1906s1==4 & p1906s2==4 & p1906s3==4 & p1906s4==4 & p1906s5==4 & p1906s6==4 & p1906s7==4 
+tab dis_ci, m	
+	
+**********
+*disWG_ci*
+**********
+gen byte disWG_ci=.
+replace disWG_ci = 1 if p1906s1<=2 | p1906s2<=2 | p1906s3<=2 | p1906s4<=2 | p1906s5<=2 | p1906s6<=2 | p1906s7<=2
+replace disWG_ci = 0 if p1906s1>=3 & p1906s2>=3 & p1906s3>=3 & p1906s4>=3 & p1906s5>=3 & p1906s6>=3 & p1906s7>=3 
+tab disWG_ci, m
+	
+********
+*dis_ch*
+********
+egen byte dis_ch = max(dis_ci), by(idh_ch) 
+	
+******************
+*ISOalpha3_dis_ci*
+******************
+gen byte COL_dis_ci = dis_ci
 
 
