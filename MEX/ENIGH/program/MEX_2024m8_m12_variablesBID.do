@@ -855,7 +855,6 @@ use "`base_in'", clear
 	gen double bienestar_agregado = `ymon_h'/nmiembros_ch
 	replace bienestar_agregado = . if nmiembros_ch<=0 | missing(nmiembros_ch)
 
-
 	****************
 	* lpe_ci *
 	****************	
@@ -880,7 +879,6 @@ use "`base_in'", clear
 	gen byte pobre_ine_ci = .
 	replace pobre_ine_ci = 1 if bienestar_agregado < ln_ci  & bienestar_agregado<. & ln_ci<.
 	replace pobre_ine_ci = 0 if bienestar_agregado >= ln_ci & bienestar_agregado<. & ln_ci<.
-	label var pobre_ine_ci "Pobre (CONEVAL): welfare_mensual_pc < ln_ci"
 
 	****************
 	*tipo_bienestar*
@@ -888,10 +886,6 @@ use "`base_in'", clear
 	gen byte tipo_bienestar = .
 	replace tipo_bienestar = 2 if pobre_ine_ci==1      // 2=Pobre
 	replace tipo_bienestar = 1 if pobre_ine_ci==0      // 1=No pobre
-	label define tb 1 "No pobre" 2 "Pobre"
-	label values tipo_bienestar tb
-	label var tipo_bienestar "Tipo de bienestar (CONEVAL 2024)"
-
 
 local log_file = "$ruta\harmonized\\`PAIS'\\`ENCUESTA'\log\\`PAIS'_`ANO'`ronda'_variablesBID.log"
 local base_in  = "$ruta\survey\\`PAIS'\\`ENCUESTA'\\`ANO'\\`ronda'\data_merge\\`PAIS'_`ANO'`ronda'.dta"
