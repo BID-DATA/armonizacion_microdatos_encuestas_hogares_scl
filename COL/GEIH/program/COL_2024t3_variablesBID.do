@@ -623,5 +623,121 @@ g vivialq_ch = p5140 if p5140 >= 10000
 g vivialqimp_ch = p5130 if p5130 >= 10000 
 
 
+	***********************
+	***VARIABLES DE WASH***
+	***********************
 
+****************
+***aguared_ch***
+****************
+generate aguared_ch =.
+replace aguared_ch = 1 if p4030s5==1 
+replace aguared_ch = 0 if p4030s5==2
+
+*****************
+*aguafconsumo_ch*
+*****************
+gen aguafconsumo_ch = 0
+replace aguafconsumo_ch = 1 if p5050==1 
+replace aguafconsumo_ch = 2 if p5050==7 
+replace aguafconsumo_ch = 3 if p5050==10 
+replace aguafconsumo_ch = 5 if p5050==5 
+replace aguafconsumo_ch = 6 if p5050==8 
+replace aguafconsumo_ch = 7 if p5050==2
+replace aguafconsumo_ch = 8 if p5050==6  
+replace aguafconsumo_ch = 9 if (p5050==4 | p5050==9)
+replace aguafconsumo_ch = 10 if (p5050==3| p5050==2)
+
+*****************
+*aguafuente_ch*
+*****************
+gen aguafuente_ch =.
+replace aguafuente_ch = 1 if p5050==1 
+replace aguafuente_ch = 2 if p5050==7 
+replace aguafuente_ch = 3 if p5050==10 
+replace aguafuente_ch = 5 if p5050==5 
+replace aguafuente_ch = 6 if p5050==8 
+replace aguafuente_ch = 7 if p5050==2
+replace aguafuente_ch = 8 if p5050==6  
+replace aguafuente_ch = 9 if (p5050==4 | p5050==9)
+replace aguafuente_ch = 10 if (p5050==3 | p5050==2)
+replace aguafuente_ch = 10 if aguafuente_ch ==. & jefe_ci==1
+
+*************
+*aguadist_ch*
+*************
+gen aguadist_ch=.
+replace aguadist_ch=1 if (p5050==1 | p5050==2)
+replace aguadist_ch=0 if p5050>2
+
+
+**************
+*aguadisp1_ch*
+**************
+gen aguadisp1_ch =.
+*replace aguadisp1_ch = 1 if p4040==1
+*replace aguadisp1_ch = 0 if p4040==2
+
+
+**************
+*aguadisp2_ch*
+**************
+gen aguadisp2_ch = 9
+
+*************
+*aguatrat_ch*
+*************
+gen aguatrat_ch = 9
+
+*************
+*aguamala_ch*  Altered
+*************
+gen aguamala_ch = 2
+replace aguamala_ch = 0 if aguafuente_ch<=7
+replace aguamala_ch = 1 if aguafuente_ch>7 & aguafuente_ch!=10
+
+*****************
+*aguamejorada_ch*  Altered
+*****************
+gen aguamejorada_ch = 2
+replace aguamejorada_ch = 0 if aguafuente_ch>7 & aguafuente_ch!=10
+replace aguamejorada_ch = 1 if aguafuente_ch<=7
+
+*****************
+***aguamide_ch***
+*****************
+generate aguamide_ch = .
+
+*****************
+****bano_ch******  Altered
+*****************
+gen bano_ch=.
+replace bano_ch=0 if p5020==6
+replace bano_ch=1 if p5020==1
+replace bano_ch=2 if p5020==2
+replace bano_ch=4 if p5020==5
+replace bano_ch=6 if p5020==3 | p5020 ==4
+replace bano_ch=6 if bano_ch ==. & jefe_ci==1
+
+
+***************
+***banoex_ch***
+***************
+generate banoex_ch=.
+replace banoex_ch = 1 if p5030==1
+replace banoex_ch = 0 if p5030==2
+
+************
+*sinbano_ch*
+************
+gen sinbano_ch = 3
+replace sinbano_ch = 0 if p5020<6
+
+
+*****************
+*banomejorado_ch*  Altered
+*****************
+gen banomejorado_ch= 2
+replace banomejorado_ch =1 if bano_ch<=3 & bano_ch!=0
+replace banomejorado_ch =0 if (bano_ch ==0 | bano_ch>=4) & bano_ch!=6
 
