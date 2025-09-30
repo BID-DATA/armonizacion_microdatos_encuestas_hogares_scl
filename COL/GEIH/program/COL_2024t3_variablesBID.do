@@ -741,3 +741,71 @@ gen banomejorado_ch= 2
 replace banomejorado_ch =1 if bano_ch<=3 & bano_ch!=0
 replace banomejorado_ch =0 if (bano_ch ==0 | bano_ch>=4) & bano_ch!=6
 
+
+		******************************
+		*** VARIABLES DE MIGRACION ***
+		******************************
+ 
+*******************
+*** migrante_ci ***
+*******************	
+gen migrante_ci= (p3373==3)
+	
+**********************
+*** migrantiguo5_ci ***
+**********************
+gen migrantiguo5_ci=(migrante_ci==1 & inlist(p3382,2,3)) if migrante_ci!=. & p3382!=1
+replace migrantiguo5_ci = 0 if p3382 == 4 & migrante_ci==1 & migrante_ci!=. & p3382!=1
+replace migrantiguo5_ci = . if migrante_ci==0
+	
+**********************
+*** miglac_ci ***
+**********************
+gen miglac_ci=.
+	
+
+		****************************
+		***VARIABLES DE EXTERNAS***
+		****************************	
+	
+****************
+*tipo_bienestar*
+****************	
+gen byte tipo_bienestar = .
+replace tipo_bienestar  = 1
+
+****************
+* pobre_ine _ci*
+****************	
+gen byte pobre_ine _ci= . 
+*replace pobre_ine _ci= 0 if 
+*replace pobre_ine _ci= 1 if 
+
+**********************
+*bienestar_agregado***
+**********************	
+gen bienestar_agregado = . 
+*replace bienestar_agregado = 
+
+****************
+*****lpe_ci ****
+****************	
+gen lpe_ci = . 
+replace lpe_ci = li
+	
+****************
+******ln_ci*****
+****************	
+gen ln_ci = 
+replace ln_ci = lp
+
+
+
+
+local log_file = "$ruta\harmonized\\`PAIS'\\`ENCUESTA'\log\\`PAIS'_`ANO'`ronda'_variablesBID.log"
+local base_in  = "$ruta\survey\\`PAIS'\\`ENCUESTA'\\`ANO'\\`ronda'\data_merge\\`PAIS'_`ANO'`ronda'.dta"
+local base_out = "$ruta\harmonized\\`PAIS'\\`ENCUESTA'\data_arm\\`PAIS'_`ANO'`ronda'_BID.dta"
+   
+saveold "`base_out'", version(12) replace
+
+cap log close
