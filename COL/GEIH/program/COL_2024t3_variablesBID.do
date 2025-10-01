@@ -777,7 +777,7 @@ replace tipo_bienestar  = 1
 ****************
 * pobre_ine _ci*
 ****************	
-gen byte pobre_ine _ci= . 
+gen byte pobre_ine_ci= . 
 *replace pobre_ine _ci= 0 if 
 *replace pobre_ine _ci= 1 if 
 
@@ -796,7 +796,7 @@ replace lpe_ci = li
 ****************
 ******ln_ci*****
 ****************	
-gen ln_ci = 
+gen ln_ci = .
 replace ln_ci = lp
 
 
