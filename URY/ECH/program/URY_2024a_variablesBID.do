@@ -60,9 +60,6 @@ foreach v in `r(varlist)' {
 	********************
 	gen region_BID_c=.
 	replace region_BID_c = 4 
-	label var region_BID_c "Regiones BID"
-	label define region_BID_c 1 "Centroamérica_(CID)" 2 "Caribe_(CCB)" 3 "Andinos_(CAN)" 4 "Cono_Sur_(CSC)"
-	label value region_BID_c region_BID_c
 
 
 	********************
@@ -114,8 +111,6 @@ label value region_c region_c
 	gen zona_c=.
 	replace zona_c=1 if (region_4 == 1 | region_4 == 2)
 	replace zona_c=0 if (region_4 == 3 | region_4 == 4)
-	label variable zona_c "Zona del pais"
-	label define zona_c 1 "Urbana" 0 "Rural"
 	label value zona_c zona_c
 	
 	*********
@@ -173,9 +168,6 @@ label value region_c region_c
 	*sexo_ci*
 	*********
 	gen byte sexo_ci=e26
-	label var sexo_ci "Sexo del Individuo"
-	label define sexo_ci 1 "Hombre" 2 "Mujer"
-	label value sexo_ci sexo_ci
 
 
 	*********
@@ -235,7 +227,6 @@ label value region_c region_c
 	****************
 	
 	by idh_ch, sort: egen notronopari_ch=sum(relacion_ci==5)
-	label variable notronopari_ch "Numero de no familiares"
 
 
 	****************
@@ -275,6 +266,18 @@ label value region_c region_c
 	*nmiembros_ch*
 	**************
 	by idh_ch, sort: egen byte nmiembros_ch=sum(relacion_ci>0 & relacion_ci<=5)
+	
+	******************
+	** miembros_ci **
+	*****************
+   gen byte miembros_ci=(relacion_ci>=1 & relacion_ci<=5) 
+   replace miembros_ci=. if relacion_ci==.
+   
+	*************
+	*miembros_one_ci*
+	*************
+	gen miembros_one_ci=1
+
 		
 	*************
 	*nmayor21_ch*
@@ -301,10 +304,7 @@ label value region_c region_c
 	************
 	by idh_ch, sort: egen byte nmenor1_ch=sum((relacion_ci>0 & relacion_ci<=5) & (edad_ci<1))
 
-	*************
-	*miembros_ci*
-	*************
-	gen miembros_ci=(relacion_ci>=1 & relacion_ci<=5)
+	
 
 *******************************************************
 ***           VARIABLES DE DIVERSIDAD               ***
@@ -492,6 +492,314 @@ label value region_c region_c
 	gen edupub_ci =. if (asiste_ci != 1)
 	replace edupub_ci = 1 if (e581 == 1 | e581a == 1) & (asiste_ci == 1)
 	replace edupub_ci = 0 if (e581 == 2 | e581 == 3 | e581a == 2) & (asiste_ci == 1)
+	
+	
+****************************
+***VARIABLES DE VIVIENDA***
+****************************		
+	***********
+	*luz_ch*
+	***********
+	gen luz_ch=.
+	replace luz_ch=0 if d18>1 & d18<5
+	replace luz_ch=1 if (d18 == 1)
+	
+	***********
+	*luzmide_ch*
+	***********
+	gen luzmide_ch=.	
+	
+	***********
+	*combust_ch*
+	***********
+	gen combust_ch=.
+	replace combust_ch = 1 if (d20 == 1 | d20 == 2 | d20 == 3 | d20 == 4)
+	replace combust_ch = 0 if combust_ch ==.
+	
+	***********
+	*piso_ch*
+	***********
+	* NOTA: REVISANDO METODOLÓGIA AÚN NO CREAR
+	gen piso_ch=.	
+	
+	***********
+	*pared_ch*
+	***********
+	gen pared_ch=.	
+	* NOTA: REVISANDO METODOLÓGIA AÚN NO CREAR
+	
+	***********
+	*techo_ch*
+	***********
+	gen techo_ch=.
+	* NOTA: REVISANDO METODOLÓGIA AÚN NO CREAR
+	
+	***********
+	*resid_ch*
+	***********
+	gen resid_ch=.
+	
+	***********
+	*dorm_ch*
+	***********
+	gen dorm_ch= d10
+	
+	***********
+	*cuartos_ch*
+	***********
+	gen cuartos_ch=d9
+	
+	***********
+	*cocina_ch*
+	***********
+	gen cocina_ch=.
+	replace cocina_ch = 1 if (d19 == 1 | d19 == 2)
+	replace cocina_ch = 0 if (d19 == 3)
+	
+	***********
+	*telef_ch*
+	***********
+	gen telef_ch=(d21_17 == 1)
+	
+	***********
+	*refrig_ch*
+	***********
+	gen refrig_ch=(d21_3 == 1)
+	
+	***********
+	*freez_ch*
+	***********
+	gen freez_ch=.
+	
+	***********
+	*auto_ch*
+	***********
+	gen auto_ch=(d21_18 == 1)
+	
+	***********
+	*compu_ch*
+	***********
+	gen compu_ch=(d21_15 == 1)
+		
+	***********
+	*internet_ch*
+	***********
+	gen internet_ch=(d21_16 == 1)
+	
+	***********
+	*vivi1_ch*
+	***********
+	gen vivi1_ch=.
+	replace vivi1_ch=1 if (c1 == 1)	
+	replace vivi1_ch = 2 if (c1 == 3 | c1 == 4)
+	replace vivi1_ch = 3 if (c1 == 2 | c1 == 5)
+	
+	**************
+	***vivi2_ch***
+	**************
+	gen byte vivi2_ch=(vivi1_ch<3)
+	replace vivi2_ch=. if vivi1==.
+	
+	***********
+	*viviprop_ch*
+	***********
+	gen viviprop_ch=.
+	replace viviprop_ch = 0 if (d8_1 == 5)
+	replace viviprop_ch = 1 if (d8_1 == 2 | d8_1 == 4)
+	replace viviprop_ch = 2 if (d8_1 == 1 | d8_1 == 3)
+	replace viviprop_ch = 3 if (d8_1 >= 6 & d8_1 <= 9)	
+	
+	***********
+	*vivitit_ch*
+	***********
+	gen vivitit_ch=.
+	replace vivitit_ch=0 if ...
+	replace vivitit_ch=1 if ...	
+	
+	***********
+	*vivialq_ch*
+	***********
+	gen vivialq_ch= d8_3 if (viviprop_ch == 0)
+	
+	***********
+	*vivialqimp_ch*
+	***********
+	gen vivialqimp_ch=d8_3 if (viviprop_ch != 0)
+
+
+
+	
+****************************
+***VARIABLES DE WASH***
+****************************
+
+	***********
+	*aguared_ch*
+	***********
+	gen byte aguared_ch = (d11 == 1)
+	replace aguared_ch =. if d11 ==.
+
+	***********
+	*aguafconsumo _ch*
+	***********
+	gen byte aguafconsumo_ch =.
+	replace aguafconsumo_ch = 1 if d11==1 & d12==1
+	replace aguafconsumo_ch = 2 if d11==1 & d12>1
+	replace aguafconsumo_ch = 4 if d11==3
+	replace aguafconsumo_ch = 6 if d11==4
+	replace aguafconsumo_ch = 8 if d11==5
+	replace aguafconsumo_ch = 9 if d11==2 
+	replace aguafconsumo_ch = 10 if d11==6
+	
+
+	***********
+	*aguafuente_ch*
+	***********	
+	gen byte aguafuente_ch =.
+	replace aguafuente_ch = 1 if d11==1 & d12==1
+	replace aguafuente_ch = 2 if d11==1 & d12>1
+	replace aguafuente_ch = 4 if d11==3
+	replace aguafuente_ch = 6 if d11==4
+	replace aguafuente_ch = 8 if d11==5
+	replace aguafuente_ch = 9 if d11==2 
+	replace aguafuente_ch = 10 if d11==6
+	
+	******************
+	** aguadist_ch ** - 
+	*****************
+	gen byte aguadist_ch  =.
+	replace aguadist_ch = 1 if d12==1
+	replace aguadist_ch = 2 if d12==2
+	replace aguadist_ch = 3 if d12==3
+	replace aguadist_ch = 0 if missing(aguadist_ch) & aguafuente_ch!=.
+	
+	
+	******************
+	** aguadisp1_ch ** - 
+	*****************
+	gen byte aguadisp1_ch =9
+	
+	******************
+	** aguadisp2_ch ** - 
+	*****************
+	gen byte aguadisp2_ch = 9 
+	
+	******************
+	** aguatrat_ch ** - 
+	*****************
+	gen byte aguatrat_ch = 9
+	
+	******************
+	** aguamala_ch ** - 
+	*****************
+	gen byte aguamala_ch = 2
+	replace aguamala_ch = 0 if aguafuente_ch<=7
+	replace aguamala_ch = 1 if aguafuente_ch>7 & aguafuente_ch!=10 & aguafuente_ch!=.
+
+
+	******************
+	** aguamejorada_ch ** - 
+	*****************
+	gen byte aguamejorada_ch = 2
+	replace aguamejorada_ch = 0 if aguafuente_ch>7 & aguafuente_ch!=10
+	replace aguamejorada_ch = 1 if aguafuente_ch<=7
+	
+	******************
+	** aguamide_ch ** - 
+	*****************
+	gen byte aguamide_ch = .
+	
+	******************
+	** bano_ch ** - 
+	*****************
+	gen byte bano_ch =0
+	replace bano_ch=1 if d16==1 
+	replace bano_ch=2 if d16==2 
+	replace bano_ch=6 if d16==4
+	replace bano_ch=4 if d16==3 
+
+		
+	******************
+	** banoex_ch ** - 
+	*****************
+	gen byte banoex_ch = 1 if (d15 == 1)
+	replace banoex_ch = 0 if (d15 == 2)
+	
+	******************
+	** sinbano_ch ** - 
+	*****************
+	gen sinbano_ch = 3
+	replace sinbano_ch = 0 if d14>0
+		
+	******************
+    ** banomejorado_ch ** - 
+    *****************
+	gen byte banomejorado_ch= 2
+	replace banomejorado_ch =1 if bano_ch<=3 & bano_ch!=0
+	replace banomejorado_ch =0 if (bano_ch ==0 | bano_ch>=4) & bano_ch!=6
+	
+****************************
+***VARIABLES DE MIGRACIÓN***
+****************************		
+
+	*****************
+    *migrante_ci****
+    ****************
+	gen byte migrante_ci= 0
+	replace migrante_ci=1 if (e37 == 4)
+	
+	****************
+	 *migrantiguo5_ci*
+	****************	
+	gen byte migrantiguo5_ci=0
+	replace migrantiguo5_ci=1 if migrante_ci == 1 & e38_1>=5
+	replace migrantiguo5_ci = 1 if migrante_ci == 1 & (e236==1| e236==2 |e236==3 )
+	replace migrantiguo5_ci = 0 if migrante_ci == 1 & e236==4
+
+	****************
+	 *miglac_ci*
+	****************	
+	gen byte miglac_ci = 0
+	replace miglac_ci = 1 if inlist(e234_2, 660, 28, 32, 533, 44, 52, 84, 68, 76, 152, 170, 188, 192, 531, 212, 218, 222, 320, 254, 328, 332, 340, 136, 796, 92, 388, 484, 558, 591, 600, 604, 214, 659, 658, 534, 670, 662, 740, 780, 862)
+	replace miglac_ci=. if migrante_ci==0
+	
+
+****************************
+***VARIABLES DE EXTERNAS***
+****************************	
+	
+	****************
+	 *tipo_bienestar*
+	****************	
+	gen byte tipo_bienestar = . 
+	replace tipo_bienestar  = 1 
+
+
+	****************
+	 * pobre_ine _ci*
+	****************	
+	gen byte pobre_ine _ci= . 
+	replace pobre_ine _ci= 0 if pobre17==0
+	replace pobre_ine _ci= 1 if pobre17==1
+
+	****************
+	 * bienestar_agregado *
+	****************	
+	gen bienestar_agregado = . 
+	replace bienestar_agregado = ht11
+
+	****************
+	* lpe_ci *
+	****************	
+	gen lpe_ci = . 
+	replace lpe_ci = li_17
+	
+	****************
+	 * ln_ci *
+	****************	
+	gen ln_ci = . 
+	replace ln_ci = lp_17
+	
 		
 
 
