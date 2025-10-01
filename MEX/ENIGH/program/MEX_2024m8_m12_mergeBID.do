@@ -94,7 +94,7 @@ concepto en la medición*/
 * Reemplaza el bloque antiguo de "trabajos -> aguinaldo"
 * ============================================================
 
-use "$ruta\enigh2024_ns_trabajos_dta\trabajos.dta", clear
+use "$ruta\trabajos.dta", clear
 
 * 1) NO forzar destring si ya son numéricas.
 capture confirm numeric variable pres_2
@@ -154,7 +154,7 @@ save "$ruta\aguinaldo.dta", replace
 * ============================================================
 * Ahora se incorpora a la base de ingresos
 * ============================================================
-use "$ruta\enigh2024_ns_ingresos_dta\ingresos.dta", clear
+use "$ruta\ingresos.dta", clear
 sort folioviv foliohog numren
 
 * Importante: como INGRESOS suele tener múltiples filas por persona (por clave),
@@ -373,9 +373,8 @@ saveold "$ruta\ingreso_deflactado24_per.dta", replace
 
 *No Monetario
 
-use "$ruta\enigh2024_ns_gastoshogar_dta\gastoshogar.dta", clear
+use "$ruta\gastoshogar.dta", clear
 gen base=1
-*** where did gasto peresona came from
 append using "$ruta\gastospersona.dta"
 replace base =2 if base ==.
 
