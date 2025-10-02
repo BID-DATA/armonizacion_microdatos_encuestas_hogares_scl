@@ -19,7 +19,7 @@ local ANO "2024"
 local ronda m8_m12
 
 local log_file = "${surveysFolder}\harmonized\\`PAIS'\\`ENCUESTA'\\log\\`PAIS'_`ANO'`ronda'_mergeBID.log"
-local base_out = "${surveysFolder}\survey\\`PAIS'\\`ENCUESTA'\\`ANO'\\`ronda'\\data_merge\\`PAIS'_`ANO'`ronda'.dta"
+local base_out = "${surveysFolder}\\harmonized\\`PAIS'\\`ENCUESTA'\\data_arm\\`PAIS'_`ANO'`ronda'.dta"
 
 capture log close
 log using "`log_file'", replace 
@@ -94,7 +94,7 @@ concepto en la medición*/
 * Reemplaza el bloque antiguo de "trabajos -> aguinaldo"
 * ============================================================
 
-use "$ruta\trabajos.dta", clear
+use "$ruta\enigh2024_ns_trabajos_dta\trabajos.dta", clear
 
 * 1) NO forzar destring si ya son numéricas.
 capture confirm numeric variable pres_2
@@ -154,7 +154,7 @@ save "$ruta\aguinaldo.dta", replace
 * ============================================================
 * Ahora se incorpora a la base de ingresos
 * ============================================================
-use "$ruta\ingresos.dta", clear
+use "$ruta\enigh2024_ns_ingresos_dta\ingresos.dta", clear
 sort folioviv foliohog numren
 
 * Importante: como INGRESOS suele tener múltiples filas por persona (por clave),
@@ -373,9 +373,9 @@ saveold "$ruta\ingreso_deflactado24_per.dta", replace
 
 *No Monetario
 
-use "$ruta\gastoshogar.dta", clear
+use "$ruta\enigh2024_ns_gastoshogar_dta\gastoshogar.dta", clear
 gen base=1
-append using "$ruta\gastospersona.dta"
+append using "$ruta\enigh2024_ns_gastospersona_dta\gastospersona.dta"
 replace base =2 if base ==.
 
 label var base "Origen del monto"
@@ -882,7 +882,7 @@ agosto del 2024.*/
 *Modificado Mayra Saenz- Abril 2017
 *Gasto monetario en educación
 
-use "$ruta\gastoshogar.dta", clear
+use "$ruta\enigh2024_ns_gastoshogar_dta\gastoshogar.dta", clear
 
 /*En el caso de la información de gasto no monetario, para 
 deflactar se utiliza la decena de levantamiento de la 
@@ -944,7 +944,7 @@ save "$ruta\edu_gtosmh", replace
 
 *Gasto personas
 
-use "$ruta\gastospersona.dta", clear
+use "$ruta\enigh2024_ns_gastospersona_dta\gastospersona.dta", clear
 
 /*En el caso de la información de gasto no monetario, para 
 deflactar se utiliza la decena de levantamiento de la 
@@ -1015,7 +1015,7 @@ save "$ruta\edu_gtosmp", replace
 
 *********************************************************
 
-use "$ruta\concentradohogar.dta", clear
+use "$ruta\enigh2024_ns_concentradohogar_dta\concentradohogar.dta", clear
 
 *keep proyecto folioviv foliohog tam_loc factor tot_integ est_dis upm ubica_geo
 
@@ -1036,13 +1036,13 @@ sort folioviv foliohog
 
 *Se incorpora la base de hogares
 
-merge 1:1 folioviv foliohog using "$ruta\hogares.dta"
+merge 1:1 folioviv foliohog using "$ruta\enigh2024_ns_hogares_dta\hogares.dta"
 tab _merge
 drop _merge
 
 
 preserve
-use "$ruta\viviendas.dta", clear
+use "$ruta\enigh2024_ns_viviendas_dta\viviendas.dta", clear
 describe combus
 
 capture confirm numeric variable combus
@@ -1102,7 +1102,7 @@ saveold "$ruta\gtos_autoc24.dta", replace
 *--------------------------------------------*
 
 *nivel de personas, (hacer reshape )
-use "$ruta\trabajos.dta",clear
+use "$ruta\enigh2024_ns_trabajos_dta\trabajos.dta",clear
 	*Alvaro AM 2019, lo que antes era pres_1/pres_6 ahora es medtrab_#
 	keep folioviv foliohog numren id_trabajo  trapais subor indep personal pago contrato tipocontr htrab sinco scian clas_emp tam_emp no_ing tiene_suel pres_* medtrab_*
 	egen per = concat(folioviv foliohog numren)
@@ -1129,7 +1129,7 @@ use "$ruta\trabajos.dta",clear
 *_________________________________________________________________________________________________________*
 * Modificación Mayra Sáenz: Se unifica con la base de personas con la de ingresos, de vivienda y de gastos
 *_________________________________________________________________________________________________________*
-use "$ruta\poblacion.dta", clear //Base nueva
+use "$ruta\enigh2024_ns_poblacion_dta\poblacion.dta", clear //Base nueva
 gen str folio= folioviv + foliohog
 order folio, first
 sort folio numren, stable
@@ -1165,8 +1165,9 @@ local ENCUESTA ENIGH
 local ANO "2024"
 local ronda m8_m12
 
-local log_file = "${surveysFolder}\harmonized\\`PAIS'\\`ENCUESTA'\\log\\`PAIS'_`ANO'`ronda'_mergeBID.log"
-local base_out = "${surveysFolder}\survey\\`PAIS'\\`ENCUESTA'\\`ANO'\\`ronda'\\data_merge\\`PAIS'_`ANO'`ronda'.dta"
+*local log_file = "${surveysFolder}\harmonized\\`PAIS'\\`ENCUESTA'\\log\\`PAIS'_`ANO'`ronda'_mergeBID.log"
+*local base_out = "${surveysFolder}\survey\\`PAIS'\\`ENCUESTA'\\`ANO'\\`ronda'\\data_merge\\`PAIS'_`ANO'`ronda'.dta"
+local base_out = "${surveysFolder}\harmonized\\`PAIS'\\`ENCUESTA'\\data_arm\\`PAIS'_`ANO'`ronda'.dta"
 
 saveold "`base_out'", replace
 
