@@ -314,6 +314,11 @@ replace afroind_ci=1 if ind_ci==1
 replace afroind_ci=2 if afro_ci==1
 replace afroind_ci=3 if noafroind_ci == 1
 ta afroind_ci,m
+
+*******************
+***afroind_ano_c***
+*******************
+gen afroind_ano_c=2006
 	
 *********
 *afro_ch*
