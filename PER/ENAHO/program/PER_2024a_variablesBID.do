@@ -398,7 +398,8 @@ use `base_in', clear
 ********************************************************************************
 ***************   VARIABLES DE DIVERSIDAD   *************************************
 ********************************************************************************
-	
+* Modulo 500 - empleo
+
 	*********
 	*afro_ci: Identifica a los encuestados en función de su autoidentificación étnica o racial afrodescendiente*
 	*********
@@ -480,7 +481,7 @@ use `base_in', clear
 	
 
 	
-* 2.3.2 Situación de discapacidad	
+* 2.3.2 Situación de discapacidad - modulo de salud
 
 	********
 	*dis_ci: Identifica a los individuos con discapacidad siguiendo de forma flexible el criterio del WG.
@@ -489,11 +490,11 @@ use `base_in', clear
 	gen byte dis_ci=.
 	replace dis_ci = 1 if (p401h1 == 1 | p401h2 == 1 | p401h3 == 1 | p401h4 == 1 | p401h5 == 1) 
 	replace dis_ci = 0 if (p401h1 == 2 & p401h2 == 2 & p401h3 == 2 & p401h4 == 2 & p401h5 == 2) 
-		
+    
 	*******************
 	***disWG_ci: Identifica a individuos con discapacidad siguiendo de manera estricta el criterio del WG -- individuo como persona con discapacidad si reporta "mucha dificultad" o "no puede hacerlo" ***
 	*******************
-	gen disWG_ci =dis_ci // Solo existe una pregunta  sobre limitación o dificultad PERMANENTE
+	gen disWG_ci =. // Solo existe una pregunta  sobre limitación o dificultad PERMANENTE
 	
 	
 	*******************
@@ -958,6 +959,7 @@ use `base_in', clear
 ********************************************************************************	
 			
 /* Variables de migracion */
+* La información proviene del Modulo 400 de  SALUD **
 	*******************
 	*** migrante_ci: Si el individuo nació en otro país ***
 	*******************	
@@ -992,12 +994,15 @@ use `base_in', clear
 	replace tipo_bienestar  = 2 // consumo
 
 ****************
- * pobre_ine _ci* // como se identifica pobreza extrema
+ * pobre_ine _ci* // como se identifica pobreza 
 ****************	
 	gen byte pobre_ine_ci= . 
-	replace pobre_ine_ci= 0 if pobrezav==0
-	replace pobre_ine_ci= 1 if pobrezav==1
-
+	replace pobre_ine_ci= 0 if pobreza==0
+	replace pobre_ine_ci= 1 if (pobreza==1 | pobreza==2) 
+	
+* Dos variables en la base pobreza y pobrezav
+* pobreza : Identifica pobreza extrema (1), pobreza no extrema (2), y no pobreza (3)
+* pobrezav: Identifica pobreza extrema (1), pobreza no extrema (2),   vulnerable no pobre (3), y no vulnerable no pobre (4)
 
 ****************
  * bienestar_agregado * 
@@ -1019,6 +1024,23 @@ use `base_in', clear
 ****************	
 	gen ln_ci = . 
 	replace ln_ci = linea
+
+
+/*
+¿Cómo replicamos el indicador de pobreza ?
+
+* Pobreza
+gen p = (bienestar_agregado<=linea)
+tab p pobreza
+
+* Pobreza extrema
+gen p_ext = (bienestar_agregado<=linpe)
+tab p_ext pobreza
+
+*/	
+
+
+
 ********************************************************************************
 ********************************************************************************
 	
