@@ -19,7 +19,7 @@ local ANO "2024"
 local ronda m8_m12
 
 local log_file = "${surveysFolder}\harmonized\\`PAIS'\\`ENCUESTA'\\log\\`PAIS'_`ANO'`ronda'_mergeBID.log"
-local base_out = "${surveysFolder}\\harmonized\\`PAIS'\\`ENCUESTA'\\data_arm\\`PAIS'_`ANO'`ronda'.dta"
+local base_out = "${surveysFolder}\survey\\`PAIS'\\`ENCUESTA'\\`ANO'\\`ronda'\\data_merge\\`PAIS'_`ANO'`ronda'.dta"
 
 capture log close
 log using "`log_file'", replace 
@@ -1157,17 +1157,7 @@ egen double ict=rsum(ing_monh nomon)  if parentesco=="101" | parentesco=="102" /
 
 label var  ict "Ingreso corriente total"
 
-
-global ruta = "${surveysFolder}\\survey\MEX\ENIGH\2024\m8_m12\data_orig"
-
-local PAIS MEX
-local ENCUESTA ENIGH
-local ANO "2024"
-local ronda m8_m12
-
-*local log_file = "${surveysFolder}\harmonized\\`PAIS'\\`ENCUESTA'\\log\\`PAIS'_`ANO'`ronda'_mergeBID.log"
-*local base_out = "${surveysFolder}\survey\\`PAIS'\\`ENCUESTA'\\`ANO'\\`ronda'\\data_merge\\`PAIS'_`ANO'`ronda'.dta"
-local base_out = "${surveysFolder}\harmonized\\`PAIS'\\`ENCUESTA'\\data_arm\\`PAIS'_`ANO'`ronda'.dta"
+local base_out = "${surveysFolder}\survey\\`PAIS'\\`ENCUESTA'\\`ANO'\\`ronda'\\data_merge\\`PAIS'_`ANO'`ronda'.dta"
 
 saveold "`base_out'", replace
 
