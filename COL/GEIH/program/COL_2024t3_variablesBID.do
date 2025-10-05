@@ -782,15 +782,13 @@ replace tipo_bienestar  = 1
 ****************
 * pobre_ine _ci*
 ****************	
-gen byte pobre_ine_ci= . 
-*replace pobre_ine _ci= 0 if 
-*replace pobre_ine _ci= 1 if 
+gen byte pobre_ine_ci= pobre
 
 **********************
 *bienestar_agregado***
 **********************	
 gen bienestar_agregado = . 
-*replace bienestar_agregado = 
+replace bienestar_agregado = ingpcug
 
 ****************
 *****lpe_ci ****
