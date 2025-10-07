@@ -43,10 +43,12 @@ Fecha última modificación: Octubre 2025
 *Excel: import excel "$ruta\ENEI-1-2022_HOGARES.xlsx", sheet("Sheet1") firstrow clear case(lower)
 
 import spss "$ruta\Hogares_ENEIC_IV 2024.sav" , clear
+rename FACTOR factor_h
 *label values * // se remueven labels porque hay conflicto con base a nivel de peronas
 save "$ruta\ENEIC-1-2024_HOGARES.dta", replace 
-
+rename FACTOR factor_p
 import spss "$ruta\Personas_ENEIC_IV 2024.sav",clear
+
 save "$ruta\ENEIC-1-2024_PERSONAS.dta", replace
 
 *2. Merge
