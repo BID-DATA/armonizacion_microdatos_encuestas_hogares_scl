@@ -436,6 +436,193 @@ use "`base_in'", clear
 	*edupub_ci*
 	***********
 	gen edupub_ci =.
+	
+
+****************************
+***VARIABLES DE VIVIENDA***
+****************************		
+	***********
+	*luz_ch*
+	***********
+	gen luz_ch=.
+	
+	***********
+	*luzmide_ch*
+	***********
+	gen luzmide_ch=.	
+	
+	***********
+	*combust_ch*
+	***********
+	gen combust_ch=.	
+	
+	***********
+	*piso_ch*
+	***********
+	gen piso_ch=.	
+	
+	***********
+	*pared_ch*
+	***********
+	gen pared_ch=.
+	
+	***********
+	*techo_ch*
+	***********
+	gen techo_ch=.
+	
+	***********
+	*resid_ch*
+	***********
+	gen resid_ch=.
+	
+	***********
+	*dorm_ch*
+	***********
+	gen dorm_ch=.
+	
+	***********
+	*cuartos_ch*
+	***********
+	gen cuartos_ch=.
+	
+	***********
+	*cocina_ch*
+	***********
+	gen cocina_ch=.
+	
+	***********
+	*telef_ch*
+	***********
+	gen telef_ch=.	
+	
+	***********
+	*refrig_ch*
+	***********
+	gen refrig_ch=.
+	
+	***********
+	*freez_ch*
+	***********
+	gen freez_ch=.
+	
+	***********
+	*auto_ch*
+	***********
+	gen auto_ch=.
+	
+	***********
+	*compu_ch*
+	***********
+	gen compu_ch=.
+		
+	***********
+	*internet_ch*
+	***********
+	gen internet_ch=.
+	
+	***********
+	*vivi1_ch**
+	***********
+	gen vivi1_ch=.
+	
+	***********
+	*viviprop_ch*
+	***********
+	gen viviprop_ch=.
+	replace viviprop_ch = 0 if p01a01==3
+	replace viviprop_ch = 1 if p01a01==1
+	replace viviprop_ch = 2 if p01a01==2
+	replace viviprop_ch = 3 if p01a01==4
+	
+	***********
+	*vivitit_ch*
+	***********
+	gen vivitit_ch=.
+	
+	***********
+	*vivialq_ch*
+	***********
+	gen vivialq_ch=p01a03
+	
+	***********
+	*vivialqimp_ch*
+	***********
+	gen vivialqimp_ch=p01a02
+	
+****************************
+***VARIABLES DE WASH***
+****************************
+
+	***********
+	*aguared_ch*
+	***********
+	gen byte aguared_ch =.
+
+	***********
+	*aguafconsumo _ch*
+	***********
+	gen byte aguafconsumo_ch =0
+
+	***********
+	*aguafuente_ch*
+	***********	
+	gen byte aguafuente_ch =.
+	
+	******************
+	** aguadist_ch ** - 
+	*****************
+	gen byte aguadist_ch  =.
+	
+	******************
+	** aguadisp1_ch ** - 
+	*****************
+	gen byte aguadisp1_ch =9
+	
+	******************
+	** aguadisp2_ch ** - 
+	*****************
+	gen byte aguadisp2_ch =9
+	
+	******************
+	** aguatrat_ch ** - 
+	*****************
+	gen byte aguatrat_ch =.
+	
+	******************
+	** aguamala_ch ** - 
+	*****************
+	gen byte aguamala_ch = .
+
+	******************
+	** aguamejorada_ch ** - 
+	*****************
+	gen byte aguamejorada_ch = .
+	
+	******************
+	** aguamide_ch ** - 
+	*****************
+	gen byte aguamide_ch = .
+	
+	******************
+	** bano_ch ** - 
+	*****************
+	gen byte bano_ch = .
+		
+	******************
+	** banoex_ch ** - 
+	*****************
+	gen byte banoex_ch = .
+	
+	******************
+	** sinbano_ch ** - 
+	*****************
+	gen sinbano_ch = .
+		
+	******************
+    ** banomejorado_ch ** - 
+    *****************
+	gen byte banomejorado_ch= .
 
 	
 local log_file = "$ruta\harmonized\\`PAIS'\\`ENCUESTA'\log\\`PAIS'_`ANO'`ronda'_variablesBID.log"
