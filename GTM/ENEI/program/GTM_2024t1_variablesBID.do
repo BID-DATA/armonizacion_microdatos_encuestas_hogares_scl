@@ -379,6 +379,64 @@ use "`base_in'", clear
 * NOTA: SE SIGUE REVISANDO EL MANUAL
 ****************************
 
+****************************
+***VARIABLES DE EDUCACION***
+****************************
+
+	*********	
+	*aedu_ci*
+	*********
+	gen aedu_ci=.
+	replace aedu_ci = 0            if p03a03a==1
+    replace aedu_ci = p03a03b      if p03a03a==1 & inrange(p03a03b,1,6)
+    replace aedu_ci = 6  + p03a03b if p03a03a==2 & inrange(p03a03b,1,3)
+    replace aedu_ci = 9  + p03a03b if p03a03a==3 & inrange(p03a03b,1,4)
+    replace aedu_ci = 13 + p03a03b if p03a03a==4 & inrange(p03a03b,1,6)
+    replace aedu_ci = 19 + p03a03b if p03a03a==5 & inrange(p03a03b,1,3)
+    replace aedu_ci = 22 + p03a03b if p03a03a==6 & inrange(p03a03b,1,4)
+
+	**********
+	*eduui_ci*
+	**********
+	gen byte eduui_ci = (aedu_ci >= 16 & aedu_ci <= 25) if aedu_ci < .
+
+	**********
+	*eduuc_ci*
+	**********
+	gen byte eduuc_ci = (aedu_ci >= 16 & aedu_ci <= 25) if aedu_ci < .
+	
+
+	**********
+	*eduac_ci*
+	**********
+	
+	gen byte eduac_ci = (aedu_ci >= 12) if aedu_ci < .
+		
+	***********
+	*edupre_ci*
+	***********
+	gen byte edupre_ci = (p03a03a == 1) if p03a03a !=.
+
+	************
+	*asispre_ci*
+	************
+	gen byte asispre_ci = .
+	
+	***********
+	*asiste_ci*
+	***********
+	gen byte asiste_ci = (p03a02 == 1) if p03a02 !=.
+
+	*************
+	*pqnoasis1_ci*
+	**************
+	gen pqnoasis1_ci = .
+    
+	***********
+	*edupub_ci*
+	***********
+	gen edupub_ci =.
+
 	
 local log_file = "$ruta\harmonized\\`PAIS'\\`ENCUESTA'\log\\`PAIS'_`ANO'`ronda'_variablesBID.log"
 local base_in  = "$ruta\survey\\`PAIS'\\`ENCUESTA'\\`ANO'\\`ronda'\data_merge\\`PAIS'_`ANO'`ronda'.dta"
