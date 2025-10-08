@@ -646,6 +646,37 @@ use "`base_in'", clear
 	gen byte miglac_ci = inlist(p02a05f, 3003, 3004, 3005, 3006, 3007, 3008, 3010, 3011, 3012, 3013, 3014, 3015, 3016, 3020, 3021, 3022, 3023, 3030, 3035, 3040, 3043, 3044, 3098)
 	replace miglac_ci = . if migrante_ci == 0
 
+
+****************************
+***VARIABLES DE EXTERNAS***
+****************************	
+
+** CON ESTA ENCUESTA NO MIDEN POBREZA, LO HACEN CON LA ENCOVI
+	
+	****************
+	 *tipo_bienestar*
+	****************	
+	gen byte tipo_bienestar = . 
+
+	****************
+	 * pobre_ine _ci*
+	****************	
+	gen byte pobre_ine_ci= . 
+
+	****************
+	 * bienestar_agregado *
+	****************	
+	gen bienestar_agregado = . 
+	
+	****************
+	* lpe_ci *
+	****************	
+	gen lpe_ci = . 
+	
+	****************
+	 * ln_ci *
+	****************	
+	gen ln_ci = . 
 	
 local log_file = "$ruta\harmonized\\`PAIS'\\`ENCUESTA'\log\\`PAIS'_`ANO'`ronda'_variablesBID.log"
 local base_in  = "$ruta\survey\\`PAIS'\\`ENCUESTA'\\`ANO'\\`ronda'\data_merge\\`PAIS'_`ANO'`ronda'.dta"
