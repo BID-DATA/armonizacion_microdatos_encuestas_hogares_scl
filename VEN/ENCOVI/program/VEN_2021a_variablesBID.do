@@ -327,7 +327,7 @@ label variable miembros_ci "Miembro del hogar"
 	gen byte afro_ci = . 	  // se queda como missing (.) si no existe la pregunta
 	
 	*********
-	*ind_ci*
+	*indi_ci*
 	*********	
 	gen byte ind_ci =. 		  // se queda como missing (.) si no existe la pregunta
 
