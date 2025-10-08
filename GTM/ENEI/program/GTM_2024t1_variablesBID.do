@@ -623,6 +623,28 @@ use "`base_in'", clear
     ** banomejorado_ch ** - 
     *****************
 	gen byte banomejorado_ch= .
+	
+	
+****************************
+***VARIABLES DE MIGRACIÓN***
+****************************		
+
+	*****************
+    *migrante_ci****
+    ****************
+	gen byte migrante_ci=(p02a05a==3)
+	
+	****************
+	 *migrantiguo5_ci*
+	****************	
+	gen byte migrantiguo5_ci= (migrante_ci==1 & p02a06b>=5)
+	replace migrantiguo5_ci = . if migrante_ci == 0
+
+	****************
+	 *miglac_ci*
+	****************	
+	gen byte miglac_ci = inlist(p02a05f, 3003, 3004, 3005, 3006, 3007, 3008, 3010, 3011, 3012, 3013, 3014, 3015, 3016, 3020, 3021, 3022, 3023, 3030, 3035, 3040, 3043, 3044, 3098)
+	replace miglac_ci = . if migrante_ci == 0
 
 	
 local log_file = "$ruta\harmonized\\`PAIS'\\`ENCUESTA'\log\\`PAIS'_`ANO'`ronda'_variablesBID.log"
