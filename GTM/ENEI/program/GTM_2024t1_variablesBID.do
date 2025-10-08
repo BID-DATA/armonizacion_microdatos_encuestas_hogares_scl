@@ -137,6 +137,136 @@ use "`base_in'", clear
 	gen factor_ch=factor_h
 	
 
+****************************
+***VARIABLES DEMOGRAFICAS***
+****************************
+
+	*********
+	*sexo_ci*
+	*********
+	gen byte sexo_ci=p02a02
+
+	*********
+	*edad_ci*
+	*********
+	gen int edad_ci=p02a03
+	replace edad_ci=. if p02a03==.
+	
+	**************
+	**relacion_ci**
+	**************
+	gen byte relacion_ci=.
+	replace relacion_ci = 1 if p02a07 == 1
+	replace relacion_ci = 2 if p02a07 == 2
+	replace relacion_ci = 3 if p02a07 == 3
+	replace relacion_ci = 4 if inrange(p02a07,4,11)
+	replace relacion_ci = 5 if inrange(p02a07,13,14)
+	replace relacion_ci = 6 if p02a07 == 12
+	
+	*************
+	*miembros_ci*
+	*************
+	gen miembros_ci=(relacion_ci>=1 & relacion_ci<=5)
+	
+	*************
+	*miembros_one_ci*
+	*************
+	gen miembros_one_ci=(p02a07!=12)
+	* Solo se exluyen los empleados domésticos, según instrucciones del manual
+	
+	**************
+	*Estado Civil*
+	**************
+	gen byte civil_ci=. 
+	replace civil_ci = 1 if p02a12==7
+	replace civil_ci = 2 if p02a12==1 | p02a12==2
+	replace civil_ci = 3 if inrange(p02a12,3,5)
+	replace civil_ci = 4 if p02a12==6
+		
+	*********
+	*jefe_ci*
+	*********
+	gen byte jefe_ci=.
+	replace jefe_ci = 1 if (relacion_ci==1)
+	replace jefe_ci = 0 if (relacion_ci!=1) & (relacion_ci!=.)
+		
+	**************
+	*nconyuges_ch*
+	**************
+	by idh_ch, sort: egen nconyuges_ch=sum(relacion_ci==2)
+    replace nconyuges_ch =. if relacion_ci==.
+	
+	***********
+	*nhijos_ch*
+	***********
+	by idh_ch, sort: egen byte nhijos_ch=sum(relacion_ci==3)
+	replace nhijos_ch =. if relacion_ci==.          
+
+	**************
+	*notropari_ch*
+	**************
+	by idh_ch, sort: egen byte notropari_ch=sum(relacion_ci==4)
+	replace notropari_ch =. if relacion_ci==.
+
+	
+	****************
+	*notronopari_ch*
+	****************
+   by idh_ch, sort: egen byte notronopari_ch=sum(relacion_ci==5)
+   replace notronopari_ch=. if relacion_ci==.          
+		
+	****************
+	*nempdom_ch*
+	****************
+	by idh_ch, sort: egen byte nempdom_ch=sum(relacion_ci==6)
+	replace nempdom_ch =. if relacion_ci==. 
+		
+	*************
+	*clasehog_ch*
+	*************
+	gen byte clasehog_ch=0
+	**** unipersonal
+	replace clasehog_ch=1 if nhijos_ch==0 & nconyuges_ch==0 & notropari_ch==0 & notronopari_ch==0
+	**** nuclear (child with or without spouse but without other relatives)
+	replace clasehog_ch=2 if nhijos_ch>0 & notropari_ch==0 & notronopari_ch==0
+	**** nuclear (spouse with or without children but without other relatives)
+	replace clasehog_ch=2 if nhijos_ch==0 & nconyuges_ch>0 & notropari_ch==0 & notronopari_ch==0
+	**** ampliado
+	replace clasehog_ch=3 if notropari_ch>0 & notronopari_ch==0
+	**** compuesto (some relatives plus non relative)
+	replace clasehog_ch=4 if ((nconyuges_ch>0 | nhijos_ch>0 | notropari_ch>0) & (notronopari_ch>0))
+	**** corresidente
+	replace clasehog_ch=5 if nhijos_ch==0 & nconyuges_ch==0 & notropari_ch==0 & notronopari_ch>0
+
+	**************
+	*nmiembros_ch*
+	**************
+	by idh_ch, sort: egen byte nmiembros_ch=sum(relacion_ci>0 & relacion_ci<=5)
+		
+	*************
+	*nmayor21_ch*
+	*************
+	by idh_ch, sort: egen byte nmayor21_ch=sum((relacion_ci>0 & relacion_ci<=5) & (edad_ci>=21 & edad_ci<=98))
+
+	*************
+	*nmenor21_ch*
+	*************
+	by idh_ch, sort: egen byte nmenor21_ch=sum((relacion_ci>0 & relacion_ci<=5) & (edad_ci<21))
+
+	*************
+	*nmayor65_ch*
+	*************
+	by idh_ch, sort: egen byte nmayor65_ch=sum((relacion_ci>0 & relacion_ci<=5) & (edad_ci>=65 & edad_ci!=.))
+
+	************
+	*nmenor6_ch*
+	************
+	by idh_ch, sort: egen byte nmenor6_ch=sum((relacion_ci>0 & relacion_ci<=5) & (edad_ci<6))
+
+	************
+	*nmenor1_ch*
+	************
+	by idh_ch, sort: egen byte nmenor1_ch=sum((relacion_ci>0 & relacion_ci<=5) & (edad_ci<1))
 
 	
 local log_file = "$ruta\harmonized\\`PAIS'\\`ENCUESTA'\log\\`PAIS'_`ANO'`ronda'_variablesBID.log"
