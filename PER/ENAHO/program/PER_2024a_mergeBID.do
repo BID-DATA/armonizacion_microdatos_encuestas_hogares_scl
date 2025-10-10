@@ -9,7 +9,8 @@ Autores:
 							 IADB
 ****************************************************************************/
 ****************************************************************************/
-global surveysFolder "D:\Dropbox\BID\BID2025_Pepe\Tarea1_Excel\8_Peru_2024"
+
+*global ruta = "${surveysFolder}"
 
 
 clear all
