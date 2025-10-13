@@ -14,8 +14,9 @@ global ruta = "${surveysFolder}"
 
 local PAIS BHS
 local ENCUESTA LFS
-local ANO "2015"
+local ANO "2023"
 local ronda a
+
 
 local log_file = "$ruta\harmonized\\`PAIS'\\`ENCUESTA'\\log\\`PAIS'_`ANO'`ronda'_variablesBID.log"
 local base_in  = "$ruta\survey\\`PAIS'\\`ENCUESTA'\\`ANO'\\`ronda'\data_merge\\`PAIS'_`ANO'`ronda'.dta"
@@ -37,7 +38,7 @@ Detalle de procesamientos o modificaciones anteriores:
 ****************************************************************************/
 
 use `base_in', clear
-			
+		
 **********************************
 ***VARIABLES DEL IDENTIFICACION***
 **********************************
@@ -114,45 +115,17 @@ use `base_in', clear
 	******************
 	*** idp_ci *******
 	******************
-	if `has_ind' {
-		egen str20 idp_ci = concat(idh_ch ind_no), punct("_")
-	}
-	else {
-		tostring _n, gen(__nstr)
-		egen str20 idp_ci = concat(idh_ch __nstr), punct("_")
-		drop __nstr
-	}
-
-	duplicates report idh_ch idp_ci
+	egen str20 idp_ci = concat(idh_ch ind_no), punct("_")
 	
 	***********
 	*factor_ci* 
 	***********
-	capture drop factor_ci factor_ch
-	capture confirm variable weights
-	local has_pwt = (_rc==0)
-	capture confirm variable hweights
-	local has_hhwt = (_rc==0)
-
-	if `has_pwt' {
-		clonevar factor_ci = weights
-	}
-	else if `has_hhwt' {
-		clonevar factor_ci = hweights
-	}
-	else {
-		gen double factor_ci = 1
-	}
+	gen double factor_ci = cond(_rc==0, weights, 1)
 
 	*******************************************
 	*Factor de expansion del hogar (factor_ch)*
 	*******************************************
-	if `has_hhwt' {
-		clonevar factor_ch = hweights
-	}
-	else {
-		clonevar factor_ch = factor_ci
-	}
+	gen double factor_ch = cond(_rc==0, hweights, factor_ci)
 
 ****************************
 ***VARIABLES DEMOGRAFICAS***
@@ -194,8 +167,7 @@ use `base_in', clear
 	*********
 	*jefe_ci*
 	*********
-	gen byte jefe_ci = (relacion_ci==1)
-	replace jefe_ci = . if relacion_ci==.	
+	gen byte jefe_ci     = (relacion_ci==1)
 	
 	**************
 	*nconyuges_ch*
@@ -239,7 +211,8 @@ use `base_in', clear
 	**************
 	*nmiembros_ch*
 	**************
-	bysort idh_ch: egen byte nmiembros_ch = total(inrange(relacion_ci,1,5))
+	bys idh_ch: egen nmiembros_ch = total(inrange(relacion_ci,1,5))
+	replace nmiembros_ch = . if nmiembros_ch==0
 
 	*************
 	*nmayor21_ch*
@@ -269,9 +242,8 @@ use `base_in', clear
 	*************
 	*miembros_ci*
 	*************
-	capture drop miembros_ci
-	gen byte miembros_ci = (relacion_ci>=1 & relacion_ci<=5)
-	replace miembros_ci = . if relacion_ci==.
+	gen byte miembros_ci = inrange(relacion_ci,1,5)
+
 
 *******************************************************
 ***           VARIABLES DE DIVERSIDAD               ***
@@ -299,9 +271,50 @@ use `base_in', clear
 ***VARIABLES DE EDUCACION***
 ****************************
 
-	gen byte aedu_ci = education
-	gen byte eduui_ci = .
+	**********
+	* aedu_ci
+	**********
+	rename what_is_your_highest_level education
+	rename what_is_your_highest_certi highest_certi
+	gen aedu_ci = .
+	replace aedu_ci = 0   if education==1
+	replace aedu_ci = 0   if education==2
+	replace aedu_ci = 6   if education==3
+	replace aedu_ci = 6   if education==4
+	replace aedu_ci = 12  if education==5
+	replace aedu_ci = 13  if education==6
+	replace aedu_ci = 15  if education==7
+	replace aedu_ci = 13  if education==8
+	replace aedu_ci = .   if education==9 | missing(education)
+
+	**********
+	* eduuc_ci
+	**********	
 	gen byte eduuc_ci = .
+	capture confirm variable highest_certi_lbl
+	if _rc==0 {
+		replace eduuc_ci = 1 if ///
+			strpos(highest_certi_lbl,"degree")   | ///
+			strpos(highest_certi_lbl,"bachelor") | ///
+			strpos(highest_certi_lbl,"master")   | ///
+			strpos(highest_certi_lbl,"phd")      | ///
+			strpos(highest_certi_lbl,"assoc")    | ///
+			strpos(highest_certi_lbl,"university")   // si etiqueta explicita grado universitario
+		replace eduuc_ci = 0 if eduuc_ci==. & !missing(highest_certi_lbl)
+	}
+	else {
+		* Respaldo MUY conservador basado en el nivel: marcar como 0 por defecto si no hay títulos
+		replace eduuc_ci = 0 if inlist(education,1,2,3,4,5,6,7,8) & eduuc_ci==.
+	}
+			
+	**********
+	* eduui_ci
+	**********
+	gen byte eduui_ci = .
+	replace eduui_ci = 1 if inlist(education,6,7,8) & eduuc_ci!=1 & education<.   // Univ 1-2, Univ 3+, Téc/Voc
+	replace eduui_ci = 0 if eduui_ci==. & education<.
+	replace eduui_ci = . if aedu_ci==.
+
 	gen byte eduac_ci = .
 	gen byte edupre_ci = .
 	gen byte asispre_ci = .
@@ -317,7 +330,7 @@ use `base_in', clear
 	***luz_ch***
 	***********
 	gen byte luz_ch = .
-
+	
 	***************
 	***luzmide_ch***
 	***************
@@ -367,6 +380,8 @@ use `base_in', clear
 	***telef_ch***
 	************
 	gen byte telef_ch = .
+	capture confirm variable fixed_telephone
+	if _rc==0 replace telef_ch = (fixed_telephone==1) if fixed_telephone<.
 
 	***************
 	***refrig_ch***
@@ -387,16 +402,24 @@ use `base_in', clear
 	***compu_ch***
 	************
 	gen byte compu_ch = .
+	capture confirm variable computer
+	if _rc==0 replace compu_ch = (computer==1) if computer<.
 
 	*****************
 	***internet_ch***
 	*****************
 	gen byte internet_ch = .
+	capture confirm variable internet
+	if _rc==0 replace internet_ch = 1 if internet==1
+	capture confirm variable away_from_home
 
 	************
 	***vivi1_ch***
 	************
 	gen byte vivi1_ch = .
+	replace vivi1_ch = 1 if inlist(dwelling,1,2)     // Casa
+	replace vivi1_ch = 2 if dwelling==3               // Departamento
+	replace vivi1_ch = 3 if inlist(dwelling,4,5)      // Otro
 
 	*****************
 	***viviprop_ch***
@@ -425,27 +448,21 @@ use `base_in', clear
 	**************
 	***aguared_ch***
 	**************
-	* 1 = por red | 0 = fuera de red | . = no está
 	gen byte aguared_ch = .
 
 	***********************
 	***aguafconsumo _ch***
 	***********************
-	* 0 = la encuesta NO pregunta agua para beber
-	* 1..10 = categorías JMP (si existiera la pregunta)
-	* Aquí, como no está en la base → asignamos 0 (no pregunta)
 	gen byte aguafconsumo_ch = 0
 
 	********************
 	***aguafuente_ch***
 	********************
-	* 1..10 = categorías JMP para fuente general | . = no está
 	gen byte aguafuente_ch = .
 
 	******************
 	***aguadist_ch***
 	******************
-	* 0 = no se especifica | 1 = dentro | 2 = en el lote | 3 = fuera del lote
 	* Si no está la pregunta → 0
 	gen byte aguadist_ch = 0
 
@@ -472,16 +489,18 @@ use `base_in', clear
 	******************
 	***aguamala_ch***
 	******************
-	* 0 = mejorada | 1 = no mejorada | 2 = no se puede especificar
-	* Si no hay fuente → 2
 	gen byte aguamala_ch = 2
+	replace aguamala_ch = 0 if inlist(aguafuente_ch,1,2,3,4,5,6,7)
+	replace aguamala_ch = 1 if inlist(aguafuente_ch,8,9)
+	replace aguamala_ch = 2 if aguafuente_ch==10 | missing(aguafuente_ch)
 
 	**********************
 	***aguamejorada_ch***
 	**********************
-	* 1 = mejorada | 0 = no mejorada | 2 = no se puede especificar
-	* Si no hay fuente → 2
 	gen byte aguamejorada_ch = 2
+	replace aguamejorada_ch = 1 if inlist(aguafuente_ch,1,2,3,4,5,6,7)
+	replace aguamejorada_ch = 0 if inlist(aguafuente_ch,8,9)
+	replace aguamejorada_ch = 2 if aguafuente_ch==10 | missing(aguafuente_ch)
 
 	******************
 	***aguamide_ch***
@@ -515,7 +534,6 @@ use `base_in', clear
 	* Si no hay info de bano_ch → 2
 	gen byte banomejorado_ch = 2
 	
-		
 ****************************
 *** VARIABLES DE MIGRACIÓN***
 ****************************
@@ -566,7 +584,7 @@ use `base_in', clear
 	****************
 	gen ln_ci = .
 		
-	
+		
 local log_file = "$ruta\harmonized\\`PAIS'\\`ENCUESTA'\log\\`PAIS'_`ANO'`ronda'_variablesBID.log"
 local base_in  = "$ruta\survey\\`PAIS'\\`ENCUESTA'\\`ANO'\\`ronda'\data_merge\\`PAIS'_`ANO'`ronda'.dta"
 local base_out = "$ruta\harmonized\\`PAIS'\\`ENCUESTA'\data_arm\\`PAIS'_`ANO'`ronda'_BID.dta"

@@ -2,6 +2,7 @@
 clear
 set more off
 
+
 *________________________________________________________________________________________________________________*
 
  * Activar si es necesario (dejar desactivado para evitar sobreescribir la base y dejar la posibilidad de 
@@ -15,7 +16,7 @@ global ruta = "${surveysFolder}\\survey\\BHS\LFS\\2014\\a\\data_orig"
 
 local PAIS BHS
 local ENCUESTA LFS
-local ANO "2015"
+local ANO "2018"
 local ronda a
 
 local log_file = "${surveysFolder}\harmonized\\`PAIS'\\`ENCUESTA'\\log\\`PAIS'_`ANO'`ronda'_mergeBID.log"
@@ -36,7 +37,7 @@ Fecha última modificación: 10/10/2025
 							SCL/LMK - IADB
 ****************************************************************************/
 
-use  "$ruta\Bahamas_LFS_`ANO'_housing_2.dta", clear
+use  "$ruta\Bahamas_LFS_`ANO'_housing_3.dta", clear
 sort island hhno  
 duplicates report  island hhno  
 duplicates tag  island hhno , gen(dup)
@@ -47,7 +48,7 @@ drop if dup ==1
 duplicates report island hhno
 save "$ruta\housing.dta", replace
 
-use "$ruta\Bahamas_LFS_`ANO'_individual_2.dta", clear
+use "$ruta\Bahamas_LFS_`ANO'_individual_3.dta", clear
 duplicates report  island hhno  ind_no  // hay duplicados en obs pero al revisar tienen características diferentes
 duplicates tag  island hhno ind_no , gen(dup)  //52
 tab dup
@@ -56,17 +57,9 @@ sort island hhno
 merge  m:1 island hhno using "$ruta\housing.dta"
 br if _merge ==1
 drop if _merge ==2
-
-tab _merge
-/*
-                 _merge |      Freq.     Percent        Cum.
-------------------------+-----------------------------------
-            matched (3) |      5,748      100.00      100.00
-------------------------+-----------------------------------
-                  Total |      5,748      100.00
-*/
-
 drop _merge
+
+rename *, lower
 
 save "`base_out'", replace
 

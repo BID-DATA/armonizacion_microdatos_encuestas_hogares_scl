@@ -16,7 +16,7 @@ global ruta = "${surveysFolder}\\survey\\BHS\LFS\\2014\\a\\data_orig"
 
 local PAIS BHS
 local ENCUESTA LFS
-local ANO "2014"
+local ANO "2016"
 local ronda a
 
 local log_file = "${surveysFolder}\harmonized\\`PAIS'\\`ENCUESTA'\\log\\`PAIS'_`ANO'`ronda'_mergeBID.log"
@@ -24,7 +24,6 @@ local base_out = "${surveysFolder}\survey\\`PAIS'\\`ENCUESTA'\\`ANO'\\`ronda'\\d
   
 capture log close
 log using "`log_file'", replace 
-
 
 /***************************************************************************
                  BASES DE DATOS DE ENCUESTA DE HOGARES - SOCIOMETRO 

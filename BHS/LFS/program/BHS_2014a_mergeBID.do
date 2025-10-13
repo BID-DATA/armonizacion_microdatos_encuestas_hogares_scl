@@ -22,7 +22,8 @@ local ronda a
 local log_file = "${surveysFolder}\harmonized\\`PAIS'\\`ENCUESTA'\\log\\`PAIS'_`ANO'`ronda'_mergeBID.log"
 local base_out = "${surveysFolder}\survey\\`PAIS'\\`ENCUESTA'\\`ANO'\\`ronda'\\data_merge\\`PAIS'_`ANO'`ronda'.dta"
 
-
+capture log close
+log using "`log_file'", replace 
 
 /***************************************************************************
                  BASES DE DATOS DE ENCUESTA DE HOGARES - SOCIOMETRO 
@@ -60,17 +61,6 @@ sort island hhno result_code
 merge  m:1 island hhno using "$ruta\housing.dta"
 br if _merge ==1
 drop if _merge ==2
-
-tab _merge
-/*
-   Matching result from |
-                  merge |      Freq.     Percent        Cum.
-------------------------+-----------------------------------
-        Master only (1) |          3        0.05        0.05
-            Matched (3) |      6,014       99.95      100.00
-------------------------+-----------------------------------
-                  Total |      6,017      100.00
-*/
 
 drop _merge
 

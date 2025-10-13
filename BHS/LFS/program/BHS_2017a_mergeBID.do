@@ -2,6 +2,7 @@
 clear
 set more off
 
+
 *________________________________________________________________________________________________________________*
 
  * Activar si es necesario (dejar desactivado para evitar sobreescribir la base y dejar la posibilidad de 
@@ -15,7 +16,7 @@ global ruta = "${surveysFolder}\\survey\\BHS\LFS\\2014\\a\\data_orig"
 
 local PAIS BHS
 local ENCUESTA LFS
-local ANO "2015"
+local ANO "2017"
 local ronda a
 
 local log_file = "${surveysFolder}\harmonized\\`PAIS'\\`ENCUESTA'\\log\\`PAIS'_`ANO'`ronda'_mergeBID.log"
@@ -58,13 +59,7 @@ br if _merge ==1
 drop if _merge ==2
 
 tab _merge
-/*
-                 _merge |      Freq.     Percent        Cum.
-------------------------+-----------------------------------
-            matched (3) |      5,748      100.00      100.00
-------------------------+-----------------------------------
-                  Total |      5,748      100.00
-*/
+
 
 drop _merge
 
