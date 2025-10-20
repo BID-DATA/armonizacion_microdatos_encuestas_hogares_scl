@@ -16,6 +16,7 @@ set more off
 global surveysFolder "D:\Dropbox\BID\BID2025_Pepe\Tarea1_Excel\9_Honduras_2024\m6\"
 
 
+
 global out ="${surveysFolder}\data_merge"
 /*
 global ruta = "${surveysFolder}"
@@ -507,6 +508,394 @@ use "$out\HND_2024m6", clear
 	egen byte dis_ch = max(dis_ci), by(idh_ch) 
 	replace dis_ch =1 if dis_ch>=1 & dis_ch!=. // añadido por seguridad
 
+********************************************************************************
+***************   VARIABLES DE MERCADO LABORAL   *******************************
+********************************************************************************
+
+	*************
+	*condocup_ci: Identifica la condición de ocupación del individuo. *
+	*************
+	/* Variable de condición de ocupación de la encuesta - CONDACT:
+			1	Ocupados
+			2	Desocupados
+			3	Poblacion fuera de la fuerza de trabajo
+	
+	A los que son población fuera de la fuerza de trabajo se les hace la siguiente pregunta por su tipo de inactividad TIPINAC:	
+			1	Potencialmente Activos
+			2	Desalentados
+			3	Inactivos
+
+	Categorias de condocup_ci:
+			1	Ocupado
+			2	Desocupado
+			3	Inactivo
+			4	Menor que la edad límite de los entrevistados
+	*/	
+	gen byte condocup_ci = .
+	replace condocup_ci = 1 if CONDACT==1 //Ocupados
+	replace condocup_ci = 2 if CONDACT==2 //Desocupados
+	replace condocup_ci = 3 if CONDACT==3 & TIPINAC==3 //Inactivos
+	replace condocup_ci = 4 if edad_ci<5 //Según la encuesta, las preguntas sobre ocupación se hacen a personas de 5 años en adelante
+
+	*******************
+	***categoinac_ci: Identifica la condición de inactividad de los individuos.***
+	*******************
+	/*
+	A los que son población fuera de la fuerza de trabajo (CONDACT==3) se les hace la siguiente pregunta por su condición actual - CA514:
+			1	Está jubilado?
+			2	Está pensionado?
+			3	Es rentista?
+			4	Se dedica solo a estudiar?
+			5	Se dedica a los quehaceres del hogar?
+			6	Por su edad no puede trabajar (menor o mayor)?
+			7	Está enfermo de gravedad?
+			8	Está discapacitado?
+			9	No hace nada?
+			97	Otra
+	
+	Categorias de categoinac_ci:
+			1	Jubilados o pensionados
+			2	Estudiantes
+			3	Quehaceres domésticos
+			4	Otros inactivos
+	*/
+	gen byte categoinac_ci = .
+	replace categoinac_ci = 1 if (inlist(CA514,1,2) & condocup_ci == 3) //Jubilado o Pensionado
+	replace categoinac_ci = 2 if  (CA514 == 4 & condocup_ci == 3) //Estudiante
+	replace categoinac_ci = 3 if  (CA514 == 5 & condocup_ci == 3) //Quehaceres domesticos
+	replace categoinac_ci = 4 if  (!inlist(CA514,1,2,4,5) & condocup_ci == 3) //Otros Inactivos
+	replace categoinac_ci = . if condocup_ci==. | CA514==. //Missings
+	
+	**********
+	***emp_ci: Variable dicotómica que identifica con valor 1 a los ocupados y 0 a los no ocupados y mantiene con valores perdidos a los que se muestran en la encuesta con valores perdidos*
+	**********
+	*Codigo Extraido del Manual
+	gen byte emp_ci = .
+	replace emp_ci = (condocup_ci == 1) if condocup_ci != .
+
+	**************
+	***cesante_ci: Identifica a las personas que actualmente se encuentran desempleadas pero que habían trabajado anteriormente. Toma valor de 1 cuando la persona es cesante; 0 para el resto de los desocupados y con missing value al resto de la población.*** 
+	**************
+	/*¿Ha trabajado antes? - CA517:
+			1	Si
+			2	No
+	*/
+	gen byte cesante_ci = .
+	replace cesante_ci = 1 if CA517 == 1 & condocup_ci == 2 //Ha trabajado antes (CA517==1) y ahora está desocupado (condocup_ci==2) 
+	replace cesante_ci = 0 if cesante_ci != 1 & condocup_ci ==2 //Se quedan con 0 las observaciones que son desocupados y no son cesantes 
+
+	***************
+	***desemp_ci: Variable dicotómica que identifica con valor 1 a los desocupados, 0 a los individuos que son parte del grupo de referencia y missing para el resto de la población.***
+	***************	
+	*Codigo estraído del manual
+	gen byte desemp_ci = .
+	replace desemp_ci = (condocup_ci == 2) if condocup_ci! = .
+	
+	***************
+	***subemp_ci: Variable dicotómica que indica con valor 1 si la persona trabaja 30 o menos horas a la semana en la actividad principal, está disponible para trabajar más horas y quiere/desea/está dispuesto a trabajar más horas (subempleo visible); y con valor 0 al resto de la población ocupada. ***
+	***************
+	*Total de horas laboradas en ocupación principal - TOTHRSOP
+	*Durante la semana pasada, ¿hubiera querido trabajar más horas (en su mismo trabajo o en otro)? - CA522 
+	*No existe pregunta referente a si la persona está disponible para trabajar más horas. No se crea la variable, pues la voluntad a trabajar (CA522) no implica disponibilidad de hacerlo. La variable queda como missing.
+	gen byte subemp_ci = .
+
+	****************
+	***durades_ci: Indica la duración del desempleo en meses o el número de meses –no necesariamente consecutivos– que un individuo desempleado ha estado buscando empleo. Para los no desempleados la variable toma missing values.***
+	****************
+	*MESEST: Meses buscando trabajo
+	gen byte durades_ci=MESEST 
+
+	***********
+	***pea_ci: Variable dicotómica que indica la población económicamente activa (PEA).***
+	***********
+	*Codigo extraido del manual
+	gen byte pea_ci = .
+	replace pea_ci = 1 if inlist(condocup_ci,1,2) //Ocupados y Desocupados
+	replace pea_ci = 0 if inlist(condocup_ci,3,4) //Inactivos y menores de 5 años
+	
+	****************
+	*** nempleos_ci: Variable que indica el número de empleos que tiene la persona.**
+	****************
+	gen byte nempleos_ci = . //No existe la variable en la encuesta
+
+	******************
+	***antiguedad_ci: Años de trabajo en la actividad principal actual de la persona ocupada. Cualquier  duración menor a 12 meses se programa a 0 años.***
+	******************
+	gen byte antiguedad_ci = . //No hay variable de antiguedad en la ocupación actual
+	
+	***************
+	***desalent_ci: Variable dicotómica que indica con el valor de 1 si las personas que se clasifican como inactivas declaran que no buscan trabajo por desanimo, cansancio o sentimiento de incapacidad. y con valor 0 al resto de los individuos de la población de referencia.***
+	***************
+	/*¿Por qué no buscó trabajo ni trató de establecer su propio negocio o finca en las últimas cuatro semanas? - CA513:
+			1	Ya encontró trabajo (iniciará antes de un mes)
+			2	Abrirá o reabrirá negocio antes de un mes
+			3	Se irá a trabajar a otro país
+			4	Espera respuesta a gestiones anteriores
+			5	Está esperando la próxima temporada / proyecto
+			6	Cree que no encontrará o no le darán trabajo
+			7	No tiene tierra, capital o materia prima
+			8	En esta zona no hay trabajo del que necesita
+			9	Dejo de buscar momentaneamente
+			10	No quiere / no puede / no necesita trabajar
+	*/
+	gen byte desalent_ci=.
+	replace desalent_ci=1 if CA513==6 & condocup_ci==3 //Se consideran los que creen que no les darán trabajo como desanimados
+	replace desalent_ci=0 if CA513!=6 & condocup_ci==3 //Se pone como 0 al resto 
+	
+	***************
+	***horaspri_ci: Variable continua que indica el número de horas totales trabajadas en la actividad principal en la semana de referencia.***
+	***************
+	*TOTHRSOP: Total de horas laboradas en ocupación principal
+	gen  byte horaspri_ci = TOTHRSOP
+	
+	***************
+	***horastot_ci: Variable continua que indica el número de horas totales trabajadas en todas las actividades económicas en una semana.***
+	***************	
+	*THORAS:Total de horas laboradas
+	gen  byte horastot_ci  = THORAS
+	
+	
+	***************
+	***tiempoparc_ci: Variable dicotómica que indica con valor 1 si la persona trabaja menos de 30 horas a la semana en la actividad principal y no desea trabajar más***
+	***************
+	*CA522 - Durante la semana pasada, ¿hubiera querido trabajar más horas?:
+	*		1	Sí
+	*		2	No
+	*		9	No sabe
+	gen  byte tiempoparc_ci = .
+	replace tiempoparc_ci=(horaspri_ci<=30 & CA522==2) if condocup_ci==1 //Si la  persona es ocupada (condocup_ci==1), trabaja menos de 30 horas (horaspri_ci<=30) y durante la semana pasada NO hubiese querido trabajar más (CA522) se asigna 1. Al resto de personas ocupadas se les asigna 0. La variable queda con missings para las personas no ocupadas (condocup_ci!=1).
+	
+	***************
+	***categopri_ci: Indica la categoría ocupacional de la actividad principal para los ocupados. (Solo aplica para los trabajadores ocupados emp_ci=1) ***
+	***************	
+	
+	/*OC609 - En esta ocupacion, trabaja como:
+			1	Empleado u obrero en el sector público
+			2	Empleado u obrero en el sectorprivado
+			3	Empleado doméstico
+			4	Pasante / aprendiz / practicante remunerado en el sector público
+			5	Pasante / aprendiz / practicante remunerado en el sector privado
+			6	Empleador, patrón o socio activo
+			7	Trabajador independiente o por cuenta propia
+			8	Trabajador familiar auxiliar
+			9	Contratista dependiente en el sector público
+			10	Contratista dependiente en el sector privado
+			11	Contratista dependiente en el sector de los hogares
+	
+	Categorias de categopri_ci: 
+			0	Otra clasificación
+			1	Patrón o empleador
+			2	Cuenta Propia o independiente
+			3	Empleado o asalariado
+			4	Trabajador no remunerado
+	*/
+	gen categopri_ci=.
+	replace categopri_ci=1 if inlist(OC609,6) & condocup_ci==1 //Patrón o Empleador
+	replace categopri_ci=2 if inlist(OC609,7) & condocup_ci==1 //Independiente
+	replace categopri_ci=3 if inlist(OC609,1,2,3,4,5,9,10,11) & condocup_ci==1 //Empleado o asalariado
+	replace categopri_ci=4 if inlist(OC609,8) & condocup_ci==1 //Trabajador Familiar - No remunerado
+	label var categopri_ci "Categoria ocupacional actividad principal"
+	label define categopri_ci 1 "Patrón o Empleador" 2 "Cuenta Propia" 3 "Empleado" 4 "Trabajador no remunerado"
+	label value categopri_ci categopri_ci
+	
+	***************
+	***categosec_ci: Indica la categoría ocupacional de la actividad secundaria. (Solo aplica para los trabajadores ocupados emp_ci=1)***
+	***************	
+	gen  byte categosec_ci = . //No hay variable de categoría ocupacional de la actividad secundaria
+
+	***************
+	***rama_ci: Indica la actividad laboral de la ocupación principal según la Clasificación industrial Uniforme a un dígito con las que fueron codificadas las bases originales para su armonización (Para ver un detalle de los criterios originales utilizados por cada país ver anexo A4_rama_ci). La mayoría de los países usan la clasificación CIIU pero en diferentes revisiones. Si la base de datos ya incluye esta variable es importante hacer un control de calidad y cerciorarse de la revisión que se está armonizando. Solo para los ocupados emp_ci=1.***
+	***************	
+	/*RAMAOP - Rama de ocupación principal:
+			1	Agricultura, ganadería, silvicultura y pesca
+			2	Explotacion de minas y canteras
+			3	Manufacturera
+			4	Suministro de electricidad, gas, vapor y aire acondicionado
+			5	Suministro de agua evacuación de aguas residuales, ///
+				gestión de desechos y descontaminación
+			6	Construcción
+			7	Comercio al por mayor y al por menor reparación ///
+				de vehículos automotores y motocicletas
+			8	Transporte y almacenamiento
+			9	Actividades de alojamiento y de servicio de comidas
+			10	Información y comunicaciones
+			11	Actividades financieras y de seguros
+			12	Actividades inmobiliarias
+			13	Actividades profesionales, científicas y técnicas
+			14	Actividades de servicios administrativos y de apoyo
+			15	Administración pública y defensa planes de seguridad ///
+				social de afiliación obligatoria
+			16	Enseñanza
+			17	Actividades de atención de la salud humana y de asistencia social
+			18	Actividades artísticas, de entretenimiento y recreativas
+			19	Otras actividades de servicios
+			20	Actividades de los hogares como empleadores actividades ///
+				no diferenciadas de los hogares como productores de bienes y ser
+			21	Actividades de organizaciones y órganos extraterritoriales
+			22	Rama sin especificar
+			23	Busca trabajo por primera vez
+			99	No Responde
+	
+	Categorias de rama_ci:
+			1	Agricultura, caza, silvicultura y pesca.
+			2	Explotación de minas y canteras.
+			3	Industrias manufactureras.
+			4	Electricidad, gas y agua.
+			5	Construcción.
+			6	Comercio al por mayor y menor, restaurantes, hoteles.
+			7	Transporte y almacenamiento.
+			8	Establecimientos financieros, seguros, bienes inmuebles.
+			9	Servicios sociales, comunales y personales.
+			10	Gobierno
+	*/
+	gen rama_ci=.
+	replace  rama_ci=1 if ramaop==1 & emp_ci==1 
+	replace  rama_ci=2 if ramaop==2 & emp_ci==1 
+	replace  rama_ci=3 if ramaop==3 & emp_ci==1
+	replace  rama_ci=4 if ramaop==4 | ramaop==5  & emp_ci==1
+	replace  rama_ci=5 if ramaop==6 & emp_ci==1
+	replace  rama_ci=6 if ramaop==7 | ramaop==9  & emp_ci==1
+	replace  rama_ci=7 if ramaop==8 | ramaop==10 & emp_ci==1
+	replace  rama_ci=8 if inrange(ramaop,11,14)  & emp_ci==1
+	replace  rama_ci=9 if inrange(ramaop,15,21)  & emp_ci==1
+	label var rama_ci "Rama de actividad"
+	label def rama_ci 1"Agricultura, caza, silvicultura y pesca" 2"Explotación de minas y canteras" 3"Industrias manufactureras" 4"Electricidad, gas y agua" 5"Construcción" 6"Comercio, restaurantes y hoteles" 7"Transporte y almacenamiento" 8"Establecimientos financieros, seguros e inmuebles" 9"Servicios sociales y comunales", add
+	label val rama_ci rama_ci 
+	
+	
+	***************
+	***spublico_ci: Variable dicotómica que indica con valor 1 si la persona lleva a cabo su actividad laboral principal en el sector público y con valor 0 al resto de la población. Solo para los ocupados emp_ci=1.***
+	***************	
+	*Codigo Extraído del manual
+	gen byte spublico_ci = .
+	replace spublico_ci = 1 if emp_ci == 1 & ramas _ci == 10
+	replace spublico_ci = 0 if emp_ci == 1 & rama_ci != 10 & rama_ci != .
+
+	***************
+	***tamemp_ci: Indica la categoría del tamaño de la empresa donde el individuo realiza su actividad laboral principal.***
+	***************	
+	/*N° de trabajadores de la empresa - OC_608_CUANTAS: 
+	
+	Categorias de tamemp_ci:
+			1	Pequeña: de 1-5 personas en la empresa.
+			2	Mediana: de 6-50 personas en la empresa.
+			3	Grande: más de 50 personas en la empresa.
+			.   no se cuenta con información
+	
+	Para Honduras, de acuerdo a la cantidad de Trabajadores:
+			1-5		Pequeña Empresa
+			6-50	Mediana Empresa
+			51-∞ 	Gran Empresa
+	*/
+	gen tamemp_ci = 1 if (oc_608_cuantas>=1 & oc_608_cuantas<=5) & emp_ci==1 //Pequeña
+	replace tamemp_ci = 2 if (oc_608_cuantas>=6 & oc_608_cuantas<=50) & emp_ci==1 //Mediana
+	replace tamemp_ci = 3 if (oc_608_cuantas>50) & oc_608_cuantas!=. & emp_ci==1 //Grande
+	replace tamemp_ci=. if  oc_608_cuantas>=99999 //Missings
+	label define tamemp_ci 1 "Pequeña" 2 "Mediana" 3 "Grande"
+	label value tamemp_ci tamemp_ci
+	label var tamemp_ci "Tamaño de empresa"
+	
+	***************
+	***cotizando_ci: Variable dicotómica que indica con valor 1 si el asalariado o independiente cotiza a la seguridad social, de forma voluntaria o por medio de su empleador, en el periodo de referencia, con 0 a los desocupados o independientes que no responden si la encuesta no les pregunta y con valores perdidos si la variable original lo tiene. ***
+	***************	
+	gen  byte cotizando_ci = . //No existe la pregunta en la encuesta
+	
+	***************
+	***instcot_ci: Variable categórica que indica la institución de la Seguridad Social a la cual cotiza o está afiliado. Contiene la información de la variable original de la base de datos. ***
+	***************	
+	gen  byte afiliado_ci = . //No existe la pregunta en la encuesta
+	
+	***************
+	***afiliado_ci: Variable dicotómica que indica con valor 1 si el trabajador está afiliado a la Seguridad Social (independientemente que haya o no cotizado en el mes de referencia), con 0 al resto del grupo de referencia y mantenemos con valores perdidos si la encuesta los tiene como perdidos. ***
+	***************	
+	gen  byte afiliado_ci = . //No existe la pregunta en la encuesta
+	
+	**************
+	***formal_ci: Variable dicotómica que indica con valor 1 si el trabajador es formal y con 0 al resto. Un individuo se califica como formal si está afiliado o cotiza a la Seguridad Social. ***
+	**************
+	gen byte formal_ci = . //No existe la pregunta en la encuesta**
+	
+	*******************
+	***tipocontrato_ci: Variable categórica que indica el tipo de contrato laboral de los empleados/asalariados en la actividad principal según su duración (los trabajadores no asalariados deberían identificarse con valor perdido).***
+	*******************
+	gen byte tipocontrato_ci = . //No existe la pregunta en la encuesta
+	
+	**************
+	***ocupa_ci: Variable categórica que indica la ocupación laboral de los ocupados en la actividad principal***
+	**************
+	/* Vaariable de tipo de ocupación de la encuesta - OCUPAOP:
+			1	Directores y gerentes
+			2	Profesionales cientificos e intelectuales
+			3	Tecnicos y profesionales de nivel medio
+			4	Personal de apoyo administrativo
+			5	Trabajadores de los servicios y vendedores de ///
+				comercios y mercados
+			6	Agricultores y trabajadores calificados ///
+				agropecuarios forestales y pesqueros
+			7	Oficiales, operarios y artesanos de artes ///
+				mecanicas y de otros oficios
+			8	Operadores de instalaciones y maquinas y ensambladores
+			9	Ocupaciones elementales
+			10	Ocupaciones militares
+			23	Busca trabajo por primera vez
+			99	NS/NR
+	
+	Categorias de ocupa_ci:
+			1	Profesionales y técnicos.
+			2	Directores y funcionarios superiores.
+			3	Personal administrativo y nivel intermedio.
+			4	Comerciantes y vendedores.
+			5	Trabajadores en servicios.
+			6	Trabajadores agrícolas y afines.
+			7	Obreros no agrícolas, conductores de máquinas y ///
+				vehículos de transporte y similares.
+			8	Fuerzas Armadas.
+			9	Otras ocupaciones no clasificadas en las anteriores.
+	*/
+	gen ocupa_ci=.
+	replace ocupa_ci=1 if ocupaop==2 & emp_ci==1
+	replace ocupa_ci=2 if ocupaop==1 & emp_ci==1
+	replace ocupa_ci=3 if (ocupaop==3 | ocupaop==4) & emp_ci==1
+	replace ocupa_ci=4 if ocupaop==5 & emp_ci==1
+	replace ocupa_ci=5 if ocupaop==7 & emp_ci==1
+	replace ocupa_ci=6 if ocupaop==6 & emp_ci==1
+	replace ocupa_ci=7 if ocupaop==8 & emp_ci==1
+	replace ocupa_ci=8 if ocupaop==10 & emp_ci==1
+	replace ocupa_ci=9 if ocupaop==9 & emp_ci==1
+
+	label variable ocupa_ci "Ocupacion laboral"
+	label define ocupa_ci 	1"Profesionales y técnicos" ///
+								2"Directores y funcionarios superiores" ///
+								3"Personal administrativo y nivel intermedio"  ///
+								4"Comerciantes y vendedores" ///
+								5"Trabajadores en servicios" ///
+								6"Trabajadores agrícolas y afines" ///
+								7"Obreros no agrícolas, conductores de máquinas y vehículos de transporte y similares" ///
+								8"Fuerzas Armadas" ///
+								9"Otras ocupaciones no clasificadas en las anteriores"
+	label value ocupa_ci ocupa_ci
+
+
+	**************
+	**pension_ci: Variable dicotómica que indica con valor 1 si la persona recibe una pensión o jubilación contributiva y con 0 al resto. ***
+	**************
+	gen byte pension_ci=. //No hay pregunta que distinga si la pensión o jubilación es contributiva 
+	
+	***************
+	**pensionsub_ci**
+	***************
+	gen byte pensionsub_ci = . //No hay pregunta que distinga si la pensión o jubilación es subsidiada o no
+	
+	***************
+	**tipopen_ci: Variable categórica que indica el tipo de pensión contributiva o no contributiva según el país. Puede estar asociado a algún programa del gobierno o al sistema de seguridad social**
+	***************
+	gen byte tipopen_ci = . // No existe esta pregunta en la encuesta
+	
+	***************
+	**instpen_ci: Variable categórica que indica la institución que otorga la prestación previsional. Es la misma variable original de la base de datos, por lo que difiere en cada país y no está disponible en todos los casos.  **
+	***************
+	gen byte tipopen_ci = . //No existe esta pregunta en la encuesta
+	
 	
 ********************************************************************************
 ***************   VARIABLES DE EDUCACION   *************************************
@@ -599,7 +988,7 @@ use "$out\HND_2024m6", clear
 	************
 	*asispre_ci: Asistencia a preescolar. Variable dicotómica que indica con valor 1 si la persona asiste actualmente a educación preescolar, y con 0 al resto (no tiene valores perdidos).*
 	************
-	gen byte asispre_ci=(ED10==3)  // Asiste a pre-básica
+	gen byte asispre_ci=(ED10==3) if asiste_ci==1   // Asiste a pre-básica - es dummy solo dentro de la población de referencia
 	label var asispre_ci "Asiste a educacion prescolar"	
 
 	*************
