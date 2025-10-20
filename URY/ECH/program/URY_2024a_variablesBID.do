@@ -388,7 +388,231 @@ label value region_c region_c
 	******************
 	gen byte ARG_dis_ci = .
 	
+****************************
+***VARIABLES DE MERCADO LABORAL***
+****************************
 
+	*************
+	*condocup_ci*
+	*************
+	gen byte condocup_ci = .
+	replace condocup_ci = 1 if (pobpcoac == 2)
+	replace condocup_ci = 2 if (pobpcoac == 3 | pobpcoac == 4 | pobpcoac == 5)
+	replace condocup_ci = 3 if (pobpcoac >= 6 & pobpcoac <= 11)
+	replace condocup_ci = 4 if (pobpcoac == 1)
+
+	*******************
+	***categoinac_ci***
+	*******************
+	gen byte categoinac_ci = .
+	replace categoinac_ci = 1 if ((pobpcoac == 9 | pobpcoac == 10) & condocup_ci == 3) 
+	replace categoinac_ci = 2 if  ((pobpcoac == 7) & condocup_ci == 3) & categoinac_ci ==.
+	replace categoinac_ci = 3 if  ((pobpcoac == 6) & condocup_ci == 3) & categoinac_ci ==.
+	replace categoinac_ci = 4 if  ((categoinac_ci != 1 & categoinac_ci != 2 & categoinac_ci != 3) & condocup_ci == 3) & categoinac_ci ==.
+
+	
+	**********
+	***emp_ci*
+	**********
+	gen byte emp_ci = .
+	replace emp_ci = (condocup_ci == 1) if condocup_ci != .
+
+	**************
+	***cesante_ci*** 
+	**************
+	gen byte cesante_ci = .
+	replace cesante_ci = 1 if (pobpcoac == 4 | pobpcoac == 5)
+	replace cesante_ci=0 if pobpcoac == 3
+
+
+	***************
+	***desemp_ci***
+	***************	
+	gen byte desemp_ci = .
+	replace desemp_ci = (condocup_ci == 2) if condocup_ci! = .
+	
+	***************
+	***subemp_ci***
+	***************
+	gen byte subemp_ci = 0
+	replace subemp_ci = 1 if f85<31 & (f102 == 1 & f103 == 1)
+
+	****************
+	***durades_ci***
+	****************
+	gen byte durades_ci=f113/4.3 if f113>0
+	replace durades_ci=. if pobpcoac!=3 & pobpcoac!=4 & pobpcoac!=5
+
+	***********
+	***pea_ci***
+	***********
+	gen byte pea_ci = .
+	replace pea_ci = 1 if inlist(condocup_ci,1,2)
+	replace pea_ci = 0 if inlist(condocup_ci,3,4)
+		
+	****************
+	*** nempleos_ci***
+	****************
+	gen byte nempleos_ci = .
+	replace nempleos_ci = 1 if f70==1
+	replace nempleos_ci = 2 if f70>1
+	replace nempleos_ci = . if emp_ci == 0
+
+	******************
+	***antiguedad_ci***
+	******************
+	gen byte antiguedad_ci = .
+	
+	***************
+	***desalent_ci***
+	***************
+	gen byte desalent_ci= .
+	replace desalent_ci = 1 if f108==4 & condocup_ci==3
+	replace desalent_ci=0 if f108!=4 & condocup_ci==3
+	replace desalent_ci =. if emp_ci ==.
+
+	***************
+	***horaspri_ci***
+	***************	
+	gen  byte horaspri_ci = .
+	replace horaspri_ci =f85 if f85!=98 | emp_ci==1 
+	
+	***************
+	***horastot_ci ***
+	***************	
+	gen  byte horastot_ci= (f85 + f98)
+	replace horastot_ci=. if f85==98 | emp_ci==0
+	replace horastot_ci=. if f98==98 | emp_ci==0
+
+	
+	***************
+	***tiempoparc_ci ***
+	***************	
+	gen  byte tiempoparc_ci = .
+	replace tiempoparc_ci  = (horaspri_ci >= 1 & horaspri_ci < 30 & f102 == 2) 
+	
+	***************
+	***categopri_ci ***
+	***************	
+	gen  byte categopri_ci = .
+	*replace categopri_ci  = 0 if 
+	replace categopri_ci  = 1 if (f73 == 4)
+	replace categopri_ci  = 2 if (f73 == 3 | f73 == 9)
+	replace categopri_ci  = 3 if (f73 == 1 | f73 == 2 | f73 == 8)
+	replace categopri_ci  = 4 if (f73 == 7) 
+	
+	***************
+	***categosec_ci ***
+	***************	
+	gen  byte categosec_ci = .
+	*replace categosec_ci  = 0 if ...
+	replace categosec_ci  = 1 if (f92 == 4)
+	replace categosec_ci = 2 if (f92 == 9 | f92 == 3)
+	replace categosec_ci = 3 if (f92 == 1 | f92 == 2 | f92 == 8)
+	replace categosec_ci = 4 if (f92 == 7) 	
+
+	***************
+	***rama_ci ***
+	***************	
+	gen  byte rama_ci = .
+	*replace rama_ci  = 0 if ...
+	replace rama_ci  = 1 if (f72_2>0 & f72_2<=400) & emp_ci==1
+	replace rama_ci=2 if (f72_2>=500 & f72_2<=1000) & emp_ci==1
+	replace rama_ci=3 if (f72_2>=1010 & f72_2<=3400) & emp_ci==1
+	replace rama_ci=4 if (f72_2>=3500 & f72_2<=4000) & emp_ci==1
+	replace rama_ci=5 if (f72_2>=4100 & f72_2<=4400) & emp_ci==1
+	replace rama_ci=6 if ((f72_2>=4500 & f72_2<=4800) | (f72_2>=5500 & f72_2<=5700))& emp_ci==1
+	replace rama_ci=7 if ((f72_2>=4900 & f72_2<=5400) | (f72_2>=6100 & f72_2<=6199)) & emp_ci==1
+	replace rama_ci=8 if (f72_2>=6400 & f72_2<=8300) & emp_ci==1
+	replace rama_ci=9 if ((f72_2>=5800 & f72_2<=6090) | (f72_2>=6200 & f72_2<=6399) | (f72_2>=8400 & f72_2<=9900))& emp_ci==1
+
+
+	***************
+	***spublico_ci ***
+	***************	
+	gen  byte spublico_ci = .
+	replace spublico_ci  = 0 if (f73 != 2) & emp_ci==1
+	replace spublico_ci  = 1 if (f73 == 2) & emp_ci==1
+	
+	***************
+	***tamemp_ci ***
+	***************	
+	gen  byte tamemp_ci = .
+	replace tamemp_ci  =1 if (f77 == 1 | f77 == 2) // 1 a 4 personas
+	replace tamemp_ci = 2 if (f77 >= 3 & f77 <= 5) // 5 a 49 personas
+	replace tamemp_ci = 3 if (f77 >= 7 & f77 <= 9) // 50 o más personas
+	
+	***************
+	***cotizando_ci***
+	***************	
+	gen  byte cotizando_ci = .
+	replace cotizando_ci  = 0 if (f82==2 | f96==2)
+	replace cotizando_ci  = 1 if (f82==1 | f96==1)
+	
+	
+	***************
+	***afiliado_ci***
+	***************	
+	gen  byte afiliado_ci = .
+	replace afiliado_ci  = 0 if (f82==2 | f96==2)
+	replace afiliado_ci  = 1 if (f82==1 | f96==1)	
+	
+	***************
+	***instcot_ci***
+	***************	
+	gen byte instcot_ci=f83 if cotizando_ci == 1
+	replace instcot_ci=. if instcot_ci==0
+	
+	**************
+	***formal_ci***
+	**************
+	gen byte formal_ci = .
+	replace formal_ci  =  1 if (cotizando_ci == 1 | afiliado_ci == 1) & condocup_ci == 1
+	replace formal_ci = 0 if cotizando_ci == 0 & (condocup_ci == 1 | condocup_ci == 2)
+	
+	*******************
+	***tipocontrato_ci***
+	*******************
+	gen byte tipocontrato_ci = .
+		
+	**************
+	***ocupa_ci***
+	**************
+	gen byte ocupa_ci=.
+	replace ocupa_ci=1 if (f71_2>=2111 & f71_2<=3522) & emp_ci==1
+	replace ocupa_ci=2 if (f71_2>=1111 & f71_2<=1439) & emp_ci==1
+	replace ocupa_ci=3 if (f71_2>=4110 & f71_2<=4419 | f71_2>=410 & f71_2<=430) & emp_ci==1
+	replace ocupa_ci=4 if ((f71_2>=5211 & f71_2<=5249) | (f71_2>=9510 & f71_2<=9520)) & emp_ci==1
+	replace ocupa_ci=5 if ((f71_2>=5111 & f71_2<=5169) | (f71_2>=5311 & f71_2<=5419) | (f71_2>=9111 & f71_2<=9129) | (f71_2>=9611 & f71_2<=9624) ) & emp_ci==1 /*Aunque no esta desagregado en la base, esta es la desagregación a tres digitos de la CIUO-88*/
+	replace ocupa_ci=6 if ((f71_2>=6111 & f71_2<=6340) | (f71_2>=9211 & f71_2<=9216)) & emp_ci==1
+	replace ocupa_ci=7 if ((f71_2>=7111 & f71_2<=8350) | (f71_2>=9311 & f71_2<=9412)) & emp_ci==1 /*Incluye artesanos y operarios en hilanderias*/
+	replace ocupa_ci=8 if (f71_2>=110 & f71_2<=310) & emp_ci==1
+	replace ocupa_ci=9 if (f71_2==9629) & emp_ci==1
+
+	**************
+	**pension_ci***
+	**************
+	gen byte pension_ci=. 
+	replace pension_ci=1 if g_it_1==1 |g_it_2==1
+	replace pension_ci=0 if  g_it_1==2 |g_it_2==2
+	
+	***************
+	**pensionsub_ci**
+	***************
+	gen byte pensionsub_ci = . 
+	replace pensionsub_ci = 1 if …
+	replace pensionsub_ci = 0 if …
+	
+	***************
+	**tipopen_ci**
+	***************
+	gen byte tipopen_ci = f125
+	replace tipopen_ci =. if f125 == 0
+	
+	***************
+	**instpen_ci **
+	***************
+	gen byte instpen_ci=.
 	
 ****************************
 ***VARIABLES DE EDUCACION***
