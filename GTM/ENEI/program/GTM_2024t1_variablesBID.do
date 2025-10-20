@@ -363,9 +363,9 @@ use "`base_in'", clear
 	***categoinac_ci***
 	*******************
 	gen byte categoinac_ci = .
-	replace categoinac_ci = 1 if (…== 2 & condocup_ci == 3)
-	replace categoinac_ci = 2 if  (… == 3 & condocup_ci == 3)
-	replace categoinac_ci = 3 if  (… == 4 & condocup_ci == 3)
+	replace categoinac_ci = 1 if (p05a02==7 & condocup_ci == 3)
+	replace categoinac_ci = 2 if  (p05a02==5 & condocup_ci == 3)
+	replace categoinac_ci = 3 if  (p05a02==6 & condocup_ci == 3)
 	replace categoinac_ci = 4 if  ((categoinac_ci != 1 | categoinac_ci != 2 | categoinac_ci != 3) & condocup_ci == 3)
 	
 	**********
@@ -435,13 +435,13 @@ use "`base_in'", clear
 	***************
 	***desalent_ci***
 	***************
-	gen byte desalent_ci= 
+	gen byte desalent_ci=. 
 	replace desalent_ci = (condocup_ci==3 & (p05b05>=12 | p05b05>=13 | p05b05<=14))
 	
 	***************
 	***tiempoparc_ci ***
 	***************	
-	gen  byte tiempoparc_ci = 
+	gen  byte tiempoparc_ci=.
 	replace tiempoparc_ci  = (emp_ci==1 & p05h02==2 & (horaspri_ci>=1 & horaspri_ci<30))
 	
 	***************
@@ -496,8 +496,8 @@ use "`base_in'", clear
 	***cotizando_ci***
 	***************	
 	gen  byte cotizando_ci = .
-	replace cotizando_ci = (p05c08a==1 & p05c08b>0 & p05c08b!=.) | (p05g06==1 & p05g06>0 & p05g06!=.)
-	replace cotizando_ci = . if p05c08a== . & p05g06 ==.
+	replace cotizando_ci = (p05c08a==1 & p05c08b>0 & p05c08b!=.) | (p05g06a==1 & p05g06b>0 & p05g06b!=.)
+	replace cotizando_ci = . if p05c08a== . & p05g06a ==.
 	
 	***************
 	***afiliado_ci***
@@ -509,7 +509,7 @@ use "`base_in'", clear
 	***************
 	***instcot_ci***
 	***************	
-	gen  byte afiliado_ci = .
+	gen  byte instcot_ci = .
 	
 	**************
 	***formal_ci***
@@ -531,15 +531,15 @@ use "`base_in'", clear
 	***ocupa_ci***
 	**************
 	gen ocupa_ci=.
-	replace ocupa_ci=1 if (p05c02b_2d >=21 & p05c02b_2d <=35) & emp_ci==1
-	replace ocupa_ci=2 if (p05c02b_2d >=11 & p05c02b_2d <=14) & emp_ci==1
-	replace ocupa_ci=3 if (p05c02b_2d >=41 & p05c02b_2d <=44) & emp_ci==1
-	replace ocupa_ci=4 if (p05c02b_2d ==52 | p05c02b_2d ==95) & emp_ci==1
-	replace ocupa_ci=5 if (p05c02b_2d ==51 | (p05c02b_2d >=53 & p05c02b_2d <=54) | p05c02b_2d ==91) & emp_ci==1
-	replace ocupa_ci=6 if ((p05c02b_2d >=61 & p05c02b_2d <=63) | p05c02b_2d ==92) & emp_ci==1
-	replace ocupa_ci=7 if ((p05c02b_2d >=71 & p05c02b_2d <=83) | p05c02b_2d ==93) & emp_ci==1
-	replace ocupa_ci=8 if (p05c02b_2d >=0 & p05c02b_2d <=3) & emp_ci==1
-	replace ocupa_ci=9 if (p05c02b_2d ==94 | p05c02b_2d ==96) & emp_ci==1
+	replace ocupa_ci=1 if (p05c02_2d >=21 & p05c02_2d <=35) & emp_ci==1
+	replace ocupa_ci=2 if (p05c02_2d >=11 & p05c02_2d <=14) & emp_ci==1
+	replace ocupa_ci=3 if (p05c02_2d >=41 & p05c02_2d <=44) & emp_ci==1
+	replace ocupa_ci=4 if (p05c02_2d ==52 | p05c02_2d ==95) & emp_ci==1
+	replace ocupa_ci=5 if (p05c02_2d ==51 | (p05c02_2d >=53 & p05c02_2d <=54) | p05c02_2d ==91) & emp_ci==1
+	replace ocupa_ci=6 if ((p05c02_2d >=61 & p05c02_2d <=63) | p05c02_2d ==92) & emp_ci==1
+	replace ocupa_ci=7 if ((p05c02_2d >=71 & p05c02_2d <=83) | p05c02_2d ==93) & emp_ci==1
+	replace ocupa_ci=8 if (p05c02_2d >=0 & p05c02_2d <=3) & emp_ci==1
+	replace ocupa_ci=9 if (p05c02_2d ==94 | p05c02_2d ==96) & emp_ci==1
 
 	**************
 	**pension_ci***
@@ -560,7 +560,7 @@ use "`base_in'", clear
 	***************
 	**instpen_ci **
 	***************
-	gen byte tipopen_ci = ""
+	gen byte instpen_ci = .
 
 ****************************
 ***VARIABLES DE INGRESO***
