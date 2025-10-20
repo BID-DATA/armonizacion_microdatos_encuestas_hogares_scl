@@ -56,31 +56,7 @@ use "`base_in'", clear
 	********************
 	*** region_c ****
 	********************
-	gen region_c=p02a05b
-	label define region_c  ///
-    1 "Guatemala"  ///
-    2 "El Progreso"  ///
-    3 "Sacatepéquez"  ///
-    4 "Chimaltenango"  ///
-    5 "Escuintla"  ///
-    6 "Santa Rosa"  ///
-    7 "Sololá" ///
-	8 "Totonicapán" ///
-	9 "Quetzaltenango" ///
-	10 "Suchitepéquez" ///
-	11 "Retalhuleu" ///
-	12 "San Marcos" ///
-	13 "Huehuetenango" ///
-	14 "Quiché" ///
-	15 "Baja Verapaz" ///
-	16 "Alta Verapaz" ///
-	17 "Petén" ///
-	18 "Izabal" ///
-	19 "Zacapa" ///
-	20 "Chiquimula" ///
-	21 "Jalapa" ///
-	22 "Jutiapa"
-   label values region_c region_c
+	gen region_c=.
 
 	*************
 	* pais_c    *
@@ -369,10 +345,222 @@ use "`base_in'", clear
 	******************
 	gen byte GTM_dis_ci = dis_ci
 	
-****************************
+
+**********************************
 ***VARIABLES DE MERCADO LABORAL***
-* NOTA: Actualmente se está revisando el manual
-****************************
+**********************************
+
+	*************
+	*condocup_ci*
+	*************
+	gen condocup_ci=.
+	replace condocup_ci=1 if ocupados ==1 
+	replace condocup_ci=2 if desocupados ==1
+	replace condocup_ci=3 if inactivos ==1 & edad_ci>=7 & edad_ci!=.
+	replace condocup_ci=4 if edad_ci<7
+
+	*******************
+	***categoinac_ci***
+	*******************
+	gen byte categoinac_ci = .
+	replace categoinac_ci = 1 if (…== 2 & condocup_ci == 3)
+	replace categoinac_ci = 2 if  (… == 3 & condocup_ci == 3)
+	replace categoinac_ci = 3 if  (… == 4 & condocup_ci == 3)
+	replace categoinac_ci = 4 if  ((categoinac_ci != 1 | categoinac_ci != 2 | categoinac_ci != 3) & condocup_ci == 3)
+	
+	**********
+	***emp_ci*
+	**********
+	gen byte emp_ci = .
+	replace emp_ci = (condocup_ci == 1) if condocup_ci != .
+
+	**************
+	***cesante_ci*** 
+	**************
+	gen byte cesante_ci = .
+	replace cesante_ci=1 if p05b09==1 & condocup_ci==2
+	replace cesante_ci = 0 if (cesante_ci != 1 & condocup_ci ==2)
+
+	***************
+	***desemp_ci***
+	***************	
+	gen byte desemp_ci = .
+	replace desemp_ci = (condocup_ci == 2) if condocup_ci! = .	
+	
+	***************
+	***horaspri_ci***
+	***************	
+	gen horaspri_ci=p05h01a if emp_ci==1
+	replace horaspri_ci = . if p05h01a == 999 
+	replace horaspri_ci=. if emp_ci==0
+	
+	***************
+	***horastot_ci ***
+	***************	
+	gen  byte horastot_ci  = p05h01c
+	replace horastot_ci = . if emp_ci == 0
+	
+	***************
+	***subemp_ci***
+	***************
+	gen byte subemp_ci = 0
+	replace subemp_ci = 1 if horaspri_ci<30 & p05h02==1 & p05h07==1
+
+	****************
+	***durades_ci***
+	****************
+	gen byte durades_ci=p05b04*52/12
+
+	***********
+	***pea_ci***
+	***********
+	gen byte pea_ci = .
+	replace pea_ci = 1 if inlist(condocup_ci,1,2)
+	replace pea_ci = 0 if inlist(condocup_ci,3,4)
+		
+	****************
+	*** nempleos_ci***
+	****************
+	gen byte nempleos_ci = .
+	replace nempleos_ci = 1 if emp_ci == 1 
+	replace nempleos_ci = 2 if emp_ci == 1 & p05g01 == 1
+	replace nempleos_ci = . if emp_ci == 0
+
+	******************
+	***antiguedad_ci***
+	******************
+	gen byte antiguedad_ci = p05c03
+	replace antiguedad_ci = 1 if p05c03 != . & emp_ci == 1 
+	
+	***************
+	***desalent_ci***
+	***************
+	gen byte desalent_ci= 
+	replace desalent_ci = (condocup_ci==3 & (p05b05>=12 | p05b05>=13 | p05b05<=14))
+	
+	***************
+	***tiempoparc_ci ***
+	***************	
+	gen  byte tiempoparc_ci = 
+	replace tiempoparc_ci  = (emp_ci==1 & p05h02==2 & (horaspri_ci>=1 & horaspri_ci<30))
+	
+	***************
+	***categopri_ci ***
+	***************	
+	gen  byte categopri_ci = .
+	*replace categopri_ci  = 0 if ... No hay categoría que corresponda a "otro"	
+	replace categopri_ci  = 1 if (p05c16==6|p05c16==8)
+	replace categopri_ci  = 2 if (p05c16==5|p05c16==7)
+	replace categopri_ci  = 3 if inrange(p05c16, 1, 4)
+	replace categopri_ci  = 4 if p05c16==9
+	
+	***************
+	***categosec_ci ***
+	***************	
+	gen  byte categosec_ci = .
+	*replace categosec_ci  = 0 if ... No hay categoría que corresponda a "otro"	
+	replace categosec_ci  = 1 if (p05g08==6|p05g08==8)
+	replace categosec_ci  = 2 if (p05g08==5|p05g08==7)
+	replace categosec_ci  = 3 if inrange(p05g08, 1, 4)
+	replace categosec_ci  = 4 if p05g08==9	
+
+	***************
+	***rama_ci ***
+	***************	
+	gen  byte rama_ci = .
+	replace rama_ci=1 if p05c04_2d >=1 & p05c04_2d <=3
+	replace rama_ci=2 if p05c04_2d >=5 & p05c04_2d <=9
+	replace rama_ci=3 if p05c04_2d >=10 & p05c04_2d <=33
+	replace rama_ci=4 if p05c04_2d >=35 & p05c04_2d <=39
+	replace rama_ci=5 if p05c04_2d >=41 & p05c04_2d <=43
+	replace rama_ci=6 if (p05c04_2d >=45 & p05c04_2d <=47) | (p05c04_2d >=55 & p05c04_2d <=56)
+	replace rama_ci=7 if (p05c04_2d >=49 & p05c04_2d <=53) | p05c04_2d ==61 
+	replace rama_ci=8 if p05c04_2d >=64 & p05c04_2d <=68
+	replace rama_ci=9 if (p05c04_2d >=69 & p05c04_2d <=99) | (p05c04_2d >=58 & p05c04_2d <=60) | (p05c04_2d >=62 & p05c04_2d <=63)							
+
+	***************
+	***spublico_ci ***
+	***************	
+	gen  byte spublico_ci = .
+	replace spublico_ci  = 0 if emp_ci==1 & p05c16 != 1
+	replace spublico_ci  = 1 if emp_ci==1 & p05c16 == 1
+	
+	***************
+	***tamemp_ci ***
+	***************	
+	gen tamemp_ci = 1 if p05c13>=1 & p05c13<=5
+	replace tamemp_ci = 2 if (p05c13>=6 & p05c13<=7)
+	replace tamemp_ci = 3 if (p05c13>7) & p05c13!=.
+	
+	***************
+	***cotizando_ci***
+	***************	
+	gen  byte cotizando_ci = .
+	replace cotizando_ci = (p05c08a==1 & p05c08b>0 & p05c08b!=.) | (p05g06==1 & p05g06>0 & p05g06!=.)
+	replace cotizando_ci = . if p05c08a== . & p05g06 ==.
+	
+	***************
+	***afiliado_ci***
+	***************	
+	gen  byte afiliado_ci = .
+	replace afiliado_ci  = (inrange(p05c08a,1,3) | inrange(p05g06a,1,3))
+	replace cotizando_ci = . if p05c08a== . & p05g06a ==.
+	
+	***************
+	***instcot_ci***
+	***************	
+	gen  byte afiliado_ci = .
+	
+	**************
+	***formal_ci***
+	**************
+	gen byte formal_ci = .
+	replace formal_ci  =  1 if (cotizando_ci == 1 | afiliado_ci == 1) & condocup_ci == 1
+	replace formal_ci = 0 if cotizando_ci == 0 & (condocup_ci == 1 | condocup_ci == 2)
+	** Existe una variable de formalidad creaca por el ONE de GTM se llama formal_informal
+	
+	*******************
+	***tipocontrato_ci***
+	*******************
+	gen tipocontrato_ci=.
+	replace tipocontrato_ci=1 if (p05c21a==1 & p05c20==1) & categopri_ci==3
+	replace tipocontrato_ci=2 if (p05c21a==2 & p05c20==1)  & categopri_ci==3
+	replace tipocontrato_ci=3 if (p05c20==2 | tipocontrato_ci==.) & categopri_ci==3
+		
+	**************
+	***ocupa_ci***
+	**************
+	gen ocupa_ci=.
+	replace ocupa_ci=1 if (p05c02b_2d >=21 & p05c02b_2d <=35) & emp_ci==1
+	replace ocupa_ci=2 if (p05c02b_2d >=11 & p05c02b_2d <=14) & emp_ci==1
+	replace ocupa_ci=3 if (p05c02b_2d >=41 & p05c02b_2d <=44) & emp_ci==1
+	replace ocupa_ci=4 if (p05c02b_2d ==52 | p05c02b_2d ==95) & emp_ci==1
+	replace ocupa_ci=5 if (p05c02b_2d ==51 | (p05c02b_2d >=53 & p05c02b_2d <=54) | p05c02b_2d ==91) & emp_ci==1
+	replace ocupa_ci=6 if ((p05c02b_2d >=61 & p05c02b_2d <=63) | p05c02b_2d ==92) & emp_ci==1
+	replace ocupa_ci=7 if ((p05c02b_2d >=71 & p05c02b_2d <=83) | p05c02b_2d ==93) & emp_ci==1
+	replace ocupa_ci=8 if (p05c02b_2d >=0 & p05c02b_2d <=3) & emp_ci==1
+	replace ocupa_ci=9 if (p05c02b_2d ==94 | p05c02b_2d ==96) & emp_ci==1
+
+	**************
+	**pension_ci***
+	**************
+	gen byte pension_ci=. 
+	replace pension_ci=(p06a05a==1)
+	
+	***************
+	**pensionsub_ci**
+	***************
+	gen byte pensionsub_ci = .
+	
+	***************
+	**tipopen_ci**
+	***************
+	gen byte tipopen_ci = . 
+	
+	***************
+	**instpen_ci **
+	***************
+	gen byte tipopen_ci = ""
 
 ****************************
 ***VARIABLES DE INGRESO***
