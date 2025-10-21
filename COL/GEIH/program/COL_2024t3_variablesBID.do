@@ -374,10 +374,256 @@ egen byte dis_ch = max(dis_ci), by(idh_ch)
 ******************
 gen byte COL_dis_ci = dis_ci
 
+		**********************************
+		***VARIABLES DE MERCADO LABORAL***
+		**********************************
 
-			****************************
-			***VARIABLES DE EDUCACION***
-			****************************
+*************
+*condocup_ci*
+*************
+gen byte condocup_ci = .
+replace condocup_ci=1 if oci==1
+replace condocup_ci=2 if dsi==1
+replace condocup_ci=3 if fft==1
+replace condocup_ci=4 if edad_ci<10
+
+*******************
+***categoinac_ci***
+*******************
+gen byte categoinac_ci = .
+replace categoinac_ci=1 if p7450==5 & condocup_ci==3
+replace categoinac_ci=2 if p7450==2 | (p6240==3 & condocup_ci==3)
+replace categoinac_ci=3 if p7450==3 | (p6240==4 & condocup_ci==3)
+replace categoinac_ci=4 if ((categoinac_ci != 1 | categoinac_ci != 2 | categoinac_ci != 3) & condocup_ci == 3)
+	
+**********
+***emp_ci*
+**********
+gen byte emp_ci = .
+replace emp_ci = (condocup_ci == 1) if condocup_ci != .
+
+**************
+***cesante_ci*** 
+**************
+gen byte cesante_ci = .
+replace cesante_ci = 1 if (p7430 == 1 & condocup_ci == 2) 
+replace cesante_ci = 0 if (cesante_ci != 1 & condocup_ci ==2)
+
+***************
+***desemp_ci***
+***************	
+gen byte desemp_ci = .
+replace desemp_ci = (condocup_ci == 2) if condocup_ci! = .
+
+***************
+***horaspri_ci***
+***************	
+gen  byte horaspri_ci = p6800
+replace horaspri_ci = . if emp_ci == 0 
+	
+***************
+***horastot_ci ***
+***************	
+egen horastot_ci  = rowtotal(p6800 p7045)
+replace horastot_ci = . if p6800 == . & p7045 == . 
+replace horastot_ci  = . if emp_ci == 0
+	
+***************
+***subemp_ci***
+***************
+gen byte subemp_ci = 0
+replace subemp_ci = 1 if horaspri_ci <= 30  & p7090 == 1 & p7160==1
+replace subemp_ci = . if emp_ci == .
+
+****************
+***durades_ci***
+****************
+gen byte durades_ci=p7250 / 4.3
+replace durades_ci = . if p7250 == 999 | p7250 == 998
+
+***********
+***pea_ci***
+***********
+gen byte pea_ci = .
+replace pea_ci = 1 if inlist(condocup_ci,1,2)
+replace pea_ci = 0 if inlist(condocup_ci,3,4)
+		
+*****************
+***nempleos_ci***
+*****************
+gen byte nempleos_ci = .
+replace nempleos_ci = 1 if emp_ci == 1 & p7040 == 2
+replace nempleos_ci = 2 if emp_ci == 1 & p7040 == 1
+replace nempleos_ci = . if p7040 == .
+replace nempleos_ci = . if emp_ci == 0
+
+******************
+***antiguedad_ci***
+******************
+gen byte antiguedad_ci = p6426 / 12 
+replace antiguedad_ci = . if emp_ci == 0 | p6426 == 999
+	
+***************
+***desalent_ci***
+***************
+g desalent_ci = inrange(p6310, 4, 6)
+replace desalent_ci = . if p6310 == .
+	
+*******************
+***tiempoparc_ci***
+*******************	
+gen byte tiempoparc_ci = (horaspri_ci < 30 & p7090 == 2)
+replace tiempoparc_ci = . if emp_ci == 0
+	
+******************
+***categopri_ci***
+******************	
+gen  byte categopri_ci = .
+replace categopri_ci = 1 if p6430 == 5
+replace categopri_ci = 2 if p6430 == 4 
+replace categopri_ci = 3 if p6430 == 1 | p6430 == 2 | p6430 == 3 
+replace categopri_ci = 4 if p6430 == 6 | p6430 == 7
+replace categopri_ci = 0 if p6430 == 8 | p6430==9
+replace categopri_ci = . if emp_ci == 0
+	
+******************
+***categosec_ci***
+******************	
+gen  byte categosec_ci = .
+replace categosec_ci = 1 if p7050 == 5
+replace categosec_ci = 2 if p7050 == 4 
+replace categosec_ci = 3 if p7050 == 1 | p7050 == 2 | p7050 == 3 
+replace categosec_ci = 4 if p7050 == 6 | p7050 == 7
+replace categosec_ci = 0 if p7050 == 8 
+replace categosec_ci = . if emp_ci == 0	
+
+***************
+***rama_ci ***
+***************	
+destring rama4d_r4, replace
+g rama_ci = .
+replace rama_ci=1 if (rama4d_r4>=100 & rama4d_r4<=322) & emp_ci==1 
+replace rama_ci=2 if (rama4d_r4>=510 & rama4d_r4<=990) & emp_ci==1 
+replace rama_ci=3 if (rama4d_r4>=1010 & rama4d_r4<=3320) & emp_ci==1 
+replace rama_ci=4 if (rama4d_r4>=3510 & rama4d_r4<=3900) & emp_ci==1 
+replace rama_ci=5 if (rama4d_r4>=4100 & rama4d_r4<=4390) & emp_ci==1 
+replace rama_ci=6 if ((rama4d_r4>=4510 & rama4d_r4<=4799) | (rama4d_r4>=5510 & rama4d_r4<=5630))& emp_ci==1 
+replace rama_ci=7 if ((rama4d_r4>=4911 & rama4d_r4<=5320) | (rama4d_r4>=6110 & rama4d_r4<=6190)) & emp_ci==1 
+replace rama_ci=8 if (rama4d_r4>=6411 & rama4d_r4<=8299) & emp_ci==1 
+replace rama_ci=9 if ((rama4d_r4>=5811 & rama4d_r4<=6022) | (rama4d_r4>=6201 & rama4d_r4<=6399) | (rama4d_r4>=8411 & rama4d_r4<=9900)) & emp_ci==1 
+
+***************
+***spublico_ci ***
+***************	
+gen  byte spublico_ci = .
+replace spublico_ci = (p6430 == 2 | p7050 ==2) 
+	
+***************
+***tamemp_ci ***
+***************	
+
+* p7360 ¿Cuántas personas en total tenía la empresa, negocio o finca, donde ... trabajaba? 
+
+* 1 -	Trabaja solo
+* 2 -	2 a 3 personas
+* 3 -	4 a 5 personas
+* 4 -	6 a 10 personas
+* 5 -	11 a 19 personas
+* 6 -	20 a 30 personas
+* 7 -	31 a 50 personas
+* 8 -	51 a 100 personas
+* 9 -	101 a 200 personas
+* 10 - 201 o más personas
+
+gen  byte tamemp_ci = .
+replace tamemp_ci=1 if p7360>=1 & p7360<=3
+replace tamemp_ci=2 if p7360>=4 & p7360<=7
+replace tamemp_ci=3 if p7360>=8 & p7360<=10
+	
+******************
+***cotizando_ci***
+******************	
+gen  byte cotizando_ci = .
+replace cotizando_ci=1 if p6920==1
+replace cotizando_ci=0 if p6920==2 | (condocup_ci==2 & p6920!=1)
+		
+*****************
+***afiliado_ci***
+*****************
+gen  byte afiliado_ci = (p6090==1)
+replace afiliado_ci=. if p6090==9
+	
+***************
+***instcot_ci***
+***************	
+gen  byte instcot_ci = p6930
+	
+**************
+***formal_ci***
+**************
+gen byte formal_ci = .
+replace formal_ci  =  1 if (cotizando_ci == 1 | afiliado_ci == 1) & condocup_ci == 1
+replace formal_ci = 0 if cotizando_ci == 0 & (condocup_ci == 1 | condocup_ci == 2)
+	
+*********************
+***tipocontrato_ci***
+*********************
+gen byte tipocontrato_ci = .
+replace tipocontrato_ci=1 if p6460==1 & condocup_ci==1
+replace tipocontrato_ci=2 if p6460==2 & condocup_ci==1
+replace tipocontrato_ci=3 if p6450==1 & condocup_ci==1
+replace tipocontrato_ci=3 if p6440==2 & condocup_ci==1
+		
+**************
+***ocupa_ci***
+**************
+gen oficio_c8_2 = substr(oficio_c8, 1, 2)
+destring oficio_c8_2, replace
+gen byte ocupa_ci=.
+replace ocupa_ci = 1 if oficio_c8_2 >= 1  & oficio_c8_2 <= 19 & emp_ci == 1  
+replace ocupa_ci = 2 if oficio_c8_2 >= 20 & oficio_c8_2 <= 21 & emp_ci == 1
+replace ocupa_ci = 3 if oficio_c8_2 >= 30 & oficio_c8_2 <= 39 & emp_ci == 1
+replace ocupa_ci = 4 if oficio_c8_2 >= 40 & oficio_c8_2 <= 49 & emp_ci == 1
+replace ocupa_ci = 5 if oficio_c8_2 >= 50 & oficio_c8_2 <= 59 & emp_ci == 1
+replace ocupa_ci = 6 if oficio_c8_2 >= 60 & oficio_c8_2 <= 64 & emp_ci == 1
+replace ocupa_ci = 7 if oficio_c8_2 >= 70 & oficio_c8_2 <= 98 & emp_ci == 1  
+replace ocupa_ci = 9 if oficio_c8_2 == 0  | oficio_c8_2 == 99 & emp_ci == 1 
+
+**************
+**pension_ci***
+**************
+gen byte pension_ci=. 
+replace pension_ci=(p7500s2a1>0 & p7500s2a1!=.)
+*replace pension_ci = . if
+replace cotizando_ci = 1 if pension_ci==1 // según el manual "Todos los pensionados contributivos necesariamente cotizan a algún sistema de seguridad social, es decir no puede darse el caso que pension_ci == 1 & cotizando_ci != 1"
+	
+*****************
+**pensionsub_ci**
+*****************
+gen byte pensionsub_ci = . 
+replace pensionsub_ci =(p1661s3==1)
+replace cotizando_ci = 0 if pensionsub_ci==1 
+
+***************
+**tipopen_ci**
+***************
+gen byte tipopen_ci = . 
+	
+***************
+**instpen_ci **
+***************
+gen byte instpen_ci = .
+	
+	
+		****************************
+		***VARIABLES DE INGRESO***
+		* NOTA: SE SIGUE REVISANDO EL MANUAL
+		****************************
+
+
+		****************************
+		***VARIABLES DE EDUCACION***
+		****************************
 			
 **************
 ***aedu_ci***
