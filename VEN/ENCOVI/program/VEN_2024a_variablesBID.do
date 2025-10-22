@@ -358,8 +358,225 @@ use "`base_in'", clear
 	
 ****************************
 ***VARIABLES DE MERCADO LABORAL***
-* NOTA: Actualmente se está revisando el manual
 ****************************
+
+	*************
+	*condocup_ci*
+	*************
+	gen byte condocup_ci = .
+	replace condocup_ci = 1 if (s9q1==1 | (s9q1==2 | s9q2<13))
+	replace condocup_ci=2 if (s9q1==3 | (s9q1==4) )
+	replace condocup_ci=3 if condocup_ci!=1 & condocup_ci!=2 & edad_ci!=.
+	replace condocup_ci=4 if edad_ci<10
+
+	*******************
+	***categoinac_ci***
+	*******************
+	gen byte categoinac_ci = .
+	replace categoinac_ci = 1 if (s9q3== 17 & condocup_ci == 3)
+	replace categoinac_ci = 2 if  (s9q3==11 & condocup_ci == 3)
+	replace categoinac_ci = 3 if  (s9q3== 12 & condocup_ci == 3)
+	replace categoinac_ci = 4 if  ((categoinac_ci != 1 | categoinac_ci != 2 | categoinac_ci != 3) & condocup_ci == 3)
+	
+	**********
+	***emp_ci*
+	**********
+	gen byte emp_ci = .
+	replace emp_ci = (condocup_ci == 1) if condocup_ci != .
+
+	**************
+	***cesante_ci*** 
+	**************
+	gen byte cesante_ci = .
+
+	***************
+	***desemp_ci***
+	***************	
+	gen byte desemp_ci = .
+	replace desemp_ci = (condocup_ci == 2) if condocup_ci! = .
+	
+	***************
+	***subemp_ci***
+	***************
+	gen byte subemp_ci =(s9q12<30 & s9q26==1) if emp_ci==1
+
+	****************
+	***durades_ci***
+	****************
+	gen byte durades_ci=s9q7a*(52/12)
+
+	***********
+	***pea_ci***
+	***********
+	gen byte pea_ci = .
+	replace pea_ci = 1 if inlist(condocup_ci,1,2)
+	replace pea_ci = 0 if inlist(condocup_ci,3,4)
+		
+	****************
+	*** nempleos_ci***
+	****************
+	gen byte nempleos_ci = .
+	*replace nempleos_ci = 1 if ...
+	*replace nempleos_ci = 2 if ...
+	replace nempleos_ci = . if emp_ci == 0
+
+	******************
+	***antiguedad_ci***
+	******************
+	gen byte antiguedad_ci = .
+*	replace antiguedad_ci = 1 if ...
+*	replace antiguedad_ci = ... if emp_ci == 1
+	
+	***************
+	***desalent_ci***
+	***************
+	gen byte desalent_ci= .
+	replace desalent_ci = (s9q8==1 | s9q8==3 | s9q8==5) & condocup_ci==3
+
+	***************
+	***horaspri_ci***
+	***************	
+	gen  byte horaspri_ci = .
+	replace horaspri_ci =s9q12 if emp_ci==1
+	
+	***************
+	***horastot_ci ***
+	***************	
+	gen  byte horastot_ci  = .
+	replace horastot_ci  =s9q14 if s9q14<160 & emp_ci==1
+	
+	
+	***************
+	***tiempoparc_ci ***
+	***************	
+	gen byte tiempoparc_ci= ((horaspri_ci >= 1 & horaspri_ci < 30) & s9q26==2 & emp_ci == 1) 
+	replace tiempoparc_ci = . if emp_ci == 0
+
+	
+	***************
+	***categopri_ci ***
+	***************	
+	gen  byte categopri_ci = .
+	*replace categopri_ci  = 0 if ...
+	replace categopri_ci  = 1 if (s9q11== 3 & emp_ci==1)
+	replace categopri_ci  = 2 if  (s9q11==4 | s9q11==7) & emp_ci==1
+	replace categopri_ci  = 3 if  (s9q11== 1 | s9q11==2 | s9q11==9) & emp_ci==1
+	replace categopri_ci  = 4 if (s9q11==8 & emp_ci==1)
+	
+
+	***************
+	***categosec_ci ***
+	***************	
+	gen  byte categosec_ci = .
+	/*replace categosec_ci  = 0 if ...
+	replace categosec_ci  = 1 if ...
+	replace categosec_ci  = 2 if ...
+	replace categosec_ci  = 3 if ...
+	replace categosec_ci  = 4 if ...	
+*/
+	***************
+	***rama_ci ***
+	***************	
+	gen  byte rama_ci = .
+	replace rama_ci  = 0 if s9q10>8
+	replace rama_ci  = 1 if s9q10==1
+	replace rama_ci  = 2 if s9q10==2
+	replace rama_ci  = 3 if s9q10==3
+	replace rama_ci  = 4 if s9q10==4
+	replace rama_ci  = 5 if s9q10==5
+	replace rama_ci  = 6 if s9q10==6
+	replace rama_ci  = 7 if s9q10==7
+	replace rama_ci  = 8 if s9q10==8
+	*replace rama_ci  = 9 if 
+
+	***************
+	***spublico_ci ***
+	***************	
+	gen  byte spublico_ci = .
+	replace spublico_ci  = 0 if s9q11!=1 & emp_ci==1
+	replace spublico_ci  = 1 if s9q11==1 & emp_ci==1
+	
+	***************
+	***tamemp_ci ***
+	***************	
+	gen  byte tamemp_ci = .
+	replace tamemp_ci  = 1 if s9q11c<4
+	replace tamemp_ci  = 2 if s9q11c>3 & s9q11c<6
+	replace tamemp_ci  = 3 if s9q11c>5
+	
+	
+	***************
+	***cotizando_ci***
+	***************	
+	gen  byte cotizando_ci = .
+	*replace cotizando_ci  = 0 if ...
+	*replace cotizando_ci  = 1 if ...
+	
+	
+	***************
+	***afiliado_ci***
+	***************	
+	gen  byte afiliado_ci = .
+	*replace afiliado_ci  = 0 if ...
+	*replace afiliado_ci  = 1 if ...	
+	
+	***************
+	***instcot_ci***
+	***************	
+	gen byte instcot_ci=. if cotizando_ci == 1
+	
+	**************
+	***formal_ci***
+	**************
+	gen byte formal_ci = .
+	replace formal_ci  =  1 if (cotizando_ci == 1 | afiliado_ci == 1) & condocup_ci == 1
+	replace formal_ci = 0 if cotizando_ci == 0 & (condocup_ci == 1 | condocup_ci == 2)
+	
+	*******************
+	***tipocontrato_ci***
+	*******************
+	gen byte tipocontrato_ci = .
+	replace tipocontrato_ci = 1 if s9q11b==1 & categopri_ci == 3
+	replace tipocontrato_ci = 2 if s9q11b==2 & categopri_ci == 3
+	replace tipocontrato_ci = 3 if s9q11b==3 | s9q11b==4 & categopri_ci == 3
+		
+	**************
+	***ocupa_ci***
+	**************
+	gen byte ocupa_ci=.
+	replace ocupa_ci=1 if s9q9==2 & emp_ci==1
+	replace ocupa_ci=2 if s9q9==1 & emp_ci==1
+	replace ocupa_ci=3 if s9q9==3 & emp_ci==1
+	*replace ocupa_ci=4 if & emp_ci==1
+	*Çreplace ocupa_ci=5 if  … & emp_ci==1
+	replace ocupa_ci=6 if  s9q9==6  & emp_ci==1
+	replace ocupa_ci=7 if  s9q9==7 | s9q9==8 & emp_ci==1
+	replace ocupa_ci=8 if  s9q9==10 & emp_ci==1
+	replace ocupa_ci=9 if  s9q9==5 | s9q9==9 & emp_ci==1
+
+	**************
+	**pension_ci***
+	**************
+	gen byte pension_ci=. 
+	*replace pension_ci=1 if …
+	*replace pension_ci=0 if …
+	
+	***************
+	**pensionsub_ci**
+	***************
+	gen byte pensionsub_ci = . 
+	*replace pensionsub_ci = 1 if …
+	*replace pensionsub_ci = 0 if …
+	
+	***************
+	**tipopen_ci**
+	***************
+	gen byte tipopen_ci = . 
+	
+	***************
+	**instpen_ci **
+	***************
+	gen byte instpen_ci =.
 
 ****************************
 ***VARIABLES DE INGRESO***
