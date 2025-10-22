@@ -894,7 +894,7 @@ use "$out\HND_2024m6", clear
 	***************
 	**instpen_ci: Variable categórica que indica la institución que otorga la prestación previsional. Es la misma variable original de la base de datos, por lo que difiere en cada país y no está disponible en todos los casos.  **
 	***************
-	gen byte tipopen_ci = . //No existe esta pregunta en la encuesta
+	gen byte instpen_ci = . //No existe esta pregunta en la encuesta
 	
 	
 ********************************************************************************
