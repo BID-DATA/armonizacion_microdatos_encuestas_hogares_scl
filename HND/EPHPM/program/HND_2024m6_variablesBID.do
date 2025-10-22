@@ -749,15 +749,15 @@ use "$out\HND_2024m6", clear
 			10	Gobierno
 	*/
 	gen rama_ci=.
-	replace  rama_ci=1 if ramaop==1 & emp_ci==1 
-	replace  rama_ci=2 if ramaop==2 & emp_ci==1 
-	replace  rama_ci=3 if ramaop==3 & emp_ci==1
-	replace  rama_ci=4 if ramaop==4 | ramaop==5  & emp_ci==1
-	replace  rama_ci=5 if ramaop==6 & emp_ci==1
-	replace  rama_ci=6 if ramaop==7 | ramaop==9  & emp_ci==1
-	replace  rama_ci=7 if ramaop==8 | ramaop==10 & emp_ci==1
-	replace  rama_ci=8 if inrange(ramaop,11,14)  & emp_ci==1
-	replace  rama_ci=9 if inrange(ramaop,15,21)  & emp_ci==1
+	replace  rama_ci=1 if RAMAOP==1 & emp_ci==1 
+	replace  rama_ci=2 if RAMAOP==2 & emp_ci==1 
+	replace  rama_ci=3 if RAMAOP==3 & emp_ci==1
+	replace  rama_ci=4 if RAMAOP==4 | RAMAOP==5  & emp_ci==1
+	replace  rama_ci=5 if RAMAOP==6 & emp_ci==1
+	replace  rama_ci=6 if RAMAOP==7 | RAMAOP==9  & emp_ci==1
+	replace  rama_ci=7 if RAMAOP==8 | RAMAOP==10 & emp_ci==1
+	replace  rama_ci=8 if inrange(RAMAOP,11,14)  & emp_ci==1
+	replace  rama_ci=9 if inrange(RAMAOP,15,21)  & emp_ci==1
 	label var rama_ci "Rama de actividad"
 	label def rama_ci 1"Agricultura, caza, silvicultura y pesca" 2"Explotación de minas y canteras" 3"Industrias manufactureras" 4"Electricidad, gas y agua" 5"Construcción" 6"Comercio, restaurantes y hoteles" 7"Transporte y almacenamiento" 8"Establecimientos financieros, seguros e inmuebles" 9"Servicios sociales y comunales", add
 	label val rama_ci rama_ci 
@@ -768,7 +768,7 @@ use "$out\HND_2024m6", clear
 	***************	
 	*Codigo Extraído del manual
 	gen byte spublico_ci = .
-	replace spublico_ci = 1 if emp_ci == 1 & ramas _ci == 10
+	replace spublico_ci = 1 if emp_ci == 1 & rama_ci == 10
 	replace spublico_ci = 0 if emp_ci == 1 & rama_ci != 10 & rama_ci != .
 
 	***************
@@ -787,10 +787,10 @@ use "$out\HND_2024m6", clear
 			6-50	Mediana Empresa
 			51-∞ 	Gran Empresa
 	*/
-	gen tamemp_ci = 1 if (oc_608_cuantas>=1 & oc_608_cuantas<=5) & emp_ci==1 //Pequeña
-	replace tamemp_ci = 2 if (oc_608_cuantas>=6 & oc_608_cuantas<=50) & emp_ci==1 //Mediana
-	replace tamemp_ci = 3 if (oc_608_cuantas>50) & oc_608_cuantas!=. & emp_ci==1 //Grande
-	replace tamemp_ci=. if  oc_608_cuantas>=99999 //Missings
+	gen tamemp_ci = 1 if (OC_608_CUANTAS>=1 & OC_608_CUANTAS<=5) & emp_ci==1 //Pequeña
+	replace tamemp_ci = 2 if (OC_608_CUANTAS>=6 & OC_608_CUANTAS<=50) & emp_ci==1 //Mediana
+	replace tamemp_ci = 3 if (OC_608_CUANTAS>50) & OC_608_CUANTAS!=. & emp_ci==1 //Grande
+	replace tamemp_ci=. if  OC_608_CUANTAS>=99999 //Missings
 	label define tamemp_ci 1 "Pequeña" 2 "Mediana" 3 "Grande"
 	label value tamemp_ci tamemp_ci
 	label var tamemp_ci "Tamaño de empresa"
@@ -853,15 +853,15 @@ use "$out\HND_2024m6", clear
 			9	Otras ocupaciones no clasificadas en las anteriores.
 	*/
 	gen ocupa_ci=.
-	replace ocupa_ci=1 if ocupaop==2 & emp_ci==1
-	replace ocupa_ci=2 if ocupaop==1 & emp_ci==1
-	replace ocupa_ci=3 if (ocupaop==3 | ocupaop==4) & emp_ci==1
-	replace ocupa_ci=4 if ocupaop==5 & emp_ci==1
-	replace ocupa_ci=5 if ocupaop==7 & emp_ci==1
-	replace ocupa_ci=6 if ocupaop==6 & emp_ci==1
-	replace ocupa_ci=7 if ocupaop==8 & emp_ci==1
-	replace ocupa_ci=8 if ocupaop==10 & emp_ci==1
-	replace ocupa_ci=9 if ocupaop==9 & emp_ci==1
+	replace ocupa_ci=1 if OCUPAOP==2 & emp_ci==1
+	replace ocupa_ci=2 if OCUPAOP==1 & emp_ci==1
+	replace ocupa_ci=3 if (OCUPAOP==3 | OCUPAOP==4) & emp_ci==1
+	replace ocupa_ci=4 if OCUPAOP==5 & emp_ci==1
+	replace ocupa_ci=5 if OCUPAOP==7 & emp_ci==1
+	replace ocupa_ci=6 if OCUPAOP==6 & emp_ci==1
+	replace ocupa_ci=7 if OCUPAOP==8 & emp_ci==1
+	replace ocupa_ci=8 if OCUPAOP==10 & emp_ci==1
+	replace ocupa_ci=9 if OCUPAOP==9 & emp_ci==1
 
 	label variable ocupa_ci "Ocupacion laboral"
 	label define ocupa_ci 	1"Profesionales y técnicos" ///
