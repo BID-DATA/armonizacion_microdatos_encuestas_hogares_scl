@@ -13,12 +13,7 @@ set more off
 *________________________________________________________________________________________________________________*
  
 
-global surveysFolder "D:\Dropbox\BID\BID2025_Pepe\Tarea1_Excel\9_Honduras_2024\m6\"
 
-
-
-global out ="${surveysFolder}\data_merge"
-/*
 global ruta = "${surveysFolder}"
 
 local PAIS HND
@@ -33,8 +28,7 @@ local base_out = "$ruta\harmonized\\`PAIS'\\`ENCUESTA'\data_arm\\`PAIS'_`ANO'`ro
 capture log close
 cap log using "`log_file'", replace 
 
-cap log off 
-*/
+
 
 /***************************************************************************
                  BASES DE DATOS DE ENCUESTA DE HOGARES - SOCIOMETRO 
@@ -52,7 +46,7 @@ Detalle de procesamientos o modificaciones anteriores:
 ****************************************************************************/
 
 
-use "$out\HND_2024m6", clear
+use `base_in', clear
 
 ********************************************************************************
 ********************  VARIABLES DEL IDENTIFICACION *****************************
@@ -803,7 +797,7 @@ use "$out\HND_2024m6", clear
 	***************
 	***instcot_ci: Variable categórica que indica la institución de la Seguridad Social a la cual cotiza o está afiliado. Contiene la información de la variable original de la base de datos. ***
 	***************	
-	gen  byte afiliado_ci = . //No existe la pregunta en la encuesta
+	*gen  byte instcot_ci = . //No existe la pregunta en la encuesta
 	
 	***************
 	***afiliado_ci: Variable dicotómica que indica con valor 1 si el trabajador está afiliado a la Seguridad Social (independientemente que haya o no cotizado en el mes de referencia), con 0 al resto del grupo de referencia y mantenemos con valores perdidos si la encuesta los tiene como perdidos. ***
