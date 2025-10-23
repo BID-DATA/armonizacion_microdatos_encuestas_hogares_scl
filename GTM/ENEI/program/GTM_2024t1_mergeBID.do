@@ -46,16 +46,16 @@ import spss "$ruta\Hogares_ENEIC_IV 2024.sav" , clear
 rename FACTOR factor_h
 *label values * // se remueven labels porque hay conflicto con base a nivel de peronas
 save "$ruta\ENEIC-1-2024_HOGARES.dta", replace 
-rename FACTOR factor_p
-import spss "$ruta\Personas_ENEIC_IV 2024.sav",clear
 
+import spss "$ruta\Personas_ENEIC_IV 2024.sav",clear
+rename FACTOR factor_p
 save "$ruta\ENEIC-1-2024_PERSONAS.dta", replace
 
 *2. Merge
 
-use "ENEIC-1-2024_PERSONAS.dta", clear
+use "$ruta\ENEIC-1-2024_PERSONAS.dta", clear
 sort NUM_HOGAR
-merge m:1 NUM_HOGAR using "ENEIC-1-2024_HOGARES.dta"
+merge m:1 NUM_HOGAR using "$ruta\ENEIC-1-2024_HOGARES.dta"
 tab _merge
 drop _merge
 rename *, lower
@@ -63,8 +63,4 @@ saveold "`base_out'", version(12) replace
 
 log close
 
-*lista de variables
-*ds,alpha
-*comparación de bases 2021 y 2022
-*cf _all using "C:\Users\jilli\IADB_2023\Harmonizacion_encuestas\surveys\survey\GTM\ENEI\2021\m10\data_merge\GTM_2021m10.dta", verbose
 
