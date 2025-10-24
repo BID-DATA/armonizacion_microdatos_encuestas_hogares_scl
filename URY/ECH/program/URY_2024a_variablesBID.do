@@ -600,8 +600,8 @@ label value region_c region_c
 	**pensionsub_ci**
 	***************
 	gen byte pensionsub_ci = . 
-	replace pensionsub_ci = 1 if …
-	replace pensionsub_ci = 0 if …
+	replace pensionsub_ci = 1 if .
+	replace pensionsub_ci = 0 if .
 	
 	***************
 	**tipopen_ci**
@@ -837,8 +837,8 @@ label value region_c region_c
 	*vivitit_ch*
 	***********
 	gen vivitit_ch=.
-	replace vivitit_ch=0 if ...
-	replace vivitit_ch=1 if ...	
+	replace vivitit_ch=0 if .
+	replace vivitit_ch=1 if .	
 	
 	***********
 	*vivialq_ch*
@@ -1002,9 +1002,9 @@ label value region_c region_c
 	****************
 	 * pobre_ine _ci*
 	****************	
-	gen byte pobre_ine _ci= . 
-	replace pobre_ine _ci= 0 if pobre17==0
-	replace pobre_ine _ci= 1 if pobre17==1
+	gen byte pobre_ine_ci = .
+	replace pobre_ine_ci= 0 if pobre17==0
+	replace pobre_ine_ci= 1 if pobre17==1
 
 	****************
 	 * bienestar_agregado *
