@@ -797,7 +797,7 @@ use `base_in', clear
 	***************
 	***instcot_ci: Variable categórica que indica la institución de la Seguridad Social a la cual cotiza o está afiliado. Contiene la información de la variable original de la base de datos. ***
 	***************	
-	*gen  byte instcot_ci = . //No existe la pregunta en la encuesta
+	gen  byte instcot_ci = .  //No existe la pregunta en la encuesta
 	
 	***************
 	***afiliado_ci: Variable dicotómica que indica con valor 1 si el trabajador está afiliado a la Seguridad Social (independientemente que haya o no cotizado en el mes de referencia), con 0 al resto del grupo de referencia y mantenemos con valores perdidos si la encuesta los tiene como perdidos. ***
