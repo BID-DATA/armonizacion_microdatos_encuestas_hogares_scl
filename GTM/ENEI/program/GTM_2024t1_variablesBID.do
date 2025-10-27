@@ -564,8 +564,215 @@ use "`base_in'", clear
 
 ****************************
 ***VARIABLES DE INGRESO***
-* NOTA: SE SIGUE REVISANDO EL MANUAL
 ****************************
+
+	*************
+	* ylmpri_ci *
+	*************
+	
+	***********************************************
+	** AJUSTE A ENCUESTA ENEIC 2024.              *
+	** JUAN CAMILO PERDOMO - FRONT SCL OCUBRE 2024*
+	***********************************************
+	/* 
+	P04C13B	(p05d08b) CUÁNTO DINERO RECIBIÓ ¿Cuánto le pagaron por trabajar en su período vacacional? 
+	P04C14B	(p05d09b) CUÁNTO DINERO RECIBIÓ bono 14
+	P04C15B	(p05d10b) CUÁNTO DINERO RECIBIÓ aguinaldo
+	P04C16B	(p05d11b) CUÁNTO DINERO RECIBIÓ bono vacacional
+	P04C17B	(p05d12b) CUÁNTO DINERO RECIBIÓ algún quinceavo sueldo o diferido
+	P04C21B	(p05d07b) CUÁNTO DINERO RECIBIÓ bonos de productividad, de desempeño o por estímulos laborales
+	No incluye lo que recibió por alimentación/subsidio, vivienda, transporte recibidos en el trabajo
+	*/
+	
+	foreach var of varlist p05d08b p05d09b p05d10b p05d11b p05d12b p05d07b{ 
+	g `var'tdp=`var'/12 
+	}
+	
+	/* 2024:
+	p05d01: sueldo o salario mensual sin descuentos. No incluya: horas extras,comisiones, propinas, aguinaldo, bono 14, bono de productividad o desempeño 
+	p05d02c: ¿Recibió dinero por trabajar horas extras? 
+	p05d03b: Recibió dinero por conceptos de comisiones, dietas, propinas o víaticos?
+	p05e10: ingreso neto o ganancia mensual de su empresa, negocio, actividad o profesión después de gastos (Ganancia actividad no agrícola)
+	p05e11: ganancia o ingreso neto promedio mensual por ventas de cosechas, animales y/o venta de subproductos agropecuarios (Ganancia actividad agrícola)
+	*/
+		
+	egen ylmpri_ci= rsum(p05d01 p05d02c p05d03b p05e10 p05e11 *tdp), missing
+
+	************
+	* ylmsec_ci *
+	************
+	
+	/*
+	2024
+
+	***********************************************
+	** AJUSTE A ENCUESTA ENEIC 2024.              *
+	** JUAN CAMILO PERDOMO - FRONT SCL OCUBRE 2024*
+	***********************************************
+	
+	p05g10: sueldo o salario mensual sin descuentos segundo trabajo 2da ocu
+	p05g12b: Bonificaciones en efectivo
+	p05g13b: bono 14 2da ocu
+	p05g14b: aguinaldo 2da ocu
+	p05g26: ingreso neto o ganancia mensual de su empresa, negocio, actividad o profesión, después de gastos 2da ocu
+	
+	** Horas extra lo incluyeron dentro de bonificaciones
+	
+	*/
+	foreach var of varlist p05g12b p05g13b p05g14b{
+	g `var'tdpsec=`var'/12
+	}
+	egen ylmsec_ci=rsum(p05g10 *tdpsec p05g26), missing
+	label var ylmsec_ci "Ingreso laboral monetario segunda actividad" 
+
+	**************
+	* ylmotros_ci *
+	**************
+	
+	/*2024
+	p06b02b: Igresos por Trabajos diferentes a los ya reportados
+	p06b01b: Igresos por Venta de cosechas o de animales como: cerdos, pavos, gallinas, vacas u otros
+	p06b03b: Igresos por Negocios no agropecuarios diferentes a los ya reportados
+	*/
+    egen ylmotros_ci = rowtotal(p06b01b p06b02b p06b03b) if emp_ci==1
+ 
+	*********
+	* ylm_ci *
+	*********
+	egen double ylm_ci = rowtotal(ylmpri_ci ylmsec_ci ylmotros_ci), mi
+
+	**************
+	* ylnmpri_ci *
+	**************
+	
+	/*2024
+	p05d04b: Valoración de los alimentos recibidos en el trabajo
+	p05d05b: Valoración del costo de la vivienda recibida en el trabajo
+	p05d06b: Valoración del costo del transporte recibido en el trabajo
+	*/
+	egen ylnmpri_ci=rsum(p05d04b p05d05b p05d06b), missing
+	replace ylnmpri_ci = . if ylnmpri_ci < 0 & ylnmpri_ci != .
+
+	**************
+	* ylnmsec_ci *
+	**************
+    gen double ylnmsec_ci = p05g11b if emp_ci==1
+    replace ylnmsec_ci = . if ylnmsec_ci < 0 & ylnmsec_ci != .
+
+	****************
+	* ylnmotros_ci *
+	****************
+    gen ylnmotros_ci=.
+	
+	**********
+	* ylnm_ci *
+	**********
+	egen double ylnm_ci = rowtotal(ylnmpri_ci ylnmsec_ci ylnmotros_ci), mi
+	replace ylnm_ci = . if ylnm_ci < 0 & ylnm_ci != .
+
+	**********
+	* ynlm_ci *
+	**********
+	
+	/*
+	2024
+	p06a01b: alquileres (últimos 3 meses)
+	p06a02b: intereses (últimos 3 meses)
+	p06a03b: donaciones (últimos 3 meses)
+	p06a04b: pensión alimenticia (últimos 3 meses)
+	p06a05b: jubilación (últimos 3 meses)
+	p06a06b: becas y bonos (últimos 3 meses)
+	p06a07b: seguro desempleo (últimos 3 meses)
+	p06b04b: rentas de propiedad marca, patentes y derechos (12 meses)
+	p05d13b: dinero por indemnización por accidente 
+	p05d14b: dinero por indemnización por trabajo
+	*/
+	
+	foreach var of varlist p06a01b p06a02b p06a03b p06a04b p06a05b p06a06b p06a07b {
+	g `var'tdp3=`var'/3
+	}
+
+	foreach var of varlist p06b04b p05d13b p05d14b {
+	g `var'tdp12=`var'/12
+	}
+	egen ynlm_ci=rsum(*tdp3*), missing
+
+	***********
+	* ynlnm_ci *
+	***********
+	gen double ynlnm_ci = p05g27b
+	replace ynlnm_ci = . if ynlnm_ci < 0 & ynlnm_ci != .
+
+	**********
+	* ytot_ci *
+	**********
+	egen double ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci), mi
+
+	*********
+	* ylm_ch *
+	*********
+	bysort idh_ch: egen double ylm_ch = total(ylm_ci) if miembros_ci==1
+
+	**********
+	* ylnm_ch *
+	**********
+	bysort idh_ch: egen double ylnm_ch = total(ylnm_ci) if miembros_ci==1
+
+	***********
+	* ynlnm_ch *
+	***********
+	bysort idh_ch: egen double ynlnm_ch = total(ynlnm_ci) if miembros_ci==1
+
+	*********
+	* ynlm_ch *
+	*********
+	bysort idh_ch: egen double ynlm_ch = total(ynlm_ci) if miembros_ci==1
+ 
+	**********
+	* ytot_ch *
+	**********
+	egen double ytot_ch = rowtotal(ylm_ch ylnm_ch ynlm_ch ynlnm_ch), mi
+
+	***************
+	* ylmhopri_ci *
+	***************
+    generate double ylmhopri_ci = ylmpri_ci / horaspri_ci if emp_ci==1 & horaspri_ci>0
+ 
+	**********
+	* ylmho_ci *
+	**********
+    generate double ylmho_ci = ylm_ci / horastot_ci if emp_ci==1 & horastot_ci>0
+  
+	**************
+	* nrylmpri_ci *
+	**************
+	generate byte nrylmpri_ci = (emp_ci==1 & ylmpri_ci==.)
+
+	**************
+	* nrylmpri_ch *
+	**************
+	bysort idh_ch: egen byte nrylmpri_ch = max(nrylmpri_ci) if miembros_ci==1
+
+	*************
+	* remesas_ci *
+	*************
+	egen suma_rem = rowtotal(p06c02b p06c03b p06c04b)
+    generate double remesas_ci = suma_rem/3
+
+	*************
+	* remesas_ch *
+	*************
+	by idh_ch, sort: egen byte remesas_ch = sum(remesas_ci) if miembros_ci == 1
+
+	**********
+	* ypen_ci *
+	**********
+	generate double ypen_ci = p06a05b if pension_ci==1
+
+	*************
+	* ypensub_ci *
+	*************
+	gen ypensub_ci = .
 
 ****************************
 ***VARIABLES DE EDUCACION***
