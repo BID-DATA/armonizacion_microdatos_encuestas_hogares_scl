@@ -1,4 +1,4 @@
-*(Versión stata 17)
+	*(Versión stata 17)
 
 **# Bookmark #1
 clear
@@ -152,79 +152,79 @@ g factor_ch=fex_c18
 *************
 ***sexo_ci***
 *************
-	g sexo_ci = p3271
+g sexo_ci = p3271
 
 
 **********
 ***edad***
 **********
-	g edad_ci = p6040
+g edad_ci = p6040
 	
 *****************
 ***relacion_ci***
 *****************
-	g 		relacion_ci = 1 if p6050 == 1
-	replace relacion_ci = 2 if p6050 == 2
-	replace relacion_ci = 3 if p6050 == 3
-	replace relacion_ci = 4 if inlist(p6050,4,5,6,7,8,9)
-	replace relacion_ci = 5 if p6050 == 11 | p6050 == 12 | p6050 == 13 
-	replace relacion_ci = 6 if p6050 == 10
+g 		relacion_ci = 1 if p6050 == 1
+replace relacion_ci = 2 if p6050 == 2
+replace relacion_ci = 3 if p6050 == 3
+replace relacion_ci = 4 if inlist(p6050,4,5,6,7,8,9)
+replace relacion_ci = 5 if p6050 == 11 | p6050 == 12 | p6050 == 13 
+replace relacion_ci = 6 if p6050 == 10
 	
 *********************
 ****Estado Civil*****
 *********************
-	g 		civil_ci = .
-	replace civil_ci = 1 if p6070 == 6
-	replace civil_ci = 2 if p6070==1 | p6070==2 | p6070==3
-	replace civil_ci = 3 if p6070==4 
-	replace civil_ci = 4 if p6070==5
+g 		civil_ci = .
+replace civil_ci = 1 if p6070 == 6
+replace civil_ci = 2 if p6070==1 | p6070==2 | p6070==3
+replace civil_ci = 3 if p6070==4 
+replace civil_ci = 4 if p6070==5
 
 *************
 ***jefe_ci***
 *************
-	g jefe_ci = relacion_ci == 1
+g jefe_ci = relacion_ci == 1
 
 ******************
 ***nconyuges_ch***
 ******************
-	bys idh_ch: egen nconyuges_ch = sum(relacion_ci == 2)
+bys idh_ch: egen nconyuges_ch = sum(relacion_ci == 2)
 	
 
 ***************
 ***nhijos_ch***
 ***************
-	bys idh_ch: egen nhijos_ch = sum(relacion_ci == 3)
+bys idh_ch: egen nhijos_ch = sum(relacion_ci == 3)
 	
 
 ******************
 ***notropari_ch***
 ******************
-	bys idh_ch: egen notropari_ch = sum(relacion_ci == 4)
+bys idh_ch: egen notropari_ch = sum(relacion_ci == 4)
 	
 ********************
 ***notronopari_ch***
 ********************
-	bys idh_ch: egen notronopari_ch = sum(relacion_ci == 5)
+bys idh_ch: egen notronopari_ch = sum(relacion_ci == 5)
 	
 ****************
 ***nempdom_ch***
 ****************
-	bys idh_ch: egen nempdom_ch = sum(relacion_ci == 6)
+bys idh_ch: egen nempdom_ch = sum(relacion_ci == 6)
 
 *****************
 ***clasehog_ch***
 *****************
-	g byte clasehog_ch = 0
+g byte clasehog_ch = 0
 **** unipersonal
-	replace clasehog_ch = 1 if nhijos_ch == 0 & nconyuges_ch == 0 & notropari_ch == 0 & notronopari_ch == 0
+replace clasehog_ch = 1 if nhijos_ch == 0 & nconyuges_ch == 0 & notropari_ch == 0 & notronopari_ch == 0
 **** nuclear (child with or without spouse but without other relatives)
-	replace clasehog_ch = 2 if (nhijos_ch > 0 | nconyuges_ch > 0) & (notropari_ch == 0 & notronopari_ch == 0)
+replace clasehog_ch = 2 if (nhijos_ch > 0 | nconyuges_ch > 0) & (notropari_ch == 0 & notronopari_ch == 0)
 **** ampliado
-	replace clasehog_ch = 3 if notropari_ch > 0 & notronopari_ch == 0
+replace clasehog_ch = 3 if notropari_ch > 0 & notronopari_ch == 0
 **** compuesto (some relatives plus non relative)
-	replace clasehog_ch = 4 if ((nconyuges_ch > 0 | nhijos_ch > 0 | notropari_ch > 0) & (notronopari_ch > 0))
+replace clasehog_ch = 4 if ((nconyuges_ch > 0 | nhijos_ch > 0 | notropari_ch > 0) & (notronopari_ch > 0))
 **** corresidente
-	replace clasehog_ch = 5 if nhijos_ch == 0 & nconyuges_ch == 0 & notropari_ch == 0 & notronopari_ch > 0
+replace clasehog_ch = 5 if nhijos_ch == 0 & nconyuges_ch == 0 & notropari_ch == 0 & notronopari_ch > 0
 
 ******************
 ***nmiembros_ch***
@@ -613,12 +613,8 @@ gen byte tipopen_ci = .
 **instpen_ci **
 ***************
 gen byte instpen_ci = .
-	
-	
-		****************************
-		***VARIABLES DE INGRESO***
-		* NOTA: SE SIGUE REVISANDO EL MANUAL
-		****************************
+
+
 
 
 		****************************
@@ -628,93 +624,87 @@ gen byte instpen_ci = .
 **************
 ***aedu_ci***
 **************	
-	g aedu_ci = . 
+g aedu_ci = . 
 * 0 años de educacion 
-	replace aedu_ci = 0 if p3042 == 1 | p3042 == 2 
-	replace aedu_ci = 0 if p3042 == 3 & p3042s1 == 0 
+replace aedu_ci = 0 if p3042 == 1 | p3042 == 2 
+replace aedu_ci = 0 if p3042 == 3 & p3042s1 == 0 
 *Primaria
-	replace aedu_ci = 1 if p3042 == 3 & p3042s1 == 1
-	replace aedu_ci = 2 if p3042 == 3 & p3042s1 == 2
-	replace aedu_ci = 3 if p3042 == 3 & p3042s1 == 3
-	replace aedu_ci = 4 if p3042 == 3 & p3042s1 == 4
-	replace aedu_ci = 5 if p3042 == 3 & p3042s1 == 5
-	replace aedu_ci = 5 if p3042 == 4 & p3042s1 == 0
+replace aedu_ci = 1 if p3042 == 3 & p3042s1 == 1
+replace aedu_ci = 2 if p3042 == 3 & p3042s1 == 2
+replace aedu_ci = 3 if p3042 == 3 & p3042s1 == 3
+replace aedu_ci = 4 if p3042 == 3 & p3042s1 == 4
+replace aedu_ci = 5 if p3042 == 3 & p3042s1 == 5
+replace aedu_ci = 5 if p3042 == 4 & p3042s1 == 0
 *Secundaria (se incluye normalista como otra modalidad de secundaria)
-	replace aedu_ci = 6  if p3042 == 4 & p3042s1 == 1
-	replace aedu_ci = 7  if p3042 == 4 & p3042s1 == 2
-	replace aedu_ci = 8  if p3042 == 4 & p3042s1 == 3
-	replace aedu_ci = 9  if p3042 == 4 & p3042s1 == 4	
-	replace aedu_ci = 9  if p3042 == 5 & p3042s1 == 0	
-	replace aedu_ci = 9  if p3042 == 6 & p3042s1 == 0
-	replace aedu_ci = 9  if p3042 == 7 & p3042s1 == 0
-	replace aedu_ci = 9  if p3042 == 7 & p3042s1 == 1
+replace aedu_ci = 6  if p3042 == 4 & p3042s1 == 1
+replace aedu_ci = 7  if p3042 == 4 & p3042s1 == 2
+replace aedu_ci = 8  if p3042 == 4 & p3042s1 == 3
+replace aedu_ci = 9  if p3042 == 4 & p3042s1 == 4	
+replace aedu_ci = 9  if p3042 == 5 & p3042s1 == 0	
+replace aedu_ci = 9  if p3042 == 6 & p3042s1 == 0
+replace aedu_ci = 9  if p3042 == 7 & p3042s1 == 0
+replace aedu_ci = 9  if p3042 == 7 & p3042s1 == 1
 		
-	replace aedu_ci = 10 if p3042 == 5 & p3042s1 == 1
-	replace aedu_ci = 10 if p3042 == 6 & p3042s1 == 1
-	replace aedu_ci = 10 if p3042 == 7 & p3042s1 == 2
-	replace aedu_ci = 10 if p3042 == 7 & p3042s1 == 3
-	replace aedu_ci = 11 if p3042 == 5 & p3042s1 == 2
-	replace aedu_ci = 11 if p3042 == 6 & p3042s1 == 2
-	replace aedu_ci = 11 if p3042 == 7 & p3042s1 == 4
+replace aedu_ci = 10 if p3042 == 5 & p3042s1 == 1
+replace aedu_ci = 10 if p3042 == 6 & p3042s1 == 1
+replace aedu_ci = 10 if p3042 == 7 & p3042s1 == 2
+replace aedu_ci = 10 if p3042 == 7 & p3042s1 == 3
+replace aedu_ci = 11 if p3042 == 5 & p3042s1 == 2
+replace aedu_ci = 11 if p3042 == 6 & p3042s1 == 2
+replace aedu_ci = 11 if p3042 == 7 & p3042s1 == 4
 	
 *Superior
-	replace aedu_ci = 12 if p3042 == 7 & p3042s1 == 5
-	replace aedu_ci = 11+ trunc(p3042s1/2) if p3042>=8 & p3042<=13
+replace aedu_ci = 12 if p3042 == 7 & p3042s1 == 5
+replace aedu_ci = 11+ trunc(p3042s1/2) if p3042>=8 & p3042<=13
 	
 *Missing
-	replace aedu_ci =. if p3042==99
-	replace aedu_ci =. if p3042s1==99
+replace aedu_ci =. if p3042==99
+replace aedu_ci =. if p3042s1==99
 
 ***************
 ***edupre_ci***
 ***************
-	g byte edupre_ci =.
+g byte edupre_ci =(p3042>2)
+replace edupre_ci =. if p3042s1==99
 
 **************
 ***eduui_ci***
 **************
 * Nota: normalista es una modalidad especial que no hace parte de superior pero es postsecundaria
-
-	g byte eduui_ci = (inlist(p3042, 8, 9, 10, 11, 12, 13) & inlist(p3043, 2, 3, 4)) 
-	replace eduui_ci = . if aedu_ci == .
+g byte eduui_ci = (inlist(p3042, 8, 9, 10, 11, 12, 13) & inlist(p3043, 2, 3, 4)) 
+replace eduui_ci = . if aedu_ci == .
 
 ***************
 ***eduuc_ci***
 ***************
 * Nota: normalista es una modalidad especial que no hace parte de superior pero es postsecundaria
-
-	g byte eduuc_ci = (inlist(p3042, 8, 9, 10, 11, 12, 13) & inlist(p3043, 5, 6, 7, 8, 9, 10))
-	replace eduuc_ci = . if aedu_ci == .
+g byte eduuc_ci = (inlist(p3042, 8, 9, 10, 11, 12, 13) & inlist(p3043, 5, 6, 7, 8, 9, 10))
+replace eduuc_ci = . if aedu_ci == .
 
 **************
 ***eduac_ci***
 **************
-
-	gen byte eduac_ci = .
-	replace eduac_ci = 1 if (inlist(p3042, 10, 11, 12, 13) & inlist(p3043, 7, 8, 9, 10))
-	replace eduac_ci = 0 if (inlist(p3042, 8, 9 ) & inlist(p3043, 5, 6))
-
+gen byte eduac_ci = .
+replace eduac_ci = 1 if (inlist(p3042, 10, 11, 12, 13) & inlist(p3043, 7, 8, 9, 10))
+replace eduac_ci = 0 if (inlist(p3042, 8, 9 ) & inlist(p3043, 5, 6))
 
 ***************
 ***asiste_ci***
 ***************
-	g asiste_ci = 1 if p6170 == 1
-	replace asiste_ci = 0 if p6170 == 2
+g asiste_ci = 1 if p6170 == 1
+replace asiste_ci = 0 if p6170 == 2
 	
-
 ***************
 ***edupub_ci***
 ***************
-	g edupub_ci =.
-	replace edupub=1 if p3041 == 1 & p6170==1
-	replace edupub_ci = 0 if p3041 == 2 & p6170==1
-	
+g edupub_ci =.
+replace edupub=1 if p3041 == 1 & p6170==1
+replace edupub_ci = 0 if p3041 == 2 & p6170==1	
 	
 ***************
 ***asispre_ci**
 ***************
-	g asispre_ci= (p6170==1 & p3042==2 & p3042s1 <2)
-	
+g asispre_ci= (p6170==1 & p3042==2 & p3042s1 <2)	
 		
 **************
 *pqnoasis1_ci*
