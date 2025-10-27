@@ -745,12 +745,12 @@ by idh_ch, sort: egen byte remesas_ch = sum(remesas_ci) if miembros_ci == 1
 **********
 * ypen_ci *
 **********
-egen ynlm_ci = rsum(iof2 iof2es), m
+egen ypen_ci = rsum(iof2 iof2es), m
 
 *************
 * ypensub_ci *
 *************
-egen ynlm_ci = rsum(iof2 iof2es) if pensionsub_ci==1, m
+egen ypensub_ci = rsum(iof2 iof2es) if pensionsub_ci==1, m
 
 
 		****************************
