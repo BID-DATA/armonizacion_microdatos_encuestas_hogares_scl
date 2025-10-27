@@ -890,7 +890,305 @@ use `base_in', clear
 	***************
 	gen byte instpen_ci = . //No existe esta pregunta en la encuesta
 	
+
+********************************************************************************
+***************   VARIABLES DE INGRESO   *************************************
+********************************************************************************
+
+	*************
+	* ylmpri_ci: Ingreso laboral monetario de actividad principal: Variable continua que indica el monto mensual de ingresos monetarios provenientes de la actividad principal. Incluye: sueldos, salarios, jornales, trabajos a destajo, comisiones, propinas, horas extras, aguinaldos (empleados) y ganancia neta (patrones y cuenta propia). *
+	*************
+/*			YSMOP	Ingreso salario monetario ocupación principal
+			YCMOP	Ingreso monetario por cuenta propia ocupación principal
+*/
+	egen ylmpri_ci=rowtotal(YSMOP YCMOP) if emp_ci==1, missing //Se suman los ingresos principales solo para los individuos ocupados (emp_ci==1)
+	replace ylmpri_ci=0 if inlist(condocup_ci,2,3) //Inactivos o Desocupados registran ingresos de 0
+	replace ylmpri_ci=0 if categopri_ci==4 //Aquellos trabajadores con categoría ocupacional no remunerado (categopri_ci==4) registran ingresos de 0
+	replace ylmpri_ci=0 if ylmpri_ci<0 //Se reemplazan los valores negativos por 0
+	label var ylmpri_ci "Ingreso Laboral Monetario de la Actividad Principal"
+
+	************
+	* ylmsec_ci: Ingreso laboral monetario de actividad secundaria: Variable continua que indica el monto mensual de ingresos monetarios provenientes de la actividad secundaria. *
+	************
+/*			YSMOS	Ingreso salario monetario ocupación secundaria
+			YCMOS	Ingreso monetario por cuenta propia ocupación secundaria
+*/
+	egen ylmsec_ci=rowtotal(YSMOS YCMOS) if emp_ci==1, missing //Se suman los ingresos secundarios solo para los individuos ocupados (emp_ci==1)
+	replace ylmsec_ci=0 if inlist(condocup_ci,2,3) //Inactivos o Desocupados registran ingresos de 0
+	replace ylmsec_ci=0 if categopri_ci==4 //Aquellos trabajadores con categoría ocupacional no remunerado (categopri_ci==4) registran ingresos de 0
+	replace ylmsec_ci=0 if ylmsec_ci<0 //Se reemplazan los valores negativos por 0
+	label var ylmsec_ci "Ingreso Laboral Monetario de la Actividad Secundaria"
 	
+	**************
+	* ylmotros_ci: Ingreso laboral monetario de otras actividades: Variable continua que indica el monto mensual de ingresos monetarios provenientes de actividades distintas de la principal y secundaria. Incluye ingresos percibidos por desocupados o inactivos derivados de trabajos previos al cese. *
+	**************
+    generate double ylmotros_ci = . //No hay una variable de ingresos LABORALES que haga referencia a otra ocupación que no sea ni la principal ni la secundaria. 
+	
+	*********
+	* ylm_ci:Ingreso laboral monetario total: Variable continua que indica el monto mensual total de ingresos laborales monetarios provenientes de todas las actividades. Esta variable equivale a la suma de las variables ylmpri_ci, ymsec_ci e ylnmotros_ci.*
+	*********
+	*Codigo extraído del manual
+	egen double ylm_ci = rowtotal(ylmpri_ci ylmsec_ci ylmotros_ci), mi
+
+	**************
+	* ylnmpri_ci: Ingreso laboral no monetario de actividad principal: Variable continua que representa el monto mensual del ingreso laboral no monetario derivado de la actividad principal de cada miembro del hogar.*
+	*************
+/*			YCEOP	Ingreso en especies por cuenta propia ocupación principal
+			YSEOP	Ingreso salario en especies ocupación principal
+*/	
+	egen ylnmpri_ci=rowtotal(YCEOP YSEOP) if emp_ci==1, missing //Se considera la suma de los ingresos PRINCIPALES en especies (YCEOP & YSEOP) de las personas ocupadas (emp_ci==1).
+	replace ylnmpri_ci = . if ylnmpri_ci < 0 & ylnmpri_ci != .
+	label var ylnmpri_ci "Ingreso Laboral No Monetario de la Actividad Principal"
+	
+	**************
+	* ylnmsec_ci: Ingreso laboral no monetario de actividad secundaria: Variable continua que representa el monto mensual del ingreso laboral no monetario derivado de la actividad secundaria de cada miembro del hogar.*
+	**************
+/*			YSEOS	Ingreso salario en especies ocupación secundaria
+			YCEOS	Ingreso en especies por cuenta propia ocupación secundaria
+*/
+   	egen ylnmsec_ci=rowtotal(YSEOS YCEOS) if emp_ci==1, missing //Se considera la suma de los ingresos SECUNDARIAS en especies (YSMOS & YCMOS) de las personas ocupadas (emp_ci==1).
+    replace ylnmsec_ci = . if ylnmsec_ci < 0 & ylnmsec_ci != .
+
+	****************
+	* ylnmotros_ci: Ingresos laboral no monetario de otras actividades: Variable continua que representa el monto mensual del ingreso laboral no monetario derivado de actividades distintas de la principal y/o secundaria de cada miembro del hogar.*
+	****************
+	gen ylnmotros_ci=. //No hay una variable de ingresos LABORALES no monetarios que haga referencia a otra ocupación que no sea ni la principal ni la secundaria. 
+	label var ylnmotros_ci "Ingreso laboral NO monetario de otros trabajos" 
+	
+	**********
+	* ylnm_ci: Ingreso laboral no monetario: Variable continua que indica el monto mensual total de ingresos laborales no monetarios provenientes de todas las actividades. Esta variable equivale a la suma de las variables ylnmpri_ci, ylnmsec_ci e ylnmotros_ci.*
+	**********
+	*Codigo extraído del manual
+	egen double ylnm_ci = rowtotal(ylnmpri_ci ylnmsec_ci ylnmotros_ci), mi
+	replace ylnm_ci = . if ylnm_ci < 0 & ylnm_ci != .
+	label var ylnm_ci "Ingreso laboral NO monetario total"  
+
+	**********
+	* ynlm_ci:  Ingreso no laboral monetario público del individuo. Variable continua que indica el monto mensual del ingreso no laboral MONETARIO proveniente de otras fuentes no laborales.*
+	**********
+	*Las variables de otros ingresos no laborales están en el VALOR DE LOS ÚLTIMOS 3 MESES, por eso cada variable se divide entre 3. Además, hay ingresos en dólares (variables con sufijo "_us") y lempiras (variables con sufijo "_lps"). Los ingresos en dolares se ajustan por el tipo de cambio. De esta forma todos los ingresos están al valor corriente de la moneda local
+	
+	*Tipo de cambio en JUNIO, 2024:
+	gen tc_c1=25.12562814
+	*FUENTE:	
+*https://www.google.com/finance/quote/HNL-USD?sa=X&sqi=2&ved=2ahUKEwjI_omd2b-QAxXGGbkGHRWoB2YQmY0JegQIDRAo&window=5Y
+	
+	*1  Pensión  yhpens 
+	gen jubi = OIH01_LPS/3
+	gen jubid = (OIH01_US*tc_c1)/3     
+
+	*2  Jubilación yhjubi 
+	gen pens = OIH02_LPS/3
+	gen pensd = (OIH02_US*tc_c1)/3  
+
+	*3  Alquileres yhalqu  
+	gen alqui = OIH03_LPS/3   
+	gen alquid = (OIH03_US*tc_c1)/3
+
+	*4  Descuentos por la 3a edad 
+	gen desc3ed = OIH04/3                                    
+
+	*5  Pensión por divorcio 
+	gen pendiv = OIH05_LPS/3 
+	gen pendivd = (OIH05_US*tc_c1)/3                                               
+
+	*6  Ayudas familiares yhayuf  
+	gen ayuf = OIH06_LPS/3 
+	gen ayufd = (OIH06_US*tc_c1)/3 
+	*especies
+	gen ayufes = OIH06_LPS_ESP/3
+	gen ayufesd = (OIH06_US_ESP*tc_c1)/3                                           
+
+	*7  Ayudas particulares  yhayup
+	gen ayup = OIH07_LPS/3
+	gen ayupd = (OIH07_US*tc_c1)/3
+	*especies
+	gen ayupes = OIH07_LPS_ESP/3
+	gen ayupesd = (OIH07_US_ESP*tc_c1)/3    
+
+	*8  Alimentacion escolar
+	gen alimes = OIH08/3
+
+	*9  Bolsón útiles escolares
+	gen bolspra = OIH09/3
+
+	*10 Uniformes escolares
+	gen meresc = OIH10/3
+
+	*11 Becas  
+	gen beca = OIH11/3 
+
+	*12 Remesas del exterior yhreme 
+	gen remesa = OIH12_LPS/3 
+	gen remesad = (OIH12_US*tc_c1)/3
+	*especies
+	gen remesp = OIH12_LPS_ESP/3
+	gen remespd = (OIH12_US_ESP*tc_c1)/3
+
+	*13 Bono esperanza - discapacidad
+	gen bondis = OIH13/3
+
+	*14 Bono oro
+	gen bonoro = OIH14/3 
+
+	*15 Bono tecnológico
+	gen bonotec = OIH15/3 
+
+	*16 Bono Rosa  
+	gen bonorosa = OIH16/3 
+
+	*17 y 18: Subsidios de energía y combustible
+	egen subsidio_ = rowtotal(OIH17 OIH18), missing
+	gen subsidio = subsidio_/3
+	drop subsidio_
+
+	*19 Otros programas del gobierno  
+	gen otrospro = OIH19_LPS/3 
+	gen otrosproesp = OIH19_LPS_ESP/3                                             
+
+	*20 Otros       
+	gen otros = OIH20_LPS/3 
+	gen otrosesp = OIH20_LPS_ESP/3
+
+	*Se suman todas las variables for filas
+	egen ynlm_ci=rsum(jubi jubid pens pensd alqui alquid desc3ed pendiv pendivd ayuf ayufd ayup ayupd  beca remesa remesad bondis  bonoro bonotec bonorosa subsidio otrospro otros), missing
+	label var ynlm_ci "Ingreso No Laboral Monetario"	
+	
+	***********
+	* ynlnm_ci:Ingreso no laboral no monetario. Variable continua que indica el monto mensual del ingreso no laboral no monetario (otras fuentes). En esta categoría se encuentran otros beneficios y transferencias no monetarias como las donaciones en alimentos, útiles escolares, becas, entre otros.*
+	***********
+/* Composición de la variable:
+			ayufes		Ayudas familiares en especie
+			ayufesd		Ayudas familiares en especie (valor en dólares)
+			ayupes		Ayudas particulares en especie
+			ayupesd		Ayudas particulares en especie (valor en dólares)
+			alimes		Alimentación escolar
+			bolspra		Bolsón o útiles escolares
+			meresc		Uniformes escolares (o merienda escolar)
+			remesp		Remesas del exterior en especie
+			remespd		Remesas del exterior en especie (valor en dólares)
+			otrosproesp	Otros programas del gobierno en especie
+			otrosesp	Otros ingresos en especie
+*/	
+	egen ynlnm_ci=rsum(ayufes ayufesd ayupes ayupesd alimes bolspra meresc remesp remespd otrosproesp otrosesp), missing //Suma de las variables no laborales y no monetarias construidas previamente
+	label var ynlnm_ci "Ingreso No Laboral No Monetario" 
+
+	**********
+	* ytot_ci: Ingreso mensual total del individuo que incluye las variables ylm_ci ylnm_ci ynlm_ci ynlnm_ci*
+	**********
+	*Codigo extraído del manual
+	egen double ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci), mi
+
+	*********
+	* ylm_ch: Ingreso laboral monetario del hogar. Variable continua que indica el monto mensual del ingreso laboral monetario del hogar, ignora las `No respuesta'.  *
+	*********
+	*Codigo extraido del manual
+	bysort idh_ch: egen double ylm_ch = total(ylm_ci) if miembros_ci == 1, mi
+	label var ylm_ch "Ingreso laboral monetario del hogar"
+
+	**********
+	* ylnm_ch: Ingreso laboral no monetario del hogar. Variable continua que indica el monto del ingreso laboral no monetario del hogar.*
+	**********
+	*Codigo extraído del manual
+	bysort idh_ch: egen double ylnm_ch = total(ylnm_ci) if miembros_ci == 1, mi
+	label var ylnm_ch "Ingreso laboral no monetario del hogar"
+
+	***********
+	* ynlnm_ch: Ingreso no laboral no monetario del hogar. Variable continua que indica el monto mensual del ingreso no laboral no monetario del hogar (otras fuentes).*
+	***********
+	*Codigo extraído del manual
+	bysort idh_ch: egen double ynlnm_ch = total(ynlnm_ci) if miembros_ci == 1, mi
+
+	*********
+	* ynlm_ch: Ingreso no laboral monetario del hogar. Variable continua que indica el monto mensual del ingreso no laboral monetario del hogar (otras fuentes). Es la suma de ynlm_publico_ch y ynlm_privado_ch.*
+	*********
+	*Suma de los ingresos laborales no monetarios de todos los miembros del hogar
+	by idh_ch, sort: egen ynlm_ch=sum(ynlm_ci) if miembros_ci==1, missing 
+	label var ynlm_ch "Ingreso no laboral monetario del hogar"
+	
+	**********
+	* ytot_ch: Ingreso mensual total del hogar*
+	**********
+	*Codigo extraído del manual
+	egen double ytot_ch= rowtotal(ylm_ch ylnm_ch ynlm_ch ynlnm_ch), mi
+
+	***************
+	* ylmhopri_ci: Variable continua que indica el monto del salario horario monetario de la actividad principal.*
+	***************
+	*Codigo extraído del manual
+    gen byte ylmhopri_ci = ylmpri_ci / (4.3 * horaspri_ci)
+	replace ylmhopri_ci = . if ylmhopri_ci <= 0
+	label var ylmhopri_ci "Salario monetario de la actividad principal" 
+ 
+	**********
+	* ylmho_ci: Variable continua que indica el monto del salario horario monetario de todas las actividades.*
+	**********
+	*Codigo extraído del manual
+	gen byte ylmho_ci = ylm_ci / (4.3 * horastot_ci)
+	replace ylmho_ci = . if ylmho_ci <= 0
+  
+	**************
+	* nrylmpri_ci: No respuesta a nivel individuo. Indica la no respuesta ingreso de la actividad principal. Para construir esta variable, se tiene en cuenta que no reporte ingresos laborales (ylmpri_ci==. ) y además la persona reporte estar ocupado (emp_ci==1)*
+	**************
+/*		1: Indica que tiene empleo, pero no reporta el ingreso 
+		0: Caso contrario
+*/
+	*Codigo extraído del manual
+	gen byte nrylmpri_ci = .
+	replace nrylmpri_ci = 1 if ylmpri_ci == . & emp_ci == 1
+	replace nrylmpri_ci = 0 if ylmpri_ci != . & emp_ci ==1
+
+	**************
+	* nrylmpri_ch: No respuesta a nivel hogar. Hogares con algún miembro que no respondió por ingresos*
+	**************
+/*
+		1: Indica que tiene empleo, pero no reporta el ingreso 
+		0: De lo contrario
+*/
+	by idh_ch, sort: egen byte nrylmpri_ch = sum(nrylmpri_ci) if miembros_ci==1
+	replace nrylmpri_ch = 1 if nrylmpri_ch > 0 & nrylmpri_ch < .
+	replace nrylmpri_ch = . if nrylmpri_ch == .
+	
+	*************
+	* remesas_ci: Variable continua que indica el monto mensual por remesas reportadas por el individuo en moneda local corriente. *
+	*************
+	egen remesas_ci=rsum(remesa remesad remesp remespd), missing
+	label var remesas_ci "Remesas Individuales"
+	
+	*************
+	* remesas_ch: Variable continua que indica el monto mensual por remesas del hogar. Esta variable se genera a partir de la variable remesas_ci.*
+	*************
+	*Codigo extraído del manual 
+	by idh_ch, sort: egen byte remesas_ch = sum(remesas_ci) if miembros_ci == 1
+	
+	**********
+	* ypen_ci: Ingreso por pensión contributiva: Variable continua que indica el monto mensual en moneda local corriente efectivamente recibido por el individuo por pensiones contributivas en sus distintas modalidades (jubilación, vejez, pensión, etc).*
+	**********
+	*Suma de variables de pension/jubilación
+	egen ypen_ci=rowtotal(jubi jubid pens pensd), missing
+	label var ypen_ci "Valor de la pension contributiva" 
+	
+	*************
+	* ypensub_ci: Ingreso por pensión no contributiva: Variable continua que indica el monto mensual en moneda local corriente recibido por la persona por pensiones no contributivas (adultos mayores).*
+	*************
+	gen ypensub_ci=. //No hay variables de pensión no contributiva
+	label var ypensub_ci "Valor de la pension subsidiada / no contributiva"
+	
+	*************
+	* pension_ci: Variable dicotómica que indica con valor 1 si la persona recibe una pensión o jubilación contributiva y con 0 al resto. 
+	
+	*************
+	generate byte pension_ci = .
+	replace pension_ci=1 if 0<ypen_ci
+	replace pension_ci=0 if ypen_ci==. | ypen_ci==0
+	label var pension_ci "1=Recibe pension contributiva"
+
+	****************
+	* pensionsub_ci: Variable dicotómica que indica con valor 1 si la persona recibe una pensión o jubilación NO contributiva (adultos mayores) y con 0 al resto. *
+	****************
+	gen pensionsub_ci=. //No hay variables de pensión no contributiva
+	label var pensionsub_ci "1=recibe pension subsidiada / no contributiva"
+
 ********************************************************************************
 ***************   VARIABLES DE EDUCACION   *************************************
 ********************************************************************************
