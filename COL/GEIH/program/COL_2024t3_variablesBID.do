@@ -615,6 +615,142 @@ gen byte tipopen_ci = .
 gen byte instpen_ci = .
 
 
+	****************************
+	***VARIABLES DE INGRESO***
+	****************************
+
+*************
+* ylmpri_ci *
+*************
+egen ylmpri_ci = rsum(impa impaes) if emp_ci==1, m
+replace ylmpri_ci = . if impa==. & impaes==. 
+
+************
+* ylmsec_ci *
+************
+egen ylmsec_ci = rsum(isa isaes) if emp_ci==1, m
+replace ylmsec_ci=. if isa==. & isaes==.
+
+**************
+* ylmotros_ci *
+**************
+egen ylmotros_ci= rsum(imdi imdies), m
+* REVISAR PORQUE SI LO LIMITO A emp_ci==1 SE GENERA TODO COMO MISSING
+ 
+*********
+* ylm_ci *
+*********
+egen double ylm_ci = rowtotal(ylmpri_ci ylmsec_ci ylmotros_ci), mi
+
+**************
+* ylnmpri_ci *
+**************
+egen ylnmpri_ci = rsum(ie iees) if emp_ci==1, m
+replace ylnmpri_ci=. if ie==. & iees==.
+replace ylnmpri_ci = . if ylnmpri_ci < 0 & ylnmpri_ci != .
+
+**************
+* ylnmsec_ci *
+**************
+*egen double ylnmsec_ci = rowtotal(...) if emp_ci==1, mi
+*replace ylnmsec_ci = . if ylnmsec_ci < 0 & ylnmsec_ci != .
+g ylnmsec_ci = . /*No se pregunta ingreso por especies para act secundaria */
+
+****************
+* ylnmotros_ci *
+****************
+*egen double ylnmotros_ci = rowtotal(...) if emp_ci==1, mi
+*replace ylnmotros_ci = . if ylnmotros_ci < 0 & ylnmotros_ci != .
+g ylnmotros_ci = .
+
+**********
+* ylnm_ci *
+**********
+egen double ylnm_ci = rowtotal(ylnmpri_ci ylnmsec_ci ylnmotros_ci), mi
+replace ylnm_ci = . if ylnm_ci < 0 & ylnm_ci != .
+
+**********
+* ynlm_ci *
+**********
+egen ynlm_ci = rsum(iof1 iof2  iof3h iof3i iof6 iof1es iof2es  iof3hes iof3ies iof6es), m
+replace ynlm_ci = 0 if ynlm_ci < 0 & ynlm_ci != .
+
+***********
+* ynlnm_ci *
+***********
+*egen double ynlnm_ci = rowtotal(...), mi
+*replace ynlnm_ci = . if ynlnm_ci < 0 & ynlnm_ci != .
+g ynlnm_ci = .
+
+**********
+* ytot_ci *
+**********
+egen double ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci), mi
+
+*********
+* ylm_ch *
+*********
+bysort idh_ch: egen double ylm_ch = total(ylm_ci) if miembros_ci==1
+
+**********
+* ylnm_ch *
+**********
+bysort idh_ch: egen double ylnm_ch = total(ylnm_ci) if miembros_ci==1
+
+***********
+* ynlnm_ch *
+***********
+bysort idh_ch: egen double ynlnm_ch = total(ynlnm_ci) if miembros_ci==1
+
+*********
+* ynlm_ch *
+*********
+bysort idh_ch: egen double ynlm_ch = total(ynlm_ci) if miembros_ci==1
+ 
+**********
+* ytot_ch *
+**********
+egen double ytot_ch = rowtotal(ylm_ch ylnm_ch ynlm_ch ynlnm_ch), mi
+
+***************
+* ylmhopri_ci *
+***************
+generate double ylmhopri_ci = ylmpri_ci / horaspri_ci if emp_ci==1 & horaspri_ci>0
+ 
+**********
+* ylmho_ci *
+**********
+generate double ylmho_ci = ylm_ci / horastot_ci if emp_ci==1 & horastot_ci>0
+  
+**************
+* nrylmpri_ci *
+**************
+generate byte nrylmpri_ci = (emp_ci==1 & ylmpri_ci==.)
+
+**************
+* nrylmpri_ch *
+**************
+bysort idh_ch: egen byte nrylmpri_ch = max(nrylmpri_ci) if miembros_ci==1
+
+*************
+* remesas_ci *
+*************
+generate double remesas_ci = p7510s2a1/12 if p7510s2a1>9999 & p7510s2a1!=.
+
+*************
+* remesas_ch *
+*************
+by idh_ch, sort: egen byte remesas_ch = sum(remesas_ci) if miembros_ci == 1
+
+**********
+* ypen_ci *
+**********
+egen ynlm_ci = rsum(iof2 iof2es), m
+
+*************
+* ypensub_ci *
+*************
+egen ynlm_ci = rsum(iof2 iof2es) if pensionsub_ci==1, m
 
 
 		****************************
