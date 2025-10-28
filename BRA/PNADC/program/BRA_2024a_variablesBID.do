@@ -704,6 +704,176 @@ rename *, lower
 	* No pensionados -> .
 	replace instpen_ci = . if (v5001a!=1 & v5004a!=1) & (missing(pension_ci) & missing(pensionsub_ci))
 		
+
+****************************
+***VARIABLES DE INGRESO***
+****************************
+
+	*************
+	* ylmpri_ci *
+	*************
+    * Ingreso laboral monetario del trabajo principal
+    * PNADC: VD4019 ≈ rendimento efetivo do trabalho principal (R$ mensuales)
+    capture drop ylmpri_ci
+    generate double ylmpri_ci = . 
+    replace  ylmpri_ci = vd4019 if emp_ci==1 & vd4019!=.
+    replace  ylmpri_ci = .     if ylmpri_ci<0 & ylmpri_ci!=.
+
+	************
+	* ylmsec_ci *
+	************
+    * Ingreso laboral monetario del/los trabajo(s) secundario(s)
+    * Aproximación PNADC: VD4020 (todos los trabajos) – VD4019 (principal)
+    capture drop ylmsec_ci
+    generate double ylmsec_ci = . 
+    replace  ylmsec_ci = vd4020 - vd4019 if emp_ci==1 & vd4020!=. & vd4019!=.
+    replace  ylmsec_ci = 0               if ylmsec_ci<0 & ylmsec_ci!=.
+
+    **************
+	**************
+	* ylmotros_ci *
+	**************
+    * Otros ingresos laborales monetarios (bonos, comisiones no captadas arriba)
+    * PNADC no separa explícitamente; por defecto 0 (ajusta si identificas fuentes)
+	generate double ylmotros_ci = 0 if emp_ci==1
+ 
+	*********
+	* ylm_ci *
+	*********
+    * Total laboral monetario: principal + secundarios + otros
+    egen double ylm_ci = rowtotal(ylmpri_ci ylmsec_ci ylmotros_ci), mi
+
+	**************
+	* ylnmpri_ci *
+	**************
+    **************
+    * Ingreso laboral NO monetario (en especie) del trabajo principal
+    * TODO (PNADC): mapear si hay variable de pagos en productos del trabajo principal
+    generate double ylnmpri_ci = . 
+    replace  ylnmpri_ci = . if ylnmpri_ci < 0 & ylnmpri_ci != .
+
+	**************
+	* ylnmsec_ci *
+	**************
+    * Ingreso laboral NO monetario (en especie) del/los trabajos secundarios
+    * TODO (PNADC): mapear pagos en especie en trabajos adicionales
+    capture drop ylnmsec_ci
+    generate double ylnmsec_ci = . 
+    replace  ylnmsec_ci = . if ylnmsec_ci < 0 & ylnmsec_ci != .
+
+	****************
+	* ylnmotros_ci *
+	****************
+    * Otros ingresos laborales NO monetarios (premios en especie, etc.)
+    * TODO (PNADC): mapear si existiera
+    capture drop ylnmotros_ci
+    generate double ylnmotros_ci = . 
+    replace  ylnmotros_ci = . if ylnmotros_ci < 0 & ylnmotros_ci != .
+
+	**********
+	* ylnm_ci *
+	**********
+    * Total laboral NO monetario
+    capture drop ylnm_ci
+    egen double ylnm_ci = rowtotal(ylnmpri_ci ylnmsec_ci ylnmotros_ci), mi
+    replace  ylnm_ci = . if ylnm_ci < 0 & ylnm_ci != .
+
+	**********
+	* ynlm_ci *
+	**********
+	* Ingreso NO laboral monetario (transferencias, pensiones, capital, remesas en dinero)
+    * TODO (PNADC): mapear fuentes individuales; por ahora como missing
+    capture drop ynlm_ci
+    generate double ynlm_ci = . 
+    replace  ynlm_ci = 0 if ynlm_ci < 0 & ynlm_ci != .
+
+	***********
+	* ynlnm_ci *
+	***********
+	* Ingreso NO laboral NO monetario (donaciones en especie, remesas en especie)
+    * TODO (PNADC): mapear si existiera a nivel individual
+    capture drop ynlnm_ci
+    generate double ynlnm_ci = . 
+    replace  ynlnm_ci = . if ynlnm_ci < 0 & ynlnm_ci != .
+
+	**********
+	* ytot_ci *
+	**********
+    * Ingreso total individual
+    capture drop ytot_ci
+    egen double ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci), mi
+
+	*********
+	* ylm_ch *
+	*********
+    bysort idh_ch: egen double ylm_ch = total(ylm_ci) if miembros_ci==1
+
+	**********
+	* ylnm_ch *
+	**********
+	bysort idh_ch: egen double ylnm_ch = total(ylnm_ci) if miembros_ci==1
+
+	***********
+	* ynlnm_ch *
+	***********
+	bysort idh_ch: egen double ynlnm_ch = total(ynlnm_ci) if miembros_ci==1
+
+	*********
+	* ynlm_ch *
+	*********
+    * TODO (PNADC): si mapeas ynlm_ci a nivel individuo, esta suma se activará
+    capture drop ynlm_ch
+    bysort idh_ch: egen double ynlm_ch = total(ynlm_ci) if miembros_ci==1
+ 
+	**********
+	* ytot_ch *
+	**********
+	egen double ytot_ch = rowtotal(ylm_ch ylnm_ch ynlm_ch ynlnm_ch), mi
+
+	***************
+	* ylmhopri_ci *
+	***************
+    generate double ylmhopri_ci = ylmpri_ci / horaspri_ci if emp_ci==1 & horaspri_ci>0
+ 
+	**********
+	* ylmho_ci *
+	**********
+    generate double ylmho_ci = ylm_ci / horastot_ci if emp_ci==1 & horastot_ci>0
+  
+	**************
+	* nrylmpri_ci *
+	**************
+    generate byte nrylmpri_ci = (emp_ci==1 & ylmpri_ci==.)
+
+	**************
+	* nrylmpri_ch *
+	**************
+	bysort idh_ch: egen byte nrylmpri_ch = max(nrylmpri_ci) if miembros_ci==1
+
+	*************
+	* remesas_ci *
+	*************
+    * TODO (PNADC): mapear remesas monetarias individuales si existen (p.ej., “dinheiro do exterior” a nivel pessoa)
+    capture drop remesas_ci
+    generate double remesas_ci = .
+
+	*************
+	* remesas_ch *
+	*************
+    * TODO (PNADC): si remesas_ci se captura a nivel persona, sumar al hogar
+    capture drop remesas_ch
+    bysort idh_ch: egen double remesas_ch = total(remesas_ci) if miembros_ci==1
+
+	**********
+	* ypen_ci *
+	**********
+    generate double ypen_ci = . if pension_ci==1
+
+	*************
+	* ypensub_ci *
+	*************
+    generate double ypensub_ci = . if pensionsub_ci==1
+	
 ****************************
 ***VARIABLES DE EDUCACION***
 ****************************
@@ -1064,7 +1234,7 @@ rename *, lower
 	* Salario mínimo 2024 = R$1412 → ½ = R$706
 	gen ln_ci = 706
 		
-
+	
 local log_file = "$ruta\harmonized\\`PAIS'\\`ENCUESTA'\log\\`PAIS'_`ANO'`ronda'_variablesBID.log"
 local base_in  = "$ruta\survey\\`PAIS'\\`ENCUESTA'\\`ANO'\\`ronda'\data_merge\\`PAIS'_`ANO'`ronda'.dta"
 local base_out = "$ruta\harmonized\\`PAIS'\\`ENCUESTA'\data_arm\\`PAIS'_`ANO'`ronda'_BID.dta"
