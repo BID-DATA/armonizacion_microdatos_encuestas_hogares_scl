@@ -615,6 +615,164 @@ label value region_c region_c
 	gen byte instpen_ci=.
 	
 ****************************
+***VARIABLES DE INGRESO***
+****************************
+
+	*************
+	* ylmpri_ci *
+	*************
+	egen double ylmpri_ci =rowtotal(g126_1 g126_2  g126_3  g126_4  g126_5  g126_6  g126_7 g142 g143 g133_2) if emp_ci==1, mi
+
+	************
+	* ylmsec_ci *
+	************
+	egen double ylmsec_ci =rowtotal(g134_1 g134_2  g134_3  g134_4  g134_5  g134_6  g134_7 g141_2) if emp_ci==1, mi
+
+	**************
+	* ylmotros_ci *
+	**************
+    egen double ylmotros_ci =rowtotal(g134_1 g134_2  g134_3  g134_4  g134_5  g134_6  g134_7 g141_2) if emp_ci==1, mi
+ 
+	*********
+	* ylm_ci *
+	*********
+	egen double ylm_ci = rowtotal(ylmpri_ci ylmsec_ci ylmotros_ci), mi
+
+	**************
+	* ylnmpri_ci *
+	**************
+	gen desay = (g127_1*mto_desay)
+	gen almue = (g127_2*mto_almue)
+	gen vacas = (g132_1*mto_vacas)
+	gen oveja = (g132_2*mto_oveja)
+	gen caballo = (g132_3*mto_caball)
+	destring g144_1, replace 
+	
+	egen double ylnmpri_ci = rowtotal(desay almue vacas oveja caballo g126_8 g127_3 g128_1 g129_2 g130_1 g131_1 g133_1 g144_1 g144_2_1 g144_2_2 g144_2_3 g144_2_4 g144_2_5) if emp_ci==1, mi
+	replace ylnmpri_ci = . if ylnmpri_ci < 0 & ylnmpri_ci != .
+	
+	drop desay almue vacas oveja caballo
+
+	**************
+	* ylnmsec_ci *
+	**************
+	
+	destring g135_1, replace
+	destring g135_2, replace
+
+	gen desaysec = (g135_1*mto_desay)
+	gen almuesec = (g135_2*mto_almue)
+	gen vacassec = (g140_1*mto_vacas)
+	gen ovejasec = (g140_2*mto_oveja)
+	gen caballosec = (g140_3*mto_caball)
+
+	destring g135_3, replace
+	destring g136_1, replace
+	destring g137_2, replace
+	destring g138_1, replace
+	destring g139_1, replace
+
+    egen double ylnmsec_ci = rowtotal(desaysec almuesec vacassec ovejasec caballosec g134_8 g135_3 g136_1 g137_2 g138_1 g139_1 g141_1) if emp_ci==1, mi
+    replace ylnmsec_ci = . if ylnmsec_ci < 0 & ylnmsec_ci != .
+	
+	drop desaysec almuesec vacassec ovejasec caballosec
+
+	****************
+	* ylnmotros_ci *
+	****************
+    gen double ylnmotros_ci = . if emp_ci==1
+    replace ylnmotros_ci = . if ylnmotros_ci < 0 & ylnmotros_ci != .
+
+	**********
+	* ylnm_ci *
+	**********
+	egen double ylnm_ci = rowtotal(ylnmpri_ci ylnmsec_ci ylnmotros_ci), mi
+	replace ylnm_ci = . if ylnm_ci < 0 & ylnm_ci != .
+
+	**********
+	* ynlm_ci *
+	**********
+	gen double ynlm_ci =.
+	replace ynlm_ci = 0 if ynlm_ci < 0 & ynlm_ci != .
+
+	***********
+	* ynlnm_ci *
+	***********
+	gen double ynlnm_ci =.
+	replace ynlnm_ci = . if ynlnm_ci < 0 & ynlnm_ci != .
+
+	**********
+	* ytot_ci *
+	**********
+	egen double ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci), mi
+
+	*********
+	* ylm_ch *
+	*********
+	bysort idh_ch: egen double ylm_ch = total(ylm_ci) if miembros_ci==1
+
+	**********
+	* ylnm_ch *
+	**********
+	bysort idh_ch: egen double ylnm_ch = total(ylnm_ci) if miembros_ci==1
+
+	***********
+	* ynlnm_ch *
+	***********
+	bysort idh_ch: egen double ynlnm_ch = total(ynlnm_ci) if miembros_ci==1
+
+	*********
+	* ynlm_ch *
+	*********
+    gen double ynlm_ch =.
+ 
+	**********
+	* ytot_ch *
+	**********
+	egen double ytot_ch = rowtotal(ylm_ch ylnm_ch ynlm_ch ynlnm_ch), mi
+
+	***************
+	* ylmhopri_ci *
+	***************
+    generate double ylmhopri_ci = ylmpri_ci / horaspri_ci if emp_ci==1 & horaspri_ci>0
+ 
+	**********
+	* ylmho_ci *
+	**********
+    generate double ylmho_ci = ylm_ci / horastot_ci if emp_ci==1 & horastot_ci>0
+  
+	**************
+	* nrylmpri_ci *
+	**************
+	generate byte nrylmpri_ci = (emp_ci==1 & ylmpri_ci==.)
+
+	**************
+	* nrylmpri_ch *
+	**************
+	bysort idh_ch: egen byte nrylmpri_ch = max(nrylmpri_ci) if miembros_ci==1
+
+	*************
+	* remesas_ci *
+	*************
+    generate double remesas_ci =.
+
+	*************
+	* remesas_ch *
+	*************
+    generate double remesas_ch =h172_1
+
+	**********
+	* ypen_ci *
+	**********
+	egen double ypen_ci =rowtotal(g148_1_1 g148_1_2 g148_1_3 g148_1_5 g148_1_6 g148_1_7 g148_1_8 g148_1_9 g148_1_12 g148_1_10 ///
+	g148_2_1 g148_2_2 g148_2_3 g148_2_5 g148_2_6 g148_2_7 g148_2_8 g148_2_9 g148_2_12 g148_2_10) if pension_ci==1
+
+	*************
+	* ypensub_ci *
+	*************
+	generate double ypensub_ci =. if pensionsub_ci==1
+	
+****************************
 ***VARIABLES DE EDUCACION***
 ****************************
 
