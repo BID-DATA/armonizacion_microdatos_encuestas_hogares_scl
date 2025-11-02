@@ -704,11 +704,6 @@ use "`base_in'", clear
 	**********
 	generate double ypen_ci =rowtotal( PenyjubV_CI PenyJubE) if pension_ci==1, mi
 
-	****************
-	* pensionsub_ci *
-	****************
-	generate byte pensionsub_ci =.
-
 	*************
 	* ypensub_ci *
 	*************
@@ -1103,3 +1098,4 @@ local base_out = "$ruta\harmonized\\`PAIS'\\`ENCUESTA'\data_arm\\`PAIS'_`ANO'`ro
 saveold "`base_out'", version(12) replace
 
 cap log close
+
