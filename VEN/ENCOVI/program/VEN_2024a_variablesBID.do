@@ -558,15 +558,15 @@ use "`base_in'", clear
 	**pension_ci***
 	**************
 	gen byte pension_ci=. 
-	*replace pension_ci=1 if …
-	*replace pension_ci=0 if …
+	replace pension_ci=1 if s9q1==8
+	replace pension_ci=0 if s9q1!=8 & s9q1
 	
 	***************
 	**pensionsub_ci**
 	***************
 	gen byte pensionsub_ci = . 
-	*replace pensionsub_ci = 1 if …
-	*replace pensionsub_ci = 0 if …
+	*replace pensionsub_ci =1 
+	*replace pensionsub_ci = 0 
 	
 	***************
 	**tipopen_ci**
@@ -580,8 +580,140 @@ use "`base_in'", clear
 
 ****************************
 ***VARIABLES DE INGRESO***
-* NOTA: SE SIGUE REVISANDO EL MANUAL
 ****************************
+
+	*************
+	* ylmpri_ci *
+	*************
+	egen double ylmpri_ci =rowtotal(IngLabMonV_CI IngLabMonE_w) if emp_ci==1, mi
+
+	************
+	* ylmsec_ci *
+	************
+	generate double ylmsec_ci =. if emp_ci==1
+
+	**************
+	* ylmotros_ci *
+	**************
+    generate double ylmotros_ci =. if emp_ci==1
+ 
+	*********
+	* ylm_ci *
+	*********
+	egen double ylm_ci = rowtotal(ylmpri_ci ylmsec_ci ylmotros_ci), mi
+
+	**************
+	* ylnmpri_ci *
+	**************
+	egen double ylnmpri_ci = rowtotal(IngLabNoMon_CI) if emp_ci==1, mi
+	replace ylnmpri_ci = . if ylnmpri_ci < 0 & ylnmpri_ci != .
+
+	**************
+	* ylnmsec_ci *
+	**************
+    gen double ylnmsec_ci =. if emp_ci==1
+    replace ylnmsec_ci = . if ylnmsec_ci < 0 & ylnmsec_ci != .
+
+	****************
+	* ylnmotros_ci *
+	****************
+    gen double ylnmotros_ci =. if emp_ci==1
+    replace ylnmotros_ci = . if ylnmotros_ci < 0 & ylnmotros_ci != .
+
+	**********
+	* ylnm_ci *
+	**********
+	egen double ylnm_ci = rowtotal(ylnmpri_ci ylnmsec_ci ylnmotros_ci), mi
+	replace ylnm_ci = . if ylnm_ci < 0 & ylnm_ci != .
+
+	**********
+	* ynlm_ci *
+	**********
+	egen double ynlm_ci = rowtotal(PenyJubEps PenyJubV InstprivVps PersprivV_w escolarpub Bonosytransf_CI), mi
+	replace ynlm_ci = 0 if ynlm_ci < 0 & ynlm_ci != .
+
+	***********
+	* ynlnm_ci *
+	***********
+	gen double ynlnm_ci =.
+	replace ynlnm_ci = . if ynlnm_ci < 0 & ynlnm_ci != .
+
+	**********
+	* ytot_ci *
+	**********
+	egen double ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci), mi
+
+	*********
+	* ylm_ch *
+	*********
+	bysort idh_ch: egen double ylm_ch = total(ylm_ci) if miembros_ci==1
+
+	**********
+	* ylnm_ch *
+	**********
+	bysort idh_ch: egen double ylnm_ch = total(ylnm_ci) if miembros_ci==1
+
+	***********
+	* ynlnm_ch *
+	***********
+	bysort idh_ch: egen double ynlnm_ch = total(ynlnm_ci) if miembros_ci==1
+
+	*********
+	* ynlm_ch *
+	*********
+    *egen double ynlm_ch = rowtotal(ynlm_privado_ch ynlm_publico_ch ynlm_otros_ch), mi
+	 gen double ynlm_ch =.
+ 
+	**********
+	* ytot_ch *
+	**********
+	egen double ytot_ch = rowtotal(ylm_ch ylnm_ch ynlm_ch ynlnm_ch), mi
+
+	***************
+	* ylmhopri_ci *
+	***************
+    generate double ylmhopri_ci = ylmpri_ci / horaspri_ci if emp_ci==1 & horaspri_ci>0
+ 
+	**********
+	* ylmho_ci *
+	**********
+    generate double ylmho_ci = ylm_ci / horastot_ci if emp_ci==1 & horastot_ci>0
+  
+	**************
+	* nrylmpri_ci *
+	**************
+	generate byte nrylmpri_ci = (emp_ci==1 & ylmpri_ci==.)
+
+	**************
+	* nrylmpri_ch *
+	**************
+	bysort idh_ch: egen byte nrylmpri_ch = max(nrylmpri_ci) if miembros_ci==1
+
+	*************
+	* remesas_ci *
+	*************
+    generate double remesas_ci = ...
+
+	*************
+	* remesas_ch *
+	*************
+    generate double remesas_ch =Rentaimp
+
+	**********
+	* ypen_ci *
+	**********
+	generate double ypen_ci =rowtotal( PenyjubV_CI PenyJubE) if pension_ci==1, mi
+
+	****************
+	* pensionsub_ci *
+	****************
+	generate byte pensionsub_ci =.
+
+	*************
+	* ypensub_ci *
+	*************
+	generate double ypensub_ci =. if pensionsub_ci==1
+		
 	
 ****************************
 ***VARIABLES DE EDUCACION***
