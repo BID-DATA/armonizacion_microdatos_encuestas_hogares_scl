@@ -363,8 +363,8 @@ gen miembros_ci=(relacion_ci>=1 & relacion_ci<=5)
 
 *******************************************************
 ***           VARIABLES DE DIVERSIDAD               ***
-
 *******************************************************
+
 	*********
 	*afro_ci*
 	*********
@@ -379,6 +379,11 @@ gen miembros_ci=(relacion_ci>=1 & relacion_ci<=5)
 	*noafroind_ci*
 	**************
 	gen byte noafroind_ci =.   // se queda como missing (.) si no existe la pregunta
+	
+	**************
+	*afroind_ano_c*
+	**************
+	gen byte afroind_ano_c =.   // se queda como missing (.) si no existe la pregunta
 
 	************
 	*afroind_ci*

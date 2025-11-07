@@ -448,7 +448,7 @@ by idh_ch, sort: egen byte nmenor1_ch=sum((relacion_ci>0 & relacion_ci<=5) & (ed
 	gen byte afro_ci = . 	  // se queda como missing (.) si no existe la pregunta
 	
 	*********
-	*indi_ci*
+	*ind_ci*
 	*********	
 	gen byte ind_ci =. 		  // se queda como missing (.) si no existe la pregunta
 
@@ -456,7 +456,12 @@ by idh_ch, sort: egen byte nmenor1_ch=sum((relacion_ci>0 & relacion_ci<=5) & (ed
 	*noafroind_ci*
 	**************
 	gen byte noafroind_ci =.   // se queda como missing (.) si no existe la pregunta
-
+	
+	**************
+	*afroind_ano_c*
+	**************
+	gen byte afroind_ano_c =.   // se queda como missing (.) si no existe la pregunta	
+	
 	************
 	*afroind_ci*
 	************
