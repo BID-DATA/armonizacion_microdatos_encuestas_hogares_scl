@@ -374,6 +374,11 @@ replace region_c=24 if aglomerado==29                          /*Tucuman*/
 	
 	gen miembros_ci=(relacion_ci>=1 & relacion_ci<5) 
 	label variable miembros_ci "Miembro del hogar"
+	
+	*****************
+	*miembros_one_ci*
+	*****************
+	gen miembros_one_ci = inrange(ch03,1,10)
 
 				
 *******************************************************

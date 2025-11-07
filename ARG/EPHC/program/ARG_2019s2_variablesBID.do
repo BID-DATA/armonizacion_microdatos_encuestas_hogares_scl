@@ -353,6 +353,10 @@ by idh_ch, sort: egen byte nmenor1_ch=sum((relacion_ci>0 & relacion_ci<=5) & (ed
 	
 	gen miembros_ci=(relacion_ci>=1 & relacion_ci<=5)
 
+	*****************
+	*miembros_one_ci*
+	*****************
+	gen miembros_one_ci = inrange(ch03,1,10)
 	
 *******************************************************
 ***           VARIABLES DE DIVERSIDAD               ***

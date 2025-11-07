@@ -305,6 +305,11 @@ label variable relacion_ci "Relacion con el jefe del hogar"
 	
 	gen miembros_ci=(relacion_ci>=1 & relacion_ci<5) 
 	
+	*****************
+	*miembros_one_ci*
+	*****************
+	gen miembros_one_ci = inrange(ch03,1,10)
+	
 	
 *******************************************************
 ***           VARIABLES DE DIVERSIDAD               ***
