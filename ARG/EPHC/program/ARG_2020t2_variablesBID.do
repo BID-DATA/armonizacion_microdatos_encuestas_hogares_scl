@@ -1390,7 +1390,7 @@ label val rama_ci rama_ci
 
 /* https://www.indec.gob.ar/uploads/informesdeprensa/eph_pobreza_01_18.pdf pÃ¡gina 10. 
 calculo: Canasta BÃ¡sica Total promedio del hogar pobre/TamaÃ±o promedio del hogar pobre en adulto equivalente,
-Canasta BÃ¡sica Alimentaria promedio del hogar indigente/TamaÃ±o promedio del hogar indigente en adulto equivalente */ 
+Canasta BÃ¡sica Alimentaria promedio del hogar indigente/TamaÃ±o promedio del hogar indigente en adulto equivalente
 
 *********
 *lp_ci***
@@ -1406,6 +1406,10 @@ label var lp_ci "Linea de pobreza oficial del pais"
 
 gen lpe_ci =2289.7
 label var lpe_ci "Linea de indigencia oficial del pais"
+
+Cambio Juan Camilo Perdomo (Front)
+Comento esta parte para crear las líneas de pobreza abajo en la sección de variables externas
+*/
 
 ****************
 *cotizando_ci***
@@ -1562,6 +1566,40 @@ gen tcylmpri_ci =.
 gen tcylmpri_ch =.
 gen instcot_ci=.
 
+
+****************************
+***VARIABLES DE EXTERNAS***
+**************************** 
+
+	****************
+	*tipo_bienestar*
+	**************** 
+	gen byte tipo_bienestar = . 
+	replace tipo_bienestar  = 1 
+	
+	**********************
+	* bienestar_agregado *
+	**********************
+	
+	gen bienestar_agregado = itf
+
+	*********
+	*ln_ci***
+	*********
+	gen ln_ci =50854/3.28
+
+	*********
+	*lpe_ci***
+	*********
+	gen lpe_ci =21572/3.35
+	
+* https://www.indec.gob.ar/uploads/informesdeprensa/eph_pobreza_02_2082FA92E916.pdf pÃ¡gina 5-6. Canasta Basica y Total promedio del hogar/Tamaño promedio del hogar pobre en adulto equivalente
+
+
+	****************
+	* pobre_ine _ci*
+	**************** 
+	gen byte pobre_ine_ci=(bienestar_agregado<lp_ci)
 
 
 /*_____________________________________________________________________________________________________*/

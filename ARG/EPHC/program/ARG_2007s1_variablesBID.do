@@ -1926,7 +1926,30 @@ gen instcot_ci=.
 	replace miglac_ci = 0 if miglac_ci != 1 & migrante_ci == 1
 	replace miglac_ci =. if migrante_ci == 0
 	label var miglac_ci "=1 si es migrante proveniente de un pais LAC" 
+	
+	
+****************************
+***VARIABLES DE EXTERNAS***
+**************************** 
 
+	****************
+	*tipo_bienestar*
+	**************** 
+	gen byte tipo_bienestar = . 
+	****************
+	* pobre_ine _ci*
+	**************** 
+	gen byte pobre_ine_ci= . 
+	****************
+	* bienestar_agregado *
+	**************** 
+	gen bienestar_agregado = . 
+	****************
+	* ln_ci *
+	**************** 
+	gen ln_ci = lp_ci
+	
+	
 /*_____________________________________________________________________________________________________*/
 * Verificación de que se encuentren todas las variables del SOCIOMETRO y las nuevas de mercado laboral
 * También se incluyen variables que se manejaban en versiones anteriores, estas son:

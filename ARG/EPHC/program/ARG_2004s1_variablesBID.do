@@ -1774,6 +1774,27 @@ gen tcylmpri_ci =.
 gen tcylmpri_ch =.
 gen instcot_ci=.
 
+****************************
+***VARIABLES DE EXTERNAS***
+**************************** 
+****************
+*tipo_bienestar*
+**************** 
+gen byte tipo_bienestar = . 
+****************
+* pobre_ine _ci*
+**************** 
+gen byte pobre_ine_ci= . 
+****************
+* bienestar_agregado *
+**************** 
+gen bienestar_agregado = . 
+****************
+* ln_ci *
+**************** 
+gen ln_ci = lp_ci
+
+
 /*_____________________________________________________________________________________________________*/
 * Verificación de que se encuentren todas las variables del SOCIOMETRO y las nuevas de mercado laboral
 * También se incluyen variables que se manejaban en versiones anteriores, estas son:

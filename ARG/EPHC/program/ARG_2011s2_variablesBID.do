@@ -1850,6 +1850,28 @@ gen instcot_ci=.
 	label var miglac_ci "=1 si es migrante proveniente de un pais LAC" 
 
 
+****************************
+***VARIABLES DE EXTERNAS***
+**************************** 
+
+	****************
+	*tipo_bienestar*
+	**************** 
+	gen byte tipo_bienestar = . 
+	****************
+	* pobre_ine _ci*
+	**************** 
+	gen byte pobre_ine_ci= . 
+	****************
+	* bienestar_agregado *
+	**************** 
+	gen bienestar_agregado = . 
+	****************
+	* ln_ci *
+	**************** 
+	gen ln_ci = lp_ci
+	
+
 /*_____________________________________________________________________________________________________*/
 * Asignación de etiquetas e inserción de variables externas: tipo de cambio, Indice de Precios al 
 * Consumidor (2011=100), Paridad de Poder Adquisitivo (PPA 2011),  líneas de pobreza
