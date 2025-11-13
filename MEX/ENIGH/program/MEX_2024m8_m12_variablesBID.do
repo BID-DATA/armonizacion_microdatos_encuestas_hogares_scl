@@ -450,8 +450,7 @@ use "`base_in'", clear
 	assert aedu_ci==floor(aedu_ci)   if aedu_ci<. */
 	
 	/* CORRECCIÓN: LA VAR ESTABA MAL CODIFICADA
-	Hay que utilizar únicamente nivelaprob y gradoaprob (ya están incorporadas las respuestas de quienes
-	asisten actualmente) */
+	Hay que utilizar únicamente nivelaprob y gradoaprob (ya están incorporadas las respuestas de quienes asisten actualmente) */
 	
 	// topes 
 	gen byte grado_top = gradoaprob 
