@@ -818,7 +818,7 @@ label value region_c region_c
 	*eduui_ci*
 	**********
 	gen byte eduui_ci =0
-	replace eduui_ci=1 if e215_1==2 & (e218_1!=1 & e221_1!=1) 
+	replace eduui_ci=1 if e215_1==2 & (e218_1!=1 & e221_1!=1)  
 	replace eduui_ci=1 if e218_1==2 & (e215_1!=1 & e221_1!=1)
 	replace eduui_ci=1 if e221_1==2 & (e215_1!=1 & e218_1!=1)
 	
@@ -860,17 +860,44 @@ label value region_c region_c
 	*************
 	*pqnoasis1_ci*
 	**************
+	
+	/*  1 No tenía interés, le interesaba aprender otras cosas
+		2 Le resultaban difíciles las materias
+		3 No había la oferta educativa deseada para continuar
+		4 No había establecimiento educativo o quedaba muy
+		lejos
+		5 No creía que le sería útil para conseguir empleo
+		6 Discriminación o violencia en el centro educativo o en
+		su entorno inmediato
+		7 Comenzó a trabajar
+		8 Porque usted o su pareja quedó embarazada
+		9 Dificultades económicas (ej.: compra de materiales de
+		estudio, boletos, etc.)
+		10 Por cuidados familiares
+		11 Por temas de salud
+	*/
+	
 	gen pqnoasis1_ci=. 
 	replace pqnoasis1_ci =  1 if inlist(e202, 7, 9)
-	replace pqnoasis1_ci =  2 if inlist(e202, 1, 2)
+	replace pqnoasis1_ci =  2 if inlist(e202, 1, 2, 5)
 	replace pqnoasis1_ci =  3 if inlist(e202, 8, 10, 11)
-	replace pqnoasis1_ci =  4 if inlist(e202, 3, 4)
-	replace pqnoasis1_ci =  5 if inlist(e202, 5, 6)
+	replace pqnoasis1_ci =  4 if inlist(e202, 3, 4, 6)
 	
 
 	***********
 	*edupub_ci*
 	***********
+	
+	/*  e581: TIPO DE INSTITUCIÓN DE NIVEL AL QUE ASISTE
+		1 Pública
+		2 Privada
+		3 CAIF - CAPI - Nuestros niños
+		
+		e581a: TIPO DE INSTITUCIÓN DE OTRO NIVEL EDUCATIVO
+		1 Pública
+		2 Privada */
+		
+
 	gen edupub_ci =. if (asiste_ci != 1)
 	replace edupub_ci = 1 if (e581 == 1 | e581a == 1) & (asiste_ci == 1)
 	replace edupub_ci = 0 if (e581 == 2 | e581 == 3 | e581a == 2) & (asiste_ci == 1)
