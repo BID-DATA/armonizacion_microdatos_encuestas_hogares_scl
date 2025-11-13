@@ -1388,10 +1388,8 @@ e02tde	Ingreso mensual que recibe de ayuda familiar del exterior (deflactado)
 			.	NA
 	*/
 	
+	* No se puede distinguir 
 	gen byte edupre_ci=.
-	replace edupre_ci=1 if inrange(ed06c,1,13) //Niveles de educación iguales o superiores a la educación inicial
-	replace edupre_ci=0 if ed06c==14 //No obtuvo ningún nivel de educación
-	replace edupre_ci=. if ed06c==99 //No responde (NR)
 	
 	**************
 	***eduui_ci: Variable dicotómica que indica con valor 1 si el mayor nivel educativo alcanzado corresponde a educación técnica o universitaria incompleta y con 0 el resto
@@ -1527,8 +1525,8 @@ e02tde	Ingreso mensual que recibe de ayuda familiar del exterior (deflactado)
 	*/
 	
 	gen asiste_ci=.
-	replace asiste_ci=1 if inrange(ed08, 12,16) //Asiste actualmente a un centro de educación superior (universitario o no universitario)
-	replace asiste_ci=0 if asiste_ci==. // Se colocan como cero a todos los missings
+	replace asiste_ci=1 if inrange(ed08, 1,18) //Asiste actualmente a un centro educativo
+	replace asiste_ci=0 if ed08==19 // No asiste
 	replace asiste_ci=. if ed08==99 | ed08==. // Se reemplazan los missings
 
 	***************

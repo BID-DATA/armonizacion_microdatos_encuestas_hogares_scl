@@ -1324,15 +1324,14 @@ use `base_in', clear
 	replace aedu_ci=11 + grados if p301a==9 // Superior universitaria incompleta
 	replace aedu_ci=16			if p301a==10 // Superior universitaria completa
 	replace aedu_ci=16 + grados if p301a==11 // Maestria y/o Doctorador
-	replace aedu_ci=0 			if p301a==12 // Basica Especial
+	replace aedu_ci=. 			if p301a==12 // Básica Especial - Se considera missing
 	
     drop grados
 
 	***************
 	***edupre_ci: Variable dicotómica que indica con valor 1 si la persona cursó la educación preescolar completa y con 0 si no lo hizo (lo cual es distinto a si asiste o no a la educación preescolar). 
 	***************
-	gen byte edupre_ci=(p301a==2) //Individuos con educación inicial completa
-	replace edupre_ci=. if aedu_ci==.
+	gen byte edupre_ci=. // No se puede distinguir
 	
 	**************
 	***eduui_ci: Variable dicotómica que indica con valor 1 si el mayor nivel educativo alcanzado corresponde a educación técnica o universitaria incompleta y con 0 el resto
@@ -1389,7 +1388,7 @@ use `base_in', clear
 		5	otros
 	*/
 
-	gen pqnoasis1_ci = .
+	gen pqnoasis1_ci = . 
 	replace pqnoasis1_ci = 1 if inlist(p313, 1, 2) // 1 Problemas económicos, 2 trabajo
 	replace pqnoasis1_ci = 2 if p313 == 9 // 9 No le interesa el estudio
 	replace pqnoasis1_ci = 3 if inlist(p313, 5, 10) // 5 Problemas Familiares, 10 Dedicación a quehaceres domésticos
