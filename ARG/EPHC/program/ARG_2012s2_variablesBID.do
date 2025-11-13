@@ -396,6 +396,201 @@ by idh_ch, sort: egen byte nmenor1_ch=sum((relacion_ci>0 & relacion_ci<=5) & (ed
 	*ISOalpha3_dis_ci*
 	******************
 	gen byte ARG_dis_ci = .
+	
+	
+****************************
+***VARIABLES DE MERCADO LABORAL***
+****************************
+
+	*************
+	*condocup_ci*
+	*************
+
+
+	*******************
+	***categoinac_ci***
+	*******************
+
+	
+	**********
+	***emp_ci*
+	**********
+	
+
+
+	**************
+	***cesante_ci*** 
+	**************
+
+
+	***************
+	***desemp_ci***
+	***************	
+
+	
+	***************
+	***subemp_ci***
+	***************
+
+
+	****************
+	***durades_ci***
+	****************
+
+
+	***********
+	***pea_ci***
+	***********
+	
+		
+	****************
+	*** nempleos_ci***
+	****************
+	
+	******************
+	***antiguedad_ci***
+	******************
+	
+	
+	***************
+	***desalent_ci***
+	***************
+
+	
+	***************
+	***horaspri_ci***
+	***************	
+	gen  byte horaspri_ci = .
+	replace horaspri_ci = pp3e_tot if pp3e_tot!=999 
+	
+	***************
+	***horastot_ci ***
+	***************	
+	gen otrashoras=pp3f_tot if pp3f_tot!=999
+	
+	egen  byte horastot_ci  =rsum(horaspri_ci otrashoras), missing 
+	drop otrashoras
+	
+	***************
+	***tiempoparc_ci ***
+	***************	
+
+	
+	***************
+	***categopri_ci ***
+	***************	
+
+	
+	***************
+	***categosec_ci ***
+	***************	
+
+
+	***************
+	***rama_ci ***
+	***************	
+
+
+	***************
+	***spublico_ci ***
+	***************	
+
+	
+	***************
+	***tamemp_ci ***
+	***************	
+
+	
+	***************
+	***spublico_ci ***
+	***************	
+
+	
+	***************
+	***cotizando_ci***
+	***************	
+	gen  byte cotizando_ci = .
+	replace cotizando_ci  = 0 if pp07h==2 
+	replace cotizando_ci  = 1 if pp07h==1 | pp07i==1
+	
+	***************
+	***afiliado_ci***
+	***************	
+	gen  byte afiliado_ci = .
+
+	
+	***************
+	***instcot_ci***
+	***************	
+	gen byte instcot_ci=. if cotizando_ci == 1	
+	
+	**************
+	***formal_ci***
+	**************
+	gen byte formal_ci = .
+	replace formal_ci  =  1 if (cotizando_ci == 1 | afiliado_ci == 1) & condocup_ci == 1
+	replace formal_ci = 0 if cotizando_ci == 0 & (condocup_ci == 1 | condocup_ci == 2)
+	
+
+	*******************
+	***tipocontrato_ci***
+	*******************
+	gen byte tipocontrato_ci = .
+	replace tipocontrato_ci = 1 if pp07c==2 & categopri_ci == 3
+	replace tipocontrato_ci = 2 if pp07c==1 & categopri_ci == 3
+	*replace tipocontrato_ci = 3 if … & categopri_ci == 3
+
+	
+	**************
+	***ocupa_ci***
+	**************
+	*NOTA: desde 2001 hay otra clasificacion, pero debe estudiarse como hacer las agrupaciones para la 
+	*construccion de la variable tal como esta propuesta para la armonizacion.
+	
+	gen ocup1=substr(pp04d_cod,1,2)
+	gen ocup2=substr(pp04d_cod,3,1)
+	gen ocup3=substr(pp04d_cod,4,1)
+	gen ocup4=substr(pp04d_cod,5,1)
+	destring ocup1 ocup2 ocup3 ocup4, replace
+	
+	gen byte ocupa_ci=.
+	replace ocupa_ci=1 if (ocup1>=10 & ocup1<=20)  & (ocup4==1 | ocup4==2) & emp_ci==1
+	replace ocupa_ci=2 if  ocup1>=0 & ocup1<=7  & emp_ci==1
+	replace ocupa_ci=3 if (ocup1>=10 & ocup1<=20) & (ocup4==3 | ocup4==4) & emp_ci==1
+	replace ocupa_ci=4 if (ocup1>=30 & ocup1<=33) & emp_ci==1
+	replace ocupa_ci=5 if ((ocup1>=34 & ocup1<=47) | (ocup1>=50 & ocup1<=58))  & emp_ci==1
+	replace ocupa_ci=6 if (ocup1>=60 & ocup1<=65)  & emp_ci==1
+	replace ocupa_ci=7 if (ocup1>=70 & ocup1<=92) & emp_ci==1
+	replace ocupa_ci=8 if (ocup1>=48 & ocup1<=49)  & emp_ci==1
+	replace ocupa_ci=9 if (ocup1==13 | ocup1==28 | ocup1==99 | ocup1==59) | ((ocup1>=10 & ocup1<=20) & (ocup4>=5 & ocup4<=9))  & emp_ci==1
+	
+	drop ocup1 ocup2 ocup3 ocup4
+
+	**************
+	**pension_ci***
+	**************
+	gen byte pension_ci=. 
+	replace pension_ci=1 if (v2_m>0 & v2_m<.) 
+	*replace pension_ci=0 if …
+
+	
+	***************
+	**pensionsub_ci**
+	***************
+	gen byte pensionsub_ci = . 
+	
+	***************
+	**tipopen_ci**
+	***************
+	gen byte tipopen_ci = . 
+	
+	***************
+	**instpen_ci **
+	***************
+	gen byte instpen_ci =.
+	
+********************************************	
+	
 			***********************************
 			***VARIABLES DEL MERCADO LABORAL***
 			***********************************
@@ -499,22 +694,6 @@ gen pea_ci=(emp_ci==1 | desemp_ci==1)
 
 *Note: Se debería incrementar la categoria 4 "hay poco trabajo en esta epoca de año"
 
-	*************	
-	*horaspri_ci*
-	*************
-
-	gen horaspri_ci=pp3e_tot
-	replace horaspri_ci=. if pp3e_tot==999
-	
-	************* 
-	*horastot_ci*
-	*************
-
-	gen otrashoras=pp3f_tot if pp3f_tot!=999
-	
-	egen horastot_ci=rsum(horaspri_ci otrashoras), missing 
-	replace horastot_ci=. if horaspri_ci==. & otrashoras==.
-	
 
 	***********
 	*subemp_ci*
@@ -598,53 +777,6 @@ tab subemp_ci*/
 	replace spublico_ci=. if pp04a==0 
 
 
-	**********
-	*Ocupa_ci*
-	**********
-	*NOTA: desde 2001 hay otra clasificacion, pero debe estudiarse como hacer las agrupaciones para la 
-	*construccion de la variable tal como esta propuesta para la armonizacion.
-
-	*************
-***ocup1-4***
-*************
-
-gen ocup1=substr(pp04d_cod,1,2)
-gen ocup2=substr(pp04d_cod,3,1)
-gen ocup3=substr(pp04d_cod,4,1)
-gen ocup4=substr(pp04d_cod,5,1)
-
-destring ocup1 ocup2 ocup3 ocup4, replace
-
-lab var ocup1 "patron"
-lab var ocup2 "asalariados"
-lab var ocup3 "cuenta_propia"
-lab var ocup4 "sin_salario"
-capture drop ocupa_ci	
-/*
-gen ocupa_ci=1 if ocup4>=1 & ocup4<=2
-replace ocupa_ci=2 if ocup1>=0 & ocup1<=7 & ocupa_ci !=1
-replace ocupa_ci=3 if (ocup1==10 | ocup1==11 | ocup1==20) & ocupa_ci !=1
-replace ocupa_ci=4 if ocup1>=30 & ocup1<=33 & ocupa_ci !=1
-replace ocupa_ci=5 if (ocup1>=36 & ocup1<=47 | ocup1>=52 & ocup1<=58) & ocupa_ci !=1
-replace ocupa_ci=6 if ocup1>=60 & ocup1<=65 & ocupa_ci !=1
-replace ocupa_ci=7 if ocup1>=70 & ocup1<=92 & ocupa_ci !=1
-replace ocupa_ci=8 if ocup1>=48 & ocup1<=49 & ocupa_ci !=1
-replace ocupa_ci=9 if (ocup1==34 | ocup1==35 | ocup1==50 | ocup1==51)  & ocupa_ci !=1
-replace ocupa_ci=. if estado !=1 & ocup1==99
-*/
-
-* Modificacion MGD 06/26/2014: se reclasifica a profesionales y tecnicos y a administrativos segun la nueva clasificacion.
-gen ocupa_ci=.
-replace ocupa_ci=1 if (ocup1>=10 & ocup1<=20) & (ocup4==1 | ocup4==2) & emp_ci==1
-replace ocupa_ci=2 if ocup1>=0 & ocup1<=7 & emp_ci==1
-replace ocupa_ci=3 if (ocup1>=10 & ocup1<=20) & (ocup4==3 | ocup4==4) & emp_ci==1
-replace ocupa_ci=4 if (ocup1>=30 & ocup1<=33) & emp_ci==1
-replace ocupa_ci=5 if ((ocup1>=34 & ocup1<=47) | (ocup1>=50 & ocup1<=58)) &  emp_ci==1
-replace ocupa_ci=6 if (ocup1>=60 & ocup1<=65) & emp_ci==1 
-replace ocupa_ci=7 if (ocup1>=70 & ocup1<=92) & emp_ci==1
-replace ocupa_ci=8 if (ocup1>=48 & ocup1<=49) & emp_ci==1 
-replace ocupa_ci=9 if (ocup1==13 | ocup1==28 | ocup1==99) & emp_ci==1
-replace ocupa_ci=. if ocup1==.
 
 
 	*********
@@ -1445,50 +1577,6 @@ gen lpe_ci = 228.89
 
 label var lpe_ci "Linea de indigencia oficial del pais"
 
-****************
-*cotizando_ci***
-****************
-gen cotizando_ci=.
-replace cotizando_ci=1 if pp07h==1 
-replace cotizando_ci=0 if pp07h==2 
-replace cotizando_ci=. if pp07h==0
-recode cotizando_ci .=0 if (estado==1 & (categopri_ci==1 | categopri_ci==2))| (estado==1 & (categosec_ci==1 | categosec_ci==2))  /*independiente que no cotiza en primera/segunda ocupacion*/ 
-replace cotizando_ci =0 if estado==2										/* desocupados no cotizan*/
-label var cotizando_ci "Cotizante a la Seguridad Social"
-label define cotizando_ci 0"No cotiza" 1"Cotiza a la SS" 
-label value cotizando_ci cotizando_ci
-
-****************
-*afiliado_ci****
-****************
-gen afiliado_ci=.
-recode afiliado_ci .=0 if estado==1
-replace afiliado_ci =0 if estado==2
-label var afiliado_ci "Afiliado a la Seguridad Social"
-
-****************
-*tipopen_ci*****
-****************
-gen tipopen_ci=.
-label var tipopen_ci "Tipo de pension - variable original de cada pais" 
-
-****************
-*instpen_ci*****
-****************
-gen instpen_ci=.
-label var instpen_ci "Institucion proveedora de la pension - variable original de cada pais" 
-
-*****************
-*tipocontrato_ci*
-*****************
-* No hay variable de firmo o no contrato, solo tipo de trabajo. MGD 06/17/2014
-gen tipocontrato_ci=.
-replace tipocontrato_ci=1 if pp07c==2 & categopri_ci==3
-replace tipocontrato_ci=2 if pp07c==1 & categopri_ci==3
-label var tipocontrato_ci "Tipo de contrato segun su duracion"
-label define tipocontrato_ci 1 "Permanente/indefinido" 2 "Temporal" 3 "Sin contrato/verbal" 
-label value tipocontrato_ci tipocontrato_ci
-
 
 *************
 *cesante_ci* 
@@ -1525,13 +1613,6 @@ label define tamemp_o 1 "[1-9]" 2 "[10-50]" 3 "{50y mas]"
 label value tamemp_o tamemp_o
 
 
-*************
-**pension_ci*
-*************
-
-gen pension_ci=1 if (v2_m>0 & v2_m<.) 
-recode pension_ci .=0 
-label var pension_ci "1=Recibe pension contributiva"
 
 *************
 **ypen_ci*
@@ -1540,21 +1621,14 @@ label var pension_ci "1=Recibe pension contributiva"
 gen aguinpen=v21_m/12 if v2_m>0 & v2_m!=.
 
 egen ypen_ci=rsum(v2_m aguinpen), missing
-label var ypen_ci "Valor de la pension contributiva"
-
-***************
-*pensionsub_ci*
-***************
-
-gen byte pensionsub_ci=.
-label var pensionsub_ci "1=recibe pension subsidiada / no contributiva"
+drop aguinpen
 
 *****************
 **ypensub_ci*
 *****************
 
 gen byte ypensub_ci=.
-label var ypensub_ci "Valor de la pension subsidiada / no contributiva"
+
 
 *************
 **salmm_ci***
@@ -1578,20 +1652,12 @@ label var categoinac_ci "Condición de inactividad"
 	label define categoinac_ci 1 "jubilado/pensionado" 2 "estudiante" 3 "quehaceres_domesticos" 4 "otros_inactivos" 
 	label value categoinac_ci categoinac_ci
 	
-***************
-***formal_ci***
-***************
-
-gen byte formal_ci=1 if cotizando_ci==1 & (condocup_ci==1 | condocup_ci==2)
-recode formal_ci .=0 if (condocup_ci==1 | condocup_ci==2)
-label var formal_ci "1=afiliado o cotizante / PEA"
-	
 	
 *variables que faltan crear
 gen mes_c=.
 gen tcylmpri_ci =.
 gen tcylmpri_ch =.
-gen instcot_ci=.
+
 
 ******************************
 *** VARIABLES DE MIGRACION ***
