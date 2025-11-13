@@ -1426,10 +1426,8 @@ gen aguatrat_ch =9
 	***auto_ch***
 	*************
 	gen auto_ch=.
-	/*gen auto_ch=0
-	replace auto_ch=1 if eq1401==1
-	replace auto_ch=. if eq1401==.
-	label var auto_ch "El hogar posee automovil particular"*/
+	replace auto_ch=1 if vi1511==1
+	replace auto_ch=0 if vi1511==2
 
 	**************
 	***compu_ch***
