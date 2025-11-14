@@ -760,54 +760,61 @@ egen ypensub_ci = rsum(iof2 iof2es) if pensionsub_ci==1, m
 **************
 ***aedu_ci***
 **************	
+// CORREGIDA: Educación superior estaba mal codificada 
+// menos de 150 personas de 200.000 tenían grado o más 
+
+/*
+1	Ninguno
+2	Preescolar 
+3	Básica primaria (1o - 5o)
+4	Básica secundaria (6o - 9o)
+5	Media académica (Bachillerato clásico)
+6	Media técnica (Bachillerato técnico)
+7	Normalista
+8	Técnica profesional
+9	Tecnológica 
+10	Universitaria
+11	Especialización 
+12	Maestría 
+13	Doctorado 
+99	No sabe, no informa
+*/
+
 g aedu_ci = . 
 * 0 años de educacion 
-replace aedu_ci = 0 if p3042 == 1 | p3042 == 2 
-replace aedu_ci = 0 if p3042 == 3 & p3042s1 == 0 
-*Primaria
-replace aedu_ci = 1 if p3042 == 3 & p3042s1 == 1
-replace aedu_ci = 2 if p3042 == 3 & p3042s1 == 2
-replace aedu_ci = 3 if p3042 == 3 & p3042s1 == 3
-replace aedu_ci = 4 if p3042 == 3 & p3042s1 == 4
-replace aedu_ci = 5 if p3042 == 3 & p3042s1 == 5
-replace aedu_ci = 5 if p3042 == 4 & p3042s1 == 0
-*Secundaria (se incluye normalista como otra modalidad de secundaria)
-replace aedu_ci = 6  if p3042 == 4 & p3042s1 == 1
-replace aedu_ci = 7  if p3042 == 4 & p3042s1 == 2
-replace aedu_ci = 8  if p3042 == 4 & p3042s1 == 3
-replace aedu_ci = 9  if p3042 == 4 & p3042s1 == 4	
-replace aedu_ci = 9  if p3042 == 5 & p3042s1 == 0	
-replace aedu_ci = 9  if p3042 == 6 & p3042s1 == 0
-replace aedu_ci = 9  if p3042 == 7 & p3042s1 == 0
-replace aedu_ci = 9  if p3042 == 7 & p3042s1 == 1
-		
-replace aedu_ci = 10 if p3042 == 5 & p3042s1 == 1
-replace aedu_ci = 10 if p3042 == 6 & p3042s1 == 1
-replace aedu_ci = 10 if p3042 == 7 & p3042s1 == 2
-replace aedu_ci = 10 if p3042 == 7 & p3042s1 == 3
-replace aedu_ci = 11 if p3042 == 5 & p3042s1 == 2
-replace aedu_ci = 11 if p3042 == 6 & p3042s1 == 2
-replace aedu_ci = 11 if p3042 == 7 & p3042s1 == 4
-	
-*Superior
-replace aedu_ci = 12 if p3042 == 7 & p3042s1 == 5
-replace aedu_ci = 11+ trunc(p3042s1/2) if p3042>=8 & p3042<=13
-	
-*Missing
-replace aedu_ci =. if p3042==99
-replace aedu_ci =. if p3042s1==99
+replace aedu_ci = 0 if p3042 == 1 | p3042 == 2  
+
+* en años
+// Primaria
+replace aedu_ci = p3042s1 if p3042==3 
+// Secundaria 
+replace aedu_ci = 5 + p3042s1 if p3042 == 4 // básica secundaria
+replace aedu_ci = 11 + p3042s1 if inlist(p3042, 5, 6) 
+
+// topes educación superior (en semestres)
+g sup_top = trunc(p3042s1/2)
+replace sup_top = 5 if p3042 == 10 & p3042s1 > 10 
+replace sup_top = 2 if inlist(p3042, 11, 12) & p3042s1 > 4
+replace sup_top = 3 if p3042 == 13 & p3042s1 > 6 
+
+
+replace aedu_ci = 11 + sup_top if inlist(p3042, 7, 8, 9, 10)  
+replace aedu_ci = 16 + sup_top if inlist(p3042, 11, 12) // se estima grado completo == 5 años
+replace aedu_ci = 18 + sup_top if inlist(p3042, 13) // se estima maestría completa == 2 años
+
+drop sup_top
 
 ***************
 ***edupre_ci***
 ***************
-g byte edupre_ci =(p3042>2)
-replace edupre_ci =. if p3042s1==99
+g byte edupre_ci =. 
 
 **************
 ***eduui_ci***
 **************
 * Nota: normalista es una modalidad especial que no hace parte de superior pero es postsecundaria
-g byte eduui_ci = (inlist(p3042, 8, 9, 10, 11, 12, 13) & inlist(p3043, 2, 3, 4)) 
+g byte eduui_ci = 0
+replace eduui_ci = 1 if inlist(p3042, 8, 9, 10) & p3043<5 
 replace eduui_ci = . if aedu_ci == .
 
 ***************
@@ -843,9 +850,9 @@ replace edupub_ci = 0 if p3041 == 2 & p6170==1
 g asispre_ci= (p6170==1 & p3042==2 & p3042s1 <2)	
 		
 **************
-*pqnoasis1_ci*
+*razonesnoasis_ci*
 **************
-g pqnoasis1_ci = .
+g razonesnoasis_ci = .
 
 
 		****************************
