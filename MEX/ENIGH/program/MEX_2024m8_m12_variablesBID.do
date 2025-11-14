@@ -543,17 +543,19 @@ use "`base_in'", clear
 	replace asispre_ci = 0 if asiste_ci==1 & nivel!=`L_PRE'
 	replace asispre_ci = . if asiste_ci==0
 	
-	*************
-	*pqnoasis1_ci*
-	**************
-	capture drop pqnoasis1_ci
-	gen byte pqnoasis1_ci = .
-	replace pqnoasis1_ci = 1 if inlist(no_asisb, 4, 9)          // económicos / trabajo
-	replace pqnoasis1_ci = 2 if inlist(no_asisb, 5, 8)             // desinterés / rendimiento
-	replace pqnoasis1_ci = 3 if inlist(no_asisb, 6, 7, 12)      // cuidado/embarazo/salud
-	replace pqnoasis1_ci = 4 if inlist(no_asisb, 10, 11, 3)     // acceso/infra/horarios
-	replace pqnoasis1_ci = 5 if inlist(no_asisb, 1, 2, 3, 13)   // otros
-	replace pqnoasis1_ci = . if no_asisb==99 | asiste_ci==1     // no aplica si asiste
+	******************
+	*razonesnoasis_ci*
+	******************
+	// pqnoasis1_ci fue sustituida por razonesnoasis_ci (junio 2025)
+	
+	capture drop razonesnoasis_ci
+	gen byte razonesnoasis_ci = .
+	replace razonesnoasis_ci = 1 if inlist(no_asisb, 4, 9)          // económicos / trabajo
+	replace razonesnoasis_ci = 2 if inlist(no_asisb, 5, 8)          // desinterés / rendimiento
+	replace razonesnoasis_ci = 3 if inlist(no_asisb, 6, 7, 12)      // cuidado/embarazo/salud
+	replace razonesnoasis_ci = 4 if inlist(no_asisb, 10, 11, 3)     // acceso/infra/horarios
+	replace razonesnoasis_ci = 5 if inlist(no_asisb, 1, 2, 3, 13)   // otros
+	replace razonesnoasis_ci = . if no_asisb==99 | asiste_ci==1     // no aplica si asiste
 
 	***********
 	*edupub_ci*
