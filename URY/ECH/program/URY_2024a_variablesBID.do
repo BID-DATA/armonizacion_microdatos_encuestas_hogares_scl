@@ -857,32 +857,16 @@ label value region_c region_c
 	gen asiste_ci=(e49 == 3)
 
 
-	*************
-	*pqnoasis1_ci*
-	**************
+	******************
+	*razonesnoasis_ci*
+	******************
+	gen razonesnoasis_ci=. 
+	replace razonesnoasis_ci =  1 if inlist(e202, 7, 9)
+	replace razonesnoasis_ci =  2 if inlist(e202, 1, 2, 5)
+	replace razonesnoasis_ci =  3 if inlist(e202, 8, 10, 11)
+	replace razonesnoasis_ci =  4 if inlist(e202, 3, 4, 6)
 	
-	/*  1 No tenía interés, le interesaba aprender otras cosas
-		2 Le resultaban difíciles las materias
-		3 No había la oferta educativa deseada para continuar
-		4 No había establecimiento educativo o quedaba muy
-		lejos
-		5 No creía que le sería útil para conseguir empleo
-		6 Discriminación o violencia en el centro educativo o en
-		su entorno inmediato
-		7 Comenzó a trabajar
-		8 Porque usted o su pareja quedó embarazada
-		9 Dificultades económicas (ej.: compra de materiales de
-		estudio, boletos, etc.)
-		10 Por cuidados familiares
-		11 Por temas de salud
-	*/
-	
-	gen pqnoasis1_ci=. 
-	replace pqnoasis1_ci =  1 if inlist(e202, 7, 9)
-	replace pqnoasis1_ci =  2 if inlist(e202, 1, 2, 5)
-	replace pqnoasis1_ci =  3 if inlist(e202, 8, 10, 11)
-	replace pqnoasis1_ci =  4 if inlist(e202, 3, 4, 6)
-	
+	replace razonesnoasis_ci = . if asiste_ci==1 // Consistencia: No se debe contar con razones de no asistencia si la variable de asiste_ci==1. 
 
 	***********
 	*edupub_ci*
