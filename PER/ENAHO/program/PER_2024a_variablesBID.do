@@ -1375,8 +1375,10 @@ use `base_in', clear
 
 
 **********************
-	***pqnoasis1_ci: Variable categórica que indica las razones por las cuales un individuo no asiste a la escuela.
+***razonesnoasis_ci: Variable categórica que indica las razones por las cuales un individuo no asiste a la escuela.
 **********************
+//pqnoasis1_ci fue sustituida por razonesnoasis_ci en junio 2025
+
 	/* Categorias de razonesnoasis_ci:  
 		1	problemas económicos/ por trabajo
 		2	falta de interés/ problemas de 
@@ -1388,13 +1390,14 @@ use `base_in', clear
 		5	otros
 	*/
 
-	gen pqnoasis1_ci = . 
-	replace pqnoasis1_ci = 1 if inlist(p313, 1, 2) // 1 Problemas económicos, 2 trabajo
-	replace pqnoasis1_ci = 2 if p313 == 9 // 9 No le interesa el estudio
-	replace pqnoasis1_ci = 3 if inlist(p313, 5, 10) // 5 Problemas Familiares, 10 Dedicación a quehaceres domésticos
-	replace pqnoasis1_ci = 4 if p313 == 7 // 7 No hay centro de educación en el centro poblado
-	replace pqnoasis1_ci = 5 if inlist(p313,  11) // 11. Otra razón
+	gen razonesnoasis_ci = . 
+	replace razonesnoasis_ci = 1 if inlist(p313, 1, 2) // 1 Problemas económicos, 2 trabajo
+	replace razonesnoasis_ci = 2 if inlist(p313, 9) // 9 No le interesa el estudio
+	replace razonesnoasis_ci = 3 if inlist(p313, 5, 10) // 5 Problemas Familiares, 10 Dedicación a quehaceres domésticos
+	replace razonesnoasis_ci = 4 if inlist(p313, 4, 7)// 4 No tiene la edad suficiente, 7 No hay centro de educación en el centro poblado
+	replace razonesnoasis_ci = 5 if inlist(p313,  11) // 11. Otra razón
 
+	replace razonesnoasis_ci = . if asiste_ci==1 // Consistencia: No se debe contar con razones de no asistencia si la variable de asiste_ci==1. 
 
 	*label define pqnoasis1_ci 1 "Problemas económicos/Por trabajo" ///
 	*2 "Falta de interés/Problemas de rendimiento" ///
