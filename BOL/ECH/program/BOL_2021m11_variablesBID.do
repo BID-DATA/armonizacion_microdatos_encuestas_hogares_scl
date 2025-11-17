@@ -291,6 +291,11 @@ label variable nmenor1_ch "Numero de familiares menores a 1 anio"
 gen miembros_ci=(relacion_ci>=1 & relacion_ci<=5)
 label variable miembros_ci "Miembro del hogar"
 
+*****************
+*miembros_one_ci*
+*****************
+gen miembros_one_ci = (inrange(s01a_05,1,10))
+
 
 *******************************************************
 ***           VARIABLES DE DIVERSIDAD               ***

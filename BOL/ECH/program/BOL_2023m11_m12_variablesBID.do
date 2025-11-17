@@ -323,7 +323,10 @@ label variable nmenor6_ch "Numero de familiares menores a 6 anios"
 by idh_ch, sort: egen byte nmenor1_ch = sum((relacion_ci > 0 & relacion_ci <= 5) & (edad_ci < 1))
 label variable nmenor1_ch "Numero de familiares menores a 1 anio"
 
-
+*****************
+*miembros_one_ci*
+*****************
+gen miembros_one_ci = (inrange(s01a_05,1,10))
 
 
 *******************************************************
