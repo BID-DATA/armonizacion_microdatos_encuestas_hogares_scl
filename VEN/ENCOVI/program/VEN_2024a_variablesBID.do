@@ -719,49 +719,65 @@ use "`base_in'", clear
 	*********	
 	*aedu_ci*
 	*********
+
 	gen aedu_ci=.
 	recode s7q11* s7q4* (99=.) (98=.)
+	
+	gen anos_sup = s7q11b 
+	replace anos_sup = trunc(s7q11b*0.5) if s7q11a==2
+	replace anos_sup = trunc(s7q11b*0.33) if s7q11a==3
 		
 	*Para quienes no terminaron el ultimo nivel educativo al que asistieron
 	replace aedu_ci=0  if s7q11==1  // Cero anios de educación para aquellos que no han asistido nunca a ninguna institucion y los menores de 2 anios
 	replace aedu_ci=0 if s7q11==2 // Prescolar
-	replace aedu_ci=s7q11b   if s7q11==3
-	replace aedu_ci=s7q11b+9 if s7q11==4 
-	replace aedu_ci=s7q11b+6 if s7q11==6
-	replace aedu_ci=11+s7q11b      if s7q11a==1 & (s7q11==7 | s7q11==8) // Técnico (TSU) | Universitario
-	replace aedu_ci=11+s7q11b*0.5  if s7q11a==2 & (s7q11==7 | s7q11==8) // Técnico (TSU) | Universitario
-	replace aedu_ci=11+s7q11b*0.25 if s7q11a==3 & (s7q11==7 | s7q11==8) // Técnico (TSU) | Universitario
-	replace aedu_ci=16+s7q11b      if s7q11a==1 & s7q11==9 // Posgrado
-	replace aedu_ci=16+s7q11b*0.5  if s7q11a==2 & s7q11==9 // Posgrado
-	replace aedu_ci=16+s7q11b*0.25 if s7q11a==3 & s7q11==9 // Posgrado
-			
+	replace aedu_ci=s7q11b   if s7q11==3 // Regimen anterior: Básica (1-9)
+	replace aedu_ci=s7q11b+9 if s7q11==4 // Régimen anterior: Media Diversificado y Profesional
+	replace aedu_ci=s7q11b if s7q11==6 // Régimen actual: Primaria (1-6)
+	replace aedu_ci=s7q11b+6 if s7q11==6 // Régimen actual: Media (1-6)
+	replace aedu_ci=11+anos_sup      if s7q11a==1 & (s7q11==7 | s7q11==8) // Técnico (TSU) | Universitario
+	replace aedu_ci=16+anos_sup       if s7q11a==1 & s7q11==9 // Posgrado
 
+			
 	**********
 	*eduui_ci*
 	**********
-	gen byte eduui_ci =(inlist(s7q4, 7, 8) | (inlist(s7q11, 7, 8) & s7q1301 != 1))
-	replace eduui_ci = 0 if (inlist(s7q11, 7, 8) & s7q4 == 9)
-	replace eduui_ci = . if aedu_ci == . 
+	// está estudiando superior y su mayor grado es menor que superior completo
+	gen byte eduui_ci = 0
+	replace eduui_ci = 1 if s7q4 == 4 & anos_sup<3
+	replace eduui_ci = 1 if s7q4 == 5 & anos_sup<5
+	// ultimo nivel alcanzado es superior pero menor que completo
+	replace eduui_ci = 1 if s7q11==7 & anos_sup<3
+	replace eduui_ci = 1 if s7q11==8 & anos_sup<5
+	
+	replace eduui_ci == 0 if s7q11==9
+	replace eduuc_ci = . if aedu_ci == .
 	
 	**********
 	*eduuc_ci*
 	**********
-	gen byte eduuc_ci = ((inlist(s7q11, 7, 8) &  s7q1301 == 1) | s7q4 == 9 | s7q11 == 9)
+	gen byte eduuc_ci = 0
+	replace eduuc_ci = 1 if s7q4 == 4 & anos_sup>=3
+	replace eduuc_ci = 1 if s7q4 == 5 & anos_sup>=5
+	replace eduuc_ci = 1 if s7q4 == 6
+	
+	replace eduuc_ci = 1 if s7q11==7 & anos_sup>=3
+	replace eduuc_ci = 1 if s7q11==8 & anos_sup>=5
+	replace eduuc_ci = 1 if s7q11==9
+
 	replace eduuc_ci = . if aedu_ci == .
 
 	**********
 	*eduac_ci*
 	**********
-	gen eduac_ci = 1 if inlist(s7q11, 8, 9) | inlist(s7q4, 8, 9)
-	replace eduac_ci = 0 if s7q11 == 7 | s7q4 == 7
+	gen eduac_ci = 1 if inlist(s7q11, 8, 9) | inlist(s7q4, 5, 6)
+	replace eduac_ci = 0 if s7q11 == 7 | s7q4 == 4
 	replace eduac_ci = . if aedu_ci == .
 	
 		
 	***********
 	*edupre_ci*
 	***********
-	gen byte edupre_ci=(s7q11==2)
-	replace edupre_ci = . if aedu_ci == .
+	gen byte edupre_ci=.
 
 	************
 	*asispre_ci*
@@ -777,14 +793,14 @@ use "`base_in'", clear
 
 
 	*************
-	*pqnoasis1_ci*
+	*razonesnoasis_ci*
 	**************
-	gen pqnoasis1_ci=. 
-	replace pqnoasis1_ci =  1 if s7q1305==1 | s7q1306==1 | s7q1308==1
-	replace pqnoasis1_ci =  2 if s7q1309==1 | s7q1315==1
-	replace pqnoasis1_ci =  3 if s7q1307==1 | s7q1313==1 | s7q1314==1
-	replace pqnoasis1_ci =  4 if s7q1302==1 | s7q1303==1 | s7q1304==1
-	replace pqnoasis1_ci =  5 if s7q1301==1 | s7q1310==1 | s7q1311==1 | s7q1312==1 | s7q1316==1
+	gen razonesnoasis_ci=. 
+	replace razonesnoasis_ci =  1 if s7q1305==1 | s7q1306==1 | s7q1308==1
+	replace razonesnoasis_ci =  2 if s7q1301==1 | s7q1309==1 | s7q1315==1
+	replace razonesnoasis_ci =  3 if s7q1307==1 | s7q1313==1 | s7q1314==1
+	replace razonesnoasis_ci =  4 if s7q1302==1 | s7q1303==1 | s7q1304==1 | s7q1310==1 | s7q1311==1 | s7q1312==1
+	replace razonesnoasis_ci =  5 if s7q1316==1
 
 
 	***********
