@@ -390,7 +390,7 @@ países
  
 /************************************************************************************************************
 * Líneas de pobreza oficiales
-************************************************************************************************************/
+************************************************************************************************************
 
 *********
 *lp_ci***
@@ -437,7 +437,7 @@ replace lpe_ci= 241.56 if zona_c==0
 */
 
 
-label var lpe_ci "Linea de indigencia oficial del pais"
+label var lpe_ci "Linea de indigencia oficial del pais"*/
 
 *************
 **salmm_ci***
@@ -2148,6 +2148,37 @@ label var vivialqimp_ch "Alquiler mensual imputado"
 	
 	gen miglac_ci=. 
 	label var miglac_ci "=1 si es migrante proveniente de un pais LAC"
+	
+	
+****************************
+***VARIABLES DE EXTERNAS***
+****************************	
+	
+	*****************
+	 *tipo_bienestar*
+	*****************	
+	gen byte tipo_bienestar = . 
+	replace tipo_bienestar  = 1 
+
+	*****************
+	 * pobre_ine _ci*
+	*****************	
+	gen pobre_ine_ci= p0
+
+	***********************
+	 * bienestar_agregado *
+	***********************	
+	gen bienestar_agregado = yhogpc
+
+	****************
+	* lpe_ci *
+	****************	
+	gen lpe_ci = z
+	
+	****************
+	 * ln_ci *
+	****************	
+	gen ln_ci = zext
 
 
 /*_____________________________________________________________________________________________________*/

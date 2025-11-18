@@ -1580,6 +1580,36 @@ ren ocup ocup_old
 	
 	gen miglac_ci=. 
 	label var miglac_ci "=1 si es migrante proveniente de un pais LAC"
+	
+	
+****************************
+***VARIABLES DE EXTERNAS***
+****************************	
+	
+	*****************
+	 *tipo_bienestar*
+	*****************	
+	gen byte tipo_bienestar = . 
+
+	*****************
+	 * pobre_ine _ci*
+	*****************	
+	gen byte pobre_ine _ci= . 
+
+	***********************
+	 * bienestar_agregado *
+	***********************	
+	gen bienestar_agregado = . 
+
+	****************
+	* lpe_ci *
+	****************	
+	gen lpe_ci = . 
+	
+	****************
+	 * ln_ci *
+	****************	
+	gen ln_ci = . 
 
 
 /*_____________________________________________________________________________________________________*/

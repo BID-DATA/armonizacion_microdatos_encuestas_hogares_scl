@@ -387,7 +387,7 @@ gen miembros_one_ci = (inrange(s2a_05,1,10))
 ************************************
 /************************************************************************************************************
 * Líneas de pobreza oficiales
-************************************************************************************************************/
+************************************************************************************************************
 
 *********
 *lp_ci***
@@ -402,7 +402,7 @@ label var lp_ci "Linea de pobreza oficial del pais"
 
 gen lpe_ci =zext
 
-label var lpe_ci "Linea de indigencia oficial del pais"
+label var lpe_ci "Linea de indigencia oficial del pais"*/ 
 
 *************
 **salmm_ci***
@@ -2193,6 +2193,37 @@ lab val pnc_ci pnc_ci
 * Resultados
 tab  ptmc_ch  [fw=round(factor_ci)], m 
 tab  pnc_ci  if mayor64_ci==1 [fw=round(factor_ci)], m 
+
+
+****************************
+***VARIABLES DE EXTERNAS***
+****************************	
+	
+	*****************
+	 *tipo_bienestar*
+	*****************	
+	gen byte tipo_bienestar = . 
+	replace tipo_bienestar  = 1 
+
+	*****************
+	 * pobre_ine _ci*
+	*****************	
+	gen pobre_ine_ci= p0
+
+	***********************
+	 * bienestar_agregado *
+	***********************	
+	gen bienestar_agregado = yhogpc
+
+	****************
+	* lpe_ci *
+	****************	
+	gen lpe_ci = z
+	
+	****************
+	 * ln_ci *
+	****************	
+	gen ln_ci = zext
 
 
 /*_____________________________________________________________________________________________________*/

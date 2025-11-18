@@ -396,7 +396,7 @@ gen miembros_one_ci = (inrange(s01a_05,1,10))
 ************************************
 /************************************************************************************************************
 * Líneas de pobreza oficiales
-************************************************************************************************************/
+************************************************************************************************************
 
 ***********************
 *llave lp nacionales***
@@ -427,7 +427,7 @@ label var lp_ci "Linea de pobreza oficial del pais"
 *lpe_ci***
 *********
 gen lpe_ci =zext
-label var lpe_ci "Linea de indigencia oficial del pais"
+label var lpe_ci "Linea de indigencia oficial del pais"*/ 
 
 *************
 **salmm_ci***
@@ -2403,6 +2403,38 @@ lab val ptmc_ch ptmc_ch
 
 lab def pnc_ci 1 "Beneficiario PNC" 0 "No beneficiario PNC"
 lab val pnc_ci pnc_ci
+
+
+****************************
+***VARIABLES DE EXTERNAS***
+****************************	
+	
+	*****************
+	 *tipo_bienestar*
+	*****************	
+	gen byte tipo_bienestar = . 
+	replace tipo_bienestar  = 1 
+
+	*****************
+	 * pobre_ine _ci*
+	*****************	
+	gen pobre_ine_ci= p0
+
+	***********************
+	 * bienestar_agregado *
+	***********************	
+	gen bienestar_agregado = yhogpc
+
+	****************
+	* lpe_ci *
+	****************	
+	gen lpe_ci = z
+	
+	****************
+	 * ln_ci *
+	****************	
+	gen ln_ci = zext
+
 
 /*_____________________________________________________________________________________________________*/
 * Asignación de etiquetas e inserción de variables externas: tipo de cambio, Indice de Precios al 

@@ -412,7 +412,7 @@ gen miembros_one_ci = (inrange(s106,1,8) | s106 == 11)
 /* Esta sección es para los residentes habituales del hogar mayores a 7 años*/ 
 /************************************************************************************************************
 * 3. Creación de nuevas variables de SS and LMK a incorporar en Armonizadas
-************************************************************************************************************/
+************************************************************************************************************
 
 *********
 *lp_ci***
@@ -455,7 +455,7 @@ replace lpe_ci=     133.03    if  urb_rur==2
 
 
 
-label var lpe_ci "Linea de indigencia oficial del pais"
+label var lpe_ci "Linea de indigencia oficial del pais"*/ 
 
 *************
 **salmm_ci***
@@ -1528,6 +1528,38 @@ replace vivialqimp_ch=vivialqimp_ch*7.45 if s804b==2
 	
 	gen miglac_ci=. 
 	label var miglac_ci "=1 si es migrante proveniente de un pais LAC"
+	
+	
+****************************
+***VARIABLES DE EXTERNAS***
+****************************	
+	
+	*****************
+	 *tipo_bienestar*
+	*****************	
+	gen byte tipo_bienestar = . 
+	replace tipo_bienestar  = 1 
+
+	*****************
+	 * pobre_ine _ci*
+	*****************	
+	gen pobre_ine_ci= p0
+
+	***********************
+	 * bienestar_agregado *
+	***********************	
+	gen bienestar_agregado = yhogpc
+
+	****************
+	* lpe_ci *
+	****************	
+	gen lpe_ci = z
+	
+	****************
+	 * ln_ci *
+	****************	
+	gen ln_ci = zext
+	
 
 /*_____________________________________________________________________________________________________*/
 * Asignación de etiquetas e inserción de variables externas: tipo de cambio, Indice de Precios al 

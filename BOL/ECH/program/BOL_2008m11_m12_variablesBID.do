@@ -411,8 +411,6 @@ gen miembros_one_ci = (inrange(s1_06,1,10))
 por el centro de estadística tienen en cuenta a la población con 10 años o más. Esto no es un problema dado que el 
 programa para generar los indicadores de sociómetro restrige  todo a 15 o más años para que haya comparabilidad entre
 países
-*/
- 
 
 *********
 *lp_ci***
@@ -431,9 +429,7 @@ label var lp_ci "Linea de pobreza oficial del pais"
 gen lpe_ci =.
 replace lpe_ci=zext
 
-
-
-label var lpe_ci "Linea de indigencia oficial del pais"
+label var lpe_ci "Linea de indigencia oficial del pais" */
 
 *************
 **salmm_ci***
@@ -2200,6 +2196,37 @@ label var vivialqimp_ch "Alquiler mensual imputado"
 	
 	gen miglac_ci=. 
 	label var miglac_ci "=1 si es migrante proveniente de un pais LAC"
+	
+	
+****************************
+***VARIABLES DE EXTERNAS***
+****************************	
+	
+	*****************
+	 *tipo_bienestar*
+	*****************	
+	gen byte tipo_bienestar = . 
+	replace tipo_bienestar  = 1 
+
+	*****************
+	 * pobre_ine _ci*
+	*****************	
+	gen pobre_ine_ci= p0
+
+	***********************
+	 * bienestar_agregado *
+	***********************	
+	gen bienestar_agregado = yhogpc
+
+	****************
+	* lpe_ci *
+	****************	
+	gen lpe_ci = z
+	
+	****************
+	 * ln_ci *
+	****************	
+	gen ln_ci = zext
 
 
 /*_____________________________________________________________________________________________________*/

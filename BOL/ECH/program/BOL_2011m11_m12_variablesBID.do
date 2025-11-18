@@ -421,7 +421,7 @@ No sabe/no respon |       99
 ************************************
 /************************************************************************************************************
 * Líneas de pobreza oficiales
-************************************************************************************************************/
+************************************************************************************************************
 *********
 *lp_ci***
 *********
@@ -437,7 +437,7 @@ label var lp_ci "Linea de pobreza oficial del pais"
 gen lpe_ci =.
 replace lpe_ci=zext
 
-label var lpe_ci "Linea de indigencia oficial del pais"
+label var lpe_ci "Linea de indigencia oficial del pais" */ 
 
 *************
 **salmm_ci***
@@ -2310,7 +2310,37 @@ lab val tipocobsalud_ci tipocobsalud_ci
 	
 	gen miglac_ci=. 
 	label var miglac_ci "=1 si es migrante proveniente de un pais LAC"
+	
+	
+****************************
+***VARIABLES DE EXTERNAS***
+****************************	
+	
+	*****************
+	 *tipo_bienestar*
+	*****************	
+	gen byte tipo_bienestar = . 
+	replace tipo_bienestar  = 1 
 
+	*****************
+	 * pobre_ine _ci*
+	*****************	
+	gen pobre_ine_ci= p0
+
+	***********************
+	 * bienestar_agregado *
+	***********************	
+	gen bienestar_agregado = yhogpc
+
+	****************
+	* lpe_ci *
+	****************	
+	gen lpe_ci = z
+	
+	****************
+	 * ln_ci *
+	****************	
+	gen ln_ci = zext
 
 
 /*_____________________________________________________________________________________________________*/

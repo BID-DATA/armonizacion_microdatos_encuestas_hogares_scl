@@ -413,7 +413,7 @@ gen miembros_one_ci = (inrange(s02a_05,1,11))
 ************************************
 /************************************************************************************************************
 * Líneas de pobreza oficiales
-************************************************************************************************************/
+************************************************************************************************************
 
 *********
 *lp_ci***
@@ -426,7 +426,7 @@ label var lp_ci "Linea de pobreza oficial del pais"
 *lpe_ci***
 *********
 gen lpe_ci =zext
-label var lpe_ci "Linea de indigencia oficial del pais"
+label var lpe_ci "Linea de indigencia oficial del pais"*/ 
 
 *************
 **salmm_ci***
@@ -2223,6 +2223,36 @@ replace ing_pension=. if y_hog==.
 gen y_pc_net = (y_hog - ing_ptmc - ing_pension) / nmiembros_ch
 drop y_hog 
 
+
+****************************
+***VARIABLES DE EXTERNAS***
+****************************	
+	
+	*****************
+	 *tipo_bienestar*
+	*****************	
+	gen byte tipo_bienestar = . 
+	replace tipo_bienestar  = 1 
+
+	*****************
+	 * pobre_ine _ci*
+	*****************	
+	gen pobre_ine_ci= p0
+
+	***********************
+	 * bienestar_agregado *
+	***********************	
+	gen bienestar_agregado = yhogpc
+
+	****************
+	* lpe_ci *
+	****************	
+	gen lpe_ci = z
+	
+	****************
+	 * ln_ci *
+	****************	
+	gen ln_ci = zext
 
 	
 /*_____________________________________________________________________________________________________*/

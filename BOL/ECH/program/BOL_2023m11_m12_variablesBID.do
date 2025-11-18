@@ -2101,7 +2101,7 @@ label var pcasht_ch "=1 El hogar es beneficiario de ptmc, pnc u otro tipo de tra
 	************************************
 	**VARIABLES DE REFERENCIA EXTERNA***
 	************************************
-**************
+*/*************
 ***salmm_ci***
 **************
 *https://www.ine.gob.bo/index.php/estadisticas-economicas/salario-minimo-nacional-cuadros-estadisticos/
@@ -2136,7 +2136,38 @@ label var lp_ci "Linea de pobreza oficial del pais"
 ***lpe_ci***
 ************
 gen lpe_ci = zext
-label var lpe_ci "Linea de indigencia oficial del pais"
+label var lpe_ci "Linea de indigencia oficial del pais"*/ 
+
+
+****************************
+***VARIABLES DE EXTERNAS***
+****************************	
+	
+	*****************
+	 *tipo_bienestar*
+	*****************	
+	gen byte tipo_bienestar = . 
+	replace tipo_bienestar  = 1 
+
+	*****************
+	 * pobre_ine _ci*
+	*****************	
+	gen pobre_ine_ci= p0
+
+	***********************
+	 * bienestar_agregado *
+	***********************	
+	gen bienestar_agregado = yhogpc
+
+	****************
+	* lpe_ci *
+	****************	
+	gen lpe_ci = z
+	
+	****************
+	 * ln_ci *
+	****************	
+	gen ln_ci = zext
 
 
 /*_____________________________________________________________________________________________________*/

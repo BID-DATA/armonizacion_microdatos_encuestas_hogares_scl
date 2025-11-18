@@ -420,7 +420,7 @@ gen miembros_one_ci = (inrange(s1_05,1,10))
 ************************************
 *** VARIABLES DEL MERCADO LABORAL***
 ************************************
-/* Esta sección es para los residentes habituales del hogar mayores a 7 años*/ 
+/* Esta sección es para los residentes habituales del hogar mayores a 7 años*
 *********
 *lp_ci***
 *********
@@ -437,7 +437,6 @@ replace lp_ci= 422.14604252096 if ciudad1==8  |  ID01==8 & zona_c==1
 replace lp_ci= 313.342580371434 if ciudad1==10 |  ID01==9 & zona_c==1
 replace lp_ci= 422.14604252096 if ciudad1==9 & zona_c==1
 replace lp_ci=  294.00   if  zona_c==0
-
 
 label var lp_ci "Linea de pobreza oficial del pais"
 
@@ -458,11 +457,7 @@ replace lpe_ci= 190.198946285461 if ciudad1==10 |  ID01==9 & zona_c==1
 replace lpe_ci= 214.450189600648 if ciudad1==9  & zona_c==1
 replace lpe_ci=   167.58   if  zona_c==0
 
-
-
-
-
-label var lpe_ci "Linea de indigencia oficial del pais"
+label var lpe_ci "Linea de indigencia oficial del pais"*/ 
 
 *************
 **salmm_ci***
@@ -2259,6 +2254,37 @@ label var vivialqimp_ch "Alquiler mensual imputado"
 	
 	gen miglac_ci=. 
 	label var miglac_ci "=1 si es migrante proveniente de un pais LAC"
+	
+	
+****************************
+***VARIABLES DE EXTERNAS***
+****************************	
+	
+	*****************
+	 *tipo_bienestar*
+	*****************	
+	gen byte tipo_bienestar = . 
+	replace tipo_bienestar  = 1 
+
+	*****************
+	 * pobre_ine _ci*
+	*****************	
+	gen pobre_ine_ci= p0
+
+	***********************
+	 * bienestar_agregado *
+	***********************	
+	gen bienestar_agregado = yhogpc
+
+	****************
+	* lpe_ci *
+	****************	
+	gen lpe_ci = z
+	
+	****************
+	 * ln_ci *
+	****************	
+	gen ln_ci = zext
 
 
 /*_____________________________________________________________________________________________________*/
