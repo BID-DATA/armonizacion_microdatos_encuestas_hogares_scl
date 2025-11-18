@@ -1843,13 +1843,7 @@ use `base_in', clear
 	gen migrantiguo5_ci=.
 	label var migrantiguo5_ci "=1 si es migrante antiguo (5 anos o mas)"
 
-	*****************
-	*** miglac_ci: si el individuo es migrante latino o del caribe***
-	*****************
-	gen miglac_ci=.
-	label var miglac_ci "=1 si es migrante proveniente de un pais LAC"
 
-	
 
 ****************************
 ***VARIABLES DE EXTERNAS***

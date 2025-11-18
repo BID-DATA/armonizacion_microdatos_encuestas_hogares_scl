@@ -1765,14 +1765,7 @@ use `base_in', clear
 	*p401f hace 5 aos,... vivia en este distrito?
 	gen migrantiguo5_ci=(migrante_ci==1 & (p401f==1 | (p401g>10000 & p401g!=.))) if migrante_ci!=. & p401f!=3 & p401g!=999999 & p401f!=. & !inrange(edad_ci,0,4)		
 	
-	**********************
-	*** miglac_ci: si el individuo es migrante latino o del caribe***
-	**********************
-	gen miglac_ci=(inlist(p401g2,4002,4003,4004,4005,4006,4007,4009,4010,4011,4014,4015,4018,4019,4021,4022,4023,4024,4025,4026,4027,4030,4034,4035,4036,4037) & migrante_ci==1) if migrante_ci!=.
-	replace miglac_ci = . if migrante_ci == 0
-	** Fuente: Los codigos de paises se obtiene del censo de peru (redatam)	
-	
-	
+
 ********************************************************************************
 ***************   VARIABLES EXTERNAS   *************************************
 ********************************************************************************		
