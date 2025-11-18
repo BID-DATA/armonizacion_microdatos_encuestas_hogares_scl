@@ -332,77 +332,71 @@ gen miembros_one_ci = (inrange(s01a_05,1,10))
 *******************************************************
 ***           VARIABLES DE DIVERSIDAD               ***
 *******************************************************				
-* Maria Antonella Pereira & Nathalia Maya - Marzo 2021	
 
 	******************************
 	***DIVERSIDAD ÉTNICO-RACIAL***
 	******************************
 	
-***************
-****afro_ci****
-***************
-gen afro_ci = (s01a_09npioc == 1)
-label variable afro_ci "se autoidentifican como negras, afrodescendientes o variaciones de estas identidades"
+	***************
+	****afro_ci****
+	***************
+	gen afro_ci = (s01a_09npioc == 1)
+	label variable afro_ci "se autoidentifican como negras, afrodescendientes o variaciones de estas identidades"
 
-***************
-****ind_ci*****
-***************
-gen ind_ci = (s01a_09 == 1)
-label variable ind_ci "se autoidentifican como indígena o variaciones de estas identidades"
+	***************
+	****ind_ci*****
+	***************
+	gen ind_ci = (s01a_09 == 1)
+	label variable ind_ci "se autoidentifican como indígena o variaciones de estas identidades"
 
-******************
-***noafroind_ci***
-******************
-gen noafroind_ci = (afro_ci == 0 & ind_ci == 0)
-label variable noafroind_ci "No se autoidentifican como indígena, negro, afrodescendiente o variaciones de estas identidades"
+	**************
+	*noafroind_ci*
+	**************
+	gen byte noafroind_ci =.
+	replace noafroind_ci =1 if (afro_ci==0 & ind_ci==0)
+	replace noafroind_ci =0 if (afro_ci==1 | ind_ci==1)
+	replace noafroind_ci =. if (afro_ci==. | ind_ci==.)
+	
+	*********
+	*afro_ch*
+	*********
+	gen byte afro_jefe = afro_ci if relacion_ci==1
+	egen afro_ch  = min(afro_jefe), by(idh_ch) 
+	drop afro_jefe
 
-****************
-****afro_ch*****
-****************
-gen afro_ch = (jefe_ci == 1 & afro_ci == 1)
-label variable afro_ch "Jefe del hogar se autoidentifica como negro, afrodescendiento o variaciones"
+	********
+	*ind_ch*
+	********	
+	gen ind_jefe = ind_ci if relacion_ci == 1
+	egen ind_ch = min(ind_jefe), by(idh_ch) 
+	drop ind_jefe
 
-****************
-****afro_ch*****
-****************
-gen ind_ch = (jefe_ci == 1 & ind_ci == 1)
-label variable ind_ch "Jefe del hogar se autoidentifica como indígena o variaciones"
+	**************
+	*noafroind_ch*
+	**************
+	gen noafroind_jefe = noafroind_ci if relacion_ci == 1
+	egen noafroind_ch = min(noafroind_jefe), by(idh_ch) 
+	drop noafroind_jefe
 
-******************
-***noafroind_ch***
-******************
-gen noafroind_ch = (jefe_ci == 1 & noafroind_ci == 1)
-label variable noafroind_ch "Jefe del hogar no se autoidentifica como indígena, negro, afrodescendiente o variaciones"
+	*******************
+	***afroind_ano_c***
+	*******************
+	gen afroind_ano_c = 2012
 
-*******************
-***afroind_ano_c***
-*******************
-gen afroind_ano_c = 2012
+	************
+	*afroind_ci*
+	************
+	gen byte afroind_ci=. 
+	replace afroind_ci=1 if ind_ci==1 
+	replace afroind_ci=2 if afro_ci==1
+	replace afroind_ci=3 if noafroind_ci == 1
 
-***************
-***afroind_ci***
-***************
-**Pregunta: como boliviano o boliviana, pertenece a una nación o pueblo indígena? (s01a_09) (PERTENCE 1, NO PERTENECE 2, NO SOY BOLIVIANO/BOLIVIANA 3)
-**Pregunta: a qué nación o pueblo pertenece? (s01a_08)(ALL CATEGORIES ARE INDIGENOUS INCLUDING AFROBOLIVIANS)
-
-* Actualizado Sept 2022 - Natalia Tosi
-
-**Pregunta 2022: ¿A que nación o pueblo indígena originario campesino o afro boliviano pertenece? (s01a_09) (PERTENCE 1, NO PERTENECE 2, NO SOY BOLIVIANO/BOLIVIANA 3)
-
-**Pregunta 2022: ¿A que nación o pueblo indígena originario campesino o afro boliviano pertenece? (s01a_09) (PERTENCE 1, NO PERTENECE 2, NO SOY BOLIVIANO/BOLIVIANA 3)
-
-gen afroind_ci = . 
-replace afroind_ci = 1 if s01a_09 == 1 
-replace afroind_ci = 2 if s01a_09npioc == 1
-replace afroind_ci = 3 if s01a_09 == 2
-replace afroind_ci = 9 if s01a_09 == 3
-
-***************
-***afroind_ch***
-***************
-gen afroind_ch = 0 
-bysort idh_ch (jefe_ci s01a_09): replace afroind_ch = 1 if jefe_ci == 1 & s01a_09 == 1
-
+	************
+	*afroind_ch*
+	************
+	gen afroind_jefe = afroind_ci if relacion_ci == 1
+	egen afroind_ch = min(afroind_jefe), by(idh_ch) 
+	drop afroind_jefe 
 
 
 	*******************************
