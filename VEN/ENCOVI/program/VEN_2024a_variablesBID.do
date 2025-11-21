@@ -692,7 +692,7 @@ use "`base_in'", clear
 	*************
 	* remesas_ci *
 	*************
-    generate double remesas_ci = ...
+    generate double remesas_ci = .
 
 	*************
 	* remesas_ch *
