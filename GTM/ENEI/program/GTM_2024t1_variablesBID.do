@@ -781,7 +781,6 @@ use "`base_in'", clear
 	*********	
 	*aedu_ci*
 	*********
-	drop aedu_ci
 	gen aedu_ci=.
 	replace aedu_ci = 0            if inlist(p03a03a, 0, 1) // ninguno, prep
     replace aedu_ci = p03a03b      if p03a03a==2  // primaria
