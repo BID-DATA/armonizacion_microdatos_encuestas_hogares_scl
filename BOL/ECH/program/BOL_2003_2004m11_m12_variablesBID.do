@@ -1,7 +1,7 @@
 *El presente do file genera las variables de ingreso asignadas a Javier Torres
 
 *País:	Bolivia
-*Año :	2005	
+*Año :	2003-2004	
 *******************
 
 ***************************
@@ -39,7 +39,6 @@ La estructura de este do-file es la siguiente:
 
 	ylmsec_ci: Ingreso laboral monetario de actividad secundaria
 			yliquido2: Ingreso liquido de la actividad secundaria
-			yhrsextr2: Ingreso por horas extra de la actividad secundaria
 
 	ylmotros_ci: Ingreso laboral monetario de otras actividades
 			Missing, no hay variables de de ingresos otras ocupaciones 
@@ -54,8 +53,7 @@ La estructura de este do-file es la siguiente:
 			yvivien	: Ingreso en vivienda
 	
 	ylnmsec_ci: Ingreso laboral no monetario de actividad secundaria:
-			yalimen2: Ingreso en alimentos
-			yvivien2: Ingreso en vivienda
+			Missing, no hay variables de ingresos laborales no monetarios.
 	
 	ylnmotros_ci: Ingresos laboral no monetario de otras actividades.
 			Missing, no hay variables de ingresos de otras ocupaciones
@@ -97,99 +95,85 @@ La estructura de este do-file es la siguiente:
 *****************************
 * c: salario líquido *
 *****************************
-/*¿Cuánto es su salario líquido, excluyendo los descuentos de ley (AFP, IVA)? Monto (Bs)
-
- ¿Cuánto es su salario líquido, excluyendo los descuentos de ley (AFP, IVA)? Frecuencia de pago.
-		1. Diario 
-		2. Semanal 
-		3. Quincenal 
-		4. Mensual 
-		5. Bimestral 
-		6. Trimestral 
-		7. Semestral 
-		8. Anual
-*/
-*Las variables se trasladan a frecuencia mensual.
-gen s4_29a2= .
-replace s4_29a2= s4_29a			if s4_29b=="A"
-replace s4_29a2= s4_29a*8.1 	if s4_29b=="B"
+gen a4_23a2 = .
+replace a4_23a2 = a4_23a 		if a4_23b==1
+replace a4_23a2 = a4_23a*7.50 	if a4_23b==2
 
 gen yliquido = .
-replace yliquido= s4_29a2*30	if s4_29c==1
-replace yliquido= s4_29a2*4.3	if s4_29c==2
-replace yliquido= s4_29a2*2		if s4_29c==3
-replace yliquido= s4_29a2		if s4_29c==4
-replace yliquido= s4_29a2/3		if s4_29c==5
-replace yliquido= s4_29a2/6		if s4_29c==6
-replace yliquido= s4_29a2/12	if s4_29c==7
+replace yliquido= a4_23a2*30	if a4_23c==1
+replace yliquido= a4_23a2*4.3	if a4_23c==2
+replace yliquido= a4_23a2*2		if a4_23c==3
+replace yliquido= a4_23a2		if a4_23c==4
+replace yliquido= a4_23a2/3		if a4_23c==5
+replace yliquido= a4_23a2/6		if a4_23c==6
+replace yliquido= a4_23a2/12	if a4_23c==7
 
 
 ************************************
 * ycomisio: Ingreso por comisiones *
 ************************************
-* Durante los últimos doce meses, ¿recibió usted pagos en efectivo por: A.Comisiones, destajo, propinas, bonos de transporte o refrigerio? Monto (Bs)
+gen a4_24a12 = .
+replace a4_24a12 = a4_24a1 		if a4_24a2==1
+replace a4_24a12 = a4_24a1*7.50	if a4_24a2==2
+
 gen ycomisio = .
-replace ycomisio= s4_31a1*30	if s4_31a2==1
-replace ycomisio= s4_31a1*4.3	if s4_31a2==2
-replace ycomisio= s4_31a1*2		if s4_31a2==3
-replace ycomisio= s4_31a1		if s4_31a2==4
-replace ycomisio= s4_31a1/3		if s4_31a2==5
-replace ycomisio= s4_31a1/6		if s4_31a2==6
-replace ycomisio= s4_31a1/12	if s4_31a2==7
+replace ycomisio= a4_24a12*30	if a4_24a3==1
+replace ycomisio= a4_24a12*4.3	if a4_24a3==2
+replace ycomisio= a4_24a12*2	if a4_24a3==3
+replace ycomisio= a4_24a12		if a4_24a3==4
+replace ycomisio= a4_24a12/3	if a4_24a3==5
+replace ycomisio= a4_24a12/6	if a4_24a3==6
+replace ycomisio= a4_24a12/12	if a4_24a3==7
 
 
 **************************************
 * yhrsextr: Ingreso por horas extras *
 **************************************
-* . Durante los últimos doce meses, ¿recibió usted pagos en efectivo por Horas Extras
+gen a4_24d12 = .
+replace a4_24d12 = a4_24d1 		if a4_24d2==1
+replace a4_24d12 = a4_24d1*7.50	if a4_24d2==2
+
 gen yhrsextr= .
-replace yhrsextr= s4_31b1*30	if s4_31b2==1
-replace yhrsextr= s4_31b1*4.3	if s4_31b2==2
-replace yhrsextr= s4_31b1*2		if s4_31b2==3
-replace yhrsextr= s4_31b1		if s4_31b2==4
-replace yhrsextr= s4_31b1/3		if s4_31b2==5
-replace yhrsextr= s4_31b1/6		if s4_31b2==6
-replace yhrsextr= s4_31b1/12	if s4_31b2==7
+replace yhrsextr= a4_24d12*30	if a4_24d3==1
+replace yhrsextr= a4_24d12*4.3	if a4_24d3==2
+replace yhrsextr= a4_24d12*2	if a4_24d3==3
+replace yhrsextr= a4_24d12		if a4_24d3==4
+replace yhrsextr= a4_24d12/3	if a4_24d3==5
+replace yhrsextr= a4_24d12/6	if a4_24d3==6
+replace yhrsextr= a4_24d12/12	if a4_24d3==7
 
 
 ************************************************
 * yprima: Ingreso por prima/bono de producción *
 ************************************************
-* . Durante los últimos doce meses, ¿recibió usted pagos por:
-* Pago por Bono o prima de producción
 gen yprima = .
-replace yprima = (s4_30a1)/12 		if s4_30a2=="A"
-replace yprima = (s4_30a1*8.1)/12	if s4_30a2=="B"
-
+replace yprima = a4_26a1 		if a4_26a2==1
+replace yprima = a4_26a1*7.50	if a4_26a2==2
 
 
 *******************************
 * yaguina: Pago por aguinaldo *
 *******************************
-* . Durante los últimos doce meses, ¿recibió usted pagos por:
-* Pago por Aguinaldo
 gen yaguina = .
-replace yaguina = (s4_30b1)/12 		if s4_30b2=="A"
-replace yaguina = (s4_30b1*8.1)/12 	if s4_30b2=="B"
+replace yaguina = a4_26b1 		if a4_26b2==1
+replace yaguina = a4_26b1*7.50	if a4_26b2==2
 
 
 *******************************************
 * yactpri: ingreso actividad principal independientes *
 *******************************************
-*Aquí se tiene en cuenta el Ingreso Líquido de la Actividad Principal de los independientes 
-* Una vez descontadas todas sus obligaciones (sueldos, salarios, etc.),¿cuánto le queda para uso del hogar?
-gen s4_36a2 = .
-replace s4_36a2 = s4_36a 		if s4_36b=="A"
-replace s4_36a2 = s4_36a*8.1 	if s4_36b=="B"
+gen a4_35a2 = .
+replace a4_35a2 = a4_35a 		if a4_35b==1
+replace a4_35a2 = a4_35a*7.50 	if a4_35b==2
 
 gen yactpri = .
-replace yactpri= s4_36a2*30		if s4_36c==1
-replace yactpri= s4_36a2*4.3	if s4_36c==2
-replace yactpri= s4_36a2*2		if s4_36c==3
-replace yactpri= s4_36a2		if s4_36c==4
-replace yactpri= s4_36a2/3		if s4_36c==5
-replace yactpri= s4_36a2/6		if s4_36c==6
-replace yactpri= s4_36a2/12		if s4_36c==7
+replace yactpri= a4_35a2*30		if a4_35c==1
+replace yactpri= a4_35a2*4.3	if a4_35c==2
+replace yactpri= a4_35a2*2		if a4_35c==3
+replace yactpri= a4_35a2		if a4_35c==4
+replace yactpri= a4_35a2/3		if a4_35c==5
+replace yactpri= a4_35a2/6		if a4_35c==6
+replace yactpri= a4_35a2/12		if a4_35c==7
 
 
 ********************************
@@ -204,96 +188,71 @@ replace yactpri= s4_36a2/12		if s4_36c==7
            7 semestral
            8 anual
 */
-gen s4_45a2 = .
-replace s4_45a2 = s4_45a 		if s4_45b=="A"
-replace s4_45a2 = s4_45a*8.1 	if s4_45b=="B"
+gen a4_41a2 = .
+replace a4_41a2 = a4_41a 		if a4_41b==1
+replace a4_41a2 = a4_41a*7.50 	if a4_41b==2
 
 gen yliquido2 = .
-replace yliquido2= s4_45a2*30	if s4_45c==1
-replace yliquido2= s4_45a2*4.3	if s4_45c==2
-replace yliquido2= s4_45a2*2	if s4_45c==3
-replace yliquido2= s4_45a2		if s4_45c==4
-replace yliquido2= s4_45a2/3	if s4_45c==5
-replace yliquido2= s4_45a2/6	if s4_45c==6
-replace yliquido2= s4_45a2/12	if s4_45c==7
-
-
-*****************
-* yhrsextr2: Ingreso por horas extra de la actividad secundaria*
-*****************
-*  Durante los últimos doce meses, ha recibido:
-*  ¿Pago por horas extras, bono o prima de producción,aguinaldo?
-gen yhrsextr2 = .
-replace yhrsextr2=s4_46a2/12 if s4_46a1==1
+replace yliquido2= a4_41a2*30	if a4_41c==1
+replace yliquido2= a4_41a2*4.3	if a4_41c==2
+replace yliquido2= a4_41a2*2	if a4_41c==3
+replace yliquido2= a4_41a2		if a4_41c==4
+replace yliquido2= a4_41a2/3	if a4_41c==5
+replace yliquido2= a4_41a2/6	if a4_41c==6
+replace yliquido2= a4_41a2/12	if a4_41c==7
 
 
 *************
 * yalimen: Ingreso en alimentos *
 *************
 gen yalimen = .
-replace yalimen= s4_33a3*30		if s4_33a2==1 & s4_33a1==1
-replace yalimen= s4_33a3*4.3	if s4_33a2==2 & s4_33a1==1
-replace yalimen= s4_33a3*2		if s4_33a2==3 & s4_33a1==1
-replace yalimen= s4_33a3		if s4_33a2==4 & s4_33a1==1
-replace yalimen= s4_33a3/3		if s4_33a2==5 & s4_33a1==1
-replace yalimen= s4_33a3/6		if s4_33a2==6 & s4_33a1==1
-replace yalimen= s4_33a3/12		if s4_33a2==7 & s4_33a1==1
+replace yalimen= a4_27a3*30		if a4_27a2==1 & a4_27a1==1
+replace yalimen= a4_27a3*4.3	if a4_27a2==2 & a4_27a1==1
+replace yalimen= a4_27a3*2		if a4_27a2==3 & a4_27a1==1
+replace yalimen= a4_27a3		if a4_27a2==4 & a4_27a1==1
+replace yalimen= a4_27a3/3		if a4_27a2==5 & a4_27a1==1
+replace yalimen= a4_27a3/6		if a4_27a2==6 & a4_27a1==1
+replace yalimen= a4_27a3/12		if a4_27a2==7 & a4_27a1==1
 
 
 **************
 * ytranspo: Ingreso en transporte *
 **************
-* PARTE C: INGRESOS DEL TRABAJADOR ASALARIADO
-*  Además de los ingresos recibidos en dinero por su trabajo, en los últimos doce meses ¿recibió, usted...
-*  Transporte hacia y desde el lugar de su trabajo?
 gen ytranspo = .
-replace ytranspo= s4_33b3*30	if s4_33b2==1 & s4_33b1==1
-replace ytranspo= s4_33b3*4.3	if s4_33b2==2 & s4_33b1==1
-replace ytranspo= s4_33b3*2		if s4_33b2==3 & s4_33b1==1
-replace ytranspo= s4_33b3		if s4_33b2==4 & s4_33b1==1
-replace ytranspo= s4_33b3/3		if s4_33b2==5 & s4_33b1==1
-replace ytranspo= s4_33b3/6		if s4_33b2==6 & s4_33b1==1
-replace ytranspo= s4_33b3/12	if s4_33b2==7 & s4_33b1==1
+replace ytranspo= a4_27b3*30	if a4_27b2==1 & a4_27b1==1
+replace ytranspo= a4_27b3*4.3	if a4_27b2==2 & a4_27b1==1
+replace ytranspo= a4_27b3*2		if a4_27b2==3 & a4_27b1==1
+replace ytranspo= a4_27b3		if a4_27b2==4 & a4_27b1==1
+replace ytranspo= a4_27b3/3		if a4_27b2==5 & a4_27b1==1
+replace ytranspo= a4_27b3/6		if a4_27b2==6 & a4_27b1==1
+replace ytranspo= a4_27b3/12	if a4_27b2==7 & a4_27b1==1
 
 
 **************
 * yvesti: Ingreso en vestimenta *
 **************
 gen yvesti = .
-replace yvesti= s4_33c3*30		if s4_33c2==1 & s4_33c1==1
-replace yvesti= s4_33c3*4.3		if s4_33c2==2 & s4_33c1==1
-replace yvesti= s4_33c3*2		if s4_33c2==3 & s4_33c1==1
-replace yvesti= s4_33c3			if s4_33c2==4 & s4_33c1==1
-replace yvesti= s4_33c3/3		if s4_33c2==5 & s4_33c1==1
-replace yvesti= s4_33c3/6		if s4_33c2==6 & s4_33c1==1
-replace yvesti= s4_33c3/12		if s4_33c2==7 & s4_33c1==1
+replace yvesti= a4_27c3*30		if a4_27c2==1 & a4_27c1==1
+replace yvesti= a4_27c3*4.3		if a4_27c2==2 & a4_27c1==1
+replace yvesti= a4_27c3*2		if a4_27c2==3 & a4_27c1==1
+replace yvesti= a4_27c3			if a4_27c2==4 & a4_27c1==1
+replace yvesti= a4_27c3/3		if a4_27c2==5 & a4_27c1==1
+replace yvesti= a4_27c3/6		if a4_27c2==6 & a4_27c1==1
+replace yvesti= a4_27c3/12		if a4_27c2==7 & a4_27c1==1
 
 
 ************
 * yvivien: Ingreso en vivienda *
 ************
 gen yvivien = .
-replace yvivien= s4_33d3*30		if s4_33d2==1 & s4_33d1==1
-replace yvivien= s4_33d3*4.3	if s4_33d2==2 & s4_33d1==1
-replace yvivien= s4_33d3*2		if s4_33d2==3 & s4_33d1==1
-replace yvivien= s4_33d3		if s4_33d2==4 & s4_33d1==1
-replace yvivien= s4_33d3/3		if s4_33d2==5 & s4_33d1==1
-replace yvivien= s4_33d3/6		if s4_33d2==6 & s4_33d1==1
-replace yvivien= s4_33d3/12		if s4_33d2==7 & s4_33d1==1
+replace yvivien= a4_27d3*30		if a4_27d2==1 & a4_27d1==1
+replace yvivien= a4_27d3*4.3	if a4_27d2==2 & a4_27d1==1
+replace yvivien= a4_27d3*2		if a4_27d2==3 & a4_27d1==1
+replace yvivien= a4_27d3		if a4_27d2==4 & a4_27d1==1
+replace yvivien= a4_27d3/3		if a4_27d2==5 & a4_27d1==1
+replace yvivien= a4_27d3/6		if a4_27d2==6 & a4_27d1==1
+replace yvivien= a4_27d3/12		if a4_27d2==7 & a4_27d1==1
 
-
-*************
-* yalimen2: Ingreso en alimentos de la actividad secundaria *
-*************
-gen yalimen2 = .
-replace yalimen2= s4_46b2/12		if s4_46b1==1
-
-
-**************
-* yvivien2: Ingreso en vivienda de la actividad secundaria *
-**************
-gen yvivien2= .
-replace yvivien2= s4_46c2/12 if s4_46c1==1
 
 
 **************************************************************
@@ -313,8 +272,8 @@ label var ylmpri_ci "Ingreso laboral monetario actividad principal"
 ***************
 ***ylmsec_ci: Ingreso laboral monetario de actividad secundaria. Variable continua que indica el monto mensual de ingresos monetarios provenientes de la actividad secundaria.***
 ***************
-egen ylmsec_ci= rsum(yliquido2 yhrsextr2), missing
-replace ylmsec_ci=. if emp_ci~=1 & yhrsextr2==. & yliquido2 ==.
+egen ylmsec_ci= rsum(yliquido2), missing
+replace ylmsec_ci=. if emp_ci~=1 & yliquido2 ==.
 replace ylmsec_ci=0 if categosec_ci==4
 label var ylmsec_ci "Ingreso laboral monetario segunda actividad" 
 
@@ -345,10 +304,7 @@ replace ylnmpri_ci=0 if categopri_ci==4
 ******************
 ****ylnmsec_ci: Ingreso laboral no monetario de actividad secundaria. Variable continua que representa el monto mensual del ingreso laboral no monetario derivado de la actividad secundaria de cada miembro del hogar. ****
 ******************
-egen ylnmsec_ci=rsum(yalimen2  yvivien2), missing
-replace ylnmsec_ci=. if yalimen2==.  & yvivien2==.  
-replace ylnmsec_ci=0 if categosec_ci==4
-replace ylnmsec_ci=. if emp_ci==0
+gen ylnmsec_ci=.
 label var ylnmsec_ci "Ingreso laboral NO monetario actividad secundaria"
 
 
