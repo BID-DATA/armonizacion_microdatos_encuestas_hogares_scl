@@ -692,7 +692,7 @@ use "`base_in'", clear
 	*************
 	* remesas_ci *
 	*************
-    generate double remesas_ci = ...
+    generate double remesas_ci = .
 
 	*************
 	* remesas_ch *
@@ -702,7 +702,7 @@ use "`base_in'", clear
 	**********
 	* ypen_ci *
 	**********
-	generate double ypen_ci =rowtotal( PenyjubV_CI PenyJubE) if pension_ci==1, mi
+	egen double ypen_ci = rowtotal(PenyjubV_CI PenyJubE) if pension_ci==1
 
 	*************
 	* ypensub_ci *
@@ -749,8 +749,8 @@ use "`base_in'", clear
 	replace eduui_ci = 1 if s7q11==7 & anos_sup<3
 	replace eduui_ci = 1 if s7q11==8 & anos_sup<5
 	
-	replace eduui_ci == 0 if s7q11==9
-	replace eduuc_ci = . if aedu_ci == .
+	replace eduui_ci = 0 if s7q11==9
+	replace eduui_ci = . if aedu_ci == .
 	
 	**********
 	*eduuc_ci*
