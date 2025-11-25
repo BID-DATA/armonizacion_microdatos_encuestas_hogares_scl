@@ -289,7 +289,7 @@ use `base_in', clear
 	replace afro_ci=1 if p4f_afrod<8
 	replace afro_ci=0 if p4f_afrod==8
 
-		******************************
+	******************************
 	*	ind_ci
 	******************************
 	gen ind_ci=.
