@@ -374,6 +374,7 @@ rename *, lower
 	*********
 	gen aedu_ci = .
 	replace aedu_ci = vd3005 if vd3005<.   // usa directamente años reportados
+	// 16 corresponde a 16 anos o mais de estudo
 
 	**********
 	*eduui_ci*
@@ -383,6 +384,7 @@ rename *, lower
 	replace eduui_ci = 1 if aedu_ci>12 & aedu_ci<16
 	replace eduui_ci = 0 if aedu_ci<=12 | aedu_ci>=16
 	replace eduui_ci = . if aedu_ci==.
+	
 
 	**********
 	*eduuc_ci*
@@ -409,7 +411,10 @@ rename *, lower
 	*asispre_ci*
 	************
 	* Asistencia actual a preescolar; si no hay nivel-curso actual, queda .
-	gen byte asispre_ci = .
+	* Solo para 5 años o más 
+	gen byte asispre_ci = 0
+	replace asispre_ci = 1 if v3002==1 & v3003a==2
+	
 
 	***********
 	*asiste_ci*
@@ -420,10 +425,10 @@ rename *, lower
     replace asiste_ci = 0 if v3002==2
 	
 	*************
-	*pqnoasis1_ci*
+	*razonesnoasis_ci*
 	**************
 	* Razón no asistencia (armonizada 1..5). Si no existe en PNADC personas → .
-	gen byte pqnoasis1_ci = .
+	gen byte razonesnoasis_ci = .
 
 	***********
 	*edupub_ci*
