@@ -289,7 +289,7 @@ use `base_in', clear
 	replace afro_ci=1 if p4f_afrod<8
 	replace afro_ci=0 if p4f_afrod==8
 
-	******************************
+		******************************
 	*	ind_ci
 	******************************
 	gen ind_ci=.
@@ -301,8 +301,8 @@ use `base_in', clear
 	*	noafroind_ci
 	******************************
 	gen noafroind_ci=.
-	replace noafroind_ci=1 if p4d_indige==11 & p4f_afrod==8
-	replace noafroind_ci=0 if p4d_indige!=11 | p4f_afrod!=8
+	replace noafroind_ci=1 if p4d_indige==11 | p4f_afrod==8
+	replace noafroind_ci=0 if p4d_indige!=11 & p4f_afrod!=8
 
 	******************************
 	*	afro_jefe
