@@ -307,8 +307,8 @@ replace ind_ci=1 if p4d_indige<11
 replace ind_ci=0 if p4d_indige==11
 
 gen noafroind_ci=.
-replace noafroind_ci=1 if p4d_indige==11 | p4f_afrod==8
-replace noafroind_ci=0 if p4d_indige!=11 & p4f_afrod!=8
+replace noafroind_ci=1 if p4d_indige==11 & p4f_afrod==8
+replace noafroind_ci=0 if p4d_indige!=11 | p4f_afrod!=8
 
 gen afro_jefe=afro_ci  if relacion_ci==1
 egen afro_ch  = min(afro_jefe), by(idh_ch) 
