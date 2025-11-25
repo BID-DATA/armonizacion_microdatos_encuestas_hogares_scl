@@ -322,19 +322,25 @@ label variable nmenor1_ch "Numero de familiares menores a 1 anio"
 *************
 ***afro_ci***
 *************
-gen afro_ci = (p15 == 2 | p15 == 3)
+gen afro_ci = . 
+replace afro_ci = 1 if inrange(p15, 2, 4)
+replace afro_ci = 0 if p15 != 2 & p15 != 3 & p15 != 4 & p15 != .
 label variable afro_ci "1 = Se autoidentifica como negro o afro"
 
 ************
 ***ind_ci***
 ************
-gen ind_ci = (p15 == 1) 
+gen ind_ci = .
+replace ind_ci = 1 if (p15 == 1) 
+replace ind_ci = 0 if p15 != 1 & p15 != .
 label variable ind_ci "1 = Se autoidentifica como indígena"
 
 ******************
 ***noafroind_ci***
 ******************
-gen noafroind_ci = (afro_ci == 0 | ind_ci == 0) 
+gen noafroind_ci = .
+replace noafroind_ci = 1 if (afro_ci == 0 & ind_ci == 0)
+replace noafroind_ci = 0 if (afro_ci == 1 | ind_ci == 1) 
 label variable noafroind_ci "1 = No se autoidentifica como indígena o negro"
 
 *************
