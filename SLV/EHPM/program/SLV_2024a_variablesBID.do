@@ -46,9 +46,6 @@ Detalle de procesamientos o modificaciones anteriores:
 
 use "`base_in'", clear
 
-
-import spss using "C:\Users\mrodriguezm\OneDrive - Inter-American Development Bank Group\Datalib\EHPM SPSS 2024\EHPM 2024.sav", clear
-
 **********************************
 ***VARIABLES DEL IDENTIFICACION***
 **********************************
@@ -61,6 +58,8 @@ import spss using "C:\Users\mrodriguezm\OneDrive - Inter-American Development Ba
 	********************
 	*** region_c ****
 	********************
+	*NOTA: En 2024 no hay región, el ultimo año con esta variable fue 2023
+/*
 	gen byte region_c = r004
 	label define region_c   ///
 	1 "Ahuachapán" ///
@@ -78,7 +77,7 @@ import spss using "C:\Users\mrodriguezm\OneDrive - Inter-American Development Ba
     13 "Morazán" ///
     14 "La Unión" 		
 	label value region_c region_c
-		    
+*/	    
 	*************
 	* pais_c    *
 	*************
@@ -97,12 +96,14 @@ import spss using "C:\Users\mrodriguezm\OneDrive - Inter-American Development Ba
 	******
 	*zona*
 	******
-	*NOTA: En 2024 no hay zona
+	*NOTA: En 2024 no hay zona (solo znorte), el ultimo año con esta variable fue 2023
 	
 	*********
 	*estrato*
 	*********
 	gen estrato_ci=.
+	*lote tipo folio viv 
+	*check viv
 	
 	 *****************************
 	*unidad primaria de muestreo*
@@ -113,12 +114,12 @@ import spss using "C:\Users\mrodriguezm\OneDrive - Inter-American Development Ba
 	*idh_ch (idhogar)*
 	******************
 	gen idh_ch = idboleta
+	tostring idh_ch, replace
 
 	***************
 	****idp_ci*****
 	***************
-	*egen idp_ci = concat(...)
-	gen idp_ci=r101
+	egen idp_ci = concat(idh_ch r101)
 	tostring idp_ci, replace format ("%20.0f") 
 
 	***********
@@ -168,8 +169,8 @@ import spss using "C:\Users\mrodriguezm\OneDrive - Inter-American Development Ba
 	*************
 	*miembros_one_ci*
 	*************
-	gen miembros_one_ci=...
-	*Chequear 
+	*gen miembros_one_ci=.
+	*No hay metodología de la encuesta y en los anteriores años no se lo hizo 
 	
 	**************
 	*Estado Civil*
@@ -206,7 +207,7 @@ import spss using "C:\Users\mrodriguezm\OneDrive - Inter-American Development Ba
 	replace notropari_ch =. if relacion_ci==.
 
 	**************
-	*notropari_ch*
+	*notronopari_ch*
 	**************
    by idh_ch, sort: egen byte notronopari_ch=sum(relacion_ci==5)
    replace notronopari_ch=. if relacion_ci==.          
@@ -216,7 +217,6 @@ import spss using "C:\Users\mrodriguezm\OneDrive - Inter-American Development Ba
 	****************
 	by idh_ch, sort: egen byte nempdom_ch=sum(relacion_ci==6)
 	replace nempdom_ch =. if relacion_ci==.
-* chequear
 	
 	*************
 	*clasehog_ch*
@@ -351,78 +351,61 @@ import spss using "C:\Users\mrodriguezm\OneDrive - Inter-American Development Ba
 ****************************
 ***VARIABLES DE EDUCACION***
 ****************************
-
-
-
-	*********	
-	*aedu_ci*
-	*********
-	gen aedu_ci=aproba1
-
-	**********
-	*eduui_ci*
-	**********
-	gen eduui_ci=(aedu_ci>=12 & r217==2) // mayor o igual a 12 anios de estudio y titulo de bachiller general
-	replace eduui_ci=1 if aedu_ci>=13 & (r217==3 | r217==.) // mas de 12 anios de estudio, bachiller tecnico o perdido
-	replace eduui_ci=. if aedu_ci==.
-
-	**********
-	*eduuc_ci*
-	**********
-	gen eduuc_ci=(aedu_ci>12 & r217>=4 & r217<=9) // mas de 12 anios de estudio pero con titulo terciario; incluye profesorado
-	replace eduuc_ci=. if aedu_ci==.
-
-	**********
-	*eduac_ci*
-	**********
-	gen eduac_ci=.
-	replace eduac_ci=1 if r214==4
-	replace eduac_ci=0 if r214==5
-	
-	***********
-	*edupre_ci*
-	***********
-	gen byte edupre_ci=.
-	replace edupre_ci = 1 if ....
-	replace edupre_ci = 0 if ....
-gen edupre_ci=(r209==1)
-
-	************
-	*asispre_ci*
-	************
-	gen asispre_ci=(r203==1 & r204==1) // no consideramos menores de 3 años (r201a)
-
-	***********
-	*asiste_ci*
-	***********
-	gen asiste_ci=.
-	replace asiste_ci=0 if ...
-	replace asiste_ci=1 if ...
-	gen asiste_ci=(r203==1)
-	replace asiste_ci=. if r203==.
+ 
+    *********  
+    *aedu_ci*
+    *********
+    gen aedu_ci=aproba1
+ 
+    **********
+    *eduui_ci*
+    **********
+    gen eduui_ci = (inlist(r204, 4, 5)) | (inlist(r214, 4, 5) & inlist(r217, 1, 2, 3))
+    replace eduui_ci=. if aedu_ci==.
+ 
+    **********
+    *eduuc_ci*
+    **********
+    gen eduuc_ci = inlist(r214, 4, 5) & (inrange(r217, 4, 9))
+    replace eduuc_ci=. if aedu_ci==.
+ 
+    **********
+    *eduac_ci*
+    **********
+    gen eduac_ci=.
+    replace eduac_ci=1 if r214==4
+    replace eduac_ci=0 if r214==5
+    ***********
+    *edupre_ci*
+    ***********
+    gen byte edupre_ci =.
+    replace edupre_ci = 1 if r209==1
+    replace edupre_ci = 0 if r209==0
+ 
+    ************
+    *asispre_ci*
+    ************
+    gen asispre_ci=(r203==1 & r204==1) // no consideramos menores de 3 años (r201a)
+ 
+    ***********
+    *asiste_ci*
+    ***********
+    gen asiste_ci=(r203==1)
+    replace asiste_ci=. if r203==.
 
 	*************
-	*pqnoasis1_ci*
+	*razonesnoasis_ci*
 	**************
-	gen pqnoasis1_ci=. 
-	replace pqnoasis1_ci =  1 if ...
-	replace pqnoasis1_ci =  2 if ...
-	replace pqnoasis1_ci =  3 if ...
-	replace pqnoasis1_ci =  4 if ...
-	replace pqnoasis1_ci =  5 if ...
-*DZ Jul 2017: cambio de nombre de la variable respecto a anio anterior*
-gen pqnoasis_ci=r219 
-label var pqnoasis_ci "Razones para no asistir a la escuela"
-gen      pqnoasis1_ci=1 if r219==3
-replace pqnoasis1_ci=2 if r219==1
-replace pqnoasis1_ci=3 if r219==4  | r219==5  | r219==6
-replace pqnoasis1_ci=4 if r219==10
-replace pqnoasis1_ci=5 if r219==2  | r219==12 | r219==15 | r219==16
-replace pqnoasis1_ci=6 if r219==8
-replace pqnoasis1_ci=7 if r219==7 
-replace pqnoasis1_ci=8 if r219==9  | r219==13 | r219==14 | r219==18
-replace pqnoasis1_ci=9 if r219==11 | r219==17 
-
+	gen razonesnoasis_ci=. 
+	replace razonesnoasis_ci=1 if r219==3
+	replace razonesnoasis_ci=2 if r219==1
+	replace razonesnoasis_ci=3 if r219==4  | r219==5  | r219==6
+	replace razonesnoasis_ci=4 if r219==10
+	replace razonesnoasis_ci=5 if r219==2  | r219==12 | r219==15 | r219==16
+	replace razonesnoasis_ci=6 if r219==8
+	replace razonesnoasis_ci=7 if r219==7 
+	replace razonesnoasis_ci=8 if r219==9  | r219==13 | r219==14 | r219==18
+	replace razonesnoasis_ci=9 if r219==11 | r219==17 
 
 	***********
 	*edupub_ci*
@@ -431,6 +414,7 @@ replace pqnoasis1_ci=9 if r219==11 | r219==17
 	replace edupub_ci=1 if r210a==1 & r203==1
 	replace edupub_ci=0 if (r210a==2 | r210a==3) & r203==1
 
+
 ****************************
 ***VARIABLES DE VIVIENDA***
 ****************************		
@@ -438,27 +422,24 @@ replace pqnoasis1_ci=9 if r219==11 | r219==17
 	*luz_ch*
 	***********
 	gen luz_ch=.
-	replace luz_ch=0 if ...
+	replace luz_ch=0 if r311==3 | r311==4 | r311==7
 	replace luz_ch=1 if r311==1 | r311==2 | r311==5 | r311==6
 	
 	***********
 	*luzmide_ch*
 	***********
 	gen luzmide_ch=.
-	replace luzmide_ch=0 if ...
-	replace luzmide_ch=1 if ...
 	
 	***********
 	*combust_ch*
 	***********
 	gen combust_ch=.
-	replace combust_ch=0 if ...
-	replace combust_ch=1 if  r320==1 | r320==2 | r320==3
+	replace combust_ch=0 if r320==4 | r320==5 | r320==6
+	replace combust_ch=1 if r320==1 | r320==2 | r320==3 
 	
 	***********
 	*piso_ch*
 	***********
-	* NOTA: REVISANDO METODOLÓGIA AÚN NO CREAR
 	gen piso_ch=.
 	replace piso_ch=0 	if r304==5
 	replace piso_ch=1 	if r304>=1 & r304<=4
@@ -468,7 +449,6 @@ replace pqnoasis1_ci=9 if r219==11 | r219==17
 	*pared_ch*
 	***********
 	gen pared_ch=.	
-	* NOTA: REVISANDO METODOLÓGIA AÚN NO CREAR
 	replace pared_ch=0 	if r303==2 | r303==3 |r303==5 |r303==6 |r303==7 
 	replace pared_ch=1 	if r303==1 | r303==4
 	replace pared_ch=2 	if r303==8
@@ -491,28 +471,22 @@ replace pqnoasis1_ci=9 if r219==11 | r219==17
 	replace resid_ch=2 if r322==6
 	replace resid_ch=3 if r322==3 | r322==7
 
-		
 	***********
 	*dorm_ch*
 	***********
 	gen dorm_ch=r306
 	replace dorm_ch=. if r306==.
-	label var dorm_ch "Habitaciones para dormir"
-	
+
 	***********
 	*cuartos_ch*
 	***********
 	gen cuartos_ch=r305
 	replace cuartos_ch=. if r305==.
-	label var cuartos_ch "Habitaciones en el hogar"	
 	
 	***********
 	*cocina_ch*
 	***********
 	gen cocina_ch=.
-	replace cocina_ch==0 if ...	
-	replace cocina_ch==1 if ...	
-	label var cocina_ch "Cuarto separado y exclusivo para cocinar"
 	
 	***********
 	*telef_ch*
@@ -520,7 +494,6 @@ replace pqnoasis1_ci=9 if r219==11 | r219==17
 	gen telef_ch=.
 	replace telef_ch=0 if r3211a==2	
 	replace telef_ch=1 if r3211a==1
-	label var telef_ch "El hogar tiene servicio telefónico fijo"
 		
 	***********
 	*refrig_ch*
@@ -528,15 +501,11 @@ replace pqnoasis1_ci=9 if r219==11 | r219==17
 	gen refrig_ch=.
 	replace refrig_ch=0 if r32305a==2
 	replace refrig_ch=1 if r32305a==1
-	label var refrig_ch "El hogar posee refrigerador o heladera"
 	
 	***********
 	*freez_ch*
 	***********
 	gen freez_ch=.
-	replace freez_ch=0 if ...
-	replace freez_ch=1 if ...
-	label var freez_ch "El hogar posee congelador"
 	
 	***********
 	*auto_ch*
@@ -544,7 +513,6 @@ replace pqnoasis1_ci=9 if r219==11 | r219==17
 	gen auto_ch=.
 	replace auto_ch=0 if r32312a==2
 	replace auto_ch=1 if r32312a==1
-	label var auto_ch "El hogar posee automovil particular"
 	
 	***********
 	*compu_ch*
@@ -552,7 +520,6 @@ replace pqnoasis1_ci=9 if r219==11 | r219==17
 	gen compu_ch=.
 	replace compu_ch=0 if r32309a==2
 	replace compu_ch=1 if r32309a==1
-	label var compu_ch "El hogar posee computador"
 		
 	***********
 	*internet_ch*
@@ -578,101 +545,77 @@ replace pqnoasis1_ci=9 if r219==11 | r219==17
 	replace viviprop_ch=3 	if r308 >=4 & r308<9
 	replace viviprop_ch=. 	if r308==.
 
-****************
 	***********
 	*vivitit_ch*
 	***********
 	gen vivitit_ch=.
-	
+
 	***********
 	*vivialq_ch*
 	***********
 	gen vivialq_ch= r308c  
-	
+
 	***********
 	*vivialqimp_ch*
 	***********
 	gen vivialqimp_ch=r310a 
-	
+
 ****************************
 ***VARIABLES DE WASH***
 ****************************
-
+fre r312d r312h r313 R313otr r314 r312 r315 r316 r317a r317b r317c r317otr r318 r318otr
 	***********
 	*aguared_ch*
 	***********
 	gen byte aguared_ch =.
-	replace aguared_ch = 1 if r312==1 | r312==2| r312==3| r312==4
 	replace aguared_ch = 0 if r312> 4
+	replace aguared_ch = 1 if r312==1 | r312==2| r312==3| r312==4
 	
-	***********
-	*aguafconsumo _ch*
-	***********
-	gen byte aguafconsumo _ch =.
-	replace aguafconsumo _ch = 0 if …
-	replace aguafconsumo _ch = 1 if …
-	replace aguafconsumo _ch = 2 if …
-	replace aguafconsumo _ch = 3 if …
-	replace aguafconsumo _ch = 4 if …
-	replace aguafconsumo _ch = 5 if …
-	replace aguafconsumo _ch = 6 if …
-	replace aguafconsumo _ch = 7 if …
-	replace aguafconsumo _ch = 8 if …
-	replace aguafconsumo _ch = 9 if …
-	replace aguafconsumo _ch = 10 if …
-gen aguafconsumo_ch = 0
+	*****************
+	*aguafconsumo_ch*
+	*****************
+	gen aguafconsumo_ch = 0
 
 	***********
 	*aguafuente_ch*
 	***********	
 	gen byte aguafuente_ch =.
-	replace aguafuente_ch = 1 if r312==1 | r312==2| r312==3| r312==4
+	replace aguafuente_ch = 1 if inlist(r312,1,2,3,4)
 	replace aguafuente_ch = 2 if r313==2
-	replace aguafuente_ch= 4 if (r313==5 | r313==5.1)
+	replace aguafuente_ch = 4 if inlist(r313,5, 5.1)
 	replace aguafuente_ch = 5 if r313==10
-	replace aguafuente_ch= 6 if r313==3
-	replace aguafuente_ch= 7 if r312==4.1 | r313==8 | r313==1 |r313==11
-	replace aguafuente_ch = 8 if r313==7 | r313 ==9
-	replace aguafuente_ch= 9 if  r313==6 |r313==6.1
-	replace aguafuente_ch= 10 if r313==13 | r313==12 |r313==4 | r313==4.1   
+	replace aguafuente_ch = 6 if r313==3
+	replace aguafuente_ch = 7 if r312==4.1 |inlist(r313,1,11)
+	replace aguafuente_ch = 8 if r313==7
+	replace aguafuente_ch = 9 if inlist(r313,6,6.1)
+	replace aguafuente_ch = 10 if inlist(r313,4,4.1,8,9,12,13)
 
 	******************
-	** aguadist_ch ** - 
+	** aguadist_ch ** 
 	*****************
-	gen byte aguadist_ch  =.
-	replace aguadist_ch = 1 if  (r312==1 | r312==2) | r313==1 | r313==3 | r313==4| r313==5 | r313==6
-	replace aguadist_ch= 2 if  (r312==3| r312==4|r312 == 4.1)
-	replace aguadist_ch=3 if r313==2 | r313==4.1| r313==5.1 | r313==6.1 | r313==12 | r313==11 | r313==6.1
+	gen byte aguadist_ch  = .
+	replace aguadist_ch = 1 if inlist(r312,1,2) | inlist(r313,1,2,3,4,5,6)
+	replace aguadist_ch= 2 if (r312==3| r312==4|r312 == 4.1)
+	replace aguadist_ch=3 if r313==2 | r313==4.1| r313==5.1 | r313==6.1 | r313==12 | r313==11
 	replace aguadist_ch = 0 if missing(aguadist_ch) & aguafuente_ch!=.
 
-
 	******************
-	** aguadisp1_ch ** - 
+	** aguadisp1_ch ** 
 	*****************
-	gen byte aguadisp1_ch =.
-	replace aguadisp1_ch = 1 if …
-	replace aguadisp1_ch = 2 if …
-	replace aguadisp1_ch = 9 if …
-gen aguadisp1_ch =9
+	gen aguadisp1_ch =9
 
 	******************
-	** aguadisp2_ch ** - 
+	** aguadisp2_ch **
 	*****************
 	gen byte aguadisp2_ch =.
-	replace aguadisp2_ch = 1 if …
-	replace aguadisp2_ch = 2 if …
-	replace aguadisp2_ch = 3 if …
-	replace aguadisp2_ch = 9 if …
-gen aguadisp2_ch = 1 if r312d<=3 | r312h<=11 
-replace aguadisp2_ch = 2 if r312d>=4 & r312h>=12
-replace aguadisp2_ch = 3 if r312d==7 & r312h ==24
-	
+	replace aguadisp2_ch = 1 if r312d<=3 | r312h<=11 
+	replace aguadisp2_ch = 2 if r312d>=4 & r312h>=12
+	replace aguadisp2_ch = 3 if r312d==7 & r312h ==24
+
 	******************
 	** aguatrat_ch ** - 
 	*****************
 	gen byte aguatrat_ch =.
-	replace aguatrat_ch = 0 if …
-	replace aguatrat_ch = 1 if …
 	
 	******************
 	** aguamala_ch ** - 
@@ -680,9 +623,6 @@ replace aguadisp2_ch = 3 if r312d==7 & r312h ==24
 	gen byte aguamala_ch = 2
 	replace aguamala_ch = 0 if aguafuente_ch<=7
 	replace aguamala_ch = 1 if aguafuente_ch>7 & aguafuente_ch!=10 & aguafuente_ch!=.
-gen aguamala_ch = 2
-replace aguamala_ch = 0 if aguafuente_ch<=7
-replace aguamala_ch = 1 if aguafuente_ch>7 & aguafuente_ch!=10
 
 	******************
 	** aguamejorada_ch ** - 
@@ -690,52 +630,36 @@ replace aguamala_ch = 1 if aguafuente_ch>7 & aguafuente_ch!=10
 	gen byte aguamejorada_ch = 2
 	replace aguamejorada_ch = 0 if aguafuente_ch>7 & aguafuente_ch!=10
 	replace aguamejorada_ch = 1 if aguafuente_ch<=7
-gen aguamejorada_ch = 2
-replace aguamejorada_ch = 0 if aguafuente_ch>7 & aguafuente_ch!=10
-replace aguamejorada_ch = 1 if aguafuente_ch<=7 
 
 	******************
 	** aguamide_ch ** - 
 	*****************
 	gen byte aguamide_ch = .
-	replace aguamide_ch = 0 if …
-	replace aguamide_ch = 1 if...
-gen aguamide_ch = .
 
 	******************
-	** bano_ch ** - 
+	** bano_ch **
 	*****************
 	gen byte bano_ch = .
-	replace bano_ch = 0 if …
-	replace bano_ch = 1 if …
-	replace bano_ch = 2 if …
-	replace bano_ch = 3 if …
-	replace bano_ch = 4 if …
-	replace bano_ch = 5 if …
-	replace bano_ch = 6 if …
+	replace bano_ch=1 if (r316==1 | r316==3)
+	replace bano_ch=2 if (r316==2 | r316==4)
+	replace bano_ch=3 if (r316==7 | r316==8 | r316==9 | r316==10)
+	replace bano_ch=4 if (r314==1 |r314==2) & (r317a==3 |r317a==4) 
+	replace bano_ch=6 if (r316==5 | r316==6)
+	replace bano_ch=0 if r314==4 |r314==3
 		
 	******************
 	** banoex_ch ** - 
 	*****************
-	gen byte banoex_ch = .
-	replace banoex_ch = 0 if …
-	replace banoex_ch = 1 if …
-generate banoex_ch=9
+	generate banoex_ch=9
 
 	******************
 	** sinbano_ch ** - 
 	*****************
 	gen sinbano_ch = .
-	replace sinbano_ch = 0 if …
-	replace sinbano_ch = 1 if…
-	replace sinbano_ch = 2 if…
-	replace sinbano_ch = 3 if…
-gen sinbano_ch = 3
-replace sinbano_ch = 1 if r315==1
-replace sinbano_ch = 2 if (r317a==3|r317a==4) & r315==2
-replace sinbano_ch = 0 if r314 == 1 | r314 == 2 
-
-*label var sinbano_ch "= 0 si tiene baño en la vivienda o dentro del terreno"
+	replace sinbano_ch = 0 if inlist(r314,1,2,3)
+	replace sinbano_ch = 1 if r314==4 & r315==1
+	replace sinbano_ch = 2 if r314==4 & r315==2 & (r317a==3|r317a==4) 
+	replace sinbano_ch = 3 if r314==4 & r315==2 & (r317a==5|r317a==.)
 
 	******************
     ** banomejorado_ch ** - 
@@ -751,23 +675,17 @@ replace sinbano_ch = 0 if r314 == 1 | r314 == 2
 	*****************
     *migrante_ci****
     ****************
-	gen byte migrante_ci= .
-	replace migrante_ci=0 if ...
-	replace migrante_ci=1 if ...
+	gen byte migrante_ci=.
 	
 	****************
 	 *migrantiguo5_ci*
 	****************	
 	gen byte migrantiguo5_ci=.
-	replace migrantiguo5_ci=0 if ...
-	replace migrantiguo5_ci=1 if ...
 
 	****************
 	 *miglac_ci*
 	****************	
-	gen byte miglac_ci = .
-	replace miglac_ci = 0 if ...
-	replace miglac_ci = 1 if ...
+	gen byte miglac_ci=.
 	
 
 ****************************
@@ -782,40 +700,30 @@ replace sinbano_ch = 0 if r314 == 1 | r314 == 2
 	replace tipo_bienestar  = 2
 
 	****************
-	 * pobre_ine _ci*
+	 * pobre_ine_ci*
 	****************	
-	gen byte pobre_ine _ci= . 
-	replace pobre_ine _ci= 0 if …
-	replace pobre_ine _ci= 1 if …
-
-fre pobreza li
-* revisar si es consumo o ingreso
-	*consumo es mas estable
-* revisar porque li son dos 
-*  Pobres extremos, pobres moderados, vulnerables y no pobres 
-* con base en ingreso neto (Sin transferencias)
-* y líneas de pobreza internacionales
+	gen byte pobre_ine_ci= . 
+	replace pobre_ine_ci= 0 if pobreza==3
+	replace pobre_ine_ci= 1 if pobreza==1 |pobreza==2
 
 	****************
-	 * bienestar_agregado *
+	* bienestar_agregado*
 	****************	
 	gen bienestar_agregado = . 
-	replace bienestar_agregado = …
-*buscar 
 
 	****************
 	* lpe_ci *
 	****************	
 	gen lpe_ci = . 
-	replace lp_ci= li
+	replace lpe_ci= li
 	
 	****************
 	 * ln_ci *
 	****************	
 	gen ln_ci = . 
-	replace lp_ci= li*2
-	* Pobreza normal= linea pobreza extrema *2
-	
+	replace ln_ci= li*2
+
+
 local log_file = "$ruta\harmonized\\`PAIS'\\`ENCUESTA'\log\\`PAIS'_`ANO'`ronda'_variablesBID.log"
 local base_in  = "$ruta\survey\\`PAIS'\\`ENCUESTA'\\`ANO'\\`ronda'\data_merge\\`PAIS'_`ANO'`ronda'.dta"
 local base_out = "$ruta\harmonized\\`PAIS'\\`ENCUESTA'\data_arm\\`PAIS'_`ANO'`ronda'_BID.dta"
