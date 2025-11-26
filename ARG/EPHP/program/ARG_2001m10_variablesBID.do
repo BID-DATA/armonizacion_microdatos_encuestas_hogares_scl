@@ -1412,11 +1412,13 @@ label value tipocontrato_ci tipocontrato_ci
 *************
 *cesante_ci* 
 *************
+gen cesante_ci=.
+replace cesante_ci=1 if p37==1 & condocup_ci==2 
+replace cesante_ci=0 if p37!=1 & condocup_ci==2 
 
-gen cesante_ci=1 if p37==1
-recode cesante_ci .=0 if pea_ci==1 & desemp_ci==0
 * No todos los desempleados respondieron si han trabajado antes
-label var cesante_ci "Desocupado - definicion oficial del pais"	
+*label var cesante_ci "Desocupado - definicion oficial del pais"	
+
 
 
 *************
@@ -1494,14 +1496,21 @@ label var formal_ci "1=afiliado o cotizante / PEA"
 ***categoinac_ci**
 ******************
 gen categoinac_ci=.
-replace categoinac_ci=1 if p11==1
-replace categoinac_ci=2 if p11==3
-replace categoinac_ci=4 if p11==4
-recode categoinac_ci .= 4 if condocup_ci==3
+* 1 = Jubilados/pensionados (p11 == 1)
+replace categoinac_ci = 1 if p11 == 1 & condocup_ci == 3
 
-label var categoinac_ci "Condición de inactividad"
+* 2 = Estudiantes (p11 == 3)
+replace categoinac_ci = 2 if p11== 3 & condocup_ci == 3
+
+* 3 = Quehaceres domésticos (p11 == 4)
+replace categoinac_ci = 3 if p11 == 4 & condocup_ci == 3
+
+* 4 = Otros inactivos (todo el resto dentro de condocup_ci == 3)
+replace categoinac_ci = 4 if condocup_ci == 3 & missing(categoinac_ci)
+
+/*label var categoinac_ci "Condición de inactividad"
 	label define categoinac_ci 1 "jubilado/pensionado" 2 "estudiante" 3 "quehaceres_domesticos" 4 "otros_inactivos" 
-	label value categoinac_ci categoinac_ci
+	label value categoinac_ci categoinac_ci*/
 	
 	
 *variables que faltan generar
@@ -1510,6 +1519,16 @@ gen tcylmpri_ci =.
 gen tcylmpri_ch =.
 gen instcot_ci = .
 * Line of code with indicator repiteult was deleted
+
+
+****************************
+***VARIABLES DE MIGRACION***
+****************************
+
+*************
+*migrante_ci*
+*************
+gen migrante_ci=(inlist(p59,4)) if p59!=. & p59!=9 & p59!=0 		
 
 
 /*_____________________________________________________________________________________________________*/

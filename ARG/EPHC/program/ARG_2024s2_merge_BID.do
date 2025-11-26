@@ -5,6 +5,7 @@ clear
 set more off
 
 global ruta = "${surveysFolder}"
+
 local ano 24
 local trims t3 t4
 local modulos hogar individual
@@ -14,23 +15,18 @@ local modulos hogar individual
 * Bases originales 
 
 
-
 *** se armoniza con t3 y t4
 foreach modulo of local modulos {
 
-		import delimited "$ruta\survey\ARG\EPHC\20`ano'\\t3\data_orig\usu_`modulo'_T3`ano'.txt", encoding(ISO-8859-2) clear 
+		import delimited "$ruta\survey\ARG\EPHC\20`ano'\t3\data_orig\usu_`modulo'_T3`ano'.txt", delimiter(";", asstring) asdouble clear 
 		save "$ruta\survey\ARG\EPHC\20`ano'\t3\data_orig\usu_`modulo'_t320`ano'.dta", replace
-		
-		import excel "$ruta\survey\ARG\EPHC\20`ano'\\t4\data_orig\usu_`modulo'_T4`ano'.xlsx", sheet("usu_`modulo'_T4`ano'") firstrow clear
-		rename *, lower
+	
+		import delimited "$ruta\survey\ARG\EPHC\20`ano'\t4\data_orig\usu_`modulo'_T4`ano'.txt", delimiter(";", asstring) asdouble clear 
 		save "$ruta\survey\ARG\EPHC\20`ano'\t4\data_orig\usu_`modulo'_t420`ano'.dta", replace
+		
+	}
 
-		*import delimited "$ruta\survey\ARG\EPHC\20`ano'\\t3\data_orig\usu_`modulo'_T3`ano'.txt", encoding(ISO-8859-2) clear 
-		*save "$ruta\survey\ARG\EPHC\20`ano'\t3\data_orig\usu_`modulo'_t320`ano'.dta", replace
-}
-
-
-* Modulos trimestres
+	* Modulos trimestres
 foreach trim of local trims {
 
 		local base_in  = "$ruta\survey\ARG\EPHC\20`ano'\\`trim'\data_orig"

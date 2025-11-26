@@ -431,9 +431,8 @@ tab subemp_ci
 	*categopri_ci*
 	**************
 	
-	gen categopri_ci=cat_ocup if emp_ci==1
-	replace categopri_ci=. if categopri_ci<1 | categopri_ci>4
-	
+	gen categopri_ci = . 
+	replace categopri_ci = cat_ocup if emp_ci == 1 & inrange(cat_ocup,1,4)	
 
 	**************
 	*categosec_ci*
@@ -1405,12 +1404,11 @@ label value tipocontrato_ci tipocontrato_ci
 *cesante_ci* 
 *************
 * MLO 2013, 03
-gen cesante_ci=1 if pp10d==1 /* ha trabajado anteriormente*/
-*gen cesante_ci=1 if pp10d==2
-recode cesante_ci .=0 if condocup_ci==2
-* No todos los desempleados respondieron si han trabajado antes
-label var cesante_ci "Desocupado - definicion oficial del pais"	
+gen cesante_ci = .
+replace cesante_ci = 1 if condocup_ci==2 & pp10d==1    // desocupado que ya trabajó
+replace cesante_ci = 0 if condocup_ci==2 & pp10d!=1    // resto de desocupados
 
+*label var cesante_ci "Desocupado - definicion oficial del pais"	
 
 *************
 *tamemp_ci
@@ -1474,16 +1472,22 @@ label var salmm_ci "Salario minimo legal"
 ***categoinac_ci**
 ******************
 gen categoinac_ci=.
-replace categoinac_ci=1 if cat_inac==1
-replace categoinac_ci=2 if cat_inac==3
-replace categoinac_ci=4 if cat_inac==4
-recode categoinac_ci .= 4 if condocup_ci==3
+* 1 = Jubilados/pensionados (cat_inac == 1)
+replace categoinac_ci = 1 if cat_inac == 1 & condocup_ci == 3
 
-label var categoinac_ci "Condición ¤e inactividad"
-	label define categoinac_ci 1 "jubilado/pensionado" 2 "estudiante" 3 "quehaceres_domesticos" 4 "otros_inactivos" 
-	label value categoinac_ci categoinac_ci
-	
-	
+* 2 = Estudiantes (cat_inac == 3)
+replace categoinac_ci = 2 if cat_inac == 3 & condocup_ci == 3
+
+* 3 = Quehaceres domésticos (cat_inac == 4)
+replace categoinac_ci = 3 if cat_inac == 4 & condocup_ci == 3
+
+* 4 = Otros inactivos (todo el resto dentro de condocup_ci == 3)
+replace categoinac_ci = 4 if condocup_ci == 3 & missing(categoinac_ci)
+
+/*label var categoinac_ci "Condición ¤e inactividad"
+label define categoinac_ci 1 "jubilado/pensionado" 2 "estudiante" 3 "quehaceres_domesticos" 4 "otros_inactivos" 
+label value categoinac_ci categoinac_ci*/
+		
 ***************
 ***formal_ci***
 ***************
