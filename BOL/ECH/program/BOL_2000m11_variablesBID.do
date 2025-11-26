@@ -823,7 +823,7 @@ replace antiguedad_ci=ctotpep if ctotpepp==6 & emp_ci==1
 gen categoinac_ci =1 if (inactivo==3 & condocup_ci==3)
 replace categoinac_ci = 2 if  (inactivo==1 & condocup_ci==3)
 replace categoinac_ci = 3 if  (inactivo==2 & condocup_ci==3)
-replace categoinac_ci = 4 if  ((categoinac_ci ~=1 & categoinac_ci ~=2 & categoinac_ci ~=3) & condocup_ci==3)
+replace categoinac_ci = 4 if  (missing(categoinac_ci) & condocup_ci==3)
 label var categoinac_ci "Categoría de inactividad"
 label define categoinac_ci 1 "jubilados o pensionados" 2 "Estudiantes" 3 "Quehaceres domésticos" 4 "Otros" 
 

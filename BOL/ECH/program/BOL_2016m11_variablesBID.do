@@ -9,7 +9,8 @@ set more off
  * Se tiene acceso al servidor únicamente al interior del BID.
  * El servidor contiene las bases de datos MECOVI.
  *________________________________________________________________________________________________________________*
- global ruta = "${surveysFolder}"
+
+global ruta = "${surveysFolder}"
 
 local PAIS BOL
 local ENCUESTA ECH
@@ -473,12 +474,28 @@ gen instcot_ci=.
 ****condocup_ci*
 ****************
 
-gen condocup_ci=.
-replace condocup_ci=1 if s06a_01==1 | (s06a_02!=. & s06a_02<=7) | (s06a_03>=1 & s06a_03<=9)
-replace condocup_ci=2 if (s06a_01==2 | s06a_02==8 | s06a_03==10) & s06a_05==1 & s06a_04==1 
-recode condocup_ci .=3 if edad_ci>=7
-recode condocup_ci .=4 if edad_ci<7
-label define condocup_ci 1 "Ocupado" 2 "Desocupado" 3 "Inactivo" 4 "Menor que 7" 
+gen byte condocup_ci = .
+
+* 1. OCUPADOS
+replace condocup_ci = 1 if s06a_01 == 1               /// trabajó ≥ 1 hora
+    | inrange(s06a_02, 1, 7)                          /// actividad informal
+    | inrange(s06a_03, 1, 9)                          /// ausentes con empleo
+
+* 2. DESOCUPADOS (no trabajó, no actividad, no empleo + disponible + buscó)
+replace condocup_ci = 2 if condocup_ci == .           ///
+    & s06a_01 == 2                                     ///
+    & s06a_02 == 8                                     ///
+    & s06a_03 == 10                                    ///
+    & s06a_04 == 1                                     ///
+    & s06a_05 == 1
+
+* 3. INACTIVOS
+replace condocup_ci = 3 if condocup_ci == . & edad_ci >= 7
+
+* 4. MENORES
+replace condocup_ci = 4 if edad_ci < 7
+
+label define condocup_ci 1 "Ocupado" 2 "Desocupado" 3 "Inactivo" 4 "Menor que 7"
 label value condocup_ci condocup_ci
 
 
@@ -570,9 +587,10 @@ label var pea_ci "Población Económicamente Activa"
 *****************
 ***desalent_ci***
 *****************
-gen desalent_ci=(emp_ci==0 & (s06a_10==3 | s06a_10==4))
-replace desalent_ci=. if emp_ci==.
-label var desalent_ci "Trabajadores desalentados"
+gen byte desalent_ci = 0
+replace desalent_ci = 1 if condocup_ci == 3 & inlist(s06a_10, 3, 4)
+replace desalent_ci = . if condocup_ci != 3
+label variable desalent_ci "Trabajador desalentado"
 
 *****************
 ***horaspri_ci***
@@ -636,26 +654,48 @@ label var tiempoparc_c "Personas que trabajan medio tiempo"
 ***categopri_ci***
 ******************
 gen categopri_ci=.
-replace categopri_ci=1 if s06b_16>=4 & s06b_16<=6
-replace categopri_ci=2 if s06b_16==3
-replace categopri_ci=3 if s06b_16==1 | s06b_16==2 | s06b_16==8
-replace categopri_ci=4 if s06b_16==7
-replace categopri_ci=. if emp_ci~=1
-label define categopri_ci 1"Patron" 2"Cuenta propia" 
-label define categopri_ci 3"Empleado" 4" No remunerado", add
+
+* 1 = Patrón / Empleador: códigos 4, 5, 6
+replace categopri_ci = 1 if inrange(s06b_16, 4, 6)
+
+* 2 = Cuenta propia (incluye cooperativistas cuando aplica)
+replace categopri_ci = 2 if s06b_16 == 3
+
+* 3 = Empleado / Asalariado (incluye domésticos y jornaleros)
+replace categopri_ci = 3 if s06b_16 == 1 | s06b_16 == 2 | s06b_16 == 8
+
+* 4 = No remunerado (familiar o aprendiz)
+replace categopri_ci = 4 if s06b_16 == 7
+
+* Missing si NO es ocupado
+replace categopri_ci = . if emp_ci != 1
+
+label define categopri_ci 1 "Patron" 2 "Cuenta propia" 3 "Empleado" 4 "No remunerado"
 label value categopri_ci categopri_ci
 label variable categopri_ci "Categoria ocupacional trabajo principal"
+
 
 ******************
 ***categosec_ci***
 ******************
 gen categosec_ci=.
-replace categosec_ci=1 if s06f_42>=4 & s06f_42<=6
-replace categosec_ci=2 if s06f_42==3
-replace categosec_ci=3 if s06f_42==1 | s06f_42==2 | s06f_42==8
-replace categosec_ci=4 if s06f_42==7
-label define categosec_ci 1"Patron" 2"Cuenta propia" 
-label define categosec_ci 3"Empleado" 4 "No remunerado" , add
+
+* 1 = Patrón / empleador (solo código 5 en esta encuesta)
+replace categosec_ci = 1 if s06f_41 == 5
+
+* 2 = Cuenta propia
+replace categosec_ci = 2 if s06f_41 == 3
+
+* 3 = Empleado / asalariado
+replace categosec_ci = 3 if inlist(s06f_41,1,2,8)
+
+* 4 = No remunerado
+replace categosec_ci = 4 if s06f_41 == 7
+
+* Missing si NO está ocupado
+replace categosec_ci = . if emp_ci != 1
+
+label define categosec_ci 1 "Patron" 2 "Cuenta propia" 3 "Empleado" 4 "No remunerado"
 label value categosec_ci categosec_ci
 label variable categosec_ci "Categoria ocupacional trabajo secundario"
 
@@ -797,10 +837,20 @@ label val rama_ci rama_ci
 ****************
 ***durades_ci***
 ****************
-gen durades_ci=.
-replace durades_ci=s06a_08a/4.3  	if s06a_08b==2
-replace durades_ci=s06a_08a       	if s06a_08b==4
-replace durades_ci=s06a_08a*12   	if s06a_08b==8
+gen durades_ci = .
+
+* Semana → meses
+replace durades_ci = s06a_08a / 4.3    if s06a_08b == 2
+
+* Mes
+replace durades_ci = s06a_08a          if s06a_08b == 4
+
+* Año → meses
+replace durades_ci = s06a_08a * 12     if s06a_08b == 8
+
+* Solo aplica a los desocupados
+replace durades_ci = . if condocup_ci != 2
+
 label variable durades_ci "Duracion del desempleo en meses"
 
 *******************
@@ -816,12 +866,11 @@ label var antiguedad_ci "Antiguedad en la actividad actual en anios"
 ***categoinac_ci***
 *******************
 *Modificacion MLO, 2015 m4 (se cambió s5_14 por s6_09)
-gen categoinac_ci =1 if (s06a_09==3 & condocup_ci==3)
-replace categoinac_ci = 2 if  (s06a_09==1 & condocup_ci==3)
-replace categoinac_ci = 3 if  (s06a_09==2 & condocup_ci==3)
-replace categoinac_ci = 4 if  ((categoinac_ci ~=1 & categoinac_ci ~=2 & categoinac_ci ~=3) & condocup_ci==3)
-label var categoinac_ci "Categoría de inactividad"
-label define categoinac_ci 1 "jubilados o pensionados" 2 "Estudiantes" 3 "Quehaceres domésticos" 4 "Otros"
+gen categoinac_ci = . 
+replace categoinac_ci = 1 if s06a_09 == 3 & condocup_ci == 3  
+replace categoinac_ci = 2 if s06a_09 == 1 & condocup_ci == 3  
+replace categoinac_ci = 3 if s06a_09 == 2 & condocup_ci == 3  
+replace categoinac_ci = 4 if condocup_ci == 3 & missing(categoinac_ci)
 
 *******************
 ***formal***

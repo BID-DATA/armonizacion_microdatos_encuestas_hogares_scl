@@ -9,8 +9,9 @@ set more off
  * Se tiene acceso al servidor únicamente al interior del BID.
  * El servidor contiene las bases de datos MECOVI.
  *________________________________________________________________________________________________________________*
- global ruta = "${surveysFolder}"
 
+global ruta = "${surveysFolder}"
+ 
 local PAIS BOL
 local ENCUESTA ECH
 local ANO "2019"
@@ -475,14 +476,29 @@ gen instcot_ci=.
 ****condocup_ci*
 ****************
 
-gen condocup_ci=.
-replace condocup_ci=1 if s06a_01==1 | (s06a_02!=. & s06a_02<=7) | (s06a_03>=1 & s06a_03<=9)
-replace condocup_ci=2 if (s06a_01==2 | s06a_02==8 | s06a_03==10) & s06a_05==1 & s06a_04==1 
-recode condocup_ci .=3 if edad_ci>=7
-recode condocup_ci .=4 if edad_ci<7
-label define condocup_ci 1 "Ocupado" 2 "Desocupado" 3 "Inactivo" 4 "Menor que 7" 
-label value condocup_ci condocup_ci
+gen byte condocup_ci = .
 
+* 1. OCUPADOS
+replace condocup_ci = 1 if s06a_01 == 1               /// trabajó ≥ 1 hora
+    | inrange(s06a_02, 1, 7)                          /// actividad informal
+    | inrange(s06a_03, 1, 9)                          /// ausentes con empleo
+
+* 2. DESOCUPADOS (no trabajó, no actividad, no empleo + disponible + buscó)
+replace condocup_ci = 2 if condocup_ci == .           ///
+    & s06a_01 == 2                                     ///
+    & s06a_02 == 8                                     ///
+    & s06a_03 == 10                                    ///
+    & s06a_04 == 1                                     ///
+    & s06a_05 == 1
+
+* 3. INACTIVOS
+replace condocup_ci = 3 if condocup_ci == . & edad_ci >= 7
+
+* 4. MENORES
+replace condocup_ci = 4 if edad_ci < 7
+
+label define condocup_ci 1 "Ocupado" 2 "Desocupado" 3 "Inactivo" 4 "Menor que 7"
+label value condocup_ci condocup_ci
 
 *************
 *cesante_ci* 
@@ -573,9 +589,11 @@ label var pea_ci "Población Económicamente Activa"
 *****************
 ***desalent_ci***
 *****************
-gen desalent_ci=(emp_ci==0 & (s06a_10==3 | s06a_10==4))
-replace desalent_ci=. if emp_ci==.
-label var desalent_ci "Trabajadores desalentados"
+gen byte desalent_ci = 0
+replace desalent_ci = 1 if condocup_ci == 3 & inlist(s06a_10, 3, 4)
+replace desalent_ci = . if condocup_ci != 3
+label variable desalent_ci "Trabajador desalentado"
+
 
 *****************
 ***horaspri_ci***
@@ -628,42 +646,63 @@ label var subemp_ci "Personas en subempleo por horas"
 *******************
 ***tiempoparc_ci***
 *******************
-gen tiempoparc_ci=.
-*Mod. MLO 2015, 10
-replace tiempoparc_ci=(s06g_47==2 & horaspri_ci<30 & emp_ci == 1)
-replace tiempoparc_ci=. if emp_ci==0
-*replace tiempoparc_ci=1 if s6_46==2 & horastot_ci<=30 & emp_ci == 1
-*replace tiempoparc_ci=0 if s6_46==2 & emp_ci == 1 & horastot_ci>30
-label var tiempoparc_c "Personas que trabajan medio tiempo" 
+* Tiempo parcial involuntario: trabaja <30 horas pero NO quiere más horas
+gen byte tiempoparc_ci = 0
+replace tiempoparc_ci = 1 if horaspri_ci < 30 ///
+    & s06g_47 == 2 ///
+    & emp_ci == 1
+
+replace tiempoparc_ci = . if emp_ci != 1
+
+label variable tiempoparc_ci "Trabajadores a tiempo parcial (no desean más horas)"
+
 
 ******************
 ***categopri_ci***
 ******************
-gen categopri_ci=.
-replace categopri_ci=1 if s06b_14>=4 & s06b_14<=6
-replace categopri_ci=2 if s06b_14==3
-replace categopri_ci=3 if s06b_14==1 | s06b_14==2 | s06b_14==9
-replace categopri_ci=4 if s06b_14==7
-replace categopri_ci=0 if s06b_14==8
+destring s06b_14, ignore("NA") replace
 
-replace categopri_ci=. if emp_ci~=1
-label define categopri_ci 0 "Otro" 1"Patron" 2"Cuenta propia" 
-label define categopri_ci 3"Empleado" 4" No remunerado", add
-label value categopri_ci categopri_ci
-label variable categopri_ci "Categoria ocupacional trabajo principal"
+gen byte categopri_ci = .
+
+* (1) Patrón / empleador
+replace categopri_ci = 1 if inlist(s06b_14, 2, 4) & emp_ci == 1
+
+* (2) Cuenta propia (incluye cooperativista)
+replace categopri_ci = 2 if inlist(s06b_14, 3, 5) & emp_ci == 1
+
+* (3) Empleado / asalariado (incluye doméstico)
+replace categopri_ci = 3 if inlist(s06b_14, 1, 8) & emp_ci == 1
+
+* (4) No remunerado (familiar o aprendiz)
+replace categopri_ci = 4 if inlist(s06b_14, 6, 7) & emp_ci == 1
+
+* Missing para no ocupados
+replace categopri_ci = . if emp_ci != 1
+
+label define categopri_ci ///
+    1 "Patrón / empleador" ///
+    2 "Cuenta propia" ///
+    3 "Empleado" ///
+    4 "No remunerado"
+
+label values categopri_ci categopri_ci
+label variable categopri_ci "Categoría ocupacional - trabajo principal"
 
 ******************
 ***categosec_ci***
 ******************
-gen categosec_ci=.
-replace categosec_ci=1 if s06e_36>=4 & s06e_36<=6
-replace categosec_ci=2 if s06e_36==3
-replace categosec_ci=3 if s06e_36==1 | s06e_36==2 | s06e_36==9
-replace categosec_ci=4 if s06e_36==7
-label define categosec_ci 1"Patron" 2"Cuenta propia" 
-label define categosec_ci 3"Empleado" 4 "No remunerado" , add
+gen categosec_ci = .
+
+replace categosec_ci = 1 if inrange(s06e_36,4,6)
+replace categosec_ci = 2 if s06e_36 == 3
+replace categosec_ci = 3 if inlist(s06e_36,1,2,8)
+replace categosec_ci = 4 if s06e_36 == 7
+
+label define categosec_ci 1 "Patron" 2 "Cuenta propia" ///
+                         3 "Empleado" 4 "No remunerado"
 label value categosec_ci categosec_ci
 label variable categosec_ci "Categoria ocupacional trabajo secundario"
+
 
 *****************
 *tipocontrato_ci*
@@ -805,11 +844,25 @@ label val rama_ci rama_ci
 ****************
 ***durades_ci***
 ****************
-gen durades_ci=.
-replace durades_ci=s06a_08a/4.3  if s06a_08b==2
-replace durades_ci=s06a_08a       if s06a_08b==4
-replace durades_ci=s06a_08a*12   if s06a_08b==8
+***********************
+*** durades_ci (meses)
+***********************
+gen durades_ci = .
+
+* Semana → meses
+replace durades_ci = s06a_08a / 4.3    if s06a_08b == 2
+
+* Mes
+replace durades_ci = s06a_08a          if s06a_08b == 4
+
+* Año → meses
+replace durades_ci = s06a_08a * 12     if s06a_08b == 8
+
+* Solo aplica a los desocupados
+replace durades_ci = . if condocup_ci != 2
+
 label variable durades_ci "Duracion del desempleo en meses"
+
 
 *******************
 ***antiguedad_ci***
@@ -833,7 +886,7 @@ label var antiguedad_ci "Antiguedad en la actividad actual en anios"
 gen categoinac_ci =1 	  if (s06a_09==3 & condocup_ci==3)
 replace categoinac_ci = 2 if  (s06a_09==1 & condocup_ci==3)
 replace categoinac_ci = 3 if  (s06a_09==2 & condocup_ci==3)
-replace categoinac_ci = 4 if  ((categoinac_ci ~=1 & categoinac_ci ~=2 & categoinac_ci ~=3) & condocup_ci==3)
+replace categoinac_ci = 4 if  (condocup_ci == 3 & missing(categoinac_ci))
 label var categoinac_ci "Categoría de inactividad"
 label define categoinac_ci 1 "jubilados o pensionados" 2 "Estudiantes" 3 "Quehaceres domésticos" 4 "Otros"
 
@@ -1240,7 +1293,7 @@ gen yotro_bono2= .
 replace yotro_bono2= s07b_05ea	    if s07b_05eb==4
 replace yotro_bono2= s07b_05ea/12		if s07b_05eb==8
 
-egen ytransmon=rsum(ydinero yotro_bono), missing
+egen ytransmon = rsum(ydinero yalimento yotro_bono yotro_bono2), missing
 
 /*gen ytransmon = .
 replace ytransmon= s07b_05ba*4.3	if s07b_05bb==2
@@ -1266,17 +1319,17 @@ F. PESOS CHILENOS
 G. OTRO
 
 https://www.bcb.gob.bo/?q=cotizaciones_tc
-Al 2 DE ENERO DE 2018
+Al 2 DE ENERO DE 2019
 */
 
 gen s6_112= .
 replace s6_112 =  s07c_08a 			 if s07c_08b==1 /*bolivianos*/
-replace s6_112 =  s07c_08a*8.23678   if s07c_08b==2 /*euro*/
+replace s6_112 =  s07c_08a*7.85059  if s07c_08b==2 /*euro*/
 replace s6_112 =  s07c_08a*6.96		 if s07c_08b==3 /*dolar*/
-replace s6_112 =  s07c_08a*0.36836   if s07c_08b==4 /*peso argentino*/
-replace s6_112 =  s07c_08a*2.07094   if s07c_08b==5 /*real*/
-replace s6_112 =  s07c_08a*0.01115	 if s07c_08b==6 /*peso chileno*/
-*replace s6_112 =  s07c_08a*2.00961   if s07c_08b==7 /*soles*/ En la 201 es Otro
+replace s6_112 =  s07c_08a*0.18212   if s07c_08b==4 /*peso argentino*/
+replace s6_112 =  s07c_08a*1.77055   if s07c_08b==5 /*real*/
+replace s6_112 =  s07c_08a*0.00988	 if s07c_08b==6 /*peso chileno*/
+replace s6_112 =  s07c_08a*2.03651   if s07c_08b==7 /*soles*/ 
 
 * se suman remesas monetarias y en especie
 egen rem = rsum(s07c_10 s6_112), m

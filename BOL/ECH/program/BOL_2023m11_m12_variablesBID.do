@@ -13,6 +13,7 @@ set more off
 
 global ruta = "${surveysFolder}"
 
+
 local PAIS BOL
 local ENCUESTA ECH
 local ANO "2023"
@@ -458,22 +459,24 @@ bysort idh_ch (jefe_ci s01a_09): replace afroind_ch = 1 if jefe_ci == 1 & s01a_0
 ****************
 ****condocup_ci*
 ****************
-gen condocup_ci = .
+gen byte condocup_ci = .
 
+* 1. OCUPADOS: trabajó o estuvo ausente con empleo
 replace condocup_ci = 1 if s04a_01 == 1
-replace condocup_ci = 2 if s04a_01 == 2 & pea == 1
-replace condocup_ci = 3 if pei == 1
+replace condocup_ci = 1 if inrange(s04a_03,1,9)
 
-recode condocup_ci .= 3 if edad_ci >= 7
-recode condocup_ci .= 4 if edad_ci < 7
+* 2. DESOCUPADOS: no trabajó, no tenía empleo, disponible y buscó trabajo
+replace condocup_ci = 2 if condocup_ci == . ///
+    & s04a_01 == 2 ///
+    & (s04a_03 == 10 | missing(s04a_03)) ///
+    & s04a_04 == 1 ///
+    & s04a_05 == 1
 
-label define condocup_ci ///
-    1 "Ocupado" ///
-    2 "Desocupado" ///
-    3 "Inactivo" ///
-    4 "Menor que 7"
+* 3. INACTIVOS
+replace condocup_ci = 3 if condocup_ci == . & edad_ci >= 7
 
-label value condocup_ci condocup_ci
+* 4. MENORES DE LA EDAD DEL MÓDULO
+replace condocup_ci = 4 if edad_ci < 7
 
 *******************
 ***categoinac_ci***
@@ -481,20 +484,18 @@ label value condocup_ci condocup_ci
 *Modificacion MLO, 2015 m4 (se cambió s5_14 por s6_09)
 
 gen categoinac_ci = .
-replace categoinac_ci = 1 if s04a_06 == 3 & condocup_ci == 3  // Jubilados o pensionados
-replace categoinac_ci = 2 if s04a_06 == 1 & condocup_ci == 3  // Estudiantes
-replace categoinac_ci = 3 if s04a_06 == 2 & condocup_ci == 3  // Quehaceres domésticos
-replace categoinac_ci = 4 if missing(categoinac_ci) & condocup_ci == 3  // Otros
 
-label variable categoinac_ci "Categoría de inactividad"
+* 1. Jubilados
+replace categoinac_ci = 1 if s04a_06 == 2 & condocup_ci == 3
 
-label define categoinac_ci ///
-    1 "Jubilados o pensionados" ///
-    2 "Estudiantes" ///
-    3 "Quehaceres domésticos" ///
-    4 "Otros"
+* 2. Estudiantes
+replace categoinac_ci = 2 if s04a_06 == 1 & condocup_ci == 3
 
-label value categoinac_ci categoinac_ci
+* 3. Quehaceres domésticos
+replace categoinac_ci = 3 if s04a_06 == 4 & condocup_ci == 3
+
+* 4. Otros inactivos (enfermos, adulto mayor, otros)
+replace categoinac_ci = 4 if condocup_ci == 3 & missing(categoinac_ci)
 
 ************
 ***emp_ci***
@@ -505,9 +506,13 @@ label var emp_ci "Ocupado (empleado)"
 *************
 *cesante_ci* 
 *************
-gen cesante_ci = 1 if condocup_ci == 2 &  condact == 2
+gen byte cesante_ci = .
+
+* Cesante: desocupado que sí trabajó antes
+replace cesante_ci = 1 if condocup_ci == 2 & s04a_08 == 1
+
+* Aspirante: desocupado que nunca trabajó
 replace cesante_ci = 0 if condocup_ci == 2 & s04a_08 == 2
-label var cesante_ci "Desocupado - definicion oficial del pais"	
 
 ****************
 ***desemp_ci***
@@ -530,7 +535,33 @@ label var subemp_ci "Personas en subempleo por horas"
 ***durades_ci***
 ****************
 gen durades_ci = .
-label variable durades_ci "Duracion del desempleo en meses"
+
+* Semanas → meses
+replace durades_ci = s06a_08a / 4.3 if s06a_08b == 2
+
+* Quincenas → meses
+replace durades_ci = s06a_08a / 2 if s06a_08b == 3
+
+* Meses
+replace durades_ci = s06a_08a if s06a_08b == 4
+
+* Bimestres → meses
+replace durades_ci = s06a_08a * 2 if s06a_08b == 5
+
+* Trimestres → meses
+replace durades_ci = s06a_08a * 3 if s06a_08b == 6
+
+* Semestres → meses
+replace durades_ci = s06a_08a * 6 if s06a_08b == 7
+
+* Años → meses
+replace durades_ci = s06a_08a * 12 if s06a_08b == 8
+
+* Missing para no desempleados
+replace durades_ci = . if condocup_ci != 2
+
+label var durades_ci "Duración del desempleo en meses"
+
 
 *************
 ***pea_ci***
@@ -572,12 +603,9 @@ label variable antiguedad_ci "Antigüedad en la actividad actual en años"
 *****************
 ***desalent_ci***
 *****************
-destring s04a_07, ignore("NA") replace
-
-gen desalent_ci = (emp_ci == 0 & inlist(s04a_07, 3, 4))
-replace desalent_ci = . if missing(emp_ci)
-
-label variable desalent_ci "Trabajadores desalentados"
+gen desalent_ci = .
+replace desalent_ci = 1 if condocup_ci == 3 & inlist(s04a_07, 3, 4)
+replace desalent_ci = 0 if condocup_ci == 3 & !inlist(s04a_07, 3, 4) & s04a_07 != .
 
 *****************
 ***horaspri_ci***
@@ -617,39 +645,52 @@ label var tiempoparc_c "Personas que trabajan medio tiempo"
 ******************
 ***categopri_ci***
 ******************
-destring s04b_12 s04e_29, ignore("NA") replace
+destring s04b_12, ignore("NA") replace
 
-gen categopri_ci = .
+gen byte categopri_ci = .
 
-replace categopri_ci = 1 if inrange(s04b_12, 4, 6)          // Patrón
-replace categopri_ci = 2 if s04b_12 == 3                    // Cuenta propia
-replace categopri_ci = 3 if inlist(s04b_12, 1, 2)           // Empleado
-replace categopri_ci = 4 if s04b_12 == 7                    // No remunerado
-replace categopri_ci = 0 if s04b_12 == 8                    // Otro
+* (1) PATRÓN / EMPLEADOR
+replace categopri_ci = 1 if inlist(s04b_12,4)  & emp_ci==1
 
-replace categopri_ci = . if emp_ci != 1
+* (2) CUENTA PROPIA (incluye cooperativistas)
+replace categopri_ci = 2 if inlist(s04b_12,3,5) & emp_ci==1
 
-label define categopri_ci ///
-    0 "Otro" ///
+* (3) EMPLEADOS (incluye empleado doméstico)
+replace categopri_ci = 3 if inlist(s04b_12,1,2,8) & emp_ci==1
+
+* (4) NO REMUNERADO (trabajador familiar, aprendiz)
+replace categopri_ci = 4 if inlist(s04b_12,6,7) & emp_ci==1
+
+/*label define categopri_ci  ///
     1 "Patrón" ///
     2 "Cuenta propia" ///
     3 "Empleado" ///
     4 "No remunerado"
 
 label value categopri_ci categopri_ci
-label variable categopri_ci "Categoría ocupacional - trabajo principal"
+label variable categopri_ci "Categoría ocupacional - trabajo principal"*/
+
 
 ******************
 ***categosec_ci***
 ******************
-gen categosec_ci = .
+destring s04e_27, ignore("NA") replace
 
-replace categosec_ci = 1 if inrange(s04e_27, 4, 6)         // Patrón
-replace categosec_ci = 2 if s04e_27 == 3                   // Cuenta propia
-replace categosec_ci = 3 if inlist(s04e_27, 1, 2)          // Empleado
-replace categosec_ci = 4 if s04e_27 == 7                   // No remunerado
+gen byte categosec_ci = .
 
-label define categosec_ci ///
+* (1) Patrón / empleador
+replace categosec_ci = 1 if s04e_27 == 4 & emp_ci==1
+
+* (2) Cuenta propia (incluye cooperativistas)
+replace categosec_ci = 2 if inlist(s04e_27,3,5) & emp_ci==1
+
+* (3) Empleado (incluye empleado doméstico)
+replace categosec_ci = 3 if inlist(s04e_27,1,2,8) & emp_ci==1
+
+* (4) No remunerado (familiar sin pago, aprendiz)
+replace categosec_ci = 4 if inlist(s04e_27,6,7) & emp_ci==1
+
+/*label define categosec_ci ///
     1 "Patrón" ///
     2 "Cuenta propia" ///
     3 "Empleado" ///
@@ -657,6 +698,7 @@ label define categosec_ci ///
 
 label value categosec_ci categosec_ci
 label variable categosec_ci "Categoría ocupacional - trabajo secundario"
+*/
 
 *************
 ***rama_ci***
@@ -1240,7 +1282,7 @@ gen yotro_bono2= .
 replace yotro_bono2= s05b_06ca	    	if s05b_06cb==4
 replace yotro_bono2= s05b_06ca/12		if s05b_06cb==8
 
-egen ytransmon=rsum(ydinero yotro_bono), missing
+egen ytransmon = rsum(ydinero yalimento yotro_bono yotro_bono2), missing
 
 /*
 replace ytransmon= s07b_05ba*4.3	if s07b_05bb==2
@@ -1266,17 +1308,16 @@ F. PESOS CHILENOS
 G. OTRO
 
 https://www.bcb.gob.bo/?q=cotizaciones_tc
-Al 4 DE ENERO DE 2021
-*/
+29 de diciembre 2023*/
 destring s05c_*, replace i("NA")
 gen s6_112= .
 replace s6_112 =  s05c_09a 			 if s05c_09b==1 /*bolivianos*/
-replace s6_112 =  s05c_09a*8.39668   if s05c_09b==2 /*euro*/
+replace s6_112 =  s05c_09a*7.58581   if s05c_09b==2 /*euro*/
 replace s6_112 =  s05c_09a*6.96		 if s05c_09b==3 /*dolar*/
-replace s6_112 =  s05c_09a*0.08152   if s05c_09b==4 /*peso argentino*/
-replace s6_112 =  s05c_09a*1.32060   if s05c_09b==5 /*real*/
-replace s6_112 =  s05c_09a*0.00966	 if s05c_09b==6 /*peso chileno*/
-* replace s6_112 =  s05c_10a*2.00961   if s05c_10b==7 /*soles*/ En la 201 es Otro
+replace s6_112 =  s05c_09a*0.00849  if s05c_09b==4 /*peso argentino*/
+replace s6_112 =  s05c_09a*1.41112   if s05c_09b==5 /*real*/
+replace s6_112 =  s05c_09a*0.00775	 if s05c_09b==6 /*peso chileno*/
+replace s6_112 =  s05c_09a*1.85190   if s05c_09b==7 /*soles*/ 
 
 * se suman remesas monetarias y en especie
 egen rem = rsum(s05c_10 s6_112), m
