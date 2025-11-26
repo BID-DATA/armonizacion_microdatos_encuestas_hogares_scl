@@ -426,16 +426,17 @@ by idh_ch, sort: egen byte nmenor1_ch=sum((relacion_ci>0 & relacion_ci<=5) & (ed
 ****************
 
 gen condocup_ci=.
-replace condocup_ci=1 if estado==1
-replace condocup_ci=2 if estado==2
-replace condocup_ci=3 if estado==3 & edad_ci>=10
-replace condocup_ci=. if estado == 0
-replace condocup_ci=4 if estado == 4
-label var condocup_ci "Condicion de ocupación de acuerdo a def de cada pais"
+
+replace condocup_ci = 1 if estado == 1       // Ocupado
+replace condocup_ci = 2 if estado == 2       // Desocupado
+replace condocup_ci = 3 if estado == 3       // Inactivo
+replace condocup_ci = 4 if estado == 4       // Menor de PET
+replace condocup_ci = . if estado == 0       // Entrevista no realizada
+
+/*label var condocup_ci "Condicion de ocupación ¤e acuerdo a def de cada pais"
 label define condocup_ci 1 "Ocupado" 2 "Desocupado" 3 "Inactivo" 4 "Menor de PET" 
-label value condocup_ci condocup_ci
-	
-	
+label value condocup_ci condocup_ci*/
+		
 ************
 ***emp_ci***
 ************
@@ -487,31 +488,37 @@ gen pea_ci=(emp_ci==1 | desemp_ci==1)
 	*subemp_ci*
 	***********
 
-	gen subemp_ci=0
-	replace subemp_ci=1 if pp03g==1 & (horastot_ci>=1 & horastot_ci<=30) & emp_ci==1
-	replace subemp_ci =. if emp_ci ==.
-	
-	/*tab subemp_ci
-replace subemp_ci=1 if intensi==1 | intensi==2
-recode subemp_ci .=0 if intensi==3 | intensi==4 | intensi==5
-tab subemp_ci
-*/
-	*Note: Se corrige y se consideran las horas totales
+	gen subemp_ci = .
 
+	* Subempleo visible: <=30 horas + quiere trabajar más + está disponible
+	replace subemp_ci = 1 if emp_ci == 1 ///
+		& horastot_ci <= 30 & horastot_ci >= 1 ///
+		& pp03g == 1 ///
+		& inlist(pp03h, 1, 2)
+
+	* Resto de ocupados: no subempleo visible
+	replace subemp_ci = 0 if emp_ci == 1 & missing(subemp_ci)
+		
 	***************
 	*tiempoparc_ci*
 	***************
-	
-	gen tiempoparc_ci=(horastot_ci>=1 & horastot_ci<=30) & (pp03g==2 & emp_ci==1)
-	replace tiempoparc_ci=. if emp_ci==0
-	
+	* 1: trabaja menos de 30 horas y NO quiere trabajar más
+	gen byte tiempoparc_ci = 1 if emp_ci == 1 ///
+		& horastot_ci >= 1 & horastot_ci < 30 ///
+		& pp03g == 2
+
+	* 0: resto de ocupados
+	replace tiempoparc_ci = 0 if emp_ci == 1 & mi(tiempoparc_ci)
+
+	* .: no ocupados
+	replace tiempoparc_ci = . if emp_ci != 1
 	
 	**************
 	*categopri_ci*
 	**************
 	
-	gen categopri_ci=cat_ocup if emp_ci==1
-	replace categopri_ci=. if categopri_ci<1 | categopri_ci>4
+	gen categopri_ci = . 
+	replace categopri_ci = cat_ocup if emp_ci == 1 & inrange(cat_ocup,1,4)	
 	
 
 	**************
@@ -612,38 +619,80 @@ label value ocupa_ci ocupa_ci
 	*rama_ci*
 	*********
 
-*2015, 12 MLO cambio la clasificacion y por lo tanto debe cambiarse la codificacion
-destring pp04b_cod, replace 	
+	*2015, 12 MLO cambio la clasificacion y por lo tanto debe cambiarse la codificacion
+	destring pp04b_cod, replace 	
 
-gen rama_ci = .
-replace rama_ci = 1 if ((pp04b_cod==1)|(pp04b_cod>=101 &  pp04b_cod<=300)) & emp_ci==1
-replace rama_ci = 2 if ((pp04b_cod>=500 & pp04b_cod<=900) ) & emp_ci==1
-replace rama_ci = 3 if ((pp04b_cod>=1000 & pp04b_cod<=3300) |  pp04b_cod==10 |  pp04b_cod==19  |  pp04b_cod==20 |  pp04b_cod==21 |  pp04b_cod==26) & emp_ci==1
-replace rama_ci = 4 if ((pp04b_cod>=3500 & pp04b_cod<=3900)) & emp_ci==1
-replace rama_ci = 5 if ((pp04b_cod==4000)) & emp_ci==1
-replace rama_ci = 6 if ((pp04b_cod>=4500 & pp04b_cod<4900) | pp04b_cod==48 | (pp04b_cod>=5500 & pp04b_cod<=5602)) & emp_ci==1
-replace rama_ci = 7 if ((pp04b_cod>=4900 & pp04b_cod<=5300) | pp04b_cod==49) & emp_ci==1
-replace rama_ci = 8 if ((pp04b_cod>=6400 & pp04b_cod<=8200) ) & emp_ci==1
-replace rama_ci = 9 if ((pp04b_cod>=5800 & pp04b_cod<=6300) |(pp04b_cod>=8300 &  pp04b_cod<=9900) | pp04b_cod==85 | pp04b_cod==63 | pp04b_cod==61  | pp04b_cod==58) & emp_ci==1
-label var rama_ci "Rama de actividad"
-label def rama_ci 1"Agricultura, caza, silvicultura y pesca" 2"Explotación de minas y canteras" 3"Industrias manufactureras"
-label def rama_ci 4"Electricidad, gas y agua" 5"Construcción" 6"Comercio, restaurantes y hoteles" 7"Transporte y almacenamiento", add
-label def rama_ci 8"Establecimientos financieros, seguros e inmuebles" 9"Servicios sociales y comunales", add
-label val rama_ci rama_ci
+	gen rama_ci = .
 
+	* 1 Agricultura, caza, silvicultura y pesca
+	replace rama_ci = 1 if ((pp04b_cod == 1) | inrange(pp04b_cod, 101, 300)) ///
+		& emp_ci == 1
 
+	* 2 Explotación de minas y canteras
+	replace rama_ci = 2 if inrange(pp04b_cod, 500, 900) ///
+		& emp_ci == 1
+
+	* 3 Industrias manufactureras
+	replace rama_ci = 3 if (inrange(pp04b_cod, 1000, 3300) | ///
+		inlist(pp04b_cod, 10, 19, 20, 21, 26)) ///
+		& emp_ci == 1
+
+	* 4 Electricidad, gas y agua
+	replace rama_ci = 4 if inrange(pp04b_cod, 3500, 3900) ///
+		& emp_ci == 1
+
+	* 5 Construcción
+	replace rama_ci = 5 if pp04b_cod == 4000 & emp_ci == 1
+
+	* 6 Comercio, restaurantes y hoteles
+	replace rama_ci = 6 if (inrange(pp04b_cod, 4500, 4899) | pp04b_cod == 48 | ///
+		inrange(pp04b_cod, 5500, 5602)) ///
+		& emp_ci == 1
+
+	* 7 Transporte y almacenamiento
+	replace rama_ci = 7 if (inrange(pp04b_cod, 4900, 5300) | pp04b_cod == 49) ///
+		& emp_ci == 1
+
+	* 8 Finanzas, seguros, bienes inmuebles
+	replace rama_ci = 8 if inrange(pp04b_cod, 6400, 8200) ///
+		& emp_ci == 1
+
+	* 9 Servicios sociales, comunales y personales (incluye Gobierno)
+	replace rama_ci = 9 if (inrange(pp04b_cod, 5800, 6300) | ///
+		inrange(pp04b_cod, 8300, 9900) | ///
+		inlist(pp04b_cod, 85, 63, 61, 58)) ///
+		& emp_ci == 1
+
+	/*label var rama_ci "Rama de actividad de la ocupación principal"
+	label def rama_ci 1"Agricultura, caza, silvicultura y pesca" 2"Explotación de minas y canteras" 3"Industrias manufactureras"
+	label def rama_ci 4"Electricidad, gas y agua" 5"Construcción" 6"Comercio, restaurantes y hoteles" 7"Transporte y almacenamiento", add
+	label def rama_ci 8"Establecimientos financieros, seguros e inmuebles" 9"Servicios sociales y comunales", add
+	label val rama_ci rama_ci
+	*/
 	
 	************
 	*durades_ci*
 	************
-	*Esta variable se capturo como categorica por ello se crea como missing. Sin embargo, se 
-	*guarda la informacion en una nueva variable durades1_ci
-	
 	gen durades_ci=.
-	
-	gen durades1_ci=pp10a
-	replace durades1_ci=. if pp10a==0 | pp10a==9
-		
+
+	* 1 = menos de 1 mes  → convención: 0.5 meses
+	replace durades_ci = 0.5 if condocup_ci==2 & pp10a == 1
+
+	* 2 = 1 a 3 meses → convención: 2 meses
+	replace durades_ci = 2 if condocup_ci==2 & pp10a == 2
+
+	* 3 = más de 3 a 6 meses → convención: 4.5 meses
+	replace durades_ci = 4.5 if condocup_ci==2 & pp10a == 3
+
+	* 4 = más de 6 a 12 meses → convención: 9 meses
+	replace durades_ci = 9 if condocup_ci==2 & pp10a == 4
+
+	* 5 = más de 1 año → convención: 12 meses
+	replace durades_ci = 12 if condocup_ci==2 & pp10a == 5
+
+	* Categorías no válidas o missing
+	replace durades_ci = . if pp10a == 9
+					
 	***************
 	*antiguedad_ci*
 	***************
@@ -782,12 +831,11 @@ label val rama_ci rama_ci
 	*********
 	*ynlm_ci*
 	*********
-	
-	gen ynlm_ci=.
-	replace ynlm_ci = t_vi
-	replace ynlm_ci=. if ynlm_ci<0
-
-	
+	*t_vi: Monto total de ingresos no laborales
+	gen double ynlm_ci = t_vi
+	replace ynlm_ci = . if ynlm_ci < 0
+	replace ynlm_ci = . if t_vi == -9 | t_vi == .
+	replace ynlm_ci = 0 if mi(t_vi) == 0 & ynlm_ci == .
 	
 	**********
 	*ynlnm_ci*
@@ -805,12 +853,9 @@ egen ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci)
 	*************
 	*nrylmpri_ch*
 	*************
-	*Creating a Flag label for those households where someone has a ylmpri_ci as missing
 
 	by idh_ch, sort: egen nrylmpri_ch=sum(nrylmpri_ci) if miembros_ci==1, missing
-	replace nrylmpri_ch=1 if nrylmpri_ch>0 & nrylmpri_ch<.
-	replace nrylmpri_ch=. if nrylmpri_ch==.
-
+	replace nrylmpri_ch=1 if nrylmpri_ch>1 & nrylmpri_ch<.
 
 	********
 	*ylm_ch*
@@ -1462,12 +1507,11 @@ label value tipocontrato_ci tipocontrato_ci
 *cesante_ci* 
 *************
 * MLO 2013, 03
-gen cesante_ci=1 if pp10d==1 /* ha trabajado anteriormente*/
-*gen cesante_ci=1 if pp10d==2
-recode cesante_ci .=0 if condocup_ci==2
-* No todos los desempleados respondieron si han trabajado antes
-label var cesante_ci "Desocupado - definicion oficial del pais"	
+gen cesante_ci = .
+replace cesante_ci = 1 if condocup_ci==2 & pp10d==1    // desocupado que ya trabajó
+replace cesante_ci = 0 if condocup_ci==2 & pp10d!=1    // resto de desocupados
 
+*label var cesante_ci "Desocupado - definicion oficial del pais"	
 
 *************
 *tamemp_ci
@@ -1531,16 +1575,22 @@ label var salmm_ci "Salario minimo legal"
 ***categoinac_ci**
 ******************
 gen categoinac_ci=.
-replace categoinac_ci=1 if cat_inac==1
-replace categoinac_ci=2 if cat_inac==3
-replace categoinac_ci=4 if cat_inac==4
-recode categoinac_ci .= 4 if condocup_ci==3
+* 1 = Jubilados/pensionados (cat_inac == 1)
+replace categoinac_ci = 1 if cat_inac == 1 & condocup_ci == 3
 
-label var categoinac_ci "Condición de inactividad"
-	label define categoinac_ci 1 "jubilado/pensionado" 2 "estudiante" 3 "quehaceres_domesticos" 4 "otros_inactivos" 
-	label value categoinac_ci categoinac_ci
-	
-	
+* 2 = Estudiantes (cat_inac == 3)
+replace categoinac_ci = 2 if cat_inac == 3 & condocup_ci == 3
+
+* 3 = Quehaceres domésticos (cat_inac == 4)
+replace categoinac_ci = 3 if cat_inac == 4 & condocup_ci == 3
+
+* 4 = Otros inactivos (todo el resto dentro de condocup_ci == 3)
+replace categoinac_ci = 4 if condocup_ci == 3 & missing(categoinac_ci)
+
+/*label var categoinac_ci "Condición ¤e inactividad"
+label define categoinac_ci 1 "jubilado/pensionado" 2 "estudiante" 3 "quehaceres_domesticos" 4 "otros_inactivos" 
+label value categoinac_ci categoinac_ci*/
+		
 ***************
 ***formal_ci***
 ***************
@@ -1584,7 +1634,7 @@ gen instcot_ci=.
 	*******************
 
 	gen migrante_ci=(inlist(ch15,4,5)) if ch15!=. & ch15!=9		/* Categoria Ns./Nr. no se incluye en la variable*/
-	label var migrante_ci "=1 si es migrante"
+	*label var migrante_ci "=1 si es migrante"
 	
 	**********************
 	*** migantiguo5_ci ***
