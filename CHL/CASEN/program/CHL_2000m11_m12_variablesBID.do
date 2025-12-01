@@ -60,7 +60,7 @@ gen region_BID_c=4
 ***************
 ***region_c ***
 ***************
-region_c=.
+gen region_c=.
 
 *************
 * pais_c    *
@@ -118,9 +118,9 @@ gen factor_ch=expr
 gen factor_ci=expr
 
 
-/*********************
-VARIABLES DEMOGRAFICAS
-*********************/
+		/*********************
+		VARIABLES DEMOGRAFICAS
+		*********************/
 
 ***************
 * sexo_ci     * 
@@ -234,39 +234,87 @@ gen miembros_one_ci=(pco1>=1 & pco1<=11)
           ******************************
           *** VARIABLES DE DIVERSIDAD **
           ******************************
-*Nathalia Maya & Antonella Pereira
-*Julio 2021	
 
-	***************
-	***afroind_ci***
-	***************
+***********
+* afro_ci *
+***********
+gen afro_ci = .
+
+***************
+***ind_ci***
+***************
 **Pregunta: Pueblos indígenas, pertenece usted o es descendiente de alguno de ellos? (etnia) (Aimara 1; Rapa-Nui 2; Quechua 3; Mapuche 4; Atacameño 5; Coya 6; Kawashkar 7; Yagán 8; No pertenece a ningún pueblo indígena 0; sin dato 9)
-gen afroind_ci=. 
-replace afroind_ci=1 if (etnia >=1 & etnia <=8 )
-replace afroind_ci=3 if etnia==0
-replace afroind_ci=. if etnia==9
+gen ind_ci=. 
+replace ind_ci=1 if (etnia >=1 & etnia <=8 )
+replace ind_ci=0 if etnia==0
 
-	***************
-	***afroind_ch***
-	***************
+*****************
+***noafroind_ci**
+*****************
+gen byte noafroind_ci = . 
+replace noafroind_ci = 1 if afro_ci==0 & ind_ci==0
+replace noafroind_ci = 0 if afro_ci==1 | ind_ci==1
+
+***************
+***afro_ch***
+***************
+gen afro_jefe = afro_ci if relacion_ci == 1
+egen afro_ch = min(afro_jefe), by(idh_ch) 
+drop afro_jefe
+
+***************
+***ind_ch***
+***************
+gen ind_jefe = ind_ci if relacion_ci == 1
+egen ind_ch = min(ind_jefe), by(idh_ch) 
+drop ind_jefe
+
+***************
+***noafroind_ch***
+***************
+gen noafroind_jefe = noafroind_ci if relacion_ci == 1
+egen noafroind_ch = min(noafroind_jefe), by(idh_ch) 
+drop noafroind_jefe
+
+*******************
+***afroind_ano_c***
+*******************
+gen afroind_ano_c=2000
+
+***************
+***afroind_ci**
+***************
+gen afroind_ci =. 
+replace afroind_ci = 1 if ind_ci==1
+replace afroind_ci = 2 if afro_ci==1
+replace afroind_ci = 3 if noafroind_ci==1
+
+***************
+***afroind_ch***
+***************
 gen afroind_jefe= afroind_ci if relacion_ci==1
 egen afroind_ch  = min(afroind_jefe), by(idh_ch) 
 drop afroind_jefe
 
-	*******************
-	***afroind_ano_c***
-	*******************
-gen afroind_ano_c=2000
-
-	*******************
-	***dis_ci***
-	*******************
+*******************
+***dis_ci***
+*******************
 gen dis_ci=. 
 
-	*******************
-	***dis_ch***
-	*******************
-gen dis_ch=. 
+*******************
+***disWG_ci***
+*******************
+gen disWG_ci=.
+
+*******************
+***CHL_dis_ci***
+*******************
+gen CHL_dis_ci =dis_ci
+
+*******************
+***dis_ch***
+*******************
+egen dis_ch = max(dis_ci), by(idh_ch) 
 
 
 /***************************
@@ -1222,7 +1270,7 @@ replace DISCONN=1 if (edad>=15 & edad<=24) & (o7>=8 & o7<=10)
 
 gen lp_ci =.
 replace lp_ci= 40562     if zona_c==1  /*urbana*/
-replace lp_ci= 27349     if zona_c==0	/*rural*/
+replace lp_ci= 27328     if zona_c==0	/*rural*/
 label var lp_ci "Linea de pobreza oficial del pais"
 
 *********
@@ -1231,8 +1279,10 @@ label var lp_ci "Linea de pobreza oficial del pais"
 
 gen lpe_ci =.
 replace lpe_ci= 20281     if zona_c==1  /*urbana*/
-replace lpe_ci= 15628     if zona_c==0	/*rural*/
+replace lpe_ci= 15616     if zona_c==0	/*rural*/
 label var lpe_ci "Linea de indigencia oficial del pais"
+
+* Fuente: https://www.desarrollosocialyfamilia.gob.cl/btca/txtcompleto/DIGITALIZADOS/Folletos%20Mide/mds-135-2004.pdf
 
 ****************
 *cotizando_ci***
@@ -1714,7 +1764,7 @@ replace floor=. if piso_ch==.
 	****************
 	* pobre_ine _ci*
 	**************** 
-	gen byte pobre_ine_ci= corte 
+	gen byte pobre_ine_ci= inlist(corte, 1, 2)
 	****************
 	* bienestar_agregado *
 	**************** 

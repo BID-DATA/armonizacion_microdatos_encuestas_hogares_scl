@@ -63,7 +63,7 @@ gen region_BID_c=4
 ***************
 ***region_c ***
 ***************
-region_c=.
+gen region_c=.
 
 *************
 * pais_c    *
@@ -119,9 +119,9 @@ gen factor_ch=expr
 gen factor_ci=expr
 
 
-   /*********************
-    VARIABLES DEMOGRAFICAS
-    *********************/
+	   /*********************
+		VARIABLES DEMOGRAFICAS
+		*********************/
 
 ***************
 ***sexo_ci***
@@ -141,11 +141,6 @@ replace relacion_ci=4 if pco1>=4 & pco1<=10
 replace relacion_ci=5 if pco1==11
 replace relacion_ci=6 if pco1==12
 
-****************
-* miembros_ci   * 
-****************
-gen miembros_ci=(relacion_ci>=1 & relacion_ci<=5)
-
 ***************
 ***civil_ci***
 ***************
@@ -155,13 +150,13 @@ replace civil_ci=3 if ecivil==3 | ecivil==4 | ecivil==5
 replace civil_ci=4 if ecivil==6
 replace civil_ci=. if ecivil==9
 
-***************
-***jefe_ci***
-***************
-gen jefe_ci=(relacion_ci==1)
+****************
+* miembros_ci   * 
+****************
+gen miembros_ci=(relacion_ci>=1 & relacion_ci<=5)
 
 ***************
-* jefe_ci     * 
+***jefe_ci***
 ***************
 gen jefe_ci=(relacion_ci==1)
 
@@ -240,40 +235,90 @@ gen miembros_one_ci=(pco1>=1 & pco1<=11)
           ******************************
           *** VARIABLES DE DIVERSIDAD **
           ******************************
-*Nathalia Maya & Antonella Pereira
-*Julio 2021	
 
-	***************
-	***afroind_ci***
-	***************
-**Pregunta: Pueblos indígenas, pertenece usted o es descendiente de alguno de ellos? (r25) (Aimara 1; Rapa-Nui 2; Quechua 3; Mapuche 4; Atacameño 5; Coya 6; Kawashkar 7; Yagán 8; No pertenece a ningún pueblo indígena 0; sin dato 9)
-gen afroind_ci=. 
-replace afroind_ci=1 if (r25 >=1 & r25 <=8 )
-replace afroind_ci=3 if r25==0
-replace afroind_ci=. if r25==9
+***********
+* afro_ci *
+***********
+gen afro_ci = .
 
-	***************
-	***afroind_ch***
-	***************
+***************
+***ind_ci***
+***************
+**Pregunta: Pueblos indígenas, pertenece usted o es descendiente de alguno de ellos? (etnia) (Aimara 1; Rapa-Nui 2; Quechua 3; Mapuche 4; Atacameño 5; Coya 6; Kawashkar 7; Yagán 8; No pertenece a ningún pueblo indígena 0; sin dato 9)
+gen ind_ci=. 
+replace ind_ci=1 if (r25 >=1 & r25 <=8 )
+replace ind_ci=0 if r25==0
+
+*****************
+***noafroind_ci**
+*****************
+gen byte noafroind_ci = . 
+replace noafroind_ci = 1 if afro_ci==0 & ind_ci==0
+replace noafroind_ci = 0 if afro_ci==1 | ind_ci==1
+
+***************
+***afro_ch***
+***************
+gen afro_jefe = afro_ci if relacion_ci == 1
+egen afro_ch = min(afro_jefe), by(idh_ch) 
+drop afro_jefe
+
+***************
+***ind_ch***
+***************
+gen ind_jefe = ind_ci if relacion_ci == 1
+egen ind_ch = min(ind_jefe), by(idh_ch) 
+drop ind_jefe
+
+***************
+***noafroind_ch***
+***************
+gen noafroind_jefe = noafroind_ci if relacion_ci == 1
+egen noafroind_ch = min(noafroind_jefe), by(idh_ch) 
+drop noafroind_jefe
+
+*******************
+***afroind_ano_c***
+*******************
+gen afroind_ano_c=2000
+
+***************
+***afroind_ci**
+***************
+gen afroind_ci =. 
+replace afroind_ci = 1 if ind_ci==1
+replace afroind_ci = 2 if afro_ci==1
+replace afroind_ci = 3 if noafroind_ci==1
+
+***************
+***afroind_ch***
+***************
 gen afroind_jefe= afroind_ci if relacion_ci==1
 egen afroind_ch  = min(afroind_jefe), by(idh_ch) 
 drop afroind_jefe
 
-	*******************
-	***afroind_ano_c***
-	*******************
-gen afroind_ano_c=2000
+*******************
+***dis_ci***
+*******************
+gen dis_ci=.
+replace dis_ci = 1 if r9==1
+replace dis_ci = 0 if r9==2
+* Respuesta de Sí / No: ¿Está inscrito en el Registro Nacional de la Discapacidad (Han Certificado su discapacidad en COMPIN e inscrito en Registro Civil e Identificación)?
 
-	*******************
-	***dis_ci***
-	*******************
-gen dis_ci=. 
+*******************
+***disWG_ci***
+*******************
+gen disWG_ci=.
 
-	*******************
-	***dis_ch***
-	*******************
-gen dis_ch=. 
+*******************
+***CHL_dis_ci***
+*******************
+gen CHL_dis_ci =dis_ci
 
+*******************
+***dis_ch***
+*******************
+egen dis_ch = max(dis_ci), by(idh_ch)
 
 
 /***************************
@@ -1201,6 +1246,8 @@ replace lpe_ci= 21856   if zona_c==1  /*urbana*/
 replace lpe_ci= 16842   if zona_c==0	/*rural*/
 label var lpe_ci "Linea de indigencia oficial del pais"
 
+* Fuente: * Fuente: https://www.desarrollosocialyfamilia.gob.cl/btca/txtcompleto/DIGITALIZADOS/Folletos%20Mide/mds-135-2004.pdf
+
 ****************
 *cotizando_ci***
 ****************
@@ -1579,6 +1626,28 @@ lab val atencion_ci atencion_ci
 	label define ine02 11"Arica" 12"Parinacota" 13"Iquique" 21"Tocopilla" 22"El Loa" 23"Antofagasta" 31"Chañaral" 32"Copiapó" 33"Huasco" 41"Elqui" 42"Limarí" 43"Choapa" 51"Petorca" 52"Los Andes" 53"San Felipe de Aconcagua" 54"Quillota" 55"Valparaíso" 56"San Antonio" 61"Cachapoal" 62"Colchagua" 63"Cardenal Caro" 71"Curico" 72"Talca" 73"Linares" 74"Cauquenes" 81"Ñuble" 82"Bio Bío" 83"Concepción" 84"Arauco" 91"Malleco" 92"Cautín" 101"Valdivia" 102"Osorno" 103"Llanquihue" 104"Chiloé" 105"Palena" 111"Cohaique" 112"Aisén" 113"General Carrera" 114"Capitán Prat" 121"Última Esperanza" 122"Magallanes" 123"Tierra del Fuego" 131"Santiago" 132"Chacabuco" 133"Cordillera" 134"Maipo" 135"Melipilla" 136"Talagante"
 	label value ine02 ine02
 	label var ine02 " Segunda division politico-administrativa, Provincia"
+	
+	
+****************************
+***VARIABLES DE EXTERNAS***
+**************************** 
+
+	****************
+	*tipo_bienestar*
+	**************** 
+	gen byte tipo_bienestar = 1
+	****************
+	* pobre_ine _ci*
+	**************** 
+	gen byte pobre_ine_ci= inlist(corte, 1, 2)
+	****************
+	* bienestar_agregado *
+	**************** 
+	gen bienestar_agregado = ypchaj
+	****************
+	* ln_ci *
+	**************** 
+	gen ln_ci = lp_ci	
 
 
 /*_____________________________________________________________________________________________________*/

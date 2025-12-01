@@ -258,39 +258,88 @@ gen miembros_one_ci=(pco1>=1 & pco1<=13)
           ******************************
           *** VARIABLES DE DIVERSIDAD **
           ******************************
-*Nathalia Maya & Antonella Pereira
-*Feb 2021	
 
-	***************
-	***afroind_ci***
-	***************
+***********
+* afro_ci *
+***********
+gen afro_ci = .
+
+***************
+***ind_ci***
+***************
 **Pregunta: Pueblos indígenas, pertenece usted o es descendiente de alguno de ellos? (t5) (Aimara 1; Rapa-Nui o Pascuenses 2; Quechua 3; Mapuche 4; Atacame�o (Likan-Antai) 5; Collas 6; Kawashkar o Alacalufes 7; Y�mana o Yag�n 8; Diaguita 9; No pertenece a ning�n pueblo ind�gena 10)
-gen afroind_ci=. 
-replace afroind_ci=1 if (t5 >=1 & t5 <=9 )
-replace afroind_ci=2 if t5==0
-replace afroind_ci=3 if t5==10 
+gen ind_ci=. 
+replace ind_ci=1 if (t5 >=1 & t5 <=9 )
+replace ind_ci=0 if t5==10
 
-	***************
-	***afroind_ch***
-	***************
+*****************
+***noafroind_ci**
+*****************
+gen byte noafroind_ci = . 
+replace noafroind_ci = 1 if afro_ci==0 & ind_ci==0
+replace noafroind_ci = 0 if afro_ci==1 | ind_ci==1
+
+***************
+***afro_ch***
+***************
+gen afro_jefe = afro_ci if relacion_ci == 1
+egen afro_ch = min(afro_jefe), by(idh_ch) 
+drop afro_jefe
+
+***************
+***ind_ch***
+***************
+gen ind_jefe = ind_ci if relacion_ci == 1
+egen ind_ch = min(ind_jefe), by(idh_ch) 
+drop ind_jefe
+
+***************
+***noafroind_ch***
+***************
+gen noafroind_jefe = noafroind_ci if relacion_ci == 1
+egen noafroind_ch = min(noafroind_jefe), by(idh_ch) 
+drop noafroind_jefe
+
+*******************
+***afroind_ano_c***
+*******************
+gen afroind_ano_c=2006
+
+***************
+***afroind_ci**
+***************
+gen afroind_ci =. 
+replace afroind_ci = 1 if ind_ci==1
+replace afroind_ci = 2 if afro_ci==1
+replace afroind_ci = 3 if noafroind_ci==1
+
+***************
+***afroind_ch***
+***************
 gen afroind_jefe= afroind_ci if relacion_ci==1
 egen afroind_ch  = min(afroind_jefe), by(idh_ch) 
 drop afroind_jefe
 
-	*******************
-	***afroind_ano_c***
-	*******************
-gen afroind_ano_c=2006
-
-	*******************
-	***dis_ci***
-	*******************
+*******************
+***dis_ci***
+*******************
 gen dis_ci=. 
 
-	*******************
-	***dis_ch***
-	*******************
-gen dis_ch=. 
+*******************
+***disWG_ci***
+*******************
+gen disWG_ci=.
+
+*******************
+***CHL_dis_ci***
+*******************
+gen CHL_dis_ci =dis_ci
+
+*******************
+***dis_ch***
+*******************
+egen dis_ch = max(dis_ci), by(idh_ch)
+
 
 		*********************************
 		* VARIABLES DEL MERCADO LABORAL *
