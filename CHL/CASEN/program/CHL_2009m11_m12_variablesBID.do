@@ -84,59 +84,76 @@ gen region_BID_c=4
 	14"Los Ríos"                                    /// 
 	15"Arica y Parinacota"
    label value region_c region_c
-   label var region_c "division politico-administrativa, region"
    
+ *************
+* pais_c    *
 *************
-* factor_ch *
-*************
-/*Esta es la expansion que se usa en todos los años anteriores. La provincial recien aparece en el 2000*/
-gen factor_ch=expr 
-label var factor_ch "Factor de expansión el hogar"
+gen pais_c="CHL"
 
 *************
-* idh_ch    *
+* anio_c    *
 *************
-sort  segmento idviv hogar
-egen idh_ch=group(segmento idviv hogar) 
-label var idh_ch "ID del hogar"
-tostring idh_ch, replace
-
+gen anio_c=2009
 
 *************
-* idp_ch    *
+* mes_ch    *
 *************
-gen idp_ci=o
-label variable idp_ci "ID de la persona en el hogar"
-tostring idp_ci, replace
-
+gen mes_c=11
 
 *************
 * zona_c    *
 *************
 gen zona_c=zona
 recode zona_c (2=0)
-label variable zona_c "Zona urbana vs. rural"
-label define zona_c 1 "Urbana" 0 "Rural"
-label value zona_c zona_c
+
+***************
+***estrato_ci***
+***************
+clonevar estrato_ci=estrato
+
+***************
+***upm_ci***
+***************
+gen upm_ci=. 
 
 *************
-* pais_c    *
+* idh_ch    *
 *************
-gen pais_c="CHL"
-label variable pais_c "Pais"
-
-
-*************
-* anio_c    *
-*************
-gen anio_c=2009
-label variable anio_c "Anio de la encuesta"
+sort  segmento idviv hogar
+egen idh_ch=group(segmento idviv hogar) 
+tostring idh_ch, replace
 
 *************
-* mes_ch    *
+* idp_ci    *
 *************
-gen mes_c=11
-label var mes_c "Mes de la encuesta"
+gen idp_ci=o
+tostring idp_ci, replace
+   
+*************
+* factor_ch *
+*************
+/*Esta es la expansion que se usa en todos los años anteriores. La provincial recien aparece en el 2000*/
+gen factor_ch=expr 
+
+***************
+* factor_ci   * 
+***************
+gen factor_ci=expr
+
+
+		**************************
+		* VARIABLES DEMOGRAFICAS *
+		**************************
+
+***************
+* sexo_ci     * 
+***************
+gen sexo_ci=sexo
+
+***************
+* edad_ci     * 
+***************
+gen edad_ci=edad
 
 ***************
 * relacion_ci *
@@ -147,47 +164,11 @@ replace relacion_ci=3 if pco1==3 | pco1==4 | pco1==5
 replace relacion_ci=4 if pco1>=6 & pco1<=12
 replace relacion_ci=5 if pco1==13
 replace relacion_ci=6 if pco1==14
-label var relacion_ci "Relación de parentesco con el jefe"
-label def relacion_ci 1"Jefe" 2"Conyuge" 3"Hijo/a" 4"Otros parientes" 5"Otros no parientes" 6"Servicio doméstico"
-label val relacion_ci relacion_ci	
 
-
-
-		**************************
-		* VARIABLES DEMOGRAFICAS *
-		**************************
-
-***************
-* factor_ci   * 
-***************
-gen factor_ci=expr
-label variable factor_ci "Factor de expansion del individuo"
-
-	***************
-	***upm_ci***
-	***************
-gen upm_ci=. 
-
-	***************
-	***estrato_ci***
-	***************
-clonevar estrato_ci=estrato
-label variable estrato_ci "Estrato"
-
-
-***************
-* sexo_ci     * 
-***************
-gen sexo_ci=sexo
-label var sexo_ci "Sexo del individuo" 
-label define sexo_ci 1 "Hombre" 2 "Mujer"
-label value sexo_ci sexo_ci
-
-***************
-* edad_ci     * 
-***************
-gen edad_ci=edad
-label var edad_ci "Edad del individuo"
+****************
+* miembros_ci   * 
+****************
+gen miembros_ci=(relacion_ci>=1 & relacion_ci<=5)
 
 ***************
 * civil_ci    * 
@@ -196,46 +177,36 @@ gen civil_ci=1 if ecivil==7
 replace civil_ci=2 if ecivil==1 | ecivil==2
 replace civil_ci=3 if ecivil==3 | ecivil==4 | ecivil==5
 replace civil_ci=4 if ecivil==6
-label variable civil_ci "Estado civil"
-label define civil_ci 1 "Soltero" 2 "Union formal o informal"
-label define civil_ci 3 "Divorciado o separado" 4 "Viudo" , add
-label value civil_ci civil_ci
 
 ***************
 * jefe_ci     * 
 ***************
 gen jefe_ci=(relacion_ci==1)
-label variable jefe_ci "Jefe de hogar"
 
 ****************
 * nconyuges_ch * 
 ****************
 by idh_ch, sort: egen nconyuges_ch=sum(relacion_ci==2)
-label variable nconyuges_ch "Numero de conyuges"
 
 ****************
 * nhijos_ch    * 
 ****************
 by idh_ch, sort: egen nhijos_ch=sum(relacion_ci==3)
-label variable nhijos_ch "Numero de hijos"
 
 ****************
 * notropari_ch * 
 ****************
 by idh_ch, sort: egen notropari_ch=sum(relacion_ci==4)
-label variable notropari_ch "Numero de otros familiares"
 
 ******************
 * notronopari_ch * 
 ******************
 by idh_ch, sort: egen notronopari_ch=sum(relacion_ci==5)
-label variable notronopari_ch "Numero de no familiares"
 
 ****************
 * nempdom_ch   * 
 ****************
 by idh_ch, sort: egen nempdom_ch=sum(relacion_ci==6)
-label variable nempdom_ch "Numero de empleados domesticos"
 
 ****************
 * clasehog_ch  * 
@@ -247,53 +218,41 @@ replace clasehog_ch=2 if nhijos_ch==0 & nconyuges_ch>0 & notropari_ch==0 & notro
 replace clasehog_ch=3 if notropari_ch>0 & notronopari_ch==0 /*Ampliado*/
 replace clasehog_ch=4 if ((nconyuges_ch>0 | nhijos_ch>0 | notropari_ch>0) & (notronopari_ch>0))/*Compuesto (some relatives plus non relative)*/
 replace clasehog_ch=5 if nhijos_ch==0 & nconyuges_ch==0 & notropari_ch==0 & notronopari_ch>0 /*Corresidente*/
-label variable clasehog_ch "Tipo de hogar"
-label define clasehog_ch 1 " Unipersonal" 2 "Nuclear" 3 "Ampliado" 
-label define clasehog_ch 4 "Compuesto" 5 " Corresidente", add
-label value clasehog_ch clasehog_ch
 
 ****************
 * nmiembros_ch * 
 ****************
 by idh_ch, sort: egen byte nmiembros_ch=sum(relacion_ci>0 & relacion_ci<=5)
-label variable nmiembros_ch "Numero de familiares en el hogar"
 
 ****************
 * nmayor21_ch  * 
 ****************
 by idh_ch, sort: egen byte nmayor21_ch=sum((relacion_ci>0 & relacion_ci<=5) & (edad_ci>=21 & edad_ci<=98))
-label variable nmayor21_ch "Numero de familiares mayores a 21 anios"
 
 ****************
 * nmenor21_ch  * 
 ****************
 by idh_ch, sort: egen byte nmenor21_ch=sum((relacion_ci>0 & relacion_ci<=5) & (edad_ci<21))
-label variable nmenor21_ch "Numero de familiares menores a 21 anios"
 
 ****************
 * nmayor65_ch  * 
 ****************
 by idh_ch, sort: egen byte nmayor65_ch=sum((relacion_ci>0 & relacion_ci<=5) & (edad_ci>=65 & edad_ci!=.))
-label variable nmayor65_ch "Numero de familiares mayores a 65 anios"
 
 ****************
 * nmenor6_ch   * 
 ****************
 by idh_ch, sort: egen byte nmenor6_ch=sum((relacion_ci>0 & relacion_ci<=5) & (edad_ci<6))
-label variable nmenor6_ch "Numero de familiares menores a 6 anios"
 
 ****************
 * nmenor1_ch   * 
 ****************
 by idh_ch, sort: egen byte nmenor1_ch=sum((relacion_ci>0 & relacion_ci<=5) & (edad_ci<1))
-label variable nmenor1_ch "Numero de familiares menores a 1 anio"
 
-****************
-* miembros_ci   * 
-****************
-gen miembros_ci=(relacion_ci>=1 & relacion_ci<=5)
-label variable miembros_ci "Miembro del hogar"
-
+******************
+* miembros_one_ci* 
+******************
+gen miembros_one_ci=(pco1>=1 & pco1<=13)
 
 
           ******************************
@@ -1567,7 +1526,28 @@ gen tcylmpri_ch =.
 	label value ine02 ine02
 	label var ine02 " Segunda division politico-administrativa, Provincia"
 
+****************************
+***VARIABLES DE EXTERNAS***
+**************************** 
 
+	****************
+	*tipo_bienestar*
+	**************** 
+	gen byte tipo_bienestar = 1
+	****************
+	* pobre_ine _ci*
+	**************** 
+	gen byte pobre_ine_ci= inlist(corte, 1, 2)
+	****************
+	* bienestar_agregado *
+	**************** 
+	gen bienestar_agregado = ypchaj
+	****************
+	* ln_ci *
+	**************** 
+	gen ln_ci = lp_ci	
+	
+	
 /*_____________________________________________________________________________________________________*/
 * Asignación de etiquetas e inserción de variables externas: tipo de cambio, Indice de Precios al 
 * Consumidor (2011=100), Paridad de Poder Adquisitivo (PPA 2011),  líneas de pobreza

@@ -54,147 +54,68 @@ use `base_in', clear
 		***VARIABLES DEL IDENTIFICACION***
 		**********************************
 		
-	****************
-	* region_BID_c *
-	****************
-	
+****************
+* region_BID_c *
+****************
 gen region_BID_c=4
 
-/***** revision July 29,2005  Suzanne
-
-removed condition (& edad_ci<18) froom the following two lines:
-
-by idh_ch: egen byte nhijos_ch=sum((relacion_ci==3) & edad_ci<18)
-by idh_ch: egen byte notropari_ch=sum((relacion_ci==4) & edad_ci>=18)
-
-******* revision June 8 2006 MFP
-removed desemp1 and desemp2 because the reference period of 2 months implies that those variables
-can't be created.
-Now desemp3== old definition of desemp1
-
-previous code:
-
-gen desemp1_ci=(o1==2 & o2==2 & o3==1) *El periodo de referencia de la encuesta es de dos meses!
-gen desemp2_ci=(desemp1_ci | (o1==2 & o2==2 & o3==2 & (o7==7)))
-gen desemp3_ci=(desemp2_ci | (o4>8 & o4<=300))
-
-***/
-
-/*** revision October 16 2006 (Victoria)
-The code for the education dummies was changed in order to make it
-comparable with the following years and also to make the returns
-to education coherent. 
-Old code can be seen in the "VARIABLES EDUCATIVAS" sector
-
-Also two new conditions were added to the creation of aedu_ci
-*/
-
-/*** revision October 23 2006 (Victoria)
-Change the code for ynlm_ci that double counted some variables.
-Also ylm_ci changed in order to make it comparable with previous years.
-Old code can be seen in the "VARIABLES DE DEMANDA LABORAL" section
-*/
-
-/**** revision August 2007 (Victoria) ***
-
-With the unification Sociometro/Equis we decided to add two new varibales: howner and floor.
-This variables were already created for Atlas
-
-gen howner=(viviprop_ch==1 | viviprop==2);
-replace howner=. if viviprop_ch==.;
-gen floor=(piso_ch==1);
-replace floor=. if piso_ch==.;
-
-Also, the orginal data was replaced with the new Mecovi versions
-*****/
-
-
-/*(Melisa- mmorales June 1st 2009): 'asiste_ci' must be changed
-gen byte asiste_ci=(e4==1) 
-repalce asiste_ci=. if e4==.*/
-
-*****************************************************
-
-*************
-* factor_ch *
-*************
-gen factor_ch=expr /*Esta es la expansion que se usa en todos los años anteriores. La provincial recien aparece en el 2000*/
-
-	***************
-	***upm_ci***
-	***************
-gen upm_ci=. 
-
-	***************
-	***estrato_ci***
-	***************
-clonevar estrato_ci=estrato
-label variable estrato_ci "Estrato"
-
-*************
-* idh_ch    *
-*************
-
-egen idh_ch=group(r z seg f) /* no tenemos folio */
-tostring idh_ch, replace
-
-
-
-*************
-* idp_ch    *
-*************
-
-gen idp_ci=o
-tostring idp_ci, replace
-
-
-*************
-* zona_c    *
-*************
-
-gen zona_c=z
-replace zona_c=0 if z==2
+***************
+***region_c ***
+***************
+region_c=.
 
 *************
 * pais_c    *
 *************
-
 gen pais_c="CHL"
 
 *************
 * anio_c    *
 *************
-
 gen anio_c=2006
 
 *************
 * mes_ch    *
 *************
-
 gen mes_c=11
 
+*************
+* zona_c    *
+*************
+gen zona_c=z
+replace zona_c=0 if z==2
 
 ***************
-* relacion_ci *
+***estrato_ci***
 ***************
-* Yanira Oviedo, Junio 2010: Esta pregunta tiene diferentes opciones de respuesta.  Se guarda la programación
-* original y se propone una nueva
+clonevar estrato_ci=estrato
 
-*gen relacion_ci=pco1
-*replace relacion_ci=4 if pco1>=4 & pco1<=10
-*replace relacion_ci=5 if pco1==11
-*replace relacion_ci=6 if pco1==12
+***************
+***upm_ci***
+***************
+gen upm_ci=. 
 
-gen relacion_ci=1 if pco1==1
-replace relacion_ci=2 if pco1==2
-replace relacion_ci=3 if pco1==3 | pco1==4 | pco1==5
-replace relacion_ci=4 if pco1>=6 & pco1<=12
-replace relacion_ci=5 if pco1==13
-replace relacion_ci=6 if pco1==14
+*************
+* idh_ch    *
+*************
+egen idh_ch=group(r z seg f) /* no tenemos folio */
+tostring idh_ch, replace
 
-label var relacion_ci "Relación de parentesco con el jefe"
-label def relacion_ci 1"Jefe" 2"Conyuge" 3"Hijo/a" 4"Otros parientes" 5"Otros no parientes" 6"Servicio doméstico"
-label val relacion_ci relacion_ci	
+*************
+* idp_ci    *
+*************
+gen idp_ci=o
+tostring idp_ci, replace
+
+*************
+* factor_ch *
+*************
+gen factor_ch=expr
+
+***************
+* factor_ci   * 
+***************
+gen factor_ci=expr
 
 
 **************************
@@ -202,27 +123,33 @@ label val relacion_ci relacion_ci
 **************************
 
 ***************
-* factor_ci   * 
-***************
-
-gen factor_ci=expr
-
-***************
 * sexo_ci     * 
 ***************
-
 gen sexo_ci=sexo
 
 ***************
 * edad_ci     * 
 ***************
-
 gen edad_ci=edad
+
+***************
+* relacion_ci *
+***************
+gen relacion_ci=1 if pco1==1
+replace relacion_ci=2 if pco1==2
+replace relacion_ci=3 if pco1==3 | pco1==4 | pco1==5
+replace relacion_ci=4 if pco1>=6 & pco1<=12
+replace relacion_ci=5 if pco1==13
+replace relacion_ci=6 if pco1==14
+
+****************
+* miembros_ci   * 
+****************
+gen miembros_ci=(relacion_ci>=1 & relacion_ci<=5)
 
 ***************
 * civil_ci    * 
 ***************
-
 gen civil_ci=1 if ecivil==7
 replace civil_ci=2 if ecivil==1 | ecivil==2
 replace civil_ci=3 if ecivil==3 | ecivil==4 | ecivil==5
@@ -232,44 +159,37 @@ replace civil_ci=. if ecivil==9
 ***************
 * jefe_ci     * 
 ***************
-
 gen jefe_ci=(relacion_ci==1)
 
 ****************
 * nconyuges_ch * 
 ****************
-
 sort idh_ch
 by idh_ch: egen byte nconyuges_ch=sum(relacion_ci==2) 
 
 ****************
 * nhijos_ch    * 
 ****************
-
 by idh_ch: egen byte nhijos_ch=sum(relacion_ci==3)
 
 ****************
 * notropari_ch * 
 ****************
-
 by idh_ch: egen byte notropari_ch=sum(relacion_ci==4)
 
 ******************
 * notronopari_ch * 
 ******************
-
 by idh_ch: egen byte notronopari_ch=sum(relacion_ci==5)
 
 ****************
 * nempdom_ch   * 
 ****************
-
 by idh_ch: egen byte nempdom_ch=sum(relacion_ci==6)
 
 ****************
 * clasehog_ch  * 
 ****************
-
 gen byte clasehog_ch=0
 replace clasehog_ch=1 if nhijos_ch==0 & nconyuges_ch==0 & notropari_ch==0 & notronopari_ch==0 /*Unipersonal*/
 replace clasehog_ch=2 if nhijos_ch>0 & notropari_ch==0 & notronopari_ch==0 /*Nuclear (child with or without spouse but without other relatives)*/
@@ -281,49 +201,38 @@ replace clasehog_ch=5 if nhijos_ch==0 & nconyuges_ch==0 & notropari_ch==0 & notr
 ****************
 * nmiembros_ch * 
 ****************
-
 sort idh_ch
 by idh_ch, sort: egen byte nmiembros_ch=sum(relacion_ci>0 & relacion_ci<=5)
 
 ****************
 * nmayor21_ch  * 
 ****************
-
 by idh_ch, sort: egen byte nmayor21_ch=sum((relacion_ci>0 & relacion_ci<=5) & (edad_ci>=21 & edad_ci<=98))
 
 ****************
 * nmenor21_ch  * 
 ****************
-
 by idh_ch, sort: egen byte nmenor21_ch=sum((relacion_ci>0 & relacion_ci<=5) & (edad_ci<21))
 
 ****************
 * nmayor65_ch  * 
 ****************
-
 by idh_ch, sort: egen byte nmayor65_ch=sum((relacion_ci>0 & relacion_ci<=5) & (edad_ci>=65 & edad_ci!=.))
 
 ****************
 * nmwnor6_ch   * 
 ****************
-
 by idh_ch, sort: egen byte nmenor6_ch=sum((relacion_ci>0 & relacion_ci<=5) & (edad_ci<6))
 
 ****************
 * nmenor1_ch   * 
 ****************
-
 by idh_ch, sort: egen byte nmenor1_ch=sum((relacion_ci>0 & relacion_ci<=5) & (edad_ci<1))
 
-****************
-* miembros_ci   * 
-****************
-
-gen miembros_ci=(relacion_ci>=1 & relacion_ci<=5)
-label variable miembros_ci "Miembro del hogar"
-
-
-
+******************
+* miembros_one_ci* 
+******************
+gen miembros_one_ci=(pco1>=1 & pco1<=13)
 
          ******************************
          *** VARIABLES DE DIVERSIDAD **
@@ -2080,7 +1989,6 @@ label var formal_ci "1=afiliado o cotizante / PEA"
 * variables que faltan crear
 gen tcylmpri_ci =.
 gen tcylmpri_ch =.
-gen region_c=.
 gen ylmotros_ci=.
 gen autocons_ci=.
 gen autocons_ch=.
