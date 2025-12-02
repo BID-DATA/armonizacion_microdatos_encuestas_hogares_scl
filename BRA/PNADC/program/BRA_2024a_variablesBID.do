@@ -102,14 +102,15 @@ rename *, lower
 	******
 	*mes_c*
 	******
-	gen int mes_c = .
+	g mes_c = trimestre // dejo el mismo nombre para no modificar dofile de Labels
 	
 	******
 	*zona*
 	******
 	* PNADC: V1022 (1 urbana, 2 rural) -> estandar: 1 urbana, 0 rural
 	gen zona_c = v1022
-
+	replace zona_c = 0 if v1022 == 2
+	
 	*********
 	*estrato*
 	*********
@@ -124,15 +125,16 @@ rename *, lower
 	******************
 	*** idh_ch ******
 	******************
-	* id hogar: UPA + V1008 + V1014
-	egen long _idhnum = group(upa v1008 v1014)
-	tostring _idhnum, gen(idh_ch)
-	drop _idhnum
+	format %14.0g upa
+	sort trimestre upa v1008 v1014 // A chave de domicílio é composta pelas variáveis: UPA + V1008 + V1014 (PNAD CONTÍNUA – CHAVES)
+	egen idh_ch = group(trimestre upa estrato v1008 v1014)
 	
 	******************
 	*** idp_ci *******
 	******************
-	egen str idp_ci = concat(idh_ch v2003), punct("_")
+	format %14.0g upa
+	sort trimestre upa v1008 v1014 v2003 // A chave de pessoas é composta pelas variáveis: UPA + V1008 + V1014 + V2003 (PNAD CONTÍNUA – CHAVES)
+	egen idp_ci = group(idh_ch v2003)
 
 	***********
 	*factor_ci* 
@@ -144,8 +146,7 @@ rename *, lower
 	*Factor de expansion del hogar (factor_ch)*
 	*******************************************
 	* PNADC trae peso de hogar en V1030; si no está, usar V1032 como fallback
-	gen double factor_ch = v1030
-	replace factor_ch = factor_ci if factor_ch==.
+	gen double factor_ch = v1032
 
 ****************************
 ***VARIABLES DEMOGRAFICAS***
@@ -161,29 +162,42 @@ rename *, lower
 	*edad_ci*
 	*********
 	* PNADC: V2009 (edad en años). 999 -> .
-	gen int edad_ci = .
-	capture confirm variable v2009
-	if _rc==0 {
-		replace edad_ci = v2009
-		replace edad_ci = . if edad_ci==999
-	}
+	gen int edad_ci = v2009
 
 	**************
 	**relacion_ci**
 	**************
 	* PNADC: V2005 condición no domicílio
-	* 1 Ref, 2 Cônjuge, 3 Filho, 4 Enteado, 5 Genro/Nora, 6 Pai/Mãe, 7 Sogro,
-	* 8 Neto, 9 Outro parente, 10 Agregado, 11 Pensionista, 12 Empregado dom., 13 Parente do emp. dom.
-	gen byte relacion_ci = .
-	capture confirm variable v2005
-	if !_rc {
-		replace relacion_ci = 1 if v2005==1
-		replace relacion_ci = 2 if v2005==2
-		replace relacion_ci = 3 if inlist(v2005,3,4)
-		replace relacion_ci = 4 if inlist(v2005,5,6,7,8,9)
-		replace relacion_ci = 5 if inlist(v2005,10,11,13)   // no parientes (incluye parente do emp. dom.)
-		replace relacion_ci = 6 if v2005==12                // emp. doméstico
-	}
+	recode v2005                                            ///
+		(1 = 1)                                             /// Jefe(a)
+		(2/3 = 2)                                           /// Cónyuge/pareja
+		(4/6 = 3)                                           /// Hijos / hijastros
+		(7/14 = 4)                                          /// Otros parientes
+		(15/17 = 5)                                         /// Otros no parientes
+		(19 = 5)                                            /// Pariente del doméstico = NO pariente
+		(18 = 6),                                           /// Servicio doméstico
+		gen(relacion_ci)
+
+	*************
+	*miembros_ci*
+	*************
+	gen byte miembros_ci = (relacion_ci>=1 & relacion_ci<=5)
+	replace miembros_ci = 0 if v2005==18 | v2005==19
+	replace miembros_ci = . if relacion_ci==.	
+
+	*************
+	*miembros_one_ci*
+	*************
+	gen miembro_hogar = .
+
+	* Miembros del hogar (01 a 17)
+	replace miembro_hogar = 1 if inrange(v2005, 1, 17)
+
+	* No miembros del hogar (18 y 19)
+	replace miembro_hogar = 0 if inlist(v2005, 18, 19)
+
+	* Si no hay información: asumir miembros del hogar
+	replace miembro_hogar = 1 if missing(v2005)
 	
 	**************
 	*Estado Civil*
@@ -193,9 +207,10 @@ rename *, lower
 	*********
 	*jefe_ci*
 	*********
-	gen byte jefe_ci = (relacion_ci==1)
-	replace jefe_ci = . if relacion_ci==.
-
+	gen byte jefe_ci=.
+	replace jefe_ci = 1 if (relacion_ci==1)
+	replace jefe_ci = 0 if (relacion_ci!=1) & (relacion_ci!=.)
+	
 	**************
 	*nconyuges_ch*
 	**************
@@ -266,12 +281,6 @@ rename *, lower
 	************
 	by idh_ch, sort: egen byte nmenor1_ch   = total((relacion_ci>0 & relacion_ci<=5) & edad_ci<1)
 
-	*************
-	*miembros_ci*
-	*************
-	gen byte miembros_ci = (relacion_ci>=1 & relacion_ci<=5)
-	replace miembros_ci = . if relacion_ci==.
-
 *******************************************************
 ***           VARIABLES DE DIVERSIDAD               ***
 *******************************************************
@@ -301,14 +310,6 @@ rename *, lower
 	replace noafroind_ci = 0 if afro_ci==1 | ind_ci==1
 	replace noafroind_ci = . if afro_ci==. | ind_ci==.
 
-	************
-	*afroind_ci*
-	************
-	gen byte afroind_ci = .
-	replace afroind_ci = 1 if ind_ci==1
-	replace afroind_ci = 2 if afro_ci==1
-	replace afroind_ci = 3 if noafroind_ci==1
-
 	*********
 	*afro_ch*
 	*********
@@ -330,40 +331,46 @@ rename *, lower
 	egen noafroind_ch = min(noafroind_jefe), by(idh_ch)
 	drop noafroind_jefe
 
+	**************
+	*afroind_ano_c*
+	**************
+	gen byte afroind_ano_c =.   
+
+	************
+	*afroind_ci*
+	************
+	gen afroind_ci =. 
+	replace afroind_ci = 1 if ind_ci==1
+	replace afroind_ci = 2 if afro_ci==1
+	replace afroind_ci = 3 if noafroind_ci==1
+
 	************
 	*afroind_ch*
 	************
-	gen afroind_jefe = afroind_ci if jefe_ci==1
-	egen afroind_ch = min(afroind_jefe), by(idh_ch)
-	drop afroind_jefe
-
-*******************************************************
-***        VARIABLES DE DISCAPACIDAD (WG)           ***
-*******************************************************
+ 	gen byte afroind_jefe = afroind_ci if jefe_ci==1
+	egen afroind_ch = min(afroind_jefe), by(idh_ch) 
+	drop afroind_jefe 
 
 	********
 	*dis_ci*
 	********
-	* Flexible WG: si PNADC trae el set corto WG con escala, clasificar; si no, dejar .
-	gen byte dis_ci = .
-
+	gen byte dis_ci=.
+	
 	**********
 	*disWG_ci*
 	**********
-	* Estricto WG: 1 si “mucha dificultad” o “no puede” en ≥1 dominio; si no existen preguntas → .
-	gen byte disWG_ci = .
-
-	********
-	*dis_ch*
-	********
-	egen dis_ch = max(dis_ci), by(idh_ch)
+	gen byte disWG_ci=.
 
 	******************
 	*ISOalpha3_dis_ci*
 	******************
-	* País: BRA → si usara WG corto, BRA_dis_ci = dis_ci; si no hay módulo, queda .
-	gen bra_dis_ci = dis_ci
-
+	gen byte `PAIS'_dis_ci = .
+		
+	********
+	*dis_ch*
+	********
+	egen byte dis_ch = max(dis_ci), by(idh_ch) 
+	
 ****************************
 ***VARIABLES DE MERCADO LABORAL***
 ****************************
@@ -372,69 +379,84 @@ rename *, lower
 	*condocup_ci*
 	*************
 	gen byte condocup_ci = .
-	* Ocupados: cualquier actividad ≥1h O alejado de trabajo remunerado
-	replace condocup_ci = 1 if (v4001==1 | v4002==1 | v4003==1 | v4004==1 | v4005==1)
 
-	* Desocupados: no tiene trabajo remunerado en la semana ref. y buscó activamente
-	replace condocup_ci = 2 if condocup_ci==. & v4005==2 & v4071==1 & v4072a!=9
+	* 1 = Ocupados
+	replace condocup_ci = 1 if vd4002 == 1
 
-	* Inactivos (≥ edad mínima) sin condición previa
-	replace condocup_ci = 3 if condocup_ci==. & edad_ci>=10
+	* 2 = Desocupados
+	replace condocup_ci = 2 if vd4002 == 2
 
-	* Menor a edad mínima del módulo laboral
-	replace condocup_ci = 4 if edad_ci<10
-	
-	*******************
-	***categoinac_ci***
-	*******************
-	gen byte categoinac_ci = .
-	* 1) Jubilado/Pensionado
-	replace categoinac_ci = 1 if condocup_ci==3 & v4074==2
+	* 4 = Menores de la edad mínima (14 en PNADC)
+	replace condocup_ci = 4 if edad_ci < 14
 
-	* 2) Estudiante
-	replace categoinac_ci = 2 if condocup_ci==3 & v4074==3
+	* 3 = Inactivos (≥14 años, no ocupados ni desocupados)
+	replace condocup_ci = 3 if edad_ci >= 14 & condocup_ci == .
 
-	* 3) Quehaceres domésticos
-	replace categoinac_ci = 3 if condocup_ci==3 & v4074==4
+	***********************
+	*** categoinac_ci   ***
+	***********************
 
-	* 4) Otros inactivos (cierre lógico)
-	replace categoinac_ci = 4 if condocup_ci==3 & missing(categoinac_ci)
+	* Solo para inactivos
+	gen byte categoinac_ci = .  
+
+	* 1. Jubilados / pensionados (v5004a == 1)
+	replace categoinac_ci = 1 if condocup_ci == 3 & v5004a == 1
+
+	* 2. Estudiantes (asiste a la escuela)
+	replace categoinac_ci = 2 if condocup_ci == 3 & v3002 == 1
+
+	* 3. Quehaceres domésticos: motivo VD4030 == 1
+	replace categoinac_ci = 3 if condocup_ci == 3 & vd4030 == 1
+
+	* 4. Otros inactivos: todo el resto de inactivos sin categoría asignada
+	replace categoinac_ci = 4 if condocup_ci == 3 & missing(categoinac_ci)
 	
 	**********
 	***emp_ci*
 	**********
-	gen byte emp_ci = .
-	replace emp_ci = (condocup_ci == 1) if condocup_ci != .
+	gen byte emp_ci = (condocup_ci == 1)
 
 	**************
 	***cesante_ci*** 
 	**************
-	gen byte cesante_ci = .
+	gen byte cesante_ci = .    // todos los no desocupados quedan en missing
+
+	* 0 = desocupado que nunca trabajó
+	replace cesante_ci = 0 if condocup_ci == 2
+
+	* 1 = desocupado que sí trabajó antes (V4082 == 1)
+	replace cesante_ci = 1 if condocup_ci == 2 & v4082 == 1
 
 	***************
 	***desemp_ci***
 	***************	
-	gen byte desemp_ci = .
-	replace desemp_ci = (condocup_ci == 2) if condocup_ci != .
+	gen byte desemp_ci = (condocup_ci == 2)
 	
-	***************
-	***subemp_ci***
-	***************
-	gen byte subemp_ci = 0
-	replace subemp_ci = 1 if emp_ci==1 & v4039<30 & v4063a==1 & v4064a==1
+	*******************
+	*** subemp_ci   ***
+	*******************
+	gen byte subemp_ci = .
+	replace subemp_ci = 1 if vd4004a == 1
+	replace subemp_ci = 0 if condocup_ci == 1 & subemp_ci == .
 
-	****************
-	***durades_ci***
-	****************
-	gen byte durades_ci=.
-	replace durades_ci = v4076 * (52/12) if condocup_ci == 2 & v4076 < .
+	*******************
+	*** durades_ci   ***
+	*******************
+	gen durades_ci = .
+
+	* 1) Duración < 1 año: V40761 = 1-11 meses
+	replace durades_ci = v40761 if condocup_ci == 2 & v40761 < . 
+
+	* 2) Duración entre 1 y < 2 años: V40762 = 1-11 meses adicionales
+	replace durades_ci = 12 + v40762 if condocup_ci == 2 & v40762 < .
+
+	* 3) Duración de 2 años o más: V40763 = años (entre 2 y 98)
+	replace durades_ci = 12*v40763 if condocup_ci == 2 & v40763 < .
 
 	***********
 	***pea_ci***
 	***********
-	gen byte pea_ci = .
-	replace pea_ci = 1 if inlist(condocup_ci,1,2)
-	replace pea_ci = 0 if inlist(condocup_ci,3,4)
+	gen byte pea_ci = (vd4001 == 1)
 		
 	****************
 	*** nempleos_ci***
@@ -444,102 +466,69 @@ rename *, lower
 	replace nempleos_ci = 2 if emp_ci==1 & inlist(v4009,2,3)
 	replace nempleos_ci = . if emp_ci==0
 
-	******************
-	***antiguedad_ci***
-	******************
-	gen byte antiguedad_ci = .
-	/*** Fallback (categorías tipo Brasil): v40402 = 1–<2 años; v40403 = ≥2 años ***/
-	capture confirm variable v40402
-	if !_rc {
-		replace antiguedad_ci = 1 if emp_ci==1 & v40402 < .
-	}
-	capture confirm variable v40403
-	if !_rc {
-		/* Si v40403 ya viene como años (numérica): */
-		replace antiguedad_ci = v40403 if emp_ci==1 & v40403 < .
-		/* Si v40403 fuera indicador (≥2 años), usar al menos 2:
-		   replace antiguedad_ci = 2 if emp_ci==1 & v40403==1 & missing(antiguedad_ci)
-		*/
-	}
+	**********************
+	*** antiguedad_ci  ***
+	**********************
 
-	
-	***************
-	***desalent_ci***
-	***************
-	gen byte desalent_ci= .
-	replace desalent_ci = 1 if condocup_ci == 3 & inlist(v4074, 4, 5)
-	replace desalent_ci = 0 if condocup_ci == 3 & desalent_ci == .
+	gen double antiguedad_ci = .
+
+	* < 1 año: v40401 = 1–11 meses
+	replace antiguedad_ci = 0 if emp_ci==1 & v40401 < .
+
+	* 1 a < 2 años: v40402 = 0–11 meses adicionales
+	replace antiguedad_ci = 1 + v40402/12 if emp_ci==1 & v40402 < .
+
+	* 2+ años: v40403 = años completos
+	replace antiguedad_ci = v40403 if emp_ci==1 & v40403 < .
+
+	*********************
+	*** desalent_ci    ***
+	*********************
+	gen byte desalent_ci = .
+	replace desalent_ci = 1 if vd4005 == 1
+	replace desalent_ci = 0 if condocup_ci == 3 & vd4005 != 1
 
 	***************
 	***horaspri_ci***
 	***************	
-	gen  byte horaspri_ci = .
-
-	* Base: horas habituales del trabajo principal (PNADC)
-	replace horaspri_ci = v4039 if emp_ci==1 & v4039<.
-
-	* Tratamiento de códigos especiales/inconsistentes (si existieran)
-	replace horaspri_ci = . if inlist(v4039, 999, 9999)
-
-	* No ocupados -> missing
-	replace horaspri_ci = . if emp_ci==0
-
-	label var horaspri_ci "Horas semanales en la actividad principal"
-
-	* Reglas de consistencia sugeridas por el manual:
-	* - No superar 168 horas/semana (24*7)
-	replace horaspri_ci = . if horaspri_ci>168 & horaspri_ci<.
+	gen byte horaspri_ci = v4039
+	replace horaspri_ci = . if v4039 == .    // NA
+	replace horaspri_ci = . if horaspri_ci > 168
+	replace horaspri_ci = . if emp_ci == 0
 		
 	***************
 	***horastot_ci ***
 	***************	
-	* Construir lista de variables de horas disponibles en la base
-	local _HRS_CANDS v4039 v4041 v4043 v4045 v4047 v4115 v4116 p51a p51b p51c
-	local _HRS_LIST
-	foreach _v of local _HRS_CANDS {
-		cap confirm variable `_v'
-		if !_rc local _HRS_LIST `_HRS_LIST' `_v'
-	}
-
-	* Suma fila a fila de las horas disponibles (ignora las que no existan)
-	egen double horastot_ci = rowtotal(`_HRS_LIST') if emp_ci==1
-
-	* Si todas las componentes están perdidas, dejar como missing
-	egen byte _hrs_n = rownonmiss(`_HRS_LIST') if emp_ci==1
-	replace horastot_ci = . if emp_ci==1 & _hrs_n==0
-
-	* No ocupados -> missing
-	replace horastot_ci = . if emp_ci==0
-
-	* Tratamiento de códigos especiales en componentes (si existieran)
-	foreach _v of local _HRS_LIST {
-		replace horastot_ci = . if inlist(`_v', 999, 9999)
-	}	
+	gen horastot_ci = vd4031
+	replace horastot_ci = . if vd4031 == .
+	replace horastot_ci = . if horastot_ci > 168
+	replace horastot_ci = . if emp_ci == 0
 		
-	***************
-	***tiempoparc_ci ***
-	***************	
-	gen  byte tiempoparc_ci = .
+	**************************
+	***  tiempoparc_ci     ***
+	**************************
 
-	* 1) Trabaja menos de 30 horas y NO desea trabajar más (v4063a == 2)
-	replace tiempoparc_ci = 1 if emp_ci==1 & horaspri_ci>=1 & horaspri_ci<30 & v4063a==2
+	gen byte tiempoparc_ci = . 
 
-	* 0) Resto de ocupados (trabaja ≥30 horas o desea trabajar más)
-	replace tiempoparc_ci = 0 if emp_ci==1 & tiempoparc_ci==.
+	* Tiempo parcial voluntario
+	replace tiempoparc_ci = 1 if emp_ci == 1 ///
+		& horaspri_ci >= 1 & horaspri_ci < 30 ///
+		& v4063a == 2
 
-	* Missing para no ocupados
-	replace tiempoparc_ci = . if emp_ci==0
-		
+	* Todos los otros ocupados no son tiempo parcial voluntario
+	replace tiempoparc_ci = 0 if emp_ci == 1 & tiempoparc_ci == .
+	
 	***************
 	***categopri_ci ***
 	***************	
-	gen  byte categopri_ci = .
-	replace categopri_ci = 1 if emp_ci==1 & v4012==5                 // Empregador
-	replace categopri_ci = 2 if emp_ci==1 & v4012==6                 // Conta própria
-	replace categopri_ci = 3 if emp_ci==1 & inlist(v4012,1,2,3,4)    // Doméstico, Militar, Empregado privado/público
-	replace categopri_ci = 4 if emp_ci==1 & v4012==7                 // Familiar no remunerado
-	replace categopri_ci = 0 if emp_ci==1 & missing(categopri_ci)
-	replace categopri_ci = . if emp_ci==0
+	gen byte categopri_ci = .
+
+	replace categopri_ci = 1 if emp_ci==1 & vd4008==4   // Empregador
+	replace categopri_ci = 2 if emp_ci==1 & vd4008==5   // Conta própria
+	replace categopri_ci = 3 if emp_ci==1 & inlist(vd4008,1,2,3)   // Asalariados y domésticos
+	replace categopri_ci = 4 if emp_ci==1 & vd4008==6   // Não remunerado
+
+	replace categopri_ci = . if emp_ci!=1
 	
 	***************
 	***categosec_ci ***
@@ -556,61 +545,99 @@ rename *, lower
 	***rama_ci ***
 	***************	
 	gen byte rama_ci = .
-	replace rama_ci = 1 if emp_ci==1 & v40132a==1   // Agro, pesca, silvicultura…
-	replace rama_ci = . if emp_ci==0                 // no ocupados
+
+	replace rama_ci = 1 if vd4010==1
+	replace rama_ci = 3 if vd4010==2
+	replace rama_ci = 5 if vd4010==3
+	replace rama_ci = 6 if inlist(vd4010,4,6)
+	replace rama_ci = 7 if vd4010==5
+	replace rama_ci = 8 if vd4010==7
+	replace rama_ci = 10 if vd4010==8
+	replace rama_ci = 9 if inlist(vd4010,9,10,11,12)
+
+	replace rama_ci = . if emp_ci!=1
 
 	***************
 	***spublico_ci ***
 	***************	
 	gen byte spublico_ci = .
-	replace spublico_ci = 1 if emp_ci == 1 & v4012 == 4     // Empregado do setor público
-	replace spublico_ci = 0 if emp_ci == 1 & v4012 != 4 & v4012 != .
-	replace spublico_ci = . if emp_ci == 0
+	replace spublico_ci = 1 if emp_ci == 1 & rama_ci == 10
+	replace spublico_ci = 0 if emp_ci == 1 & rama_ci != 10 & rama_ci != .
 		
 	***************
 	***tamemp_ci ***
 	***************	
-	gen  byte tamemp_ci = .
+	gen byte tamemp_ci = .
+
+	* 1. Cuenta propia → tamaño pequeño (1 trabajador)
 	replace tamemp_ci = 1 if emp_ci==1 & v4012==6
-    replace tamemp_ci = 1 if emp_ci==1 & inlist(v4018,1) & (tamemp_ci==.)
-    replace tamemp_ci = 2 if emp_ci==1 & inlist(v4018,2,3) & (tamemp_ci==.)
-    replace tamemp_ci = 3 if emp_ci==1 & inlist(v4018,4) & (tamemp_ci==.)
+
+	* 2. Trabajador no remunerado → también tamaño pequeño
+	replace tamemp_ci = 1 if emp_ci==1 & v4012==7 & missing(tamemp_ci)
+
+	* 3. Tamaño según total de personas V4018
+	replace tamemp_ci = 1 if emp_ci==1 & v4018==1   & missing(tamemp_ci)   // 1–5 personas
+	replace tamemp_ci = 2 if emp_ci==1 & inlist(v4018,2,3) & missing(tamemp_ci)   // 6–50
+	replace tamemp_ci = 3 if emp_ci==1 & v4018==4   & missing(tamemp_ci)   // 51+
+
+	* 4. Missing para no ocupados
 	replace tamemp_ci = . if emp_ci==0
 	
 	***************
 	***cotizando_ci***
 	***************	
-	gen  byte cotizando_ci = .
-	replace cotizando_ci = 1 if emp_ci==1 & (v4032==1 | v4049==1 | v4057==1)
-	replace cotizando_ci = 0 if emp_ci==1 & cotizando_ci==. & (v4032==2 | v4049==2 | v4057==2)
-		
+	gen byte cotizando_ci = .
+
+	* 1. Cotiza en trabajo principal (INSS)
+	replace cotizando_ci = 1 if emp_ci==1 & v4032==1
+
+	* 2. Cotiza en trabajo secundario
+	replace cotizando_ci = 1 if emp_ci==1 & v4049==1
+
+	* 3. Cotiza en otros trabajos
+	replace cotizando_ci = 1 if emp_ci==1 & v4059==1
+
+	* 4. Ocupado pero NO cotiza en ningún trabajo → 0
+	replace cotizando_ci = 0 if emp_ci==1 & cotizando_ci==.
+
+	* 5. No ocupados → 0
+	replace cotizando_ci = 0 if emp_ci==0
+
 	***************
 	***afiliado_ci***
 	***************	
-	gen  byte afiliado_ci = .
-	* (A) Afiliado por declaración de cotización en cualquier trabajo
-	replace afiliado_ci = 1 if inlist(1, v4032, v4049, v4057) & emp_ci==1
-
-	* (B) Afiliado por vínculo formal aunque no haya declaración explícita de pago
-	replace afiliado_ci = 1 if emp_ci==1 & (v4029==1 | v4048==1)                                  // INSS/RGPS por carteira
-	replace afiliado_ci = 1 if emp_ci==1 & (v4012==4 & v4028==1)                                  // RPPS por estatutário
-
-	* (C) No afiliado: ocupados con negativa expresa y sin indicios de afiliación
-	replace afiliado_ci = 0 if emp_ci==1 & afiliado_ci==. & ( (v4032==2 | v4049==2 | v4057==2) | (v4029!=1 & v4048!=1 & !(v4012==4 & v4028==1)) )
-
-	* No ocupados: PNADC usualmente no releva afiliación general -> dejar missing
-	replace afiliado_ci = . if emp_ci==0
 		
+	gen byte afiliado_ci = .
+
+	* 1. Cotizantes (implica afiliación)
+	replace afiliado_ci = 1 if v4032==1 | v4049==1 | v4059==1
+
+	* 2. Empleado formal: carteira assinada → afiliado
+	replace afiliado_ci = 1 if v4029==1
+
+	* 3. Servidor público estatutário
+	replace afiliado_ci = 1 if v4028==1
+
+	* 4. Militares (régimen previsional propio)
+	replace afiliado_ci = 1 if v4012==2
+
+	* 5. Todos los ocupados sin ninguna afiliación → 0
+	replace afiliado_ci = 0 if emp_ci==1 & afiliado_ci==.
+
+	* 6. Desocupados o inactivos → 0
+	replace afiliado_ci = 0 if emp_ci==0
+			
 	***************
 	***instcot_ci***
 	***************	
-	gen byte instcot_ci = . 
-	* RPPS: trabajador del sector público ESTATUTARIO y cotiza
-	replace instcot_ci = 2 if cotizando_ci==1 & v4012==4 & v4028==1
+	gen byte instcot_ci = .
 
-	* INSS (RGPS): resto de cotizantes sin evidencia de RPPS
-	replace instcot_ci = 1 if cotizando_ci==1 & missing(instcot_ci)
-	
+	* 2 = RPPS: Servidor estatutário que cotiza
+	replace instcot_ci = 2 if cotizando_ci==1 & v4028==1
+
+	* 1 = INSS (RGPS): todos los demás cotizantes
+	replace instcot_ci = 1 if cotizando_ci==1 & instcot_ci==.
+
 	**************
 	***formal_ci***
 	**************
@@ -622,89 +649,90 @@ rename *, lower
 	***tipocontrato_ci***
 	*******************
 	gen byte tipocontrato_ci = .
-	* (1) Permanente / Indefinido:
-	*    “Empregado com carteira assinada” o “servidor público estatutário”
-	replace tipocontrato_ci = 1 if categopri_ci==3 & (v4029==1 | v4028==1)
 
-	* (2) Temporal / Plazo definido:
-	*    “Empregado sem carteira, mas com contrato temporário / prazo determinado”
-	replace tipocontrato_ci = 2 if categopri_ci==3 & (v4029==2 & v4056==1)
+	* Solo asalariados
+	* (categopri_ci == 3)
 
-	* (3) Sin contrato / Verbal:
-	*    “Empregado sem carteira e sem contrato formal”
-	replace tipocontrato_ci = 3 if categopri_ci==3 & (v4029==2 & (missing(v4056) | v4056==2))
+	* 1 = Permanente (único tipo de contrato identificado en PNAD)
+	replace tipocontrato_ci = 1 if categopri_ci == 3 & v4029 == 1
+
+	* 3 = Sin contrato
+	replace tipocontrato_ci = 3 if categopri_ci == 3 & v4029 == 2
+
+	* No asalariados → missing
+	replace tipocontrato_ci = . if categopri_ci != 3
 		
 	**************
 	***ocupa_ci***
 	**************
 	gen byte ocupa_ci = .
 
-	tostring v4010, replace
+	replace ocupa_ci = 2 if vd4011==1
+	replace ocupa_ci = 1 if inlist(vd4011,2,3)
+	replace ocupa_ci = 3 if vd4011==4
+	replace ocupa_ci = 5 if vd4011==5
+	replace ocupa_ci = 6 if vd4011==6
+	replace ocupa_ci = 7 if inlist(vd4011,7,8)
+	replace ocupa_ci = 8 if vd4011==10
+	replace ocupa_ci = 9 if inlist(vd4011,9,11)
 
-	/* grupo mayor (primer dígito) y sub-mayor (dos primeros) */
-	gen byte g1 = real(substr(v4010,1,1)) if strlen(v4010)>=1
-	gen byte g2 = real(substr(v4010,1,2)) if strlen(v4010)>=2
-
-	/* Asignación SCL */
-	replace ocupa_ci = 8 if emp_ci==1 & g1==0                           // Fuerzas Armadas
-	replace ocupa_ci = 2 if emp_ci==1 & g1==1                           // Directivos
-	replace ocupa_ci = 1 if emp_ci==1 & inlist(g1,2,3)                  // Profesionales/técnicos
-	replace ocupa_ci = 3 if emp_ci==1 & g1==4                           // Administrativo
-	replace ocupa_ci = 4 if emp_ci==1 & g1==5 & g2==52                  // Ventas
-	replace ocupa_ci = 5 if emp_ci==1 & g1==5 & g2==51                  // Servicios
-	replace ocupa_ci = 5 if emp_ci==1 & g1==5 & missing(ocupa_ci)       // Resto de 5 → Servicios
-	replace ocupa_ci = 6 if emp_ci==1 & g1==6                           // Agrícolas
-	replace ocupa_ci = 7 if emp_ci==1 & inlist(g1,7,8)                  // Operarios/conductores
-	replace ocupa_ci = 9 if emp_ci==1 & g1==9                           // Otras/elementales
-
-	/* No ocupados → missing */
-	replace ocupa_ci = . if emp_ci==0
+	replace ocupa_ci = . if emp_ci!=1
 
 	**************
 	**pension_ci***
 	**************
-	gen byte pension_ci=. 
-	* Recibe pensión contributiva (marcador directo o monto > 0)
+	gen byte pension_ci = .
+
+	* Jubilación o pensión contributiva
 	replace pension_ci = 1 if v5004a == 1
-	replace pension_ci = 1 if missing(pension_ci) & v5004a2 > 0 & v5004a2 < .
 
-	* No recibe cuando hay negativa explícita o monto 0 con negativa
+	* No recibe pensión contributiva
 	replace pension_ci = 0 if v5004a == 2
-	replace pension_ci = 0 if missing(pension_ci) & v5004a2 == 0 & v5004a == 2
-	
-	***************
-	**pensionsub_ci**
-	***************
-	gen byte pensionsub_ci = . 
-	* Marca como no contributiva si declaró recibir BPC-LOAS o si el monto > 0
-	replace pensionsub_ci = 1 if v5001a == 1
-	replace pensionsub_ci = 1 if missing(pensionsub_ci) & v5001a2 > 0 & v5001a2 < .
+		
+	***********************
+	*** pensionsub_ci   ***
+	***********************
+	gen byte pensionsub_ci = .
 
-	* No recibe cuando hay negativa explícita
-	replace pensionsub_ci = 0 if v5001a == 2
-	
-	***************
-	**tipopen_ci**
-	***************
-	gen byte tipopen_ci = . 
-	replace tipopen_ci = 1 if pension_ci==1
-    replace tipopen_ci = 2 if pensionsub_ci==1
-	
-	***************
-	**instpen_ci **
-	***************
+	* 1. Recibe BPC/LOAS (no contributiva)
+	replace pensionsub_ci = 1 if v5005a == 1
+
+	* 0. No recibe pensión no contributiva
+	replace pensionsub_ci = 0 if v5005a == 2
+
+	***********************
+	*** tipopen_ci       ***
+	***********************
+	gen byte tipopen_ci = .
+
+	* 1 = Pensión contributiva (INSS o RPPS)
+	replace tipopen_ci = 1 if v5004a == 1
+
+	* 2 = Pensión NO contributiva (BPC/LOAS)
+	replace tipopen_ci = 2 if v5005a == 1
+
+	* 0 = No recibe ningún tipo de pensión
+	replace tipopen_ci = 0 if tipopen_ci == . & (v5004a == 2 & v5005a == 2)
+
+	***********************
+	*** instpen_ci       ***
+	***********************
 	gen byte instpen_ci = .
 
-	* BPC/LOAS → Assistência Social
-	replace instpen_ci = 2 if v5001a==1
+	* 3 = BPC/LOAS (pensión no contributiva asistencial)
+	replace instpen_ci = 3 if v5005a == 1
 
-	* Previdência (INSS/RPPS) → sistema previdenciário
-	replace instpen_ci = 1 if v5004a==1 & missing(instpen_ci)
+	* 2 = RPPS (servidor estatutario jubilado)
+	* Solo podemos identificarlo si la persona recibe pensión contributiva 
+	* Y si es/era servidor estatutário (v4028==1)
+	replace instpen_ci = 2 if v5004a == 1 & v4028 == 1
 
-	* No pensionados -> .
-	replace instpen_ci = . if (v5001a!=1 & v5004a!=1) & (missing(pension_ci) & missing(pensionsub_ci))
-		
+	* 1 = INSS (para todos los demás pensionados contributivos)
+	replace instpen_ci = 1 if v5004a == 1 & instpen_ci == .
 
+	* 0 = No recibe ninguna pensión
+	replace instpen_ci = 0 if instpen_ci == . & (v5004a == 2 & v5005a == 2)
+	
 ****************************
 ***VARIABLES DE INGRESO***
 ****************************
@@ -712,31 +740,31 @@ rename *, lower
 	*************
 	* ylmpri_ci *
 	*************
-    * Ingreso laboral monetario del trabajo principal
-    * PNADC: VD4019 ≈ rendimento efetivo do trabalho principal (R$ mensuales)
-    capture drop ylmpri_ci
-    generate double ylmpri_ci = . 
-    replace  ylmpri_ci = vd4019 if emp_ci==1 & vd4019!=.
-    replace  ylmpri_ci = .     if ylmpri_ci<0 & ylmpri_ci!=.
+	gen double ylmpri_ci = v403312
+	replace ylmpri_ci = . if v403312 < 0 | v403312 >= 999999 | emp_ci != 1
 
 	************
 	* ylmsec_ci *
 	************
-    * Ingreso laboral monetario del/los trabajo(s) secundario(s)
-    * Aproximación PNADC: VD4020 (todos los trabajos) – VD4019 (principal)
-    capture drop ylmsec_ci
-    generate double ylmsec_ci = . 
-    replace  ylmsec_ci = vd4020 - vd4019 if emp_ci==1 & vd4020!=. & vd4019!=.
-    replace  ylmsec_ci = 0               if ylmsec_ci<0 & ylmsec_ci!=.
-
-    **************
+	gen double ylmsec_ci = v405012
+	replace ylmsec_ci = . if v405012 < 0 | v405012 >= 999999 | emp_ci != 1
+  
 	**************
 	* ylmotros_ci *
 	**************
-    * Otros ingresos laborales monetarios (bonos, comisiones no captadas arriba)
-    * PNADC no separa explícitamente; por defecto 0 (ajusta si identificas fuentes)
-	generate double ylmotros_ci = 0 if emp_ci==1
- 
+	gen double ylmotros_ci = . 
+	replace ylmotros_ci = v405812 if edad_ci >= 10
+	replace ylmotros_ci = 0 if v405812 == 0
+
+	* valores inválidos → missing
+	replace ylmotros_ci = . if v405812 < 0 | v405812 >= 999999
+
+	* inactivos / desocupados → deben tener 0
+	replace ylmotros_ci = 0 if emp_ci != 1
+
+	* no remunerados → deben tener 0
+	replace ylmotros_ci = 0 if categopri_ci == 4
+
 	*********
 	* ylm_ci *
 	*********
@@ -746,29 +774,29 @@ rename *, lower
 	**************
 	* ylnmpri_ci *
 	**************
-    **************
-    * Ingreso laboral NO monetario (en especie) del trabajo principal
-    * TODO (PNADC): mapear si hay variable de pagos en productos del trabajo principal
-    generate double ylnmpri_ci = . 
-    replace  ylnmpri_ci = . if ylnmpri_ci < 0 & ylnmpri_ci != .
+	gen double ylnmpri_ci = v403322 if v40332 == 2
+	replace ylnmpri_ci = . if v403322 < 0 | v403322 >= 999999 | emp_ci != 1
 
 	**************
 	* ylnmsec_ci *
 	**************
-    * Ingreso laboral NO monetario (en especie) del/los trabajos secundarios
-    * TODO (PNADC): mapear pagos en especie en trabajos adicionales
-    capture drop ylnmsec_ci
-    generate double ylnmsec_ci = . 
-    replace  ylnmsec_ci = . if ylnmsec_ci < 0 & ylnmsec_ci != .
+	gen double ylnmsec_ci = v405022
+	replace ylnmsec_ci = . if v405022 < 0 | v405022 >= 999999 | emp_ci != 1
 
-	****************
-	* ylnmotros_ci *
-	****************
-    * Otros ingresos laborales NO monetarios (premios en especie, etc.)
-    * TODO (PNADC): mapear si existiera
-    capture drop ylnmotros_ci
-    generate double ylnmotros_ci = . 
-    replace  ylnmotros_ci = . if ylnmotros_ci < 0 & ylnmotros_ci != .
+	******************
+	*** ylnmotros_ci ***
+	******************
+	gen double ylnmotros_ci = . 
+	replace ylnmotros_ci = v405822 if edad_ci >= 10
+	replace ylnmotros_ci = 0 if v405822 == 0
+
+	replace ylnmotros_ci = . if v405822 < 0 | v405822 >= 999999
+
+	* inactivos / desocupados → deben tener 0
+	replace ylnmotros_ci = 0 if emp_ci != 1
+
+	* no remunerados → deben tener 0
+	replace ylnmotros_ci = 0 if categopri_ci == 4
 
 	**********
 	* ylnm_ci *
@@ -781,27 +809,35 @@ rename *, lower
 	**********
 	* ynlm_ci *
 	**********
-	* Ingreso NO laboral monetario (transferencias, pensiones, capital, remesas en dinero)
-    * TODO (PNADC): mapear fuentes individuales; por ahora como missing
-    capture drop ynlm_ci
-    generate double ynlm_ci = . 
-    replace  ynlm_ci = 0 if ynlm_ci < 0 & ynlm_ci != .
+	* Lista de ingresos NO laborales monetarios según PNADC 2024
+	local ynlm_vars v5001a2 v5002a2 v5003a2 v5004a2 v5005a2 v5006a2 v5007a2 v5008a2
+
+	* Limpiar valores especiales
+	foreach v of local ynlm_vars {
+		replace `v' = . if `v' < 0 | `v' >= 999999
+	}
+
+	* Sumar todos los ingresos NO laborales monetarios
+	egen double ynlm_ci = rowtotal(`ynlm_vars'), missing
+
+	* Aplicar grupo de referencia
+	replace ynlm_ci = . if edad_ci < 10
+
+	* Si todas son missing → dejar missing
+	replace ynlm_ci = . if ynlm_ci == 0 & ///
+		v5001a2 == . & v5002a2 == . & v5003a2 == . & ///
+		v5004a2 == . & v5005a2 == . & v5006a2 == . & ///
+		v5007a2 == . & v5008a2 == .
 
 	***********
 	* ynlnm_ci *
 	***********
-	* Ingreso NO laboral NO monetario (donaciones en especie, remesas en especie)
-    * TODO (PNADC): mapear si existiera a nivel individual
-    capture drop ynlnm_ci
     generate double ynlnm_ci = . 
-    replace  ynlnm_ci = . if ynlnm_ci < 0 & ynlnm_ci != .
-
+    
 	**********
 	* ytot_ci *
 	**********
-    * Ingreso total individual
-    capture drop ytot_ci
-    egen double ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci), mi
+	egen double ytot_ci= rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci), m 
 
 	*********
 	* ylm_ch *
@@ -821,9 +857,7 @@ rename *, lower
 	*********
 	* ynlm_ch *
 	*********
-    * TODO (PNADC): si mapeas ynlm_ci a nivel individuo, esta suma se activará
-    capture drop ynlm_ch
-    bysort idh_ch: egen double ynlm_ch = total(ynlm_ci) if miembros_ci==1
+	by idh_ch, sort: egen ynlm_ch = sum(ynlm_ci) if miembros_ci == 1
  
 	**********
 	* ytot_ch *
@@ -833,119 +867,205 @@ rename *, lower
 	***************
 	* ylmhopri_ci *
 	***************
-    generate double ylmhopri_ci = ylmpri_ci / horaspri_ci if emp_ci==1 & horaspri_ci>0
+	gen ylmhopri_ci = ylmpri_ci / (horaspri_ci * 4.3)
+	replace ylmhopri_ci = . if ylmhopri_ci <= 0
  
 	**********
 	* ylmho_ci *
 	**********
-    generate double ylmho_ci = ylm_ci / horastot_ci if emp_ci==1 & horastot_ci>0
+	gen ylmho_ci = ylm_ci / (horaspri_ci * 4.3)
+	replace ylmho_ci = . if ylmho_ci <= 0
   
 	**************
 	* nrylmpri_ci *
 	**************
-    generate byte nrylmpri_ci = (emp_ci==1 & ylmpri_ci==.)
+	gen nrylmpri_ci = (ylmpri_ci == . & emp_ci == 1)
+	replace nrylmpri_ci = . if emp_ci! = 1
 
 	**************
 	* nrylmpri_ch *
 	**************
-	bysort idh_ch: egen byte nrylmpri_ch = max(nrylmpri_ci) if miembros_ci==1
+	sort idh_ch 
+	by idh_ch: egen nrylmpri_ch = max(nrylmpri_ci) if miembros_ci == 1
 
 	*************
 	* remesas_ci *
 	*************
-    * TODO (PNADC): mapear remesas monetarias individuales si existen (p.ej., “dinheiro do exterior” a nivel pessoa)
-    capture drop remesas_ci
     generate double remesas_ci = .
 
 	*************
 	* remesas_ch *
 	*************
-    * TODO (PNADC): si remesas_ci se captura a nivel persona, sumar al hogar
-    capture drop remesas_ch
     bysort idh_ch: egen double remesas_ch = total(remesas_ci) if miembros_ci==1
 
 	**********
 	* ypen_ci *
 	**********
-    generate double ypen_ci = . if pension_ci==1
+	gen ypen_ci = v5004a2
+	replace ypen_ci = . if ypen_ci <= 0
 
 	*************
 	* ypensub_ci *
 	*************
-    generate double ypensub_ci = . if pensionsub_ci==1
+	egen ypensub_ci = rsum(v5001a2 v5002a2 v5003a2)
+	replace ypensub_ci = . if v5001a2 == . & v5002a2 == . & v5003a2 == .
 	
 ****************************
 ***VARIABLES DE EDUCACION***
 ****************************
-
 	*********	
 	*aedu_ci*
 	*********
 	gen aedu_ci = .
-	replace aedu_ci = vd3005 if vd3005<.   // usa directamente años reportados
 
-	**********
-	*eduui_ci*
-	**********
-	* Superior INCOMPLETO (aprox. con años si no hay nivel detallado)
-	gen byte eduui_ci = .
-	replace eduui_ci = 1 if aedu_ci>12 & aedu_ci<16
-	replace eduui_ci = 0 if aedu_ci<=12 | aedu_ci>=16
-	replace eduui_ci = . if aedu_ci==.
+	/********************************************************
+	  1. CASOS QUE NO ASISTEN ACTUALMENTE (v3002==2)
+	********************************************************/
 
-	**********
-	*eduuc_ci*
-	**********
-	* Superior COMPLETO o posgrado (aprox. con años)
-	gen byte eduuc_ci = .
-	replace eduuc_ci = 1 if aedu_ci>=16
-	replace eduuc_ci = 0 if aedu_ci<16 & aedu_ci!=.
-	replace eduuc_ci = . if aedu_ci==.
+	* 1.1 Nunca asistió
+	replace aedu_ci = 0 if v3002==2 & v3008==2
 
-	**********
-	*eduac_ci*
-	**********
-	* Univ vs técnico (BRA generalmente no distingue en PNADC núcleo) -> missing
-	gen byte eduac_ci = .
+	* 1.2 Preescola, alfabetização, CA → 0 años
+	replace aedu_ci = 0 if v3002==2 & inlist(v3009a,1,2,3,4)
+
+	* 1.3 Antigo primário (elementar)
+	replace aedu_ci = v3013 if v3002==2 & v3009a==5
+
+	* 1.4 Antigo ginásio (médio 1º ciclo)
+	replace aedu_ci = 4 + v3013 if v3002==2 & v3009a==6
+
+	* 1.5 Ensino fundamental regular o EJA
+	replace aedu_ci = v3013 if v3002==2 & inlist(v3009a,7,8)
+
+	* 1.6 Antigo científico/clássico (2º ciclo)
+	replace aedu_ci = 8 + v3013 if v3002==2 & v3009a==9
+
+	* 1.7 Ensino médio regular / supletivo
+	replace aedu_ci = 9 + v3013 if v3002==2 & inlist(v3009a,10,11)
+
+	* 1.8 Superior – graduação (no preguntan grado → valor fijo)
+	replace aedu_ci = 16 if v3002==2 & v3009a==12
+
+	* 1.9 Pós-graduação (no asistiendo)
+	replace aedu_ci = 16 if v3002==2 & v3009a==13
+	replace aedu_ci = 18 if v3002==2 & v3009a==14
+	replace aedu_ci = 22 if v3002==2 & v3009a==15
+
+
+	/********************************************************
+	  2. CASOS QUE ASISTEN ACTUALMENTE (v3002==1)
+	********************************************************/
+
+	* 2.1 Preescola / alfabetização
+	replace aedu_ci = 0 if v3002==1 & inlist(v3003a,2,3)
+
+	* 2.2 Ensino fundamental regular o EJA
+	replace aedu_ci = v3006 - 1 if v3002==1 & inlist(v3003a,4,5)
+
+	* 2.3 Ensino médio regular o EJA
+	replace aedu_ci = 9 + (v3006 - 1) if v3002==1 & inlist(v3003a,6,7)
+
+	* 2.4 Superior – graduação 
+	replace v3006 = round(v3006/2) if v3005a==1 & v3003a==8   // semestres → años
+	replace aedu_ci = 12 + (v3006 - 1) if v3002==1 & v3003a==8
+
+	* 2.5 Pós-grado (no se reporta año)
+	replace aedu_ci = 16 if v3002==1 & v3003a==9    // especialización
+	replace aedu_ci = 18 if v3002==1 & v3003a==10   // maestría
+	replace aedu_ci = 22 if v3002==1 & v3003a==11   // doctorado
+
+
+	/********************************************************
+	  3. FINAL
+	********************************************************/
+
+	* Cursos no clasificados
+	replace aedu_ci = . if v3006==13 | v3013==13
+
+	* Rango máximo ISCED
+	replace aedu_ci = 0 if aedu_ci < 0
+	replace aedu_ci = 22 if aedu_ci > 22
 
 	*********** 
 	*edupre_ci*
 	***********
-	* Compleción de preescolar; si no identificable en PNADC → .
 	gen byte edupre_ci = .
 
-	************
-	*asispre_ci*
-	************
-	* Asistencia actual a preescolar; si no hay nivel-curso actual, queda .
-	gen byte asispre_ci = .
+	**************
+	*** eduui_ci ***
+	**************
+	gen byte eduui_ci = 0
+
+	* A. Estudia actualmente educación superior → incompleta
+	replace eduui_ci = 1 if v3002 == 1 ///
+		& inlist(v3003a, 8, 9, 10, 11)
+
+	* B. No estudia pero el máximo nivel es superior y NO concluyó
+	replace eduui_ci = 1 if v3002 == 2 ///
+		& inlist(v3009a, 12, 13, 14, 15) ///
+		& v3014 != 1
+
+	* Missing si no hay información
+	replace eduui_ci = . if v3002 == . | v3003a == . & v3009a == .
+
+	**************
+	*** eduuc_ci ***
+	**************
+	gen byte eduuc_ci = .   
+
+	* A. Estudia actualmente educación superior → cuenta (incompleta)
+	replace eduuc_ci = 1 if v3002 == 1 ///
+		& inlist(v3003a, 8, 9, 10, 11)
+
+	* B. Último nivel alcanzado es superior (graduação ou pós)
+	*    y CONCLUYÓ → completa
+	replace eduuc_ci = 1 if v3002 == 2 ///
+		& inlist(v3009a, 12, 13, 14, 15) ///
+		& v3014 == 1
+
+	* C. Último nivel alcanzado es superior (graduação ou pós)
+	*    y NO CONCLUYÓ → igualmente cuenta según CIMA
+	replace eduuc_ci = 1 if v3002 == 2 ///
+		& inlist(v3009a, 12, 13, 14, 15) ///
+		& v3014 != 1
+
+	* D. Quienes NO están en ningún caso → 0
+	replace eduuc_ci = 0 if eduuc_ci==. ///
+		& v3002 != .   ///
+		& v3009a != .
+
+	**********
+	*eduac_ci*
+	**********
+	gen byte eduac_ci = .
 
 	***********
 	*asiste_ci*
 	***********
-	* Asiste actualmente (PNADC escolarização atual). Si existe V3002: 1 frequenta, 2 não.
-	gen byte asiste_ci = .
-	replace asiste_ci = 1 if v3002==1
-    replace asiste_ci = 0 if v3002==2
-	
-	*************
-	*pqnoasis1_ci*
-	**************
-	* Razón no asistencia (armonizada 1..5). Si no existe en PNADC personas → .
-	gen byte pqnoasis1_ci = .
+	gen byte asiste_ci = (v3002 == 1)
+	replace asiste_ci = . if v3002 == .
 
 	***********
 	*edupub_ci*
 	***********
-	* Red del establecimiento actual (1 pública / 0 privada) solo si asiste.
 	gen byte edupub_ci = .
-    replace edupub_ci = 1 if v3002a==1 & asiste_ci==1
-    replace edupub_ci = 0 if v3002a==2 & asiste_ci==1
+	replace edupub_ci = 1 if asiste_ci == 1 & v3002a == 2   // red pública
+	replace edupub_ci = 0 if asiste_ci == 1 & v3002a == 1   // red privada
 	
+	************
+	*asispre_ci*
+	************
+	gen byte asispre_ci = 0
+	replace asispre_ci = 1 if asiste_ci == 1 & v3003a == 2   // Pré-escola
+	
+	*************
+	*pqnoasis1_ci*
+	**************
+	gen byte pqnoasis1_ci = .
+
 ****************************
 ***VARIABLES DE VIVIENDA***
 ****************************		
-
 	***********
 	***luz_ch***
 	***********
@@ -1042,12 +1162,22 @@ rename *, lower
 	* 1 = tiene internet hogar | 0 = no | . = no está
 	gen byte internet_ch = .
 
+	********
+	*cel_ch*
+	********
+	gen cel_ch=.
+	
 	************
 	***vivi1_ch***
 	************
 	* 1 = casa | 2 = depto | 3 = otros | . = no está
 	gen byte vivi1_ch = .
 
+	***********
+	*vivi2_ch*
+	***********
+	gen vivi2_ch=.
+	
 	*****************
 	***viviprop_ch***
 	*****************
@@ -1075,7 +1205,6 @@ rename *, lower
 ****************************
 ***VARIABLES DE WASH***
 ****************************
-
 	**************
 	***aguared_ch***
 	**************
@@ -1234,7 +1363,7 @@ rename *, lower
 	* Salario mínimo 2024 = R$1412 → ½ = R$706
 	gen ln_ci = 706
 		
-	
+		
 local log_file = "$ruta\harmonized\\`PAIS'\\`ENCUESTA'\log\\`PAIS'_`ANO'`ronda'_variablesBID.log"
 local base_in  = "$ruta\survey\\`PAIS'\\`ENCUESTA'\\`ANO'\\`ronda'\data_merge\\`PAIS'_`ANO'`ronda'.dta"
 local base_out = "$ruta\harmonized\\`PAIS'\\`ENCUESTA'\data_arm\\`PAIS'_`ANO'`ronda'_BID.dta"
