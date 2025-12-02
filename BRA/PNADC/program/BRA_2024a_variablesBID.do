@@ -387,10 +387,10 @@ rename *, lower
 	replace condocup_ci = 2 if vd4002 == 2
 
 	* 4 = Menores de la edad mínima (14 en PNADC)
-	replace condocup_ci = 4 if edad_ci < 14
+	replace condocup_ci = 4 if edad_ci < 10
 
 	* 3 = Inactivos (≥14 años, no ocupados ni desocupados)
-	replace condocup_ci = 3 if edad_ci >= 14 & condocup_ci == .
+	replace condocup_ci = 3 if edad_ci >= 10 & condocup_ci == .
 
 	***********************
 	*** categoinac_ci   ***
