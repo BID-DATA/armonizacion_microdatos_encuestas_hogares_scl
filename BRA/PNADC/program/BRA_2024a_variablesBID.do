@@ -12,6 +12,7 @@ set more off
  * El servidor contiene las bases de datos MECOVI.
  *________________________________________________________________________________________________________________*
  
+
 global ruta = "${surveysFolder}"
 
 local PAIS BRA
@@ -386,7 +387,7 @@ rename *, lower
 	* 2 = Desocupados
 	replace condocup_ci = 2 if vd4002 == 2
 
-	* 4 = Menores de la edad mínima (10 en PNADC)
+	* 4 = Menores de la edad mínima (14 en PNADC)
 	replace condocup_ci = 4 if edad_ci < 10
 
 	* 3 = Inactivos (≥14 años, no ocupados ni desocupados)

@@ -17,7 +17,7 @@ Author:       David Cornejo
 E-email:       dcor@iadb.org
 url:           
 Dependencies:  SLC/EDU
-Ultima actualización: Maria Alejandra Zegarra
+Ultima actualización: Maria Alejandra Zegarra, October 2025
 ----------------------------------------------------
 Creation Date:    25 Jun 2019 - 10:57:54            
 ==================================================*/
@@ -39,19 +39,26 @@ Creation Date:    25 Jun 2019 - 10:57:54
 	text = re.sub("r(?<=\d)\.", "g", text)
 	*/
 
+	set trace on 
 local pais BRA	
 local ano 2024
 local ronda a
 
-global input  "${surveysFolder}\survey\BRA\PNADC\\`ano'\\`ronda'\data_orig"
-global output "${surveysFolder}\survey\BRA\PNADC\\`ano'\\`ronda'\data_merge" 
+global surveysFolder "C:\Users\maria\OneDrive\Documents\GitHub\armonizacion_microdatos_encuestas_hogares_scl"
+
+global input  "${surveysFolder}\BRA\PNADC\\`ano'\\`ronda'\data_orig"
+global output "${surveysFolder}\BRA\PNADC\\`ano'\\`ronda'\data_merge" 
+
+*global input  "${surveysFolder}\survey\BRA\PNADC\\`ano'\\`ronda'\data_orig"
+*global output "${surveysFolder}\survey\BRA\PNADC\\`ano'\\`ronda'\data_merge" 
 
 /*==================================================
               1: txt. to .dta 
 ==================================================*/
 
-infile using "${input}\input_`ano'.do", using("${input}\PNADC_`ano'_visita1.txt")
-		save   "${output}\PNADC_`ano'`ronda'.dta", replace
+infix using "${input}\input_2024.dct", clear
+save "${output}\PNADC_`ano'`ronda'.dta", replace
+
 
 foreach v of varlist _all {
       capture rename `v' `=lower("`v'")'
