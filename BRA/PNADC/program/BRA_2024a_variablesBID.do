@@ -1056,12 +1056,13 @@ rename *, lower
 	*asispre_ci*
 	************
 	gen byte asispre_ci = 0
-	replace asispre_ci = 1 if asiste_ci == 1 & v3003a == 2   // Pré-escola
+	replace asispre_ci = 1 if v3002==1 & v3003a==2
+	
 	
 	*************
-	*pqnoasis1_ci*
+	*razonesnoasis_ci*
 	**************
-	gen byte pqnoasis1_ci = .
+	gen byte razonesnoasis_ci = .
 
 ****************************
 ***VARIABLES DE VIVIENDA***
