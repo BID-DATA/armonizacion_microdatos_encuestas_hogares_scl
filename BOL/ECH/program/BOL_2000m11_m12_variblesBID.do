@@ -1,7 +1,7 @@
 *El presente do file genera las variables de ingreso asignadas a Javier Torres
 
 *País:	Bolivia
-*Año :	2001	
+*Año :	2000
 
 
 ***************************
@@ -15,37 +15,39 @@
 ***************
 ***ylmpri_ci: Ingreso laboral monetario de actividad principal: Variable continua que indica el monto mensual de ingresos monetarios provenientes de la actividad principal. Incluye: sueldos, salarios, jornales, trabajos a destajo, comisiones, propinas, horas extras, aguinaldos (empleados) y ganancia neta (patrones y cuenta propia). Considera ingresos corrientes y extraordinarios.***
 ***************
+
 *Para los trabajadores dependientes
+
 *Ingreso basico
 gen ypridb=.
-replace ypridb=s626a*30 if s626b==1 
-replace ypridb=s626a*4.3 if s626b==2 
-replace ypridb=s626a*2 if s626b==3 
-replace ypridb=s626a if s626b==4 
-replace ypridb=s626a/6 if s626b==5
-replace ypridb=s626a/12 if s626b==6
+replace ypridb=saliqp*30 if frecsalp==1 
+replace ypridb=saliqp*4.3 if frecsalp==2 
+replace ypridb=saliqp*2 if frecsalp==3 
+replace ypridb=saliqp if frecsalp==4 
+replace ypridb=saliqp/6 if frecsalp==5
+replace ypridb=saliqp/12 if frecsalp==6
 
 replace ypridb=0 if categopri_ci==4 
 
 *Ingresos extras
-local sub="a b c"
+local sub="hep prip aguip"
 foreach i of local sub {
 gen ypriex`i'=.
-replace ypriex`i'=s627`i'2/12 if s627`i'1==1
-replace ypriex`i'=0 if s627`i'1==2
+replace ypriex`i'=ing`i'/12 if rec`i'==1
+replace ypriex`i'=0 if rec`i'==2
 }
 
-egen ypridbd=rsum(ypridb ypriexa ypriexb ypriexc), missing
-replace ypridbd=. if ypridb==. & ypriexa==. & ypriexb==. & ypriexc==.
+egen ypridbd=rsum(ypridb ypriexhep ypriexprip ypriexaguip), missing
+replace ypridbd=. if ypridb==. & ypriexhep==. & ypriexprip==. & ypriexaguip==.
 
 *Para los trabajadores independientes 
 gen yprijbi=.
-replace yprijbi=s631a*30 if s631b==1 
-replace yprijbi=s631a*4.3 if s631b==2 
-replace yprijbi=s631a*2 if s631b==3 
-replace yprijbi=s631a if s631b==4 
-replace yprijbi=s631a/6 if s631b==5
-replace yprijbi=s631a/12 if s631b==6
+replace yprijbi=ingliqp*30 if frecinp==1 
+replace yprijbi=ingliqp*4.3 if frecinp==2 
+replace yprijbi=ingliqp*2 if frecinp==3 
+replace yprijbi=ingliqp if frecinp==4 
+replace yprijbi=ingliqp/6 if frecinp==5
+replace yprijbi=ingliqp/12 if frecinp==6
 
 *Ingreso laboral monetario para todos
 egen ylmpri_ci=rsum(yprijbi ypridbd), missing
@@ -53,41 +55,58 @@ replace ylmpri_ci=. if ypridbd==. & yprijbi==.
 replace ylmpri_ci=. if emp_ci~=1
 
 
-
 ***************
 ***ylmsec_ci: Ingreso laboral monetario de actividad secundaria. Variable continua que indica el monto mensual de ingresos monetarios provenientes de la actividad secundaria.***
 ***************
+
 *Para los trabajadores dependientes
+
 *Ingreso basico
 gen ysecb=.
-replace ysecb=s640a*30 if s640b==1 
-replace ysecb=s640a*4.3 if s640b==2 
-replace ysecb=s640a*2 if s640b==3 
-replace ysecb=s640a if s640b==4 
-replace ysecb=s640a/6 if s640b==5
-replace ysecb=s640a/12 if s640b==6
+replace ysecb=saliqs*30 if frecsals==1 
+replace ysecb=saliqs*4.3 if frecsals==2 
+replace ysecb=saliqs*2 if frecsals==3 
+replace ysecb=saliqs if frecsals==4 
+replace ysecb=saliqs/6 if frecsals==5
+replace ysecb=saliqs/12 if frecsals==6
+
 replace ysecb=0 if categosec_ci==4 
 
 *Ingresos extras
-gen yxsa=s641b/12 
-gen yxsa1=s641b/12 
 
-egen ysecbd=rsum(ysecb yxsa yxsa1), missing
-replace ysecbd=. if ysecb==. & yxsa==. & yxsa1==.
+gen yxsa=inghes/12 
+replace yxsa=. if reches==0
+replace yxsa=0 if reches==2
+
+gen yxsa1=ingpris/12 
+replace yxsa1=. if recpris==0
+replace yxsa1=0 if recpris==2
+
+gen yxsa2=ingaguis/12 
+replace yxsa2=. if recaguis==0
+replace yxsa2=0 if recaguis==2
+
+
+egen ysecbd=rsum(ysecb yxsa yxsa1 yxsa2), missing
+replace ysecbd=. if ysecb==. & yxsa==. & yxsa1==. & yxsa2==.
+
 
 *Para los trabajadores independientes
+
 gen ysecjbi=.
-replace ysecjbi=s644a*30 if s644b==1 
-replace ysecjbi=s644a*4.3 if s644b==2 
-replace ysecjbi=s644a*2 if s644b==3 
-replace ysecjbi=s644a if s644b==4 
-replace ysecjbi=s644a/6 if s644b==5
-replace ysecjbi=s644a/12 if s644b==6
+replace ysecjbi=ingliqs*30 if frecins==1 
+replace ysecjbi=ingliqs*4.3 if frecins==2 
+replace ysecjbi=ingliqs*2 if frecins==3 
+replace ysecjbi=ingliqs if frecins==4 
+replace ysecjbi=ingliqs/6 if frecins==5
+replace ysecjbi=ingliqs/12 if frecins==6
 
 *Ingreso laboral monetario para todos
+
 egen ylmsec_ci=rsum(ysecjbi ysecbd), missing
 replace ylmsec_ci=. if ysecjbi==. & ysecbd==.
 replace ylmsec_ci=. if emp_ci~=1
+
 
 
 *****************
@@ -108,28 +127,34 @@ label var ylm_ci "Ingreso laboral monetario total"
 ******************
 *** ylnmpri_ci: Ingreso laboral no monetario de actividad principal. Variable continua que representa el monto mensual del ingreso laboral no monetario derivado de la actividad principal de cada miembro del hogar. ***
 ******************
+
 *Ingreso laboral no monetario de los dependientes
-local nnn="a b c d e"
+
+local nnn="alip trap vesp vivp otrp"
 foreach i of local nnn {
 
 gen especie`i'=.
-replace especie`i'=s628`i'3*30  if s628`i'2==1
-replace especie`i'=s628`i'3*4.3 if s628`i'2==2
-replace especie`i'=s628`i'3*2   if s628`i'2==3
-replace especie`i'=s628`i'3     if s628`i'2==4
-replace especie`i'=s628`i'3/3   if s628`i'2==5
-replace especie`i'=s628`i'3/6   if s628`i'2==6
-replace especie`i'=s628`i'3/12   if s628`i'2==7
-replace especie`i'=0 if s628`i'1==2
+replace especie`i'=ing`i'*30  if frec`i'==1
+replace especie`i'=ing`i'*4.3 if frec`i'==2
+replace especie`i'=ing`i'*2   if frec`i'==3
+replace especie`i'=ing`i'     if frec`i'==4
+replace especie`i'=ing`i'/3   if frec`i'==5
+replace especie`i'=ing`i'/6   if frec`i'==6
+replace especie`i'=ing`i'/12  if frec`i'==7
+replace especie`i'=0 if rec`i'==2
 }
-egen ylnmprid=rsum(especiea especieb especiec especied especiee), missing
-replace ylnmprid=. if especiea==. &  especieb==. & especiec==. & especied==. & especiee==. 
+
+egen ylnmprid=rsum(especiealip especietrap especievesp especievivp especieotrp), missing
+replace ylnmprid=. if especiealip==. & especietrap==. & especievesp==. & especievivp==. & especieotrp==. 
 replace ylnmprid=0 if categopri_ci==4
 
+
 *Ingreso laboral no monetario de los independientes (autoconsumo)
+
 gen ylnmprii=.
 
 *Ingreso laboral no monetario para todos
+
 egen ylnmpri_ci=rsum(ylnmprid ylnmprii), missing
 replace ylnmpri_ci=. if ylnmprid==. & ylnmprii==.
 replace ylnmpri_ci=. if emp_ci~=1
@@ -139,29 +164,32 @@ replace ylnmpri_ci=. if emp_ci~=1
 ******************
 ****ylnmsec_ci: Ingreso laboral no monetario de actividad secundaria. Variable continua que representa el monto mensual del ingreso laboral no monetario derivado de la actividad secundaria de cada miembro del hogar. ****
 ******************
-*Ingreso laboral no monetario de los dependientes
-foreach i of local nnn {
 
-gen especiesec`i'=.
-replace especiesec`i'=s642`i'3*30  if s642`i'2==1
-replace especiesec`i'=s642`i'3*4.3 if s642`i'2==2
-replace especiesec`i'=s642`i'3*2   if s642`i'2==3
-replace especiesec`i'=s642`i'3     if s642`i'2==4
-replace especiesec`i'=s642`i'3/3   if s642`i'2==5
-replace especiesec`i'=s642`i'3/6   if s642`i'2==6
-replace especiesec`i'=s642`i'3/12  if s642`i'2==7
-replace especiesec`i'=0 if s642`i'1==2
+local nsn="alis tras vess vivs otrs"
+foreach i of local nsn {
+
+gen especie`i'=.
+replace especie`i'=ing`i'*30  if frec`i'==1
+replace especie`i'=ing`i'*4.3 if frec`i'==2
+replace especie`i'=ing`i'*2   if frec`i'==3
+replace especie`i'=ing`i'     if frec`i'==4
+replace especie`i'=ing`i'/3   if frec`i'==5
+replace especie`i'=ing`i'/6   if frec`i'==6
+replace especie`i'=ing`i'/12  if frec`i'==7
+replace especie`i'=0 if rec`i'==2
 }
 
-egen ylnmsecd=rsum(especieseca especiesecb especiesecc especiesecd especiesece), missing
-replace ylnmsecd=. if especieseca==. &  especiesecb==. & especiesecc==. & especiesecd==. & especiesece==. 
+egen ylnmsecd=rsum(especiealis especietras especievess especievivs especieotrs), missing
+replace ylnmsecd=. if especiealis==. & especietras==. & especievess==. & especievivs==. & especieotrs==. 
 replace ylnmsecd=0 if categosec_ci==4
-replace ylnmsecd=. if emp_ci~=1
+
 
 *Ingreso laboral no monetario de los independientes (autoconsumo)
+
 gen ylnmseci=.
 
 *Ingreso laboral no monetario para todos
+
 egen ylnmsec_ci=rsum(ylnmsecd ylnmseci), missing
 replace ylnmsec_ci=. if ylnmsecd==. & ylnmseci==.
 replace ylnmsec_ci=. if emp_ci==0
