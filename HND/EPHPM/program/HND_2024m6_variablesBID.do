@@ -869,16 +869,6 @@ use `base_in', clear
 								9"Otras ocupaciones no clasificadas en las anteriores"
 	label value ocupa_ci ocupa_ci
 
-
-	**************
-	**pension_ci: Variable dicotómica que indica con valor 1 si la persona recibe una pensión o jubilación contributiva y con 0 al resto. ***
-	**************
-	gen byte pension_ci=. //No hay pregunta que distinga si la pensión o jubilación es contributiva 
-	
-	***************
-	**pensionsub_ci**
-	***************
-	gen byte pensionsub_ci = . //No hay pregunta que distinga si la pensión o jubilación es subsidiada o no
 	
 	***************
 	**tipopen_ci: Variable categórica que indica el tipo de pensión contributiva o no contributiva según el país. Puede estar asociado a algún programa del gobierno o al sistema de seguridad social**
@@ -1839,13 +1829,7 @@ use `base_in', clear
 	gen migrantiguo5_ci=.
 	label var migrantiguo5_ci "=1 si es migrante antiguo (5 anos o mas)"
 
-	*****************
-	*** miglac_ci: si el individuo es migrante latino o del caribe***
-	*****************
-	gen miglac_ci=.
-	label var miglac_ci "=1 si es migrante proveniente de un pais LAC"
 
-	
 
 ****************************
 ***VARIABLES DE EXTERNAS***

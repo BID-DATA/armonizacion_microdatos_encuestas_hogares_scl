@@ -12,28 +12,21 @@ set more off
 * El servidor contiene las bases de datos MECOVI.
 *________________________________________________________________________________________________________________*
 
-global surveysFolder "D:\Dropbox\BID\BID2025_Pepe\Tarea1_Excel\10_Paraguay_2024"
 
-
-global ruta = "${surveysFolder}\t4\data_merge"
+global ruta = "${surveysFolder}"
 
 local PAIS PRY
 local ENCUESTA EPHC
 local ANO "2024"
 local ronda t4
 
-/*
-local log_file = "$ruta\harmonized\\`PAIS'\\`ENCUESTA'\log\\`PAIS'_`ANO'`ronda'_variablesBID.log"
-
+local log_file = "$ruta\harmonized\\`PAIS'\\`ENCUESTA'\\log\\`PAIS'_`ANO'`ronda'_variablesBID.log"
+local base_in  = "$ruta\survey\\`PAIS'\\`ENCUESTA'\\`ANO'\\`ronda'\data_orig\\`PAIS'_`ANO'`ronda'.dta"
+local base_in  = "$ruta\survey\\`PAIS'\\`ENCUESTA'\\`ANO'\\`ronda'\data_merge\\`PAIS'_`ANO'`ronda'.dta"
 local base_out = "$ruta\harmonized\\`PAIS'\\`ENCUESTA'\data_arm\\`PAIS'_`ANO'`ronda'_BID.dta"
-  
+        
 capture log close
-cap log using "`log_file'", replace 
-
-cap log off
-*/
-
-local base_in  = "${ruta}\\`PAIS'_`ANO'`ronda'.dta"
+log using "`log_file'", replace 
 
 /***************************************************************************
                  BASES DE DATOS DE ENCUESTA DE HOGARES - SOCIOMETRO 
@@ -2166,10 +2159,7 @@ e02tde	Ingreso mensual que recibe de ayuda familiar del exterior (deflactado)
 	
 
 	
-local log_file = "$ruta\harmonized\\`PAIS'\\`ENCUESTA'\log\\`PAIS'_`ANO'`ronda'_variablesBID.log"
-local base_in  = "$ruta\survey\\`PAIS'\\`ENCUESTA'\\`ANO'\\`ronda'\data_merge\\`PAIS'_`ANO'`ronda'.dta"
-local base_out = "$ruta\harmonized\\`PAIS'\\`ENCUESTA'\data_arm\\`PAIS'_`ANO'`ronda'_BID.dta"
-   
-saveold "`base_out'", version(12) replace
+save "`base_out'", replace
 
-cap log close
+log close
+

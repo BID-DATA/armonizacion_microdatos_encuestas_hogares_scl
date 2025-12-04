@@ -307,8 +307,8 @@ replace ind_ci=1 if p4d_indige<11
 replace ind_ci=0 if p4d_indige==11
 
 gen noafroind_ci=.
-replace noafroind_ci=1 if p4d_indige==11 | p4f_afrod==8
-replace noafroind_ci=0 if p4d_indige!=11 & p4f_afrod!=8
+replace noafroind_ci=1 if p4d_indige==11 & p4f_afrod==8
+replace noafroind_ci=0 if p4d_indige!=11 | p4f_afrod!=8
 
 gen afro_jefe=afro_ci  if relacion_ci==1
 egen afro_ch  = min(afro_jefe), by(idh_ch) 
@@ -567,12 +567,18 @@ label var instcot_ci "Institucion proveedora de la pension - variable original d
 *afiliado_ci****
 ****************
 gen afiliado_ci=.	
+replace afiliado_ci =1 if p4==1  /* afiliado directo */
+recode afiliado_ci .=0 if condocup_ci==1 | condocup_ci==2
 label var afiliado_ci "Afiliado a la Seguridad Social"
 
 *******************
 ***formal***
 *******************
-gen formal_ci=.
+gen formal=1 if cotizando_ci==1
+replace formal=1 if afiliado_ci==1 & (cotizando_ci!=1 | cotizando_ci!=0) & condocup_ci==1 & pais_c=="PAN"
+gen byte formal_ci=.
+replace formal_ci=1 if formal==1 & (condocup_ci==1 | condocup_ci==2)
+replace formal_ci=0 if formal_ci==. & (condocup_ci==1 | condocup_ci==2) 
 label var formal_ci "1=afiliado o cotizante / PEA"
 
 *****************

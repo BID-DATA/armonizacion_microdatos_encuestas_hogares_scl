@@ -13,23 +13,19 @@ capture log close
 * El servidor contiene las bases de datos MECOVI.
 *________________________________________________________________________________________________________________*
 
-global surveysFolder "D:\Dropbox\BID\BID2025_Pepe\Tarea1_Excel\10_Paraguay_2024"
-
  
-global ruta = "${surveysFolder}\t4\data_orig"
+global ruta = "${surveysFolder}\\survey\PRY\EPHC\2024\t4\data_orig"
 
 local PAIS PRY
 local ENCUESTA EPHC
 local ANO "2024"
 local ronda t4
 
-/*
 local log_file = "${surveysFolder}\harmonized\\`PAIS'\\`ENCUESTA'\\log\\`PAIS'_`ANO'`ronda'_mergeBID.log"
+local base_out = "${surveysFolder}\survey\\`PAIS'\\`ENCUESTA'\\`ANO'\\`ronda'\\data_merge\\`PAIS'_`ANO'`ronda'.dta"
+
 
 log using "`log_file'", replace 
-*/
-
-local base_out = "${surveysFolder}\t4\data_merge\\`PAIS'_`ANO'`ronda'.dta"
 
 /***************************************************************************
                  BASES DE DATOS DE ENCUESTA DE HOGARES - SOCIOMETRO 

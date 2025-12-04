@@ -289,7 +289,7 @@ use `base_in', clear
 	replace afro_ci=1 if p4f_afrod<8
 	replace afro_ci=0 if p4f_afrod==8
 
-		******************************
+	******************************
 	*	ind_ci
 	******************************
 	gen ind_ci=.
@@ -301,8 +301,8 @@ use `base_in', clear
 	*	noafroind_ci
 	******************************
 	gen noafroind_ci=.
-	replace noafroind_ci=1 if p4d_indige==11 | p4f_afrod==8
-	replace noafroind_ci=0 if p4d_indige!=11 & p4f_afrod!=8
+	replace noafroind_ci=1 if p4d_indige==11 & p4f_afrod==8
+	replace noafroind_ci=0 if p4d_indige!=11 | p4f_afrod!=8
 
 	******************************
 	*	afro_jefe
@@ -583,12 +583,18 @@ use `base_in', clear
 	*afiliado_ci****
 	****************
 	gen afiliado_ci=.	
+	replace afiliado_ci =1 if p4==1  /* afiliado directo */
+	recode afiliado_ci .=0 if condocup_ci==1 | condocup_ci==2
 	label var afiliado_ci "Afiliado a la Seguridad Social"
 
 	*******************
 	***formal***
 	*******************
-	gen formal_ci=.
+	gen formal=1 if cotizando_ci==1
+	replace formal=1 if afiliado_ci==1 & (cotizando_ci!=1 | cotizando_ci!=0) & condocup_ci==1 & pais_c=="PAN"
+	gen byte formal_ci=.
+	replace formal_ci=1 if formal==1 & (condocup_ci==1 | condocup_ci==2)
+	replace formal_ci=0 if formal_ci==. & (condocup_ci==1 | condocup_ci==2) 
 	label var formal_ci "1=afiliado o cotizante / PEA"
 
 	*****************

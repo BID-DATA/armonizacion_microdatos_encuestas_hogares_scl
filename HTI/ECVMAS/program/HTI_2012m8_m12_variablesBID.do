@@ -67,12 +67,9 @@ label variable factor_ch "Factor de expansion del hogar"
 **************************
 * Identificador del hogar*
 **************************
-
 gen idh_ch=hh_id2new 
 sort idh*
 label variable idh_ch "ID del hogar"
-
-
 
 ****************************
 * Identificador de persona *
@@ -734,13 +731,32 @@ label var formal_ci "1=afiliado o cotizante / PEA"
 *actividad principal y actividad secundaria, pero las bases descargables no los incluyen (ver: http://www.ihsi.ht/produit_enq_nat_ecvmas.html)
 
 *Actividad principal
-recode i_j25 (-9 -8 =.)
+gen _i_j25=i_j25
+replace _i_j25= . if i_j25a ==-8|i_j25a ==-9
+replace _i_j25  = 500 if i_j25<0 &  i_j25a == 1 //moins de 500 gourdes
+replace _i_j25  = 749.5 if i_j25<0 &  i_j25a == 2 // de 500 � 999 gourdes
+replace _i_j25  = 1499.5 if i_j25<0 &  i_j25a == 3  //De 1,000 à 1,999 gourdes
+replace _i_j25  = 2499.5 if i_j25<0 &  i_j25a == 4  //De 2,000 à 2,999 gourdes
+replace _i_j25  = 3999.5 if i_j25<0 &  i_j25a == 5  //De 3,000 à 4,999 gourdes
+replace _i_j25  = 6249.5 if i_j25<0 &  i_j25a == 6  //De 5,000 à 7,499 gourdes
+replace _i_j25  = 8749.5 if i_j25<0 &  i_j25a == 7  //De 7,500 à 9,999 gourdes
+replace _i_j25  = 12499.5 if i_j25<0 &  i_j25a == 8  //De 10,000 à 14,999 gourdes
+replace _i_j25  = 17499.5 if i_j25<0 &  i_j25a == 9  //De 15,000 à 19,999 gourdes}
+replace _i_j25 = 24999.5 if i_j25<0 &  i_j25a == 10  //de 20,000 � 29,999 gourdes
+replace _i_j25 = 39999.5 if i_j25<0 &  i_j25a == 11 //De 30,000 à 49,999 gourdes
+replace _i_j25  = 50000*1.2 if i_j25<0 &  i_j25a == 12  //50,000 gourdes ou plus
 
-gen ylmpri_ci=i_j25
+gen ylm_gourdres_25 = _i_j25   					  //tipo de cambio
+replace ylm_gourdres_25 =_i_j25*41.63 if i_j25u==3  // dolar americano
+replace ylm_gourdres_25  = _i_j25*5 if i_j25u==2 //dollar haitiano
+
+egen ylmpri_ci=rowtotal(ylm_gourdres_25 ylm_gourdres_69),mi  //suma de concepto 25 y 69
+
 replace ylmpri_ci=. if i_j25==. | emp_ci==0
 replace ylmpri_ci=0 if categopri_ci==4
 label var ylmpri_ci "Ingreso laboral monetario actividad principal" 
 *Nota: no se esta considerando el autoconsumo como ingreso
+
 
 ***************
 ***ylmsec_ci***
@@ -760,11 +776,10 @@ label var ylmsec_ci "Ingreso laboral monetario actividad secundaria"
 gen ylnmsec_ci=.
 label var ylnmsec_ci "Ingreso laboral NO monetario actividad secundaria"
 
-
 ****************
 ***ylnmpri_ci***
 ****************
-gen ylnmpri_ci=.
+gen ylnmpri_ci=ylnm_gourdres_70 
 label var ylnmpri_ci "Ingreso laboral NO monetario actividad principal"  
 
 
@@ -810,16 +825,40 @@ label var ylnm_ci "Ingreso laboral NO monetario total"
 ***ynlm_ci***
 *************
 
-gen ynlm_ci=.
+**********************************
+*** remesas_ci & remesas_ch ***
+**********************************
+merge m:m idh_ch using "$ruta\survey\HTI\ECVMAS\2012\m8_m12\data_orig\ECVMAS 2012\2_ECVMAS_BASE DE DONNEES\Modulo Remesas.dta", gen(mergeremesas)
+*Tipo de cambio en 2012: 0.02378, dollars x gourdes. Para explicación del dollar hatiano, ver: https://www.vagabondjourney.com/what-is-a-haitian-dollar/
+recode hh_r09b (-9 -8 =.)
+gen remesas_ci=.
+replace remesas_ci=hh_r09b 
+replace remesas_ci=hh_r09b*5 if hh_r09c==2
+replace remesas_ci=hh_r09b*41.63 if hh_r09c==3
+replace remesas_ci=hh_r09b*41.63*1.29 if hh_r09c==4
+replace remesas_ci=remesas_ci/12
+label var remesas_ci "Remesas mensuales reportadas por el individuo" 
+
+by idh_ch, sort: egen remesas_ch=sum(remesas_ci) if miembros_ci==1, missing
+label var remesas_ch "Remesas mensuales del hogar" 
+
+gen ynlm_ci=remesas_ci
 label var ynlm_ci "Ingreso no laboral monetario"  
+
+***************
+*** ynlm_ch ***
+***************
+
+by idh_ch, sort: egen ynlm=sum(ynlm_ci) if miembros_ci==1
+
 
 **************
 ***ynlnm_ci***
 **************
 
-gen ynlnm_ci=.
+gen ynlnm_ci=ynlnm_gourdres_75
 label var ynlnm_ci "Ingreso no laboral no monetario" 
-egen ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci)
+egen ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci), mi
 
 
 
@@ -868,35 +907,13 @@ gen tcylmpri_ch=.
 **************
 ***ynlnm_ch***
 **************
-
-gen ynlnm_ch=.
+egen ynlnm_ch= rowtotal( ynlnm_ch_1_gourdres  ynlnm_ch_0_gourdres), mi
 label var ynlnm_ch "Ingreso no laboral no monetario del hogar"
-
-**********************************
-*** remesas_ci & remesas_ch ***
-**********************************
-merge m:m idh_ch using "$ruta\survey\HTI\ECVMAS\2012\m8_m12\data_orig\ECVMAS 2012\2_ECVMAS_BASE DE DONNEES\Modulo Remesas.dta", gen(mergeremesas)
-*Tipo de cambio en 2012: 0.02378, dollars x gourdes. Para explicación del dollar hatiano, ver: https://www.vagabondjourney.com/what-is-a-haitian-dollar/
-recode hh_r09b (-9 -8 =.)
-gen remesas_ci=.
-replace remesas_ci=hh_r09b if hh_r09c==1
-replace remesas_ci=hh_r09b/5 if hh_r09c==2
-replace remesas_ci=hh_r09b*0.02378 if hh_r09c==3
-replace remesas_ci=remesas_ci/12
-label var remesas_ci "Remesas mensuales reportadas por el individuo" 
-
-bys idh_ch: egen remesas_ch=sum(remesas_ci)
-label var remesas_ch "Remesas mensuales del hogar"
 
 ***************
 *** ynlm_ch ***
 ***************
-
-by idh_ch, sort: egen ynlm=sum(ynlm_ci) if miembros_ci==1
-egen ynlm_ch=rsum(ynlm remesas_ch)
-replace ynlm_ch=. if ynlm==. 
-drop ynlm
-
+bys idh_ch: egen ynlm_ch=sum(ynlm_ci)
 
 *******************
 *** autocons_ci ***

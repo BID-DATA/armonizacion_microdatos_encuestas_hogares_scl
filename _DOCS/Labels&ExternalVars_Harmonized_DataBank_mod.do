@@ -4,9 +4,12 @@
 *====================================================================================================================================*
 *                                                     INCLUSIóN DE VARIABLES EXTERNAS                                                *
 *====================================================================================================================================*
-global ruta = "${surveysFolder}"
-capture drop _merge
-merge m:1 pais_c anio_c using "$ruta\general_documentation\data_externa\poverty\International_Poverty_Lines\5_International_Poverty_Lines_LAC_long_PPP17", keepusing (lp19_2011 lp31_2011 lp5_2011 lp365_2017 lp685_2017 lp14_2017 lp81_2017 ppp_2011 ppp_2017 cpi cpi2011 cpi2017 cpi_2011 cpi_2017 tc_wdi ppp_wdi)
+*global ruta = "${surveysFolder}"
+global ruta = "C:\Users\maria\OneDrive\Documents\GitHub\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\"
+
+
+capture drop _mer
+merge m:1 pais_c anio_c using "$ruta\data_externa\poverty\International_Poverty_Lines\5_International_Poverty_Lines_LAC_long_PPP17", keepusing (lp19_2011 lp31_2011 lp5_2011 lp365_2017 lp685_2017 lp14_2017 lp81_2017 ppp_2011 ppp_2017 cpi cpi2011 cpi2017 cpi_2011 cpi_2017 tc_wdi ppp_wdi)
 
 drop if _merge ==2
 
@@ -280,8 +283,6 @@ cap label var aguadist_ch "Ubicación de la principal fuente de agua"
 cap label var aguamala_ch "Agua unimproved según MDG" 
 cap label var aguamide_ch "Usan medidor para pagar consumo de agua"
 cap label var luz_ch  "La principal fuente de iluminación es electricidad"
-	cap label def luz_ch 1"Principal fuente es electricidad" 0"Principal fuente no es electricidad", add modify
-	cap label val luz_ch luz_ch
 cap label var luzmide_ch "Usan medidor para pagar consumo de electricidad"
 cap label var combust_ch "Principal combustible gas o electricidad" 
 cap label var bano_ch "El hogar tiene servicio sanitario"
@@ -310,7 +311,7 @@ cap label var vivi1_ch "Tipo de vivienda en la que reside el hogar"
 cap label var vivi2_ch "=1: la vivienda es casa o departamento"
 		
 cap label var viviprop_ch "Propiedad de la vivienda" 
-	cap label def viviprop_ch 0"Alquilada" 1"Propia y totalmente pagada" 2"Propia y en proceso de pago" 3"Ocupada_(propia_de_facto)", add modify
+	cap label def viviprop_ch 0"Alquilada" 1"Propia" 3"Ocupada_(propia_de_facto)", add modify
 	cap label val viviprop_ch viviprop_ch
 	
 cap label var vivitit_ch "El hogar posee un título de propiedad"
@@ -318,9 +319,6 @@ cap label var vivialq_ch "Alquiler mensual"
 cap label var vivialqimp_ch "Alquiler mensual imputado"
 cap label var aguamejorada_ch "El hogar tiene acceso a agua potable de fuente mejorada"
 cap label var banomejorado_ch "El hogar tiene acceso a saneamiento de fuente mejorada"
-	cap label def banomejorado_ch 0"Instalaciones de baño no mejorado" 1"Instalaciones de baños mejorado" 2"No se puede especificar", add modify
-	cap label val banomejorado_ch banomejorado_ch
-	
 
 
 

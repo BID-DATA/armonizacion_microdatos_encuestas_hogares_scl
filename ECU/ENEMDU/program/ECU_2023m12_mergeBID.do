@@ -26,19 +26,23 @@ log using "`log_file'", replace
 import spss "`base_in'\enemdu_vivienda_hogar_2023_12.sav", clear
 duplicates report area estrato upm  vivienda hogar
 sort area estrato upm vivienda hogar 
+capture ssc install renlabv
+renlabv
 saveold "`base_in'\hogares.dta",  version(12) replace
 
 * Sort de base
 import spss "`base_in'\enemdu_persona_2023_12.sav", clear
 duplicates report area estrato upm  vivienda hogar p01
+capture ssc install renlabv
+renlabv
 sort area estrato upm vivienda hogar p01
 saveold "`base_in'\miembros.dta", version(12) replace
 
 
 merge m:1 area estrato upm  vivienda hogar using "`base_in'\hogares.dta"
 drop _merge
-destring fexp ingpc,  dpcomma replace
-destring *, replace
+*destring fexp ingpc,  dpcomma replace
+*destring *, replace
 saveold "`base_out'", version(12) replace
 
 

@@ -1277,11 +1277,9 @@ use `base_in', clear
 	*p5566c: En los últimos 6 meses, de ... a ... ¿Recibió Ud. ingresos por concepto de: Transferencia del programa JUNTOS? - Del país (Monto en S/.)
 	*p5567c: Recibió ingresos por transferencias de PENSIÓN 65 en los últimos 6 meses
 
-	gen p_juntos = p5566c/2 
-	gen p_pension65 = p5567c/2
-	
-	egen ypensub_ci =  rowtotal(p_juntos p_pension65) 
+	gen ypensub_ci    = ingtpu03/12
 	label var ypensub_ci "Valor de la pension subsidiada / no contributiva"
+
 	
 	*************
 	* pension_ci: Variable dicotómica que indica con valor 1 si la persona recibe una pensión o jubilación contributiva y con 0 al resto. 
@@ -1295,12 +1293,8 @@ use `base_in', clear
 	****************
 	* pensionsub_ci: Variable dicotómica que indica con valor 1 si la persona recibe una pensión o jubilación NO contributiva (adultos mayores) y con 0 al resto. *
 	****************
-	generate byte pensionsub_ci = .
-	replace pensionsub_ci=1 if 0<ypensub_ci
-	replace pensionsub_ci=0 if ypensub_ci==. | ypensub_ci==0
-	label var pensionsub_ci "1=Recibe pension NO contributiva"		
-				
-
+	gen pensionsub_ci = ingtpu03>0 & ingtpu03!=.
+	label var pensionsub_ci "1=recibe pension subsidiada / no contributiva"
 
 
 ********************************************************************************
@@ -1767,14 +1761,7 @@ use `base_in', clear
 	*p401f hace 5 aos,... vivia en este distrito?
 	gen migrantiguo5_ci=(migrante_ci==1 & (p401f==1 | (p401g>10000 & p401g!=.))) if migrante_ci!=. & p401f!=3 & p401g!=999999 & p401f!=. & !inrange(edad_ci,0,4)		
 	
-	**********************
-	*** miglac_ci: si el individuo es migrante latino o del caribe***
-	**********************
-	gen miglac_ci=(inlist(p401g2,4002,4003,4004,4005,4006,4007,4009,4010,4011,4014,4015,4018,4019,4021,4022,4023,4024,4025,4026,4027,4030,4034,4035,4036,4037) & migrante_ci==1) if migrante_ci!=.
-	replace miglac_ci = . if migrante_ci == 0
-	** Fuente: Los codigos de paises se obtiene del censo de peru (redatam)	
-	
-	
+
 ********************************************************************************
 ***************   VARIABLES EXTERNAS   *************************************
 ********************************************************************************		
