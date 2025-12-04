@@ -599,9 +599,10 @@ label value region_c region_c
 	***************
 	**pensionsub_ci**
 	***************
-	gen byte pensionsub_ci = . 
-	replace pensionsub_ci = 1 if .
-	replace pensionsub_ci = 0 if .
+	/*DZ Octubre 2017- Se crea variable pension subsidiada* Dado que la pregunta es excluyente y el programa de pensión subsidiada en Uruguay es para Adultos mayores y/o discapacitados se pone la condicion de mayor de 70 años (edad para recibir el beneficio) en las personas que afirmaron tener pension por invalidez*/
+	gen pensionsub_ci= ((f125==1) | (f125==3 & edad_ci>69))
+	label var pensionsub_ci "1=recibe pension subsidiada / no contributiva"
+
 	
 	***************
 	**tipopen_ci**
