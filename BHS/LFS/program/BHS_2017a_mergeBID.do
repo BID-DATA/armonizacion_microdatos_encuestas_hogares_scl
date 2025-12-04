@@ -12,7 +12,7 @@ set more off
  * El servidor contiene las bases de datos MECOVI.
  *________________________________________________________________________________________________________________*
  
-global ruta = "${surveysFolder}\\survey\\BHS\LFS\\2014\\a\\data_orig"
+global ruta = "${surveysFolder}\\survey\\BHS\LFS\\2017\\a\\data_orig"
 
 local PAIS BHS
 local ENCUESTA LFS
