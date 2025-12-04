@@ -1591,7 +1591,7 @@ e02tde	Ingreso mensual que recibe de ayuda familiar del exterior (deflactado)
 	replace razonesnoasis_ci = 1 if inlist(ed10,1,2,3) //Problemas económicos o trabajo
 	replace razonesnoasis_ci = 2 if inlist(ed10, 5, 15) // No quiere estudiar ≡ Falta de Interés
 	replace razonesnoasis_ci = 3 if inlist(ed10,12,13,14) //Enfermedad, Quehaceres domésticos o motivos familiares
-	replace razonesnoasis_ci = 4 if inrange(ed10,4, 6, 7, 8, 9, 10, 11) //Problemas de acceso
+	replace razonesnoasis_ci = 4 if inlist(ed10,4, 6, 7, 8, 9, 10, 11) //Problemas de acceso
 	replace razonesnoasis_ci = 5 if inlist(ed10,5,17,18) //Otra razón
 	replace razonesnoasis_ci = . if ed10==99 | ed10==. //Missings
 	
