@@ -740,7 +740,7 @@ in2earngs:  51b. How much do you obtain a week from this source? 										 seco
 
 cap drop _*
 
-foreach v of varlist avgearns earngs uearngs u2earngs inearngs in2earng {
+foreach v of varlist uearngs u2earngs earngs earngs2 avgearns avgearn2 inearngs in2earng {
 	decode `v', gen(_`v')
 	
 	* min
@@ -758,7 +758,7 @@ foreach v of varlist avgearns earngs uearngs u2earngs inearngs in2earng {
 	replace _mean`v'= 0 if `v'==0
 }
 
-*br avgearns earngs uearngs u2earngs inearngs in2earng _mean*
+*br uearngs u2earngs earngs earngs2 avgearns avgearn2 inearngs in2earng
 *br _meanavgearns _meanearngs if _meanavgearns != _meanearngs
 
 *************************************
@@ -766,18 +766,14 @@ foreach v of varlist avgearns earngs uearngs u2earngs inearngs in2earng {
 *************************************
 cap drop ylmpri_ci 
 gen ylmpri_ci = . 
-replace ylmpri_ci = max(_meanavgearns,_meanearngs)*4 
-*replace ylmpri_ci = _meanearngs*4 
-
-sum  ylmpri_ci , d					 
-
-*sort ylmpri_ci
-*br ylmpri_ci  _meanavgearns _meanearngs avgearns earngs
+replace ylmpri_ci = max(_meanavgearns,_meanearngs)*4 if emp_ci == 1
+*sum  ylmpri_ci , d					 
 
 *******************************
 * INGRESO MENSUAL NO MONETARIO*
 *******************************
-gen ylnmpri_ci=.
+gen ylnmpri_ci= .
+replace ylnmpri_ci = max(_meanavgearn2,_meanearngs2)*4 if emp_ci == 1
 label var ylnmpri_ci "Monto mensual de ingreso NO monetario de la actividad principal"
 
 *************************************************
@@ -807,7 +803,7 @@ label var ylnmotros_ci "Ingreso mensual NO monetario por otras actividades"
 ************************************
 * INGRESO MENSUAL TODAS ACTIVIDADES*
 ************************************
-gen ylm_ci=ylmpri_ci
+egen double ylm_ci =rowtotal(ylmpri_ci ylmsec_ci ylmotros_ci), mi
 label var ylm_ci "Ingreso mensual todas actividades"
 
 *************************************************
@@ -819,15 +815,14 @@ label var ylnm_ci "Ingreso mensual NO monetario todas actividades"
 *************************************************
 * INGRESO MENSUAL NO LABORAL OTRAS ACTIVIDADES  *
 *************************************************
-egen ynlm_ci=rowtotal(_meanuearngs _meanu2earngs _meaninearng _meanin2earng),mi
+egen ynlm_ci=rowtotal(_meanuearngs _meaninearng),mi
 replace  ynlm_ci =  ynlm_ci*4
 label var ynlm_ci "Ingreso mensual NO laboral otras actividades"
-
 
 **************************************************************
 * INGRESO MENSUAL NO LABORAL NO MONETARIO OTRAS ACTIVIDADES  *
 **************************************************************
-gen ynlnm_ci= .
+egen ynlnm_ci= rowtotal(_meanu2earngs _meanin2earng),mi
 label var ynlnm_ci "Ingreso mensual NO laboral NO monetario otras actividades"
 
 *****************************
@@ -838,24 +833,24 @@ egen ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci), mi
 ************************************
 * INGRESO MENSUAL LABORAL DEL HOGAR*
 ************************************
-by idh_ch, sort: egen ylm_ch=sum(ylm_ci) if miembros_ci==1, missing
+bysort idh_ch: egen double ylm_ch = total(ylm_ci) if miembros_ci == 1, mi
 label var ylm_ch "Ingreso laboral monetario del hogar"
 
 **************************************************
 * INGRESO MENSUAL LABORAL NO MONETARIO DEL HOGAR *
 **************************************************
-by idh_ch : egen ylnm_ch=sum(ylnm_ci) if miembros_ci==1, missing
+bysort idh_ch: egen double ylnm_ch = total(ylnm_ci) if miembros_ci == 1, mi
 label var ylnm_ch "Ingreso Laboral No Monetario del Hogar"
 
 **************************************************
 * INGRESO MENSUAL NO LABORAL MONETARIO DEL HOGAR *
 **************************************************
-by idh_ch, sort: egen ynlm_ch=sum(ynlm_ci) if miembros_ci==1, missing
+by idh_ch, sort: egen double ynlm_ch = total(ynlm_ci) if miembros_ci == 1, missing
 
 *****************************************************
 * INGRESO MENSUAL NO LABORAL NO MONETARIO DEL HOGAR *
 *****************************************************
-by idh_ch, sort: egen ynlnm_ch=sum(ynlnm_ci) if miembros_ci==1, missing
+bysort idh_ch: egen double ynlnm_ch = total(ynlnm_ci) if miembros_ci == 1, mi
 label var ynlnm_ch "Ingreso No Laboral No Monetario del Hogar"
 
 *******************
