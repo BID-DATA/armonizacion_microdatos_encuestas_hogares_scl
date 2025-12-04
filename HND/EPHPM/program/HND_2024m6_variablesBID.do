@@ -1214,19 +1214,13 @@ use `base_in', clear
 	***********
 	*edupre_ci: Variable dicotómica que indica con valor 1 si la persona cursó la educación preescolar completa y con 0 si no lo hizo (lo cual es distinto a si asiste o no a la educación preescolar).*
 	***********
-	gen byte edupre_ci=.
-	replace edupre_ci = 1 if 4<=ED05 & ED05!=. & ED05!=99 // Educación prescolar completa (ya no estudia)
-	replace edupre_ci = 1 if 5<=ED10 & ED10!=. & ED10!=99 // Educación prescolar completa (sigue estudiando)
-	replace edupre_ci = 0 if edupre_ci!=1
-	replace edupre_ci =. if ED05==. & ED10==.
-	replace edupre_ci =. if ED05==99 | ED10==99 // 99 = No sabe / No responde	
-	
+	gen byte edupre_ci=. // No se puede distinguir
 	label var edupre_ci "Educación prescolar completa"
 	
 	**********
 	*eduui_ci: Variable dicotómica que indica con valor 1 si el mayor nivel educativo alcanzado corresponde a educación técnica o universitaria incompleta y con 0 el resto.*
 	**********
-	gen byte eduui_ci=(ED07==2 & inrange(ED05,6,8)) // no finalizó estudios
+	gen byte eduui_ci=(ED07==2 & inrange(ED05,6,8)) 
 	replace eduui_ci=1 if inrange(ED10,6,8) & eduui_ci==0
 	replace eduui_ci=. if aedu_ci==. 
 	la var eduui_ci "Universitaria o Terciaria Incompleta"
@@ -1235,7 +1229,7 @@ use `base_in', clear
 	**********
 	*eduuc_ci: Variable dicotómica que indica con valor 1 si el mayor nivel educativo alcanzado corresponde a educación técnica, universitaria completa, o posgrado (completa o incompleta), y con 0 el resto.*
 	**********
-	gen byte eduuc_ci=(ED07==1 & inrange(ED05,6,8))
+	gen byte eduuc_ci=(ED07==1 & inrange(ED05,6,8)) 
 	replace eduuc_ci=1 if inrange(ED05,9,11) 
 	replace eduuc_ci=1 if inrange(ED10,9,10)  & eduuc_ci==0
 	replace eduuc_ci=. if aedu_ci==.
@@ -1274,8 +1268,10 @@ use `base_in', clear
 	label var asispre_ci "Asiste a educacion prescolar"	
 
 	*************
-	*pqnoasis1_ci: Variable categórica que indica las razones por las cuales un individuo no asiste a la escuela.*
+	*razonesnoasis_ci: Variable categórica que indica las razones por las cuales un individuo no asiste a la escuela.*
 	**************
+	//pqnoasis1_ci fue sustituida por razonesnoasis_ci en junio 2025
+	
 	/* ED04: Razones para no estudiar
 			1	Está de vacaciones
 			2	Finalizó sus estudios
@@ -1294,17 +1290,17 @@ use `base_in', clear
 			99	No sabe/No responde
 	*/
 	
-	gen pqnoasis1_ci = .
-	replace pqnoasis1_ci = 1 if inlist(ED04,7,11) // Problemas Económicos - Trabajo
-	replace pqnoasis1_ci = 2 if inlist(ED04,3) // Falta de Interés 
-	replace pqnoasis1_ci = 3 if inlist(ED04,4,6,10) // Problemas familiares o de salud
-	replace pqnoasis1_ci = 4 if inlist(ED04,5) // Problemas de acceso
-	replace pqnoasis1_ci = 5 if inlist(ED04,2,8,9,12,13) //Otros problemas
+	gen razonesnoasis_ci = .
+	replace razonesnoasis_ci = 1 if inlist(ED04,8,13) // Problemas Económicos - Trabajo
+	replace razonesnoasis_ci = 2 if inlist(ED04,3, 2) // Falta de Interés 
+	replace razonesnoasis_ci = 3 if inlist(ED04,4,6,7,11,12) // Problemas familiares o de salud
+	replace razonesnoasis_ci = 4 if inlist(ED04,5, 9, 10) // Problemas de acceso
+	replace razonesnoasis_ci = 5 if inlist(ED04, 14) //Otros problemas
 	
-	replace pqnoasis1_ci = . if asiste_ci==1 // Consistencia: No se debe contar con razones de no asistencia si la variable de asiste_ci==1. 
+	replace razonesnoasis_ci = . if asiste_ci==1 // Consistencia: No se debe contar con razones de no asistencia si la variable de asiste_ci==1. 
 
-	label define pqnoasis1_ci 1 "Problemas económicos/Por trabajo" 2 "Falta de interés/Problemas de rendimiento" 3 "Cuidados/ Problemas familiares o de salud" 4 "Problemas de acceso"  5 "Otros"
-	label value  pqnoasis1_ci pqnoasis1_ci
+	label define razonesnoasis_ci 1 "Problemas económicos/Por trabajo" 2 "Falta de interés/Problemas de rendimiento" 3 "Cuidados/ Problemas familiares o de salud" 4 "Problemas de acceso"  5 "Otros"
+	label value  razonesnoasis_ci razonesnoasis_ci
 
 
 ****************************

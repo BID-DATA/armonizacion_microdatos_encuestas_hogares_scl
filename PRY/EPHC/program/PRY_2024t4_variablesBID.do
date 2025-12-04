@@ -1381,10 +1381,8 @@ e02tde	Ingreso mensual que recibe de ayuda familiar del exterior (deflactado)
 			.	NA
 	*/
 	
+	* No se puede distinguir 
 	gen byte edupre_ci=.
-	replace edupre_ci=1 if inrange(ed06c,1,13) //Niveles de educación iguales o superiores a la educación inicial
-	replace edupre_ci=0 if ed06c==14 //No obtuvo ningún nivel de educación
-	replace edupre_ci=. if ed06c==99 //No responde (NR)
 	
 	**************
 	***eduui_ci: Variable dicotómica que indica con valor 1 si el mayor nivel educativo alcanzado corresponde a educación técnica o universitaria incompleta y con 0 el resto
@@ -1520,8 +1518,8 @@ e02tde	Ingreso mensual que recibe de ayuda familiar del exterior (deflactado)
 	*/
 	
 	gen asiste_ci=.
-	replace asiste_ci=1 if inrange(ed08, 12,16) //Asiste actualmente a un centro de educación superior (universitario o no universitario)
-	replace asiste_ci=0 if asiste_ci==. // Se colocan como cero a todos los missings
+	replace asiste_ci=1 if inrange(ed08, 1,18) //Asiste actualmente a un centro educativo
+	replace asiste_ci=0 if ed08==19 // No asiste
 	replace asiste_ci=. if ed08==99 | ed08==. // Se reemplazan los missings
 
 	***************
@@ -1552,9 +1550,11 @@ e02tde	Ingreso mensual que recibe de ayuda familiar del exterior (deflactado)
 	replace asispre_ci=0 if asispre_ci==. //Se definen el resto de valores como cero
 	replace asispre_ci=. if ed08==99 | ed09==. //Se reemplazan los missings
 
-    ******************
-	***pqnoasis1_ci: Variable categórica que indica las razones por las cuales un individuo no asiste a la escuela.
-	******************
+	*************
+	*razonesnoasis_ci: Variable categórica que indica las razones por las cuales un individuo no asiste a la escuela.*
+	**************
+	//pqnoasis1_ci fue sustituida por razonesnoasis_ci en junio 2025
+	
 	/*¿Por qué no asiste o dejó de asistir? - ed10:
 			1	Sin recursos en el hogar
 			2	Necesidad de trabajar
@@ -1576,9 +1576,8 @@ e02tde	Ingreso mensual que recibe de ayuda familiar del exterior (deflactado)
 			18	Otra razón
 			99	NR
 			.	NA
-	*/
 	
-	/* Categorias de pqnoasis1_ci:  
+	Categorias de razonesnoasis_ci:  
 		1	problemas económicos/ por trabajo
 		2	falta de interés/ problemas de 
 			rendimiento
@@ -1588,16 +1587,18 @@ e02tde	Ingreso mensual que recibe de ayuda familiar del exterior (deflactado)
 		4	problemas de acceso
 		5	otros
 	*/
-	gen pqnoasis1_ci=.
-	replace pqnoasis1_ci = 1 if inlist(ed10,1,2,3) //Problemas económicos o trabajo
-	replace pqnoasis1_ci = 2 if ed10==15 // No quiere estudiar ≡ Falta de Interés
-	replace pqnoasis1_ci = 3 if inlist(ed10,12,13,14) //Enfermedad, Quehaceres domésticos o motivos familiares
-	replace pqnoasis1_ci = 4 if inrange(ed10,6,11) //Problemas de acceso
-	replace pqnoasis1_ci = 5 if inlist(ed10,4,5,17,18) //Otra razón
-	replace pqnoasis1_ci = . if ed10==99 | ed10==. //Missings
+	gen razonesnoasis_ci=.
+	replace razonesnoasis_ci = 1 if inlist(ed10,1,2,3) //Problemas económicos o trabajo
+	replace razonesnoasis_ci = 2 if inlist(ed10, 5, 15) // No quiere estudiar ≡ Falta de Interés
+	replace razonesnoasis_ci = 3 if inlist(ed10,12,13,14) //Enfermedad, Quehaceres domésticos o motivos familiares
+	replace razonesnoasis_ci = 4 if inlist(ed10,4, 6, 7, 8, 9, 10, 11) //Problemas de acceso
+	replace razonesnoasis_ci = 5 if inlist(ed10,5,17,18) //Otra razón
+	replace razonesnoasis_ci = . if ed10==99 | ed10==. //Missings
+	
+	replace razonesnoasis_ci = . if asiste_ci==1 // Consistencia: No se debe contar con razones de no asistencia si la variable de asiste_ci==1. 
 
-	label define pqnoasis1_ci 1 "Problemas económicos/Por trabajo" 2 "Falta de interés/Problemas de rendimiento" 3 "Cuidados/ Problemas familiares o de salud" 4 "Problemas de acceso"  5 "Otros"
-	label value  pqnoasis1_ci pqnoasis1_ci
+	label define razonesnoasis_ci 1 "Problemas económicos/Por trabajo" 2 "Falta de interés/Problemas de rendimiento" 3 "Cuidados/ Problemas familiares o de salud" 4 "Problemas de acceso"  5 "Otros"
+	label value  razonesnoasis_ci razonesnoasis_ci
 
 
 ********************************************************************************
