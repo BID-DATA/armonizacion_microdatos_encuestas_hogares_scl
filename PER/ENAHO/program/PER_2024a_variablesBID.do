@@ -1277,11 +1277,9 @@ use `base_in', clear
 	*p5566c: En los últimos 6 meses, de ... a ... ¿Recibió Ud. ingresos por concepto de: Transferencia del programa JUNTOS? - Del país (Monto en S/.)
 	*p5567c: Recibió ingresos por transferencias de PENSIÓN 65 en los últimos 6 meses
 
-	gen p_juntos = p5566c/2 
-	gen p_pension65 = p5567c/2
-	
-	egen ypensub_ci =  rowtotal(p_juntos p_pension65) 
+	gen ypensub_ci    = ingtpu03/12
 	label var ypensub_ci "Valor de la pension subsidiada / no contributiva"
+
 	
 	*************
 	* pension_ci: Variable dicotómica que indica con valor 1 si la persona recibe una pensión o jubilación contributiva y con 0 al resto. 
@@ -1295,12 +1293,8 @@ use `base_in', clear
 	****************
 	* pensionsub_ci: Variable dicotómica que indica con valor 1 si la persona recibe una pensión o jubilación NO contributiva (adultos mayores) y con 0 al resto. *
 	****************
-	generate byte pensionsub_ci = .
-	replace pensionsub_ci=1 if 0<ypensub_ci
-	replace pensionsub_ci=0 if ypensub_ci==. | ypensub_ci==0
-	label var pensionsub_ci "1=Recibe pension NO contributiva"		
-				
-
+	gen pensionsub_ci = ingtpu03>0 & ingtpu03!=.
+	label var pensionsub_ci "1=recibe pension subsidiada / no contributiva"
 
 
 ********************************************************************************
