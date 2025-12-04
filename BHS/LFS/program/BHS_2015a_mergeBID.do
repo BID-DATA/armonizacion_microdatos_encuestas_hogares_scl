@@ -12,11 +12,11 @@ set more off
  * El servidor contiene las bases de datos MECOVI.
  *________________________________________________________________________________________________________________*
  
-global ruta = "${surveysFolder}\\survey\\BHS\LFS\\2014\\a\\data_orig"
+global ruta = "${surveysFolder}\\survey\\BHS\LFS\\2015\\a\\data_orig"
 
 local PAIS BHS
 local ENCUESTA LFS
-local ANO "2014"
+local ANO "2015"
 local ronda a
 
 local log_file = "${surveysFolder}\harmonized\\`PAIS'\\`ENCUESTA'\\log\\`PAIS'_`ANO'`ronda'_mergeBID.log"
