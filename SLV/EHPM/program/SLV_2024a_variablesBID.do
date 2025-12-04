@@ -563,7 +563,7 @@ use "`base_in'", clear
 ****************************
 ***VARIABLES DE WASH***
 ****************************
-fre r312d r312h r313 R313otr r314 r312 r315 r316 r317a r317b r317c r317otr r318 r318otr
+
 	***********
 	*aguared_ch*
 	***********
