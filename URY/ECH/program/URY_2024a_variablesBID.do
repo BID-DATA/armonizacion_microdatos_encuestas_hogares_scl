@@ -819,7 +819,7 @@ label value region_c region_c
 	*eduui_ci*
 	**********
 	gen byte eduui_ci =0
-	replace eduui_ci=1 if e215_1==2 & (e218_1!=1 & e221_1!=1) 
+	replace eduui_ci=1 if e215_1==2 & (e218_1!=1 & e221_1!=1)  
 	replace eduui_ci=1 if e218_1==2 & (e215_1!=1 & e221_1!=1)
 	replace eduui_ci=1 if e221_1==2 & (e215_1!=1 & e218_1!=1)
 	
@@ -858,20 +858,31 @@ label value region_c region_c
 	gen asiste_ci=(e49 == 3)
 
 
-	*************
-	*pqnoasis1_ci*
-	**************
-	gen pqnoasis1_ci=. 
-	replace pqnoasis1_ci =  1 if inlist(e202, 7, 9)
-	replace pqnoasis1_ci =  2 if inlist(e202, 1, 2)
-	replace pqnoasis1_ci =  3 if inlist(e202, 8, 10, 11)
-	replace pqnoasis1_ci =  4 if inlist(e202, 3, 4)
-	replace pqnoasis1_ci =  5 if inlist(e202, 5, 6)
+	******************
+	*razonesnoasis_ci*
+	******************
+	gen razonesnoasis_ci=. 
+	replace razonesnoasis_ci =  1 if inlist(e202, 7, 9)
+	replace razonesnoasis_ci =  2 if inlist(e202, 1, 2, 5)
+	replace razonesnoasis_ci =  3 if inlist(e202, 8, 10, 11)
+	replace razonesnoasis_ci =  4 if inlist(e202, 3, 4, 6)
 	
+	replace razonesnoasis_ci = . if asiste_ci==1 // Consistencia: No se debe contar con razones de no asistencia si la variable de asiste_ci==1. 
 
 	***********
 	*edupub_ci*
 	***********
+	
+	/*  e581: TIPO DE INSTITUCIÓN DE NIVEL AL QUE ASISTE
+		1 Pública
+		2 Privada
+		3 CAIF - CAPI - Nuestros niños
+		
+		e581a: TIPO DE INSTITUCIÓN DE OTRO NIVEL EDUCATIVO
+		1 Pública
+		2 Privada */
+		
+
 	gen edupub_ci =. if (asiste_ci != 1)
 	replace edupub_ci = 1 if (e581 == 1 | e581a == 1) & (asiste_ci == 1)
 	replace edupub_ci = 0 if (e581 == 2 | e581 == 3 | e581a == 2) & (asiste_ci == 1)
