@@ -1388,7 +1388,7 @@ use `base_in', clear
 	replace razonesnoasis_ci = 1 if inlist(p313, 1, 2) // 1 Problemas económicos, 2 trabajo
 	replace razonesnoasis_ci = 2 if inlist(p313, 9) // 9 No le interesa el estudio
 	replace razonesnoasis_ci = 3 if inlist(p313, 5, 10) // 5 Problemas Familiares, 10 Dedicación a quehaceres domésticos
-	replace razonesnoasis_ci = 4 if inlist(p313, 4, 7)// 4 No tiene la edad suficiente, 7 No hay centro de educación en el centro poblado
+	replace razonesnoasis_ci = 4 if inlist(p313, 4, 7) // 4 No tiene la edad suficiente, 7 No hay centro de educación en el centro poblado
 	replace razonesnoasis_ci = 5 if inlist(p313,  11) // 11. Otra razón
 
 	replace razonesnoasis_ci = . if asiste_ci==1 // Consistencia: No se debe contar con razones de no asistencia si la variable de asiste_ci==1. 
