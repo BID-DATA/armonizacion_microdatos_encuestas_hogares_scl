@@ -637,7 +637,8 @@ use `base_in', clear
 	*pensionsub_ci*
 	***************
 
-	gen pensionsub_ci=.
+	gen pensionsub_ci=1 if p56_g5>0 & p56_g5<=99999 // Equivalencia validada por SPL respecto a p72g5 de la EHPM
+	recode pensionsub_ci .=0
 	label var pensionsub_ci "1=recibe pension subsidiada / no contributiva"
 
 	****************
