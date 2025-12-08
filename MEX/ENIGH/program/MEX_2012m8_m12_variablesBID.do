@@ -10,7 +10,19 @@ set more off
  * El servidor contiene las bases de datos MECOVI.
  *________________________________________________________________________________________________________________*
  
-
+ * === Helper: estandarizar llaves ===
+capture program drop std_keys
+program define std_keys
+    syntax varlist(min=1)
+    foreach v of local varlist {
+        capture confirm string variable `v'
+        if _rc {
+            tostring `v', replace force
+        }
+        replace `v' = strtrim(`v')
+        replace `v' = subinstr(`v'," ","",.)
+		}
+end
 
 global ruta = "${surveysFolder}"
 
@@ -34,20 +46,42 @@ País: Mexico
 Encuesta: ENIGH (tradicional)
 Round: Septiembre-Diciembre
 Autores:
-Versión 2013: Mayra Sáenz
-Última versión: Mayra Sáenz - Email: mayras@iadb.org, saenzmayra.a@gmail.com
-Fecha última modificación: 19 de Agosto de 2013
+Versión 2013: Mayra Sáenz- Email: mayras@iadb.org, saenzmayra.a@gmail.com
+Versión 2025: Maria Alejandra Zegarra
+Fecha última modificación: Setiembre 2025
 
 							SCL/LMK - IADB
 ****************************************************************************/
-/***************************************************************************
-Detalle de procesamientos o modificaciones anteriores:
-
+* ===========================================================================
+* Últimos cambios realizados por: María Alejandra Zegarra – Septiembre 2025
+* NOTA DE CAMBIOS – ENIGH 2012 (m8–m12) – Harmonización (variablesBID)
+*
+* Problemas detectados:
+*   - peso con 32 valores faltantes y guardado como string.
+*   - est_alq con 3,799 faltantes.
+*   - Variables autocons, pago_esp, reg_esp en formato string.
+*   - Riesgo de faltantes en factor_ci, factor_ch y edad_ci
+*     si no se usaba correctamente factor_hog o edad.
+*
+* Solución aplicada:
+*   - Estandarización de llaves (folioviv, foliohog, numren).
+*   - Conversión (destring) de peso, autocons, pago_esp,
+*     reg_esp y est_alq.
+*   - Relleno de los 32 faltantes de peso con factor_hog.
+*   - Generación consistente de factor_ci, factor_ch y edad_ci.
+*   - Incorporación de aserciones y conteos de control para
+*     asegurar 0 faltantes.
+*
+* Resultados:
+*   - peso: de 32 faltantes/string → 0 faltantes/numérico.
+*   - est_alq: de 3,799 faltantes → 0.
+*   - factor_ci, factor_ch y edad_ci completos.
+*   - Los cálculos de ingreso no monetario (ynlnm) se
+*     ejecutan sin errores de tipo.
+* ===========================================================================
 ****************************************************************************/
 
-
 use `base_in', clear
-
 
 ******************************************************************************
 *	HOUSEHOLD VARIABLES
@@ -3637,6 +3671,8 @@ egen ylm_ci=rsum(ylmpri_ci ylmsec_ci), missing
 *************
 
 gen ylnm_ci=.
+std_keys folioviv foliohog
+
 
 *************
 *ylmotros_ci*
@@ -3660,6 +3696,15 @@ egen ynlm_ci=rsum(ing_rent ing_tran otros), missing //CONEVAL no incluye otros
 ***ynlnm_ci***
 *************
 *No se incluye el alquiler estimado
+* --- Ensure numeric versions of inputs for ynlnm ---
+foreach v in autocons pago_esp reg_esp redan reg_espn {
+    capture confirm string variable `v'
+    if !_rc {
+        destring `v', replace force
+        display as text "`v' was string and has been converted to numeric"
+    }
+}
+
 egen ynlnm = rsum(autocons pago_esp reg_esp redan reg_espn), missing
 
 gen ynlnm_ci= ynlnm/nmiembros_ch
