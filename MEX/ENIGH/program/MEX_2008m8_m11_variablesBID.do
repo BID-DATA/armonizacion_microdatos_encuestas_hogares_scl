@@ -193,11 +193,9 @@ label var anio_c "year of the survey"
 *****************
 *** region según bid ***
 *****************
-gen region_bid_c=.
-replace region_bid_c=1 if pais=="mex" 
-label var region_bid_c "regiones bid"
-label define region_bid_c 1 "centroamérica_(cid)" 2 "caribe_(ccb)" 3 "andinos_(can)" 4 "cono_sur_(csc)"
-label value region_bid_c region_bid_c
+gen region_BID_c=.
+replace region_BID_c=1 if pais=="mex" 
+
 
 ******************************
 *	mes_c
@@ -4279,15 +4277,13 @@ tiempoparc_ci categopri_ci categosec_ci rama_ci spublico_ci tamemp_ci cotizando_
 formal_ci tipocontrato_ci ocupa_ci horaspri_ci horastot_ci	pensionsub_ci pension_ci tipopen_ci instpen_ci	ylmpri_ci nrylmpri_ci ///
 tcylmpri_ci ylnmpri_ci ylmsec_ci ylnmsec_ci	ylmotros_ci	ylnmotros_ci ylm_ci	ylnm_ci	ynlm_ci	ynlnm_ci ylm_ch	ylnm_ch	ylmnr_ch  ///
 ynlm_ch	ynlnm_ch ylmhopri_ci ylmho_ci rentaimp_ch autocons_ci autocons_ch nrylmpri_ch tcylmpri_ch remesas_ci remesas_ch	ypen_ci	ypensub_ci ///
-salmm_ci tc_c ipc_c lp19_c lp31_c lp5_c lp_ci lpe_ci aedu_ci eduno_ci edupi_ci edupc_ci	edusi_ci edusc_ci eduui_ci eduuc_ci	edus1i_ci ///
+salmm_ci tc_c lp19_2011 lp31_2011 lp5_2011 lp_ci lpe_ci aedu_ci eduno_ci edupi_ci edupc_ci	edusi_ci edusc_ci eduui_ci eduuc_ci	edus1i_ci ///
 edus1c_ci edus2i_ci edus2c_ci edupre_ci eduac_ci asiste_ci pqnoasis_ci pqnoasis1_ci	repite_ci repiteult_ci edupub_ci ///
 aguared_ch aguafconsumo_ch aguafuente_ch aguadist_ch aguadisp1_ch aguadisp2_ch aguamala_ch aguamejorada_ch aguamide_ch bano_ch banoex_ch banomejorado_ch sinbano_ch aguatrat_ch luz_ch luzmide_ch combust_ch des1_ch des2_ch piso_ch ///
 pared_ch techo_ch resid_ch dorm_ch cuartos_ch cocina_ch telef_ch refrig_ch freez_ch auto_ch compu_ch internet_ch cel_ch ///
 vivi1_ch vivi2_ch viviprop_ch vivitit_ch vivialq_ch	vivialqimp_ch , first
 
-rename CMO_1  codocupa
-rename SCIAN_1 codindustria
-destring codocupa codindustria, replace
+
 compress
 
 
@@ -4295,48 +4291,4 @@ saveold "`base_out'", replace
 
 
 log close
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
