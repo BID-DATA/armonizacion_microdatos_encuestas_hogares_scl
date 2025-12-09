@@ -41,7 +41,6 @@ Detalle de procesamientos o modificaciones anteriores:
 
 use "`base_in'", clear
 
-
 	****************
 	* region_BID_c *
 	****************
@@ -51,6 +50,7 @@ gen region_BID_c=3
 label var region_BID_c "Regiones BID"
 label define region_BID_c 1 "Centroamérica_(CID)" 2 "Caribe_(CCB)" 3 "Andinos_(CAN)" 4 "Cono_Sur_(CSC)"
 label value region_BID_c region_BID_c
+
 	************
 	* region_c *
 	************
@@ -509,36 +509,7 @@ label var tamemp "# empleados en la empresa segun rangos"
 label define tamemp 1 "Micro" 2 "Pequeña" 3 "Mediana" 4 "Grande"
 label value tamemp tamemp
 
-*************
-**pension_ci*
-*************
-egen aux_p=rsum(s07a_01a s07a_01b s07a_01c s07a_01d), missing
-gen pension_ci=1 if aux_p>0 & aux_p!=.
-recode pension_ci .=0 
-label var pension_ci "1=Recibe pension contributiva"
 
-*************
-**ypen_ci*
-*************
-*11/4/2015 MGD: no considerar ceros
-gen ypen_ci=aux_p 
-*recode ypen_ci .=0 
-label var ypen_ci "Valor de la pension contributiva"
-
-***************
-*pensionsub_ci*
-***************
-
-gen pensionsub_ci = (s07a_01e==1)  
-label var pensionsub_ci "1=recibe pension subsidiada / no contributiva"
-
-*****************
-**ypensub_ci*
-*****************
-
-gen  ypensub_ci=s07a_01e0 if s07a_01e0>0 & s07a_01e0!=. 
-label var ypensub_ci "Valor de la pension subsidiada / no contributiva"
-	
 /* Esta sección es para los residentes habituales del hogar mayores a 7 años. Sin embargo, las variables construidas 
 por el centro de estadística tienen en cuenta a la población con 10 años o más. Esto no es un problema dado que el 
 programa para generar los indicadores de sociómetro restrige  todo a 15 o más años para que haya comparabilidad entre
@@ -627,7 +598,7 @@ replace tiempoparc_ci=(s06h_52==2 & horaspri_ci<30 & emp_ci == 1)
 replace tiempoparc_ci=. if emp_ci==0
 *replace tiempoparc_ci=1 if s6_46==2 & horastot_ci<=30 & emp_ci == 1
 *replace tiempoparc_ci=0 if s6_46==2 & emp_ci == 1 & horastot_ci>30
-label var tiempoparc_c "Personas que trabajan medio tiempo" 
+label var tiempoparc_ci "Personas que trabajan medio tiempo" 
 
 ******************
 ***categopri_ci***
@@ -840,207 +811,119 @@ label var formal_ci "1=afiliado o cotizante / PEA"
 
 g formal_1=afiliado_ci
 
-**************
-***INGRESOS***
-**************
 
-*************************
-*********LABORAL*********
-*************************
-/*
-s2_38f:
-1  diario
-2  semanal
-3  quincenal
-4  mensual
-8  anual
+***************************
+***VARIABLES DE INGRESOS***
+***************************
+/* Para construir las variables del BID es necesario generar previamente un conjunto de variables auxiliares. La encuesta de Bolivia contiene variables raw, que sirven como insumos para dichas variables.
+
+La estructura de este do-file es la siguiente:
+
+		I.	Listado de variables auxiliares requeridas.
+			Se presenta, siguiendo el orden del manual del BID, cada variable del 
+			BID junto con las variables auxiliares necesarias para su construcción.
+			Para cada variable auxiliar se incluye su definición correspondiente.
+
+		II	Generación de todas las variables auxiliares.
+			En esta sección se crean, de manera ordenada y consecutiva, todas 
+			las variables auxiliares identificadas en el paso anterior.
+
+		III	Construcción de las variables del BID.
+			Finalmente, utilizando las variables auxiliares previamente generadas, 
+			se construyen las variables del BID.
 */
 
-*******************
-* salario líquido *
-*******************
-gen yliquido = .
-replace yliquido= s06c_25a*30	if s06c_25b==1
-replace yliquido= s06c_25a*4.3	if s06c_25b==2
-replace yliquido= s06c_25a*2	if s06c_25b==3
-replace yliquido= s06c_25a		if s06c_25b==4
-replace yliquido= s06c_25a/2	if s06c_25b==5
-replace yliquido= s06c_25a/3	if s06c_25b==6
-replace yliquido= s06c_25a/6	if s06c_25b==7
-replace yliquido= s06c_25a/12	if s06c_25b==8
+******************************************
+*** I. LISTADO DE VARIABLES AUXILIARES ***		
+******************************************
 
-**************
-* comisiones *
-**************
+/*	ylmpri_ci: Ingreso laboral monetario de actividad principal
+			yliquido: Ingreso liquido
+			ycomisio: Ingreso por comisiones
+			yhrsextr: Ingreso por horas extra
+			yprima	: Ingreso por bono o prima de productividad
+			yaguina	: Ingreso por aguinaldo
+			yactpri	: Ingreso actividad principal de independientes
 
-gen ycomisio = .
-replace ycomisio= s06c_27aa*30	if s06c_27ab==1
-replace ycomisio= s06c_27aa*4.3	if s06c_27ab==2
-replace ycomisio= s06c_27aa*2	if s06c_27ab==3
-replace ycomisio= s06c_27aa		if s06c_27ab==4
-replace ycomisio= s06c_27aa/2	if s06c_27ab==5
-replace ycomisio= s06c_27aa/3	if s06c_27ab==6
-replace ycomisio= s06c_27aa/6 	if s06c_27ab==7
-replace ycomisio= s06c_27aa/12 	if s06c_27ab==8
+	ylmsec_ci: Ingreso laboral monetario de actividad secundaria
+			yliquido2: Ingreso liquido de la actividad secundaria
+			yhrsextr2: Ingreso por horas extra de la actividad secundaria
 
-****************
-* horas extras *
-****************
-gen yhrsextr= .
-replace yhrsextr= s06c_27ba *30	    if s06c_27bb==1
-replace yhrsextr= s06c_27ba *4.3  	if s06c_27bb==2
-replace yhrsextr= s06c_27ba *2		if s06c_27bb==3
-replace yhrsextr= s06c_27ba 		if s06c_27bb==4
-replace yhrsextr= s06c_27ba /2		if s06c_27bb==5
-replace yhrsextr= s06c_27ba /3		if s06c_27bb==6
-replace yhrsextr= s06c_27ba /6	    if s06c_27bb==7
-replace yhrsextr= s06c_27ba /12	    if s06c_27bb==8
+	ylmotros_ci: Ingreso laboral monetario de otras actividades
+			Missing, no hay variables de de ingresos otras ocupaciones 
+	
+	ylm_ci: Ingreso laboral monetario del individuo 
+			Esta variable se genera a partir de: ylmpri_ci y ylmsec_ci
+	
+	ylnmpri_ci: Ingreso laboral no monetario de actividad principal.
+			yalimen : Ingreso en alimentos
+			ytranspo: Ingreso en transporte
+			yvesti	: Ingreso en vestimenta
+			yvivien	: Ingreso en vivienda
+			yotros	: Otros ingresos no monetarios de la actividad principal
+	
+	ylnmsec_ci: Ingreso laboral no monetario de actividad secundaria:
+			yalimen2: Ingreso en alimentos
+			yvivien2: Ingreso en vivienda
+	
+	ylnmotros_ci: Ingresos laboral no monetario de otras actividades.
+			Missing, no hay variables de ingresos de otras ocupaciones
+	
+	ylnm_ci: Ingreso laboral no monetario
+			Esta variable se genera a partir de: ylnmpri_ci y ylnmsec_ci. 
 
-*********
-* prima *
-*********
+	ynlm_ci: Ingreso no laboral monetario publico			
+			
+	ynlnm_ci: Ingreso no laboral no monetario
+			Missing, no hay variables al respecto.
+	
+	ytot_ci: Ingreso mensual total del individuo.
+			Esta variable se genera a partir de: ylm_ci, ylnm_ci, ynlm_ci y ynlnm_ci.
+			
+	ylm_ch: Ingreso laboral monetario del hogar.
+			Se suman los ingresos laborales (ylm_ci) de todos los individuos del hogar 
+			
+	ylnm_ch: Ingreso laboral no monetario del hogar.
+			Se suman los ingresos laborales no monetarios (ylnm_ci) de 
+			los miembros del hogar.
+			
+	ynlnm_ch: Ingreso no laboral no monetario del hogar.
+			Se suman los ingresos no laborales no monetarios (ynlnm_ci) de
+			los miembros del hogar
 
-gen yprima = .
-replace yprima = s06c_26a/12
+	ynlm_ch: Ingreso no laboral monetario del hogar
+			Se suman los ingresos no laborales monetarios (ynlm_ci) de
+			los miembros del hogar			
+			
+	ytot_ch: Ingreso mensual total del hogar
+			Se suman todos los ingresos del hogar: ylm_ch, ylnm_ch, ynlm_ch, ynlnm_ch.
+	
+	ylmhopri_ci: Salario horario monetario de la actividad principal
+			Se genera mediante las variables: ylm_ci y horastot_ci
+	
+	ylmho_ci: Salario horario monetario de todas las actividades.
+			Se genera mediante las variables: ylmpri_ci y horaspri_ci
+			
+	nrylmpri_ci: Indica la no respuesta ingreso de la actividad principal.
+			Se genera cuando un individuo no reporta ingresos laborales (ylmpri_ci==. ) y además la persona reporte estar ocupado (emp_ci==1)
+			
+	nrylmpri_ch: No respuesta a nivel hogar.
+			Hogares con algún miembro que no respondió por ingresos
+	
+	remesas_ci: Variable continua que indica el monto mensual por remesas reportadas por el individuo en moneda local corriente.
+	
+	remesas_ch: Variable continua que indica el monto mensual por remesas del hogar. 
+			Esta variable se genera a partir de la variable remesas_ci.
 
-*************
-* aguinaldo *
-*************
-
-gen yaguina = .
-replace yaguina = s06c_26b/12
-
-*************
-* alimentos *
-*************
-gen yalimen = .
-replace yalimen= s06c_30a2 *30		if s06c_30a1 ==1 & s06c_30a==1
-replace yalimen= s06c_30a2 *4.3 	if s06c_30a1 ==2 & s06c_30a==1
-replace yalimen= s06c_30a2 *2		if s06c_30a1 ==3 & s06c_30a==1
-replace yalimen= s06c_30a2 		    if s06c_30a1 ==4 & s06c_30a==1
-replace yalimen= s06c_30a2 /2		if s06c_30a1 ==5 & s06c_30a==1
-replace yalimen= s06c_30a2 /3		if s06c_30a1 ==6 & s06c_30a==1
-replace yalimen= s06c_30a2 /6		if s06c_30a1 ==7 & s06c_30a==1
-replace yalimen= s06c_30a2 /12		if s06c_30a1 ==8 & s06c_30a==1
-
-**************
-* transporte *
-**************
-
-gen ytranspo = .
-replace ytranspo= s06c_30b2*30	    if s06c_30b1==1 & s06c_30b==1
-replace ytranspo= s06c_30b2*4.3	    if s06c_30b1==2 & s06c_30b==1
-replace ytranspo= s06c_30b2*2		if s06c_30b1==3 & s06c_30b==1
-replace ytranspo= s06c_30b2 	    if s06c_30b1==4 & s06c_30b==1
-replace ytranspo= s06c_30b2/2		if s06c_30b1==5 & s06c_30b==1
-replace ytranspo= s06c_30b2/3		if s06c_30b1==6 & s06c_30b==1
-replace ytranspo= s06c_30b2/6		if s06c_30b1==7 & s06c_30b==1
-replace ytranspo= s06c_30b2/12	    if s06c_30b1==8 & s06c_30b==1
-
-**************
-* vestimenta *
-**************
-gen yvesti = .
-replace yvesti= s06c_30c2*30		if s06c_30c1==1 & s06c_30c==1
-replace yvesti= s06c_30c2*4.3		if s06c_30c1==2 & s06c_30c==1
-replace yvesti= s06c_30c2*2		    if s06c_30c1==3 & s06c_30c==1
-replace yvesti= s06c_30c2			if s06c_30c1==4 & s06c_30c==1
-replace yvesti= s06c_30c2/2		    if s06c_30c1==5 & s06c_30c==1
-replace yvesti= s06c_30c2/3		    if s06c_30c1==6 & s06c_30c==1
-replace yvesti= s06c_30c2/6		    if s06c_30c1==7 & s06c_30c==1
-replace yvesti= s06c_30c2/12		if s06c_30c1==8 & s06c_30c==1
-
-************
-* vivienda *
-************
-
-gen yvivien = .
-replace yvivien= s06c_30d2*30		if s06c_30d1==1 & s06c_30d==1
-replace yvivien= s06c_30d2*4.3	    if s06c_30d1==2 & s06c_30d==1
-replace yvivien= s06c_30d2*2		if s06c_30d1==3 & s06c_30d==1
-replace yvivien= s06c_30d2		    if s06c_30d1==4 & s06c_30d==1
-replace yvivien= s06c_30d2/2		if s06c_30d1==5 & s06c_30d==1
-replace yvivien= s06c_30d2/3		if s06c_30d1==6 & s06c_30d==1
-replace yvivien= s06c_30d2/6		if s06c_30d1==7 & s06c_30d==1
-replace yvivien= s06c_30d2/12		if s06c_30d1==8 & s06c_30d==1
-
-
-*************
-* otros *
-*************
-
-gen yotros = .
-replace yotros= s06c_30e2*30	if s06c_30e1==1 & s06c_30e==1
-replace yotros= s06c_30e2*4.3	if s06c_30e1==2 & s06c_30e==1
-replace yotros= s06c_30e2*2	    if s06c_30e1==3 & s06c_30e==1
-replace yotros= s06c_30e2		if s06c_30e1==4 & s06c_30e==1
-replace yotros= s06c_30e2/2	    if s06c_30e1==5 & s06c_30e==1
-replace yotros= s06c_30e2/3		if s06c_30e1==6 & s06c_30e==1
-replace yotros= s06c_30e2/6		if s06c_30e1==7 & s06c_30e==1
-replace yotros= s06c_30e2/12	if s06c_30e1==8 & s06c_30e==1
-
-
-**********************************
-* ingreso act. pr independientes *
-**********************************
-*Aquí se tiene en cuenta el monto de dinero que les queda a los independientes para el uso del hogar
-gen yactpri = .
-replace yactpri= s06d_33a*30	if s06d_33b==1
-replace yactpri= s06d_33a*4.3	if s06d_33b==2
-replace yactpri= s06d_33a*2		if s06d_33b==3
-replace yactpri= s06d_33a		if s06d_33b==4
-replace yactpri= s06d_33a/2		if s06d_33b==5
-replace yactpri= s06d_33a/3		if s06d_33b==6
-replace yactpri= s06d_33a/6		if s06d_33b==7
-replace yactpri= s06d_33a/12	if s06d_33b==8
-
-*********************
-* salario liquido 2 *
-*********************
-/* 
-
-           1 diario
-           2 semanal
-           3 quicenal
-           4 mensual
-           5 bimestral
-           6 trimestral
-           7 semestral
-           8 anual
-
+	ypen_ci: Ingreso por pensión contributiva
+	
+	ypensub_ci: Ingreso por pensión no contributiva.
 */
 
-gen yliquido2 = .
-replace yliquido2= s06g_47a*30		if s06g_47b==1
-replace yliquido2= s06g_47a*4.3		if s06g_47b==2
-replace yliquido2= s06g_47a*2		if s06g_47b==3
-replace yliquido2= s06g_47a			if s06g_47b==4
-replace yliquido2= s06g_47a/2		if s06g_47b==5
-replace yliquido2= s06g_47a/3		if s06g_47b==6
-replace yliquido2= s06g_47a/6		if s06g_47b==7
-replace yliquido2= s06g_47a/12		if s06g_47b==8
 
-*****************
-* Horas extra 2 *
-*****************
-
-gen yhrsextr2 = .
-replace yhrsextr2=s06g_48a1/12 if s06g_48a==1
-
-***************************************
-* alimentos, transporte y vestimenta2 *
-***************************************
-
-gen yalimen2 = .
-replace yalimen2=s06g_48b1/12	if s06g_48b==1
-
-**************
-* vivienda 2 *
-**************
-
-gen yvivien2= .
-replace yvivien2=s06g_48c1/12	if s06g_48c==1
-
+**********************************************
+*** II. GENERACIÓN DE VARIABLES AUXILIARES ***		
+**********************************************
 
 *************************
 ******NO-LABORAL*********
@@ -1172,13 +1055,11 @@ replace yasistfam= s07b_05aa/3		if s07b_05ab==6
 replace yasistfam= s07b_05aa/6		if s07b_05ab==7
 replace yasistfam= s07b_05aa/12		if s07b_05ab==8
 
-
 *********************
 * Trans. monetarias *
 *********************
 * No hay la categoria de diario en s7b_5bb
-
-gen ytransmon = .
+gen 	ytransmon= .
 replace ytransmon= s07b_05ba*4.3	if s07b_05bb==2
 replace ytransmon= s07b_05ba*2		if s07b_05bb==3
 replace ytransmon= s07b_05ba	    if s07b_05bb==4
@@ -1186,6 +1067,7 @@ replace ytransmon= s07b_05ba/2		if s07b_05bb==5
 replace ytransmon= s07b_05ba/3		if s07b_05bb==6
 replace ytransmon= s07b_05ba/6		if s07b_05bb==7
 replace ytransmon= s07b_05ba/12		if s07b_05bb==8
+
 
 ***********
 * remesas *
@@ -1226,30 +1108,230 @@ replace yremesas= rem/3			if s07c_07==6
 replace yremesas= rem/6			if s07c_07==7
 replace yremesas= rem/12		if s07c_07==8
 
-/* 
-ylm:
-yliquido 
-ycomisio 
-ypropinas 
-yhrsextr 
-yprima 
-yaguina
-yactpri 
-yliquido2
+*****************************
+* yliquido: salario líquido *
+*****************************
+/*s04c_17a:  ¿Cuánto es su salario líquido, excluyendo los descuentos de ley (AFP, IVA)? Monto (Bs)
 
-ylnm:
-yrefrige 
-yalimen 
-ytranspo 
-yvesti 
-yvivien 
-yguarde */
+s04c_17b: ¿Cuánto es su salario líquido, excluyendo los descuentos de ley (AFP, IVA)? Frecuencia de pago.
+		1. Diario 
+		2. Semanal 
+		3. Quincenal 
+		4. Mensual 
+		5. Bimestral 
+		6. Trimestral 
+		7. Semestral 
+		8. Anual
+*/
+*Las variables se trasladan a frecuencia mensual.
+gen yliquido = .
+replace yliquido= s06c_25a*30	if s06c_25b==1
+replace yliquido= s06c_25a*4.3	if s06c_25b==2
+replace yliquido= s06c_25a*2	if s06c_25b==3
+replace yliquido= s06c_25a		if s06c_25b==4
+replace yliquido= s06c_25a/2	if s06c_25b==5
+replace yliquido= s06c_25a/3	if s06c_25b==6
+replace yliquido= s06c_25a/6	if s06c_25b==7
+replace yliquido= s06c_25a/12	if s06c_25b==8
 
+
+************************************
+* ycomisio: Ingreso por comisiones *
+************************************
+*s04c_19aa: Durante los últimos doce meses, ¿recibió usted pagos en efectivo por: A.Comisiones, destajo, propinas, bonos de transporte o refrigerio? Monto (Bs)
+gen ycomisio = .
+replace ycomisio= s06c_27aa*30	if s06c_27ab==1
+replace ycomisio= s06c_27aa*4.3	if s06c_27ab==2
+replace ycomisio= s06c_27aa*2	if s06c_27ab==3
+replace ycomisio= s06c_27aa		if s06c_27ab==4
+replace ycomisio= s06c_27aa/2	if s06c_27ab==5
+replace ycomisio= s06c_27aa/3	if s06c_27ab==6
+replace ycomisio= s06c_27aa/6 	if s06c_27ab==7
+replace ycomisio= s06c_27aa/12 	if s06c_27ab==8
+
+
+
+**************************************
+* yhrsextr: Ingreso por horas extras *
+**************************************
+* s04c_19ba - 19. Durante los últimos doce meses, ¿recibió usted pagos en efectivo por Horas Extras
+gen yhrsextr= .
+replace yhrsextr= s06c_27ba *30	    if s06c_27bb==1
+replace yhrsextr= s06c_27ba *4.3  	if s06c_27bb==2
+replace yhrsextr= s06c_27ba *2		if s06c_27bb==3
+replace yhrsextr= s06c_27ba 		if s06c_27bb==4
+replace yhrsextr= s06c_27ba /2		if s06c_27bb==5
+replace yhrsextr= s06c_27ba /3		if s06c_27bb==6
+replace yhrsextr= s06c_27ba /6	    if s06c_27bb==7
+replace yhrsextr= s06c_27ba /12	    if s06c_27bb==8
+
+
+************************************************
+* yprima: Ingreso por prima/bono de producción *
+************************************************
+* s04c_18a - 18. Durante los últimos doce meses, ¿recibió usted pagos por:
+* Pago por Bono o prima de producción
+gen yprima = .
+replace yprima = s06c_26a/12
+
+
+*******************************
+* yaguina: Pago por aguinaldo *
+*******************************
+* s04c_18b - 18. Durante los últimos doce meses, ¿recibió usted pagos por:
+* Pago por Aguinaldo
+gen yaguina = .
+replace yaguina = s06c_26b/12
+
+
+*******************************************
+* yactpri: ingreso actividad principal independientes *
+*******************************************
+*Aquí se tiene en cuenta el Ingreso Líquido de la Actividad Principal de los independientes 
+* 24. Una vez descontadas todas sus obligaciones (sueldos, salarios, etc.),¿cuánto le queda para uso del hogar?
+gen yactpri = .
+replace yactpri= s06d_33a*30	if s06d_33b==1
+replace yactpri= s06d_33a*4.3	if s06d_33b==2
+replace yactpri= s06d_33a*2		if s06d_33b==3
+replace yactpri= s06d_33a		if s06d_33b==4
+replace yactpri= s06d_33a/2		if s06d_33b==5
+replace yactpri= s06d_33a/3		if s06d_33b==6
+replace yactpri= s06d_33a/6		if s06d_33b==7
+replace yactpri= s06d_33a/12	if s06d_33b==8
+
+
+********************************
+* yliquido2: salario liquido 2 *
+********************************
+/*         1 diario
+           2 semanal
+           3 quicenal
+           4 mensual
+           5 bimestral
+           6 trimestral
+           7 semestral
+           8 anual
+*/
+* PARTE F: INGRESO LABORAL DE LA OCUPACIÓN SECUNDARIA
+* 31. ¿Cuánto es su salario líquido en ésta otra ocupación, excluyendolos descuentos de ley (AFP,IVA)?
+gen yliquido2 = .
+replace yliquido2= s06g_47a*30		if s06g_47b==1
+replace yliquido2= s06g_47a*4.3		if s06g_47b==2
+replace yliquido2= s06g_47a*2		if s06g_47b==3
+replace yliquido2= s06g_47a			if s06g_47b==4
+replace yliquido2= s06g_47a/2		if s06g_47b==5
+replace yliquido2= s06g_47a/3		if s06g_47b==6
+replace yliquido2= s06g_47a/6		if s06g_47b==7
+replace yliquido2= s06g_47a/12		if s06g_47b==8
+
+*****************
+* yhrsextr2: Ingreso por horas extra de la actividad secundaria*
+*****************
+* 32. Durante los últimos doce meses, ha recibido:
+* A. ¿Pago por horas extras, bono o prima de producción,aguinaldo?
+gen yhrsextr2 = .
+replace yhrsextr2=s06g_48a1/12 if s06g_48a==1
+
+
+*************
+* yalimen: Ingreso en alimentos *
+*************
+gen yalimen = .
+replace yalimen= s06c_30a2 *30		if s06c_30a1 ==1 & s06c_30a==1
+replace yalimen= s06c_30a2 *4.3 	if s06c_30a1 ==2 & s06c_30a==1
+replace yalimen= s06c_30a2 *2		if s06c_30a1 ==3 & s06c_30a==1
+replace yalimen= s06c_30a2 		    if s06c_30a1 ==4 & s06c_30a==1
+replace yalimen= s06c_30a2 /2		if s06c_30a1 ==5 & s06c_30a==1
+replace yalimen= s06c_30a2 /3		if s06c_30a1 ==6 & s06c_30a==1
+replace yalimen= s06c_30a2 /6		if s06c_30a1 ==7 & s06c_30a==1
+replace yalimen= s06c_30a2 /12		if s06c_30a1 ==8 & s06c_30a==1
+
+
+**************
+* ytranspo: Ingreso en transporte *
+**************
+* PARTE C: INGRESOS DEL TRABAJADOR ASALARIADO
+* 21. Además de los ingresos recibidos en dinero por su trabajo, en los últimos doce meses ¿recibió, usted...
+* B. Transporte hacia y desde el lugar de su trabajo?
+gen ytranspo = .
+replace ytranspo= s06c_30b2*30	    if s06c_30b1==1 & s06c_30b==1
+replace ytranspo= s06c_30b2*4.3	    if s06c_30b1==2 & s06c_30b==1
+replace ytranspo= s06c_30b2*2		if s06c_30b1==3 & s06c_30b==1
+replace ytranspo= s06c_30b2 	    if s06c_30b1==4 & s06c_30b==1
+replace ytranspo= s06c_30b2/2		if s06c_30b1==5 & s06c_30b==1
+replace ytranspo= s06c_30b2/3		if s06c_30b1==6 & s06c_30b==1
+replace ytranspo= s06c_30b2/6		if s06c_30b1==7 & s06c_30b==1
+replace ytranspo= s06c_30b2/12	    if s06c_30b1==8 & s06c_30b==1
+
+
+**************
+* yvesti: Ingreso en vestimenta *
+**************
+gen yvesti = .
+replace yvesti= s06c_30c2*30		if s06c_30c1==1 & s06c_30c==1
+replace yvesti= s06c_30c2*4.3		if s06c_30c1==2 & s06c_30c==1
+replace yvesti= s06c_30c2*2		    if s06c_30c1==3 & s06c_30c==1
+replace yvesti= s06c_30c2			if s06c_30c1==4 & s06c_30c==1
+replace yvesti= s06c_30c2/2		    if s06c_30c1==5 & s06c_30c==1
+replace yvesti= s06c_30c2/3		    if s06c_30c1==6 & s06c_30c==1
+replace yvesti= s06c_30c2/6		    if s06c_30c1==7 & s06c_30c==1
+replace yvesti= s06c_30c2/12		if s06c_30c1==8 & s06c_30c==1
+
+
+************
+* yvivien: Ingreso en vivienda *
+************
+gen yvivien = .
+replace yvivien= s06c_30d2*30		if s06c_30d1==1 & s06c_30d==1
+replace yvivien= s06c_30d2*4.3	    if s06c_30d1==2 & s06c_30d==1
+replace yvivien= s06c_30d2*2		if s06c_30d1==3 & s06c_30d==1
+replace yvivien= s06c_30d2		    if s06c_30d1==4 & s06c_30d==1
+replace yvivien= s06c_30d2/2		if s06c_30d1==5 & s06c_30d==1
+replace yvivien= s06c_30d2/3		if s06c_30d1==6 & s06c_30d==1
+replace yvivien= s06c_30d2/6		if s06c_30d1==7 & s06c_30d==1
+replace yvivien= s06c_30d2/12		if s06c_30d1==8 & s06c_30d==1
+
+
+*************
+* yotros: Otros ingresos no monetarios *
+*************
+gen yotros = .
+replace yotros= s06c_30e2*30	if s06c_30e1==1 & s06c_30e==1
+replace yotros= s06c_30e2*4.3	if s06c_30e1==2 & s06c_30e==1
+replace yotros= s06c_30e2*2	    if s06c_30e1==3 & s06c_30e==1
+replace yotros= s06c_30e2		if s06c_30e1==4 & s06c_30e==1
+replace yotros= s06c_30e2/2	    if s06c_30e1==5 & s06c_30e==1
+replace yotros= s06c_30e2/3		if s06c_30e1==6 & s06c_30e==1
+replace yotros= s06c_30e2/6		if s06c_30e1==7 & s06c_30e==1
+replace yotros= s06c_30e2/12	if s06c_30e1==8 & s06c_30e==1
+
+
+*************
+* yalimen2: Ingreso en alimentos de la actividad secundaria *
+*************
+gen yalimen2 = .
+replace yalimen2=s06g_48b1/12	if s06g_48b==1
+
+
+**************
+* yvivien2: Ingreso en vivienda de la actividad secundaria *
+**************
+*Modificación Cesar Lins - Feb 2021, replaced by 2017 variable names
+gen yvivien2= .
+replace yvivien2 = s06g_48c1/12	if s06g_48c==1
+
+
+**************************************************************
+*** III. CONSTRUCCIÓN DE LAS VARIABLES ARMONIZADAS DEL BID ***		
+**************************************************************
+
+*****************************************
+*A. INGRESOS LABORALES A NIVEL INDIVIDUO* 
+*****************************************
 
 ***************
-***ylmpri_ci***
+***A.1.1 ylmpri_ci: Ingreso laboral monetario de actividad principal: Variable continua que indica el monto mensual de ingresos monetarios provenientes de la actividad principal. Incluye: sueldos, salarios, jornales, trabajos a destajo, comisiones, propinas, horas extras, aguinaldos (empleados) y ganancia neta (patrones y cuenta propia). Considera ingresos corrientes y extraordinarios.***
 ***************
-
 egen ylmpri_ci=rsum(yliquido ycomisio yhrsextr yprima yaguina yactpri), missing
 replace ylmpri_ci=. if yliquido ==. & ycomisio ==. &  yhrsextr ==. & yprima ==. &  yaguina ==. &  yactpri==.  
 replace ylmpri_ci=. if emp_ci~=1
@@ -1257,143 +1339,70 @@ replace ylmpri_ci=0 if categopri_ci==4
 label var ylmpri_ci "Ingreso laboral monetario actividad principal" 
 
 
-*******************
-*** nrylmpri_ci ***
-*******************
-
-gen nrylmpri_ci=(ylmpri_ci==. & emp_ci==1)
-label var nrylmpri_ci "Id no respuesta ingreso de la actividad principal"  
-
-
-******************
-*** ylnmpri_ci ***
-******************
-
-egen ylnmprid=rsum(yalimen ytranspo yvesti yvivien yotros), missing
-replace ylnmprid=. if yalimen==. & ytranspo==. & yvesti==. & yvivien==. & yotros==.   
-replace ylnmprid=0 if categopri_ci==4
-
-*Ingreso laboral no monetario de los independientes (autoconsumo)
-
-gen ylnmprii=.
-
-*Ingreso laboral no monetario para todos
-
-egen ylnmpri_ci=rsum(ylnmprid ylnmprii), missing
-replace ylnmpri_ci=. if ylnmprid==. & ylnmprii==.
-replace ylnmpri_ci=. if emp_ci~=1
-label var ylnmpri_ci "Ingreso laboral NO monetario actividad principal"   
-
-
 ***************
-***ylmsec_ci***
+***A.1.2 ylmsec_ci: Ingreso laboral monetario de actividad secundaria. Variable continua que indica el monto mensual de ingresos monetarios provenientes de la actividad secundaria.***
 ***************
-
 egen ylmsec_ci= rsum(yliquido2 yhrsextr2), missing
 replace ylmsec_ci=. if emp_ci~=1 & yhrsextr2==. & yliquido2 ==.
 replace ylmsec_ci=0 if categosec_ci==4
 label var ylmsec_ci "Ingreso laboral monetario segunda actividad" 
 
 
-******************
-****ylnmsec_ci****
-******************
+*****************
+***A.1.3 ylmotros_ci: Ingreso laboral monetario de otras actividades. Variable continua que indica el monto mensual de ingresos monetarios provenientes de actividades distintas de la principal y secundaria. Incluye ingresos percibidos por desocupados o inactivos derivados de trabajos previos al cese. ***
+*****************
+gen ylmotros_ci=.
+label var ylmotros_ci "Ingreso laboral monetario de otros trabajos" 
 
+
+************
+***A.1 ylm_ci: Ingreso laboral monetario total: Variable continua que indica el monto mensual total de ingresos laborales monetarios provenientes de todas las actividades. Esta variable equivale a la suma de las variables ylmpri_ci, ymsec_ci e ylnmotros_ci.***
+************
+egen ylm_ci=rsum(ylmpri_ci ylmsec_ci), missing
+replace ylm_ci=. if ylmpri_ci==. & ylmsec_ci==.
+label var ylm_ci "Ingreso laboral monetario total"
+
+
+******************
+***A.2.1 ylnmpri_ci: Ingreso laboral no monetario de actividad principal. Variable continua que representa el monto mensual del ingreso laboral no monetario derivado de la actividad principal de cada miembro del hogar. ***
+******************
+egen ylnmpri_ci=rsum(yalimen ytranspo yvesti yvivien yotros), missing
+replace ylnmpri_ci=. if yalimen==. & ytranspo==. & yvesti==. & yvivien==. & yotros==.   
+replace ylnmpri_ci=0 if categopri_ci==4
+
+
+******************
+****A.2.2 ylnmsec_ci: Ingreso laboral no monetario de actividad secundaria. Variable continua que representa el monto mensual del ingreso laboral no monetario derivado de la actividad secundaria de cada miembro del hogar. ****
+******************
 egen ylnmsec_ci=rsum(yalimen2  yvivien2), missing
 replace ylnmsec_ci=. if yalimen2==.  & yvivien2==.  
 replace ylnmsec_ci=0 if categosec_ci==4
 replace ylnmsec_ci=. if emp_ci==0
 label var ylnmsec_ci "Ingreso laboral NO monetario actividad secundaria"
 
-**********************************************************************************************
-***TCYLMPRI_CH : Identificador de los hogares en donde alguno de los miembros reporta como
-*** top-code el ingreso de la actividad principal. .
-***********************************************************************************************
-gen tcylmpri_ch = .
-label var tcylmpri_ch "Id hogar donde algún miembro reporta como top-code el ingr de activ. principal"
-
-***********************************************************************************************
-***TCYLMPRI_CI : Identificador de top-code del ingreso de la actividad principal.
-***********************************************************************************************
-gen tcylmpri_ci = .
-label var tcylmpri_ci "Identificador de top-code del ingreso de la actividad principal"
-
-*****************
-***ylmotros_ci***
-*****************
-
-gen ylmotros_ci=.
-label var ylmotros_ci "Ingreso laboral monetario de otros trabajos" 
-
 
 ******************
-***ylnmotros_ci***
+***A.2.3 ylnmotros_ci: Ingresos laboral no monetario de otras actividades. Variable continua que representa el monto mensual del ingreso laboral no monetario derivado de actividades distintas de la principal y/o secundaria de cada miembro del hogar.***
 ******************
-
 gen ylnmotros_ci=.
 label var ylnmotros_ci "Ingreso laboral NO monetario de otros trabajos" 
 
 
-************
-***ylm_ci***
-************
-
-egen ylm_ci=rsum(ylmpri_ci ylmsec_ci), missing
-replace ylm_ci=. if ylmpri_ci==. & ylmsec_ci==.
-label var ylm_ci "Ingreso laboral monetario total"  
-
-
 *************
-***ylnm_ci***
+***A.2 ylnm_ci: Ingreso laboral no monetario. Variable continua que indica el monto mensual total de ingresos laborales no monetarios provenientes de todas las actividades. Esta variable equivale a la suma de las variables ylnmpri_ci, ylnmsec_ci e ylnmotros_ci.***
 *************
-
 egen ylnm_ci=rsum(ylnmpri_ci ylnmsec_ci), missing
 replace ylnm_ci=. if ylnmpri_ci==. & ylnmsec_ci==.
-label var ylnm_ci "Ingreso laboral NO monetario total"  
+label var ylnm_ci "Ingreso laboral NO monetario total" 
 
 
- 
-/* 
+********************************************
+*B.	Ingresos no laborales a nivel individuo*
+********************************************
 
-ynlm:
-
-yinteres 
-yalqui 
-yjubi 
-ybene 
-yinvali 
-yviudez 
-yotren  
-yalqagri 
-ydivi 
-yalqmaqui  
-yindtr  
-yindseg 
-yheren 
-ypasu 
-ybono  
-yotring  
-yasistfam 
-ytransmon 
-yremesas 
-yinvers 
-yhipotec 
-ybonos 
-ypresta 
-yprestata 
-yinmueb 
-yinmrur 
-yvehi 
-yelec 
-ymuebles 
-yjoyas */
-
-
-
-*************
-***ynlm_ci***
-*************
-
+****************
+*B.1 ynlm_ci: Ingreso no laboral monetario público del individuo. Variable continua que indica el monto mensual del ingreso no laboral MONETARIO proveniente de otras fuentes no laborales.* 
+**************** 
 egen ynlm_ci=rsum(yinteres yalqui yjubi ybene yinvali yviudez yotren yalqagri ydivi yalqmaqui yindtr yindseg ybono yotring yasistfam ytransmon yremesas ), missing
 replace ynlm_ci=. if 	yinteres==. & yalqui==. & yjubi==. & ybene==. & yinvali==. & yviudez==. & yotren==. & yalqagri==. & ydivi==. & yalqmaqui==. & yindtr==. & yindseg==. & ///
 			ybono==. & yotring==. & yasistfam==. & ytransmon==. & yremesas==. 
@@ -1401,860 +1410,140 @@ label var ynlm_ci "Ingreso no laboral monetario"
 
 
 **************
-***ynlnm_ci***
+*B.2 ynlnm_ci: Ingreso no laboral no monetario. Variable continua que indica el monto mensual del ingreso no laboral no monetario (otras fuentes). En esta categoría se encuentran otros beneficios y transferencias no monetarias como las donaciones en alimentos, útiles escolares, becas, entre otros.***
 **************
-
+*Modificación SGR Julio 2019: En esta encuesta se pregunta por transferencia en alimentos u otras especies.
 gen ynlnm_ci=.
 label var ynlnm_ci "Ingreso no laboral no monetario" 
-egen ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci)
 
 
+*******************************************
+*C.	Ingresos totales a nivel de individuo**
+*******************************************
+**************
+***C.1 ytot_ci: Ingreso mensual total del individuo que incluye las variables ylm_ci ylnm_ci ynlm_ci ynlnm_ci. ***
+**************
+egen ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci),mi
 
-*****************
-***remesas_ci***
-*****************
 
-gen remesas_ci=yremesas
-label var remesas_ci "Remesas mensuales reportadas por el individuo" 
-
-
-************************
-*** HOUSEHOLD INCOME ***
-************************
-
-*******************
-*** nrylmpri_ch ***
-*******************
-by idh_ch, sort: egen nrylmpri_ch=sum(nrylmpri_ci) if miembros_ci==1, missing
-replace nrylmpri_ch=1 if nrylmpri_ch>0 & nrylmpri_ch<.
-replace nrylmpri_ch=. if nrylmpri_ch==.
-label var nrylmpri_ch "Hogares con algún miembro que no respondió por ingresos"
+****************************************************
+*D.	Ingresos laborales y no laborales a nivel hogar*
+****************************************************
 
 **************
-*** ylm_ch ***
+***D.1 ylm_ch: Variable continua que indica el monto mensual del ingreso laboral monetario del hogar, ignora las `No respuesta'.**
 **************
 by idh_ch, sort: egen ylm_ch=sum(ylm_ci) if miembros_ci==1, missing
-label var ylm_ch "Ingreso laboral monetario del hogar"
+label var ylm_ch "Ingreso laboral monetario del hogar" 
 
-****************
-*** ylmnr_ch ***
-****************
-by idh_ch, sort: egen ylmnr_ch=sum(ylm_ci) if miembros_ci==1, missing
-replace ylmnr_ch=. if nrylmpri_ch==1
-label var ylmnr_ch "Ingreso laboral monetario del hogar"
 
 ***************
-*** ylnm_ch ***
+***D.2 ylnm_ch: Ingreso laboral no monetario del hogar. Variable continua que indica el monto del ingreso laboral no monetario del hogar. ***
 ***************
 by idh_ch, sort: egen ylnm_ch=sum(ylnm_ci) if miembros_ci==1, missing
 label var ylnm_ch "Ingreso laboral no monetario del hogar"
 
-*******************
-*** remesas_ch ***
-*******************
-by idh_ch, sort: egen remesas_ch=sum(remesas_ci) if miembros_ci==1, missing
-label var remesas_ch "Remesas mensuales del hogar" 
 
-***************
-*** ynlm_ch ***
-***************
+****************
+***D.3 ynlnm_ch: Ingreso no laboral no monetario del hogar. Variable continua que indica el monto mensual del ingreso no laboral no monetario del hogar (otras fuentes). ***
+****************
+*Modificación SGR Julio 2019: En esta encuesta se pregunta por transferencia en alimentos u otras especies.
+by idh_ch, sort: egen ynlnm_ch=sum(ynlnm_ci) if miembros_ci==1, missing
+label var ynlnm_ch "Ingreso no laboral no monetario del hogar"
+
+***********
+***D.4 ynlm_ch: Ingreso no laboral monetario del hogar. Variable continua que indica el monto mensual del ingreso no laboral monetario del hogar (otras fuentes). Es la suma de ynlm_publico_ch y ynlm_privado_ch.*
+***********
 by idh_ch, sort: egen ynlm_ch=sum(ynlm_ci) if miembros_ci==1, missing
 label var ynlm_ch "Ingreso no laboral monetario del hogar"
 
-****************
-*** ynlnm_ch ***
-****************
-gen ynlnm_ch=.
-label var ynlnm_ch "Ingreso no laboral no monetario del hogar"
 
-*******************
-*** autocons_ci ***
-*******************
-gen autocons_ci=.
-label var autocons_ci "Autoconsumo reportado por el individuo"
+***********************************
+*E.	Ingresos totales a nivel hogar*
+***********************************
 
-*******************
-*** autocons_ch ***
-*******************
-gen autocons_ch=.
-label var autocons_ch "Autoconsumo reportado por el hogar"
+**************
+***E.1 ytot_ch: Ingreso mensual total del hogar *
+**************
+egen double ytot_ch= rowtotal(ylm_ch ylnm_ch ynlm_ch ynlnm_ch), mi
 
-*******************
-*** rentaimp_ch ***
-*******************
-gen rentaimp_ch= .
-label var rentaimp_ch "Rentas imputadas del hogar"
+
+
+*********************
+*F.	Salario por hora*
+*********************
 
 *****************
-***ylhopri_ci ***
+***F.1 ylmhopri_ci: Variable continua que indica el monto del salario horario monetario de la actividad principal ***
 *****************
 gen ylmhopri_ci=ylmpri_ci/(horaspri_ci*4.3)
-label var ylmhopri_ci "Salario monetario de la actividad principal" 
+label var ylmhopri_ci "Salario horario monetario de la actividad principal"
+
 
 ***************
-***ylmho_ci ***
-***************
+***F.2 ylmho_ci: Variable continua que indica el monto del salario horario monetario de todas las actividades.*
+****************
 gen ylmho_ci=ylm_ci/(horastot_ci*4.3)
-label var ylmho_ci "Salario monetario de todas las actividades" 
+label var ylmho_ci "Salario horario monetario de todas las actividades" 
 
 
 
-****************************
-***VARIABLES DE EDUCACION***
-****************************
+*****************
+*G.	No respuesta*
+*****************
 
-/*En esta sección es sólo para personas de 4 años o más de edad*/
-
-/*
-          11 11.NINGUNO
-          12 12.CURSO DE ALFABETIZACIÓN
-          13 13.EDUCACIÓN INICIAL O PRE-ESCOLAR (PRE KINDER/KINDER)
-          21 21.BÁSICO (1 A 5 AÑOS) - SISTEMA ESCOLAR ANTIGUO
-          22 22.INTERMEDIO (1 A 3 AÑOS) - SISTEMA ESCOLAR ANTIGUO
-          23 23.MEDIO (1 A 4 AÑOS) - SISTEMA ESCOLAR ANTIGUO
-          31 31.PRIMARIA (1 A 8 AÑOS) - SISTEMA ESCOLAR ANTERIOR
-          32 32.SECUNDARIA (1 A 4 AÑOS) - SISTEMA ESCOLAR ANTERIOR
-          41 41.PRIMARIA (1 A 6 AÑOS) - SISTEMA ESCOLAR ACTUAL
-          42 42.SECUNDARIA (1 A 6 AÑOS) - SISTEMA ESCOLAR ACTUAL
-          51 51.EDUCACIÓN BÁSICA  DE   ADULTOS (EBA) - EDUCACIÓN DE ADULTOS (SISTEMA ANTIGUO)
-          52 52.CENTRO DE EDUCACIÓN MEDIA  DE ADULTOS (CEMA) - EDUCACIÓN DE ADULTOS (SISTEMA ANTIGUO)
-          61 61.EDUCACIÓN JUVENIL ALTERNATIVA (EJA) - EDUCACIÓN ALTERNATIVA Y ESPECIAL
-          62 62.EDUCACIÓN PRIMARIA DE ADULTOS (EPA) - EDUCACIÓN ALTERNATIVA Y ESPECIAL
-          63 63.EDUCACIÓN SECUNDARIA DE ADULTOS (ESA) - EDUCACIÓN ALTERNATIVA Y ESPECIAL
-          64 64.PROGRAMA NACIONAL DE POST ALFABETIZACIÓN - EDUCACIÓN ALTERNATIVA Y ESPECIAL
-          65 65.EDUCACIÓN  ESPECIAL - EDUCACIÓN ALTERNATIVA Y ESPECIAL
-          71 71.NORMAL (ESCUELA SUP. DE FORMACIÒN DE  MAESTROS) - EDUCACIÓN SUPERIOR
-          72 72.UNIVERSIDAD - EDUCACIÓN SUPERIOR
-          73 73.POSTGRADO DIPLOMADO - EDUCACIÓN SUPERIOR
-          74 74.POSTGRADO MAESTRÍA - EDUCACIÓN SUPERIOR
-          75 75.POSTGRADO DOCTORADO - EDUCACIÓN SUPERIOR
-          76 76.TÉCNICO DE UNIVERSIDAD - EDUCACIÓN SUPERIOR
-          77 77.TÉCNICO DE INSTITUTO TÉCNICO E INSTITUTO TECNOLOGÓGICO  (Duración mayor o igual a 2 años) - EDUCACIÓN SUPERIOR
-          78 78.FORMACION SUPERIOR ARTÍSTICA
-          79 79. INSTITUTOS DE FORMACIÓN MILITAR Y POLICIAL - EDUCACIÓN SUPERIOR
-          80 80. EDUCACIÓN TÉCNICA DE ADULTOS (ETA) - EDUCACIÓN SUPERIOR
-          81 81.OTROS CURSOS  (Duración menor a 2 años) - EDUCACIÓN SUPERIOR
-
-  
-*/
+****************
+*G.1 nrylmpri_ci: No respuesta a nivel individuo. Indica la no respuesta ingreso de la actividad principal. Para construir esta variable, se tiene en cuenta que no reporte ingresos laborales (ylmpri_ci==. ) y además la persona reporte estar ocupado (emp_ci==1)* 
+**************** 
+*Código extraído del manual
+gen byte nrylmpri_ci = .
+replace nrylmpri_ci = 1 if ylmpri_ci == . & emp_ci == 1
+replace nrylmpri_ci = 0 if ylmpri_ci != . & emp_ci ==1
 
 
-/* Opcion 2
-gen aedu_ci = .
-* Ninguno o preescolar
-replace aedu_ci = 0 if s05a_02a==11 | s05a_02a==12 | s05a_02a==13 | s05a_02a==81
-
-* Primaria & Secundaria
-* Sistema escolar antiguo
-replace aedu_ci = s05a_02b if s05a_02a==21
-replace aedu_ci = s05a_02b+5 if s05a_02a==22
-replace aedu_ci = s05a_02b+8 if s05a_02a==23
-* Sistema escolar anterior
-replace aedu_ci = s05a_02b if s05a_02a==31
-replace aedu_ci = s05a_02b+8 if s05a_02a==32
-* Sistema escolar actual
-replace aedu_ci = s05a_02b if s05a_02a==41
-replace aedu_ci = s05a_02b+6 if s05a_02a==42
-
-* Superior
-replace aedu_ci = s05a_02b+12 if (s05a_02a>=71 & s05a_02a<=73) | (s05a_02a>=77 & s05a_02a<=79)
-replace aedu_ci = s05a_02b+17 if (s05a_02a>=74 & s05a_02a<=76)
-recode aedu_ci 25=22
-*/
-
-gen aedu_ci = .
-
-* Ninguno o preescolar
-replace aedu_ci = 0 if s05a_02a==11 | s05a_02a==12 | s05a_02a==13
-
-*Primaria & Secundaria
-
-replace aedu_ci = 1 if s05a_02b==1 & (s05a_02a==21 | s05a_02a==31 | s05a_02a==41)
-replace aedu_ci = 2 if s05a_02b==2 & (s05a_02a==21 | s05a_02a==31 | s05a_02a==41)
-replace aedu_ci = 3 if s05a_02b==3 & (s05a_02a==21 | s05a_02a==31 | s05a_02a==41)
-replace aedu_ci = 4 if s05a_02b==4 & (s05a_02a==21 | s05a_02a==31 | s05a_02a==41)
-replace aedu_ci = 5 if s05a_02b==5 & (s05a_02a==21 | s05a_02a==31 | s05a_02a==41)
-replace aedu_ci = 6 if (s05a_02b==6 & (s05a_02a==31 | s05a_02a==41)) |  (s05a_02b==1 & s05a_02a==22)
-replace aedu_ci = 7 if (s05a_02b==7 & s05a_02a==31) |  (s05a_02b==2 & s05a_02a==22) | (s05a_02b==1 & s05a_02a==42) 
-replace aedu_ci = 8 if (s05a_02b==8 & s05a_02a==31) |  (s05a_02b==3 & s05a_02a==22) | (s05a_02b==2 & s05a_02a==42)
-replace aedu_ci = 9 if (s05a_02b==1 & s05a_02a==23) |  (s05a_02b==1 & s05a_02a==32) | (s05a_02b==3 & s05a_02a==42)
-replace aedu_ci = 10 if (s05a_02b==2 & s05a_02a==23) |  (s05a_02b==2 & s05a_02a==32) | (s05a_02b==4 & s05a_02a==42)
-replace aedu_ci = 11 if (s05a_02b==3 & s05a_02a==23) |  (s05a_02b==3 & s05a_02a==32) | (s05a_02b==5 & s05a_02a==42)
-replace aedu_ci = 12 if (s05a_02b==4 & s05a_02a==23) |  (s05a_02b==4 & s05a_02a==32) | (s05a_02b==6 & s05a_02a==42) | (s05a_02a==81)
-
-* Superior, licenciaturas
-
-replace aedu_ci = 13 if s05a_02b==1 & (s05a_02a>=71 & s05a_02a<=72)
-replace aedu_ci = 14 if s05a_02b==2 & (s05a_02a>=71 & s05a_02a<=72)
-replace aedu_ci = 15 if s05a_02b==3 & (s05a_02a>=71 & s05a_02a<=72)
-replace aedu_ci = 16 if s05a_02b==4 & (s05a_02a>=71 & s05a_02a<=72)
-replace aedu_ci = 17 if (s05a_02b>=5 & s05a_02b<=8) & (s05a_02a>=71 & s05a_02a<=72)
-
-
-*superior, tecnicaturas
-
-replace aedu_ci = 13 if s05a_02b==1 & (s05a_02a>=76 & s05a_02a<=79)
-replace aedu_ci = 14 if s05a_02b==2 & (s05a_02a>=76 & s05a_02a<=79)
-replace aedu_ci = 15 if s05a_02b==3 & (s05a_02a>=76 & s05a_02a<=79)
-replace aedu_ci = 16 if s05a_02b==4 & (s05a_02a>=76 & s05a_02a<=79)
-replace aedu_ci = 17 if (s05a_02b>=5 & s05a_02b<=8) & (s05a_02a>=76 & s05a_02a<=79)
-
-*postgrado (1 anio)
-replace aedu_ci=17 if s05a_02a==73 & s05a_02b==1 //cursando
-replace aedu_ci=18 if s05a_02a==73 & s05a_02b==8 //terminado
-
-*maestria (2 anios)
-replace aedu_ci=18 if s05a_02a==74 & s05a_02b==1 //2do o 3er semestre aprobado
-replace aedu_ci=19 if s05a_02a==74  & s05a_02b==2 //4to semestre aprobado
-replace aedu_ci=19 if s05a_02a==74  & s05a_02b>=5 & s05a_02b<=8 //egresado o titulado
-
-*doctorado (4 anios)
-replace aedu_ci=20 if s05a_02a==75 & s05a_02b==1 //2do o 3er semestre aprobado
-replace aedu_ci=21 if s05a_02a==75 & s05a_02b==2 //4to o 5to semestre aprobado
-replace aedu_ci=22 if s05a_02a==75 & s05a_02b==3 //6to o 7mo semestre aprobado
-replace aedu_ci=23 if s05a_02a==75 & s05a_02b==4 //8vo semestre aprobado
-replace aedu_ci=23 if s05a_02a==75 & s05a_02b>=5 & s05a_02b<=8 //egresado o titulado
-
-**************
-* Line of code with indicator eduno_ci was deleted**************
-
-* Line of code with indicator eduno_ci was deleted* Line of code with indicator eduno_ci was deleted* Line of code with indicator eduno_ci was deleted
-**************
-* Line of code with indicator edupi_ci was deleted**************
-
-* Line of code with indicator edupi_ci was deleted* Line of code with indicator edupi_ci was deleted* Line of code with indicator edupi_ci was deleted
-**************
-* Line of code with indicator edupc_ci was deleted**************
-
-* Line of code with indicator edupc_ci was deleted* Line of code with indicator edupc_ci was deleted* Line of code with indicator edupc_ci was deleted
-**************
-* Line of code with indicator edusi_ci was deleted**************
-
-* Line of code with indicator edusi_ci was deleted* Line of code with indicator edusi_ci was deleted* Line of code with indicator edusi_ci was deleted
-**************
-* Line of code with indicator edusc_ci was deleted**************
-
-* Line of code with indicator edusc_ci was deleted* Line of code with indicator edusc_ci was deleted* Line of code with indicator edusc_ci was deleted
-***************
-* Line of code with indicator edus1i_ci was deleted***************
-
-* Line of code with indicator edus1i_ci was deleted* Line of code with indicator edus1i_ci was deleted* Line of code with indicator edus1i_ci was deleted
-***************
-* Line of code with indicator edus1c_ci was deleted***************
-
-* Line of code with indicator edus1c_ci was deleted* Line of code with indicator edus1c_ci was deleted* Line of code with indicator edus1c_ci was deleted
-***************
-* Line of code with indicator edus2i_ci was deleted***************
-
-* Line of code with indicator edus2i_ci was deleted* Line of code with indicator edus2i_ci was deleted* Line of code with indicator edus2i_ci was deleted
-***************
-* Line of code with indicator edus2c_ci was deleted***************
-
-* Line of code with indicator edus2c_ci was deleted* Line of code with indicator edus2c_ci was deleted* Line of code with indicator edus2c_ci was deleted
-**************
-***eduui_ci***
-**************
-gen byte eduui_ci = (inlist(s05a_06a, 71, 72, 76, 78, 79) | (s05a_05 == 2 & inlist(s05a_02a,  71, 72, 76, 78, 79) &  s05a_05a != 1)) 
-replace eduui_ci = . if aedu_ci == . 
-label variable eduui_ci "Superior Incompleto"
-
-**************
-***eduuc_ci***
-**************
-
-gen byte eduuc_ci = ((s05a_05 == 2 & ((inlist(s05a_02a,  71, 72, 76, 78, 79) &  s05a_05a == 1) | inlist(s05a_02a, 73, 74, 75))) | inlist(s05a_06a, 73, 74, 75))
-replace eduuc_ci = . if aedu_ci == . 
-label variable eduuc_ci "Superior Completo"
-
-**************
-***eduac_ci***
-**************
-
-gen eduac_ci = . 
-replace eduac_ci = 1 if (inlist(s05a_02a, 71, 72, 73, 74, 75, 76, 78, 79) | inlist(s05a_06a, 71, 72, 73, 74, 75, 76, 78, 79) )
-replace eduac_ci = 0 if (s05a_06a == 76) | (s05a_02a == 76)
-replace eduac_ci = . if inlist(s05a_06a, 77, 80, 81) & s05a_02a >= 71
-label variable eduac_ci "Superior universitario vs superior no universitario"
-
-***************
-***edupre_ci***
-***************
-
-gen byte edupre_ci=.
-label variable edupre_ci "Educacion preescolar"
-***************
-***asispre_ci***
-***************
-*Variable añadida por Iván Bornacelly - 01/12/2017
-	g asispre_ci=s05b_10==1 & s05a_06a==13	
-	la var asispre_ci "Asiste a educacion prescolar"
-	
-***************
-***asiste_ci***
-***************
-* Se utiliza matriculación como proxy de asistencia.
-
-gen asiste_ci = .
-replace asiste_ci = 0 if s05a_05 == 2 
-replace asiste_ci = 1 if s05a_05 == 1 
-label variable asiste_ci "Asiste actualmente a la escuela"
-
-**************
-***pqnoasis***
-**************
-
-* Line of code with indicator pqnoasis_ci was deleted
-
-**Daniela Zuluaga- Enero 2018: Se agrega la variable pqnoasis1_ci cuya sintaxis fue elaborada por Mayra Saenz**
-	
-**************
-*pqnoasis1_ci*
-**************
-gen pqnoasis1_ci = 1 if s05b_11==5
-replace pqnoasis1_ci = 2 if s05b_11==11 | s05b_11==12
-replace pqnoasis1_ci = 3 if s05b_11==3
-replace pqnoasis1_ci = 4 if s05b_11==9
-replace pqnoasis1_ci = 5 if s05b_11==4 | s05b_11==10
-replace pqnoasis1_ci = 6 if s05b_11==2
-*replace pqnoasis1_ci =7 														/*No está esta categoría*/
-replace pqnoasis1_ci = 8 if s05b_11==6
-replace pqnoasis1_ci = 9 if s05b_11==1  | s05b_11==7 | s05b_11==8 | s05b_11==14
-
-label define pqnoasis1_ci 1 "Problemas económicos" 2 "Por trabajo" 3 "Problemas familiares o de salud" 4 "Falta de interés" 5 "Quehaceres domésticos/embarazo/cuidado de niños/as" 6 "Terminó sus estudios" 7	"Edad" 8 "Problemas de acceso"  9 "Otros"
-label value  pqnoasis1_ci pqnoasis1_ci
-
-***************
-* Line of code with indicator repite_ci was deleted***************
-
-* Line of code with indicator repite_ci was deleted* Line of code with indicator repite_ci was deleted
-******************
-* Line of code with indicator repiteult was deleted
-*En este año no se hace pregunta sobre si individuo repitió año
-* Line of code with indicator repiteult was deleted
-
-***************
-***edupub_ci***
-***************
-
-/*
-s5_09:	   
- 1 fiscal - pÚblico
- 2 pÚblico de convenio
- 3 particular - privado
-*/
-
-gen edupub_ci=s05a_09==1 & asiste_ci==1
-replace edupub_ci= 0 if s05a_09==2 & asiste_ci==1
-replace edupub_ci=. if s05a_09==. 
-label var edupub_ci "Asiste a un centro de ensenanza público"
-
-
-
-**********************************
-**** VARIABLES DE LA VIVIENDA ****
-**********************************
-**#
+****************
+*G.2 nrylmpri_ch: No respuesta a nivel hogar. Hogares con algún miembro que no respondió por ingresos* 
+**************** 
+*Código extraído del manual
 *************
-*aguadist_ch*
-*************
-
-gen aguadist_ch=0
-replace aguadist_ch=1 if s01a_10==1
-replace aguadist_ch=2 if s01a_10==2
-replace aguadist_ch=3 if (s01a_10==3)
-
-
-*****************
-*aguafconsumo_ch*
-*****************
-gen aguafconsumo_ch = 0
-replace aguafconsumo_ch = 1 if s01a_10==1|s01a_10==2
-replace aguafconsumo_ch = 2 if s01a_10==3
-replace aguafconsumo_ch = 3 if s01a_10==11
-replace aguafconsumo_ch = 4 if (s01a_10==5 | s01a_10==6 | s01a_10==7)
-replace aguafconsumo_ch = 5 if s01a_10==4
-replace aguafconsumo_ch = 6 if s01a_10==12
-replace aguafconsumo_ch = 7 if s01a_10 == 9
-replace aguafconsumo_ch = 8 if s01a_10==10
-replace aguafconsumo_ch = 9 if s01a_10== 8 |s01a_10== 13
-
-*****************
-*aguafuente_ch*
-*****************
-gen aguafuente_ch = 0
-replace aguafuente_ch = 1 if s01a_10==1|s01a_10==2
-replace aguafuente_ch = 2 if s01a_10==3
-replace aguafuente_ch = 3 if s01a_10==11
-replace aguafuente_ch = 4 if (s01a_10==5 | s01a_10==6 | s01a_10==7)
-replace aguafuente_ch = 5 if s01a_10==4
-replace aguafuente_ch = 6 if s01a_10==12
-replace aguafuente_ch = 7 if s01a_10 == 9
-replace aguafuente_ch = 8 if s01a_10==10
-replace aguafuente_ch = 9 if s01a_10== 8 | s01a_10== 13
-
-
-**************
-*aguadisp1_ch*
-**************
-gen aguadisp1_ch = . 
-
-
-
-
-
-**************
-*aguadisp2_ch*
-**************
-gen aguadisp2_ch = 1 if (s01a_11b<=3 | s01a_11aa <12)
-replace aguadisp2_ch = 2 if (s01a_11b>=4 & s01a_11aa >= 12)
-replace aguadisp2_ch = 3 if (s01a_11b==7 & s01a_11aa == 24)
-
+by idh_ch, sort: egen byte nrylmpri_ch = sum(nrylmpri_ci) if miembros_ci==1
+replace nrylmpri_ch = 1 if nrylmpri_ch > 0 & nrylmpri_ch < .
+replace nrylmpri_ch = . if nrylmpri_ch == .
 
 
 ************
-*sinbano_ch*
-************
-gen sinbano_ch = 3
-replace sinbano_ch = 0 if s01a_15!=5
-*label var sinbano_ch "= 0 si tiene baño en la vivienda o dentro del terreno"
-
-***************
-***banoex_ch***
-***************
-gen banoex_ch =.
-replace banoex_ch = 0 if s01a_17==2
-replace banoex_ch = 1 if s01a_17==1
-
-*************
-*aguatrat_ch*
-*************
-gen aguatrat_ch =.
-
-*label var aguatrat_ch "= 9 la encuesta no pregunta de si se trata el agua antes de consumirla"
-
-
-*************
-*aguamala_ch*  Altered
-*************
-gen aguamala_ch = 2
-replace aguamala_ch = 0 if aguafuente_ch<=7
-replace aguamala_ch = 1 if aguafuente_ch>7 & aguafuente_ch!=10
-*label var aguamala_ch "= 1 si la fuente de agua no es mejorada"
-
-*****************
-*aguamejorada_ch*  Altered
-*****************
-gen aguamejorada_ch = 2
-replace aguamejorada_ch = 0 if aguafuente_ch>7 & aguafuente_ch!=10
-replace aguamejorada_ch = 1 if aguafuente_ch<=7
-
-
-*****************
-*bano_ch         *  Altered
-*****************
-gen bano_ch=6
-replace bano_ch=0 if s01a_15==5 
-replace bano_ch=1 if s01a_15==1 & s01a_16==1
-replace bano_ch=2 if s01a_15==1 & s01a_16==2
-replace bano_ch=3 if ((s01a_15==2 | s01a_15 == 4) & s01a_16!=4) | (s01a_15==1 & s01a_16 == 3)
-replace bano_ch=4 if (s01a_15==1 |s01a_15==2 |s01a_15==3) & s01a_16==4
-replace bano_ch=5 if s01a_15 ==3 & s01a_16!=4
-
-
-*****************
-*banomejorado_ch*  Altered
-*****************
-
-gen banomejorado_ch= 2
-replace banomejorado_ch =1 if bano_ch<=3 & bano_ch!=0
-replace banomejorado_ch =0 if (bano_ch ==0 | bano_ch>=4) & bano_ch!=6
-
-
-**#		
-****************
-***aguared_ch***
-****************
-
-/*s1a_11 :	
-1 cañería de red dentro de la vivienda?
-2 cañería de red fuera de la vivienda, pero dentro del lote
-3 pileta pública
-4  pozo perforado o entubado, con bomba?
-5 pozo escavado cubierto, con bomba? 
-6 pozo excavado cubierto, sin bomba?
-7 pozo excavado no cubierto? 
-8 manantial o vertiente protegida?
-9 río/acequia/vertiente no protegida?
-10  agua embotellada?
-11 carro repartidor (aguatero)?
-12 otro? (especifique)
-*/
-
-****************
-***aguared_ch***
-****************
-gen aguared_ch = 0
-replace aguared_ch = 1 if (s01a_10==1 | s01a_10==2)
-replace aguared = . if s01a_10==.
-label var aguared_ch "Acceso a fuente de agua por red"
-
-
-
-*****************
-***aguamide_ch***
-*****************
-
-gen aguamide_ch=.
-label var aguamide_ch "Usan medidor para pagar consumo de agua"
-
-************
-***luz_ch***
+*H.	Remesas*
 ************
 
-gen luz_ch=(s01a_19  ==1)
-replace luz_ch =. if  s01a_19  == .
-label var luz_ch  "La principal fuente de iluminación es electricidad"
+****************
+*H.1 remesas_ci: Variable continua que indica el monto mensual por remesas reportadas por el individuo en moneda local corriente.* 
+**************** 
+gen remesas_ci=yremesas
+label var ylmho_ci "Remesas reportadas por el individuo " 
 
 
 ****************
-***luzmide_ch***
-****************
-
-gen luzmide_ch=.
-label var luzmide_ch "Usan medidor para pagar consumo de electricidad"
-
-
-****************
-***combust_ch***
-****************
-
-gen combust_ch= (s01a_25==4 |  s01a_25==6)
-replace combust_ch = . if s01a_25==.
-label var combust_ch "Principal combustible gas o electricidad" 
-
-
-
-
-
-*************
-***des1_ch***
-*************
-/*
-s01a_15
-1 a la red de alcantarillado?
-2 a una cámara séptica?
-3 a un pozo de absorción?
-4 a la superficie (calle/quebrada/rio)
-5 otro
-6 no sabe
-*/
-
-gen des1_ch=.
-replace des1_ch=0 if bano_ch==0
-replace des1_ch=1 if s01a_16==1 | s01a_16==2
-replace des1_ch=2 if s01a_16==3
-replace des1_ch=3 if s01a_16==4
-label var des1_ch "Tipo de desague según unimproved de MDG"
-label def des1_ch 0"No tiene servicio sanitario" 1"Conectado a red general o cámara séptica"
-label def des1_ch 2"Letrina o conectado a pozo ciego" 3"Desemboca en río o calle", add
-label val des1_ch des1_ch
-
-*************
-***des2_ch***
-*************
-
-gen des2_ch=.
-replace des2_ch=0 if bano_ch==0
-replace des2_ch=1 if s01a_16==1 | s01a_16==2 | s01a_16==3 
-replace des2_ch=2 if s01a_16==4
-label var des2_ch "Tipo de desague sin incluir definición MDG"
-label def des2_ch 0"No tiene servicio sanitario" 1"Conectado a red general, cámara séptica, pozo o letrina"
-label def des2_ch 2"Cualquier otro caso", add
-label val des2_ch des2_ch
-
-
-*************
-***piso_ch***
-*************
-
-gen piso_ch=0 if s01a_09==1 
-replace piso_ch=1 if  s01a_09>=2 &  s01a_09<=7 
-replace piso_ch=2 if  s01a_09==8
-label var piso_ch "Materiales de construcción del piso"  
-label def piso_ch 0"Piso de tierra" 1"Materiales permanentes" 2 "Otros materiales"
-label val piso_ch piso_ch
+*H.2 remesas_ch: Variable continua que indica el monto mensual por remesas del hogar. Esta variable se genera a partir de la variable remesas_ci.* 
+**************** 
+by idh_ch, sort: egen byte remesas_ch = sum(remesas_ci) if miembros_ci == 1
+label var ylmho_ci "Remesas del hogar" 
 
 
 **************
-***pared_ch***
+*I.	Pensiones*
 **************
 
-gen pared_ch=0 if s01a_06==6
-replace pared_ch=1 if s01a_06>=1 & s01a_06<=5
-replace pared_ch=2 if s01a_06==7
-label var pared_ch "Materiales de construcción de las paredes"
-label def pared_ch 0"No permanentes" 1"Permanentes" 2 "Otros materiales"
-label val pared_ch pared_ch
-
-
-**************
-***techo_ch***
-**************
-
-gen techo_ch=0 if s01a_08 ==4
-replace techo_ch=1 if s01a_08 >=1 & s01a_08 <=3
-replace techo_ch=2 if s01a_08 ==5
-label var techo_ch "Materiales de construcción del techo"
-label def techo_ch 0"No permanentes" 1"Permanentes" 2 "Otros materiales"
-label val techo_ch techo_ch
-
-**************
-***resid_ch***
-**************
-
-gen resid_ch =0 if s01a_21==5 | s01a_21==6
-replace resid_ch=1 if s01a_21==2 | s01a_21==4
-replace resid_ch=2 if s01a_21==1 | s01a_21==3
-replace resid_ch=3 if s01a_21==7
-replace resid_ch=. if s01a_21==.
-label var resid_ch "Método de eliminación de residuos"
-label def resid_ch 0"Recolección pública o privada" 1"Quemados o enterrados"
-label def resid_ch 2"Tirados a un espacio abierto" 3"Otros", add
-label val resid_ch resid_ch
-
-
-
-				
-
-		
 *************
-***dorm_ch***
+*I.1 ypen_ci: Ingreso por pensión contributiva: Variable continua que indica el monto mensual en moneda local corriente efectivamente recibido por el individuo por pensiones contributivas en sus distintas modalidades (jubilación, vejez, pensión, etc).*
 *************
-
-gen dorm_ch= s01a_28
-label var dorm_ch "Habitaciones para dormir"
-
-****************
-***cuartos_ch***
-****************
-
-*Esta pregunta no incluye baño, cocina, lavandería, garage, depósito o negocio 
-gen cuartos_ch=s01a_27
-label var cuartos_ch "Habitaciones en el hogar"
- 
-
-***************
-***cocina_ch***
-***************
-
-gen cocina_ch=(s01a_24 ==1)
-replace cocina_ch = . if  s01a_24 ==.
-label var cocina_ch "Cuarto separado y exclusivo para cocinar"
-
-
-**************
-***telef_ch***
-**************
-
-gen telef_ch=(s01a_29   ==1)
-replace telef_ch = . if s01a_29   ==.
-label var telef_ch "El hogar tiene servicio telefónico fijo"
-
-
-********
-***NA***
-********
-gen refrig_ch=(posee_4==1)
-label var refrig_ch "El hogar posee refrigerador o heladera"
-
-gen freez_ch=.
-label var freez_ch "El hogar posee congelador"
-
-gen auto_ch=(posee_11==1)
-label var auto_ch "El hogar posee automovil particular"
-
-gen compu_ch=(posee_5==1)
-label var compu_ch "El hogar posee computador"
-
+egen ypen_ci = rsum(s07a_01a s07a_01b s07a_01c s07a_01d), missing
+label var ypen_ci "Valor de la pension contributiva"
 
 *****************
-***internet_ch***
+**I.2 ypensub_ci: Ingreso por pensión no contributiva: Variable continua que indica el monto mensual en moneda local corriente recibido por la persona por pensiones no contributivas (adultos mayores).*
 *****************
-gen internet_ch=(s01a_31==1)
-replace internet_ch = .   if  s01a_31== .
-label var internet_ch "El hogar posee conexión a Internet"
-
-
-
-************
-***cel_ch***
-************
-
-gen cel_ch= (s05c_13==1)
-label var cel_ch "El hogar tiene servicio telefonico celular"
-
-
-**************
-***vivi1_ch***
-**************
-
-gen vivi1_ch=1 if s01a_01==1
-replace vivi1_ch=2 if s01a_01==3
-replace vivi1_ch=3 if s01a_01==2 | (s01a_01>=4 & s01a_01<=6)
-replace vivi1_ch=. if s01a_01==.
-label var vivi1_ch "Tipo de vivienda en la que reside el hogar"
-label def vivi1_ch 1"Casa" 2"Departamento" 3"Otros"
-label val vivi1_ch vivi1_ch
-
-*************
-***vivi2_ch**
-*************
-
-gen vivi2_ch= (vivi1_ch==1 | vivi1_ch==2)
-replace vivi2_ch=. if vivi1_ch==.
-label var vivi2_ch "La vivienda es casa o departamento"
-
-*****************
-***viviprop_ch***
-*****************
-
-*Se crea una variable parecida, pero con otro nombre
-
-gen viviprop_ch=0 if s01a_02==3
-replace viviprop_ch=1 if s01a_02==1
-replace viviprop_ch=2 if s01a_02==2 
-replace viviprop_ch=3 if s01a_02==5 | s01a_02==6 | s01a_02==7 
-replace viviprop_ch=4 if s01a_02==4 | s01a_02==8
-
-label var viviprop_ch "Propiedad de la vivienda"
-label def viviprop_ch 0"Alquilada" 1"Propia y totalmente pagada" 2 "Propia y en proceso de pago" 
-label def viviprop_ch 3"Ocupada (propia de facto)" 4"Otra", add
-label val viviprop_ch viviprop_ch
-
-****************
-***vivitit_ch***
-****************
-
-gen vivitit_ch=.
-label var vivitit_ch "El hogar posee un título de propiedad"
-
-
-****************
-***vivialq_ch***
-****************
-
-gen vivialq_ch= s01a_04 if s01a_04<999999
-label var vivialq_ch "Alquiler mensual"
-
-
-*******************
-***vivialqimp_ch***
-*******************
-
-gen vivialqimp_ch=s01a_05 if s01a_05<999999
-label var vivialqimp_ch "Alquiler mensual imputado"
-
-*******************
-*** benefdes_ci ***
-*******************
-g benefdes_ci=.
-label var benefdes_ci "=1 si tiene seguro de desempleo"
-
-*******************
-*** ybenefdes_ci***
-*******************
-g ybenefdes_ci=.
-label var ybenefdes_ci "Monto de seguro de desempleo"
-
-
-******************************
-*** VARIABLES DE MIGRACION ***
-******************************
-
-* Variables incluidas por SCL/MIG Fernando Morales
-
-	*******************
-	*** migrante_ci ***
-	*******************
-	
-	gen migrante_ci=(s03a_04==3) if s03a_04!=. 	
-	label var migrante_ci "=1 si es migrante"
-	
-	**********************
-	*** migantiguo5_ci ***
-	**********************
-	
-	gen migantiguo5_ci=(migrante_ci==1 & inlist(s03a_01a,1,2)) if !mi(migrante_ci) & s03a_01a!=4
-	label var migantiguo5_ci "=1 si es migrante antiguo (5 anos o mas)"
-		
-	**********************
-	*** migrantelac_ci ***
-	**********************
-	
-	gen migrantelac_ci=.
-	label var migrantelac_ci "=1 si es migrante proveniente de un pais LAC"
-	
-* Variables incluidas por SCL/MIG Juan Camilo Perdomo
-	
-	**********************
-	*** migrantiguo5_ci ***
-	**********************
-	
-	gen migrantiguo5_ci = 1 if inlist(s03a_01a,1,2) & migrante_ci==1 
-	replace migrantiguo5_ci = 0 if s03a_01a == 3 & migrante_ci==1 
-	replace migrantiguo5_ci = . if s03a_01a == 4 | migrante_ci!=1 
-	label var migrantiguo5_ci "=1 si es migrante antiguo (5 anos o mas)"
-		
-	**********************
-	*** miglac_ci ***
-	**********************
-	
-	gen miglac_ci=. 
-	label var miglac_ci "=1 si es migrante proveniente de un pais LAC"
-	
-******************************
-* Variables SPH - PMTC y PNC *
-******************************
-
-* PTMC: Bono juancito pinto 
-* PNC:  Renta dignidad
-
-* Ingreso del hogar
-egen ingreso_total = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci), missing
-bys idh_ch: egen y_hog = sum(ingreso_total)
-drop ingreso_total
-
-* Personas que perciben transferencias
-gen percibe_ptmc_ci = (s05a_08==1)
-bys idh_ch: egen ptmc_ch = max(percibe_ptmc)
-
-* Se imputa el ingreso del bono juancito pinto el cual es de Bs. 200 anuales 
-* por estudiente que asiste a la escuela y tiene entre 6-20 años
-gen ing_bjp = (200/12) if ptmc ==1 & (edad_ci>5 & edad_ci<21) &  asiste_ci==1
-bys idh_ch: egen ing_ptmc = sum(ing_bjp)
-drop ing_bjp
-
-replace ing_ptmc=. if y_hog==.
-replace ptmc_ch  = ((percibe_ptmc==1)| (ing_ptmc>0 & ing_ptmc!=.))
-
-* Personas que reciben pensión no contributiva
-gen mayor64_ci=(edad>64 & edad!=.)
-gen pnc_ci= (s07a_01e==1)
-
-* Monto pension no contributiva
-bys idh_ch: egen ing_pension = sum(s07a_01e0)
-replace ing_pension=. if y_hog==.
-
-* Ingreso neto del hogar
-gen y_pc_net = (y_hog - ing_ptmc - ing_pension) / nmiembros_ch
-drop y_hog 
-
-lab def ptmc_ch 1 "Beneficiario PTMC" 0 "No beneficiario PTMC"
-lab val ptmc_ch ptmc_ch
-
-lab def pnc_ci 1 "Beneficiario PNC" 0 "No beneficiario PNC"
-lab val pnc_ci pnc_ci
-
+gen  ypensub_ci=s07a_01e0 
+label var ypensub_ci "Valor de la pension subsidiada / no contributiva"
 
 /*_____________________________________________________________________________________________________*/
 * Asignación de etiquetas e inserción de variables externas: tipo de cambio, Indice de Precios al 
@@ -2335,4 +1624,4 @@ save "`base_out'", replace
 
 log close
 
-
+	

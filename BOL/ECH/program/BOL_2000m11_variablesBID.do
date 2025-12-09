@@ -1,4 +1,3 @@
-
 * (Versión Stata 12)
 clear
 set more off
@@ -42,6 +41,7 @@ Detalle de procesamientos o modificaciones anteriores:
 
 
 use `base_in', clear
+
 	****************
 	* region_BID_c *
 	****************
@@ -584,37 +584,7 @@ label var tamemp_ci "# empleados en la empresa segun rangos"
 label define tamemp_ci 1 "Pequena" 2 "Mediana" 3 "Grande"
 label value tamemp_ci tamemp_ci
 
-*************
-**pension_ci*
-*************
 
-egen aux_p=rsum(ingjub ingben inginv ingviu ingorf), missing
-gen pension_ci=1 if aux_p>0 & aux_p!=.
-recode pension_ci .=0 
-label var pension_ci "1=Recibe pension contributiva"
-
-*************
-**ypen_ci*
-*************
-
-gen ypen_ci=aux_p 
-recode ypen_ci .=0 
-label var ypen_ci "Valor de la pension contributiva"
-
-***************
-*pensionsub_ci*
-***************
-gen pensionsub_ci= .
-label var pensionsub_ci "1=recibe pension subsidiada / no contributiva"
-
-*****************
-**ypensub_ci*
-*****************
-
-gen byte ypensub_ci=.
-
-label var ypensub_ci "Valor de la pension subsidiada / no contributiva"
-	
 ************
 ***emp_ci***
 ************
@@ -845,12 +815,21 @@ replace formal_ci=1 if formal==1 & (condocup_ci==1 | condocup_ci==2)
 replace formal_ci=0 if formal_ci==. & (condocup_ci==1 | condocup_ci==2) 
 label var formal_ci "1=afiliado o cotizante / PEA"
 
-*************************************************************************************
-*******************************INGRESOS**********************************************
-*************************************************************************************
+
+***************************
+***VARIABLES DE INGRESOS***
+***************************
+
+**************************************************************
+*** CONSTRUCCIÓN DE LAS VARIABLES ARMONIZADAS DEL BID ***		
+**************************************************************
+
+*****************************************
+*A. INGRESOS LABORALES A NIVEL INDIVIDUO* 
+*****************************************
 
 ***************
-***ylmpri_ci***
+***A.1.1 ylmpri_ci: Ingreso laboral monetario de actividad principal: Variable continua que indica el monto mensual de ingresos monetarios provenientes de la actividad principal. Incluye: sueldos, salarios, jornales, trabajos a destajo, comisiones, propinas, horas extras, aguinaldos (empleados) y ganancia neta (patrones y cuenta propia). Considera ingresos corrientes y extraordinarios.***
 ***************
 
 *Para los trabajadores dependientes
@@ -878,7 +857,6 @@ egen ypridbd=rsum(ypridb ypriexhep ypriexprip ypriexaguip), missing
 replace ypridbd=. if ypridb==. & ypriexhep==. & ypriexprip==. & ypriexaguip==.
 
 *Para los trabajadores independientes 
-
 gen yprijbi=.
 replace yprijbi=ingliqp*30 if frecinp==1 
 replace yprijbi=ingliqp*4.3 if frecinp==2 
@@ -887,59 +865,14 @@ replace yprijbi=ingliqp if frecinp==4
 replace yprijbi=ingliqp/6 if frecinp==5
 replace yprijbi=ingliqp/12 if frecinp==6
 
-
 *Ingreso laboral monetario para todos
-
 egen ylmpri_ci=rsum(yprijbi ypridbd), missing
 replace ylmpri_ci=. if ypridbd==. & yprijbi==. 
 replace ylmpri_ci=. if emp_ci~=1
 
 
-*******************
-*** nrylmpri_ci ***
-*******************
-
-gen nrylmpri_ci=(ylmpri_ci==. & emp_ci==1)
-
-
-******************
-*** ylnmpri_ci ***
-******************
-
-*Ingreso laboral no monetario de los dependientes
-
-local nnn="alip trap vesp vivp otrp"
-foreach i of local nnn {
-
-gen especie`i'=.
-replace especie`i'=ing`i'*30  if frec`i'==1
-replace especie`i'=ing`i'*4.3 if frec`i'==2
-replace especie`i'=ing`i'*2   if frec`i'==3
-replace especie`i'=ing`i'     if frec`i'==4
-replace especie`i'=ing`i'/3   if frec`i'==5
-replace especie`i'=ing`i'/6   if frec`i'==6
-replace especie`i'=ing`i'/12  if frec`i'==7
-replace especie`i'=0 if rec`i'==2
-}
-
-egen ylnmprid=rsum(especiealip especietrap especievesp especievivp especieotrp), missing
-replace ylnmprid=. if especiealip==. & especietrap==. & especievesp==. & especievivp==. & especieotrp==. 
-replace ylnmprid=0 if categopri_ci==4
-
-
-*Ingreso laboral no monetario de los independientes (autoconsumo)
-
-gen ylnmprii=.
-
-*Ingreso laboral no monetario para todos
-
-egen ylnmpri_ci=rsum(ylnmprid ylnmprii), missing
-replace ylnmpri_ci=. if ylnmprid==. & ylnmprii==.
-replace ylnmpri_ci=. if emp_ci~=1
-
-
 ***************
-***ylmsec_ci***
+***A.1.2 ylmsec_ci: Ingreso laboral monetario de actividad secundaria. Variable continua que indica el monto mensual de ingresos monetarios provenientes de la actividad secundaria.***
 ***************
 
 *Para los trabajadores dependientes
@@ -991,11 +924,62 @@ replace ylmsec_ci=. if ysecjbi==. & ysecbd==.
 replace ylmsec_ci=. if emp_ci~=1
 
 
+
+*****************
+***A.1.3 ylmotros_ci: Ingreso laboral monetario de otras actividades. Variable continua que indica el monto mensual de ingresos monetarios provenientes de actividades distintas de la principal y secundaria. Incluye ingresos percibidos por desocupados o inactivos derivados de trabajos previos al cese. ***
+*****************
+gen ylmotros_ci=.
+label var ylmotros_ci "Ingreso laboral monetario de otros trabajos" 
+
+
+************
+***A.1 ylm_ci: Ingreso laboral monetario total: Variable continua que indica el monto mensual total de ingresos laborales monetarios provenientes de todas las actividades. Esta variable equivale a la suma de las variables ylmpri_ci, ymsec_ci e ylnmotros_ci.***
+************
+egen ylm_ci=rsum(ylmpri_ci ylmsec_ci), missing
+replace ylm_ci=. if ylmpri_ci==. & ylmsec_ci==.
+label var ylm_ci "Ingreso laboral monetario total"
+
+
 ******************
-****ylnmsec_ci****
+***A.2.1 ylnmpri_ci: Ingreso laboral no monetario de actividad principal. Variable continua que representa el monto mensual del ingreso laboral no monetario derivado de la actividad principal de cada miembro del hogar. ***
 ******************
 
 *Ingreso laboral no monetario de los dependientes
+
+local nnn="alip trap vesp vivp otrp"
+foreach i of local nnn {
+
+gen especie`i'=.
+replace especie`i'=ing`i'*30  if frec`i'==1
+replace especie`i'=ing`i'*4.3 if frec`i'==2
+replace especie`i'=ing`i'*2   if frec`i'==3
+replace especie`i'=ing`i'     if frec`i'==4
+replace especie`i'=ing`i'/3   if frec`i'==5
+replace especie`i'=ing`i'/6   if frec`i'==6
+replace especie`i'=ing`i'/12  if frec`i'==7
+replace especie`i'=0 if rec`i'==2
+}
+
+egen ylnmprid=rsum(especiealip especietrap especievesp especievivp especieotrp), missing
+replace ylnmprid=. if especiealip==. & especietrap==. & especievesp==. & especievivp==. & especieotrp==. 
+replace ylnmprid=0 if categopri_ci==4
+
+
+*Ingreso laboral no monetario de los independientes (autoconsumo)
+
+gen ylnmprii=.
+
+*Ingreso laboral no monetario para todos
+
+egen ylnmpri_ci=rsum(ylnmprid ylnmprii), missing
+replace ylnmpri_ci=. if ylnmprid==. & ylnmprii==.
+replace ylnmpri_ci=. if emp_ci~=1
+
+
+
+******************
+****A.2.2 ylnmsec_ci: Ingreso laboral no monetario de actividad secundaria. Variable continua que representa el monto mensual del ingreso laboral no monetario derivado de la actividad secundaria de cada miembro del hogar. ****
+******************
 
 local nsn="alis tras vess vivs otrs"
 foreach i of local nsn {
@@ -1027,26 +1011,29 @@ replace ylnmsec_ci=. if ylnmsecd==. & ylnmseci==.
 replace ylnmsec_ci=. if emp_ci==0
 
 
-************
-***ylm_ci***
-************
 
-egen ylm_ci=rsum(ylmpri_ci ylmsec_ci), missing
-replace ylm_ci=. if ylmpri_ci==. & ylmsec_ci==.
+******************
+***A.2.3 ylnmotros_ci: Ingresos laboral no monetario de otras actividades. Variable continua que representa el monto mensual del ingreso laboral no monetario derivado de actividades distintas de la principal y/o secundaria de cada miembro del hogar.***
+******************
+gen ylnmotros_ci=.
+label var ylnmotros_ci "Ingreso laboral NO monetario de otros trabajos" 
 
 
 *************
-***ylnm_ci***
+***A.2 ylnm_ci: Ingreso laboral no monetario. Variable continua que indica el monto mensual total de ingresos laborales no monetarios provenientes de todas las actividades. Esta variable equivale a la suma de las variables ylnmpri_ci, ylnmsec_ci e ylnmotros_ci.***
 *************
-
 egen ylnm_ci=rsum(ylnmpri_ci ylnmsec_ci), missing
 replace ylnm_ci=. if ylnmpri_ci==. & ylnmsec_ci==.
+label var ylnm_ci "Ingreso laboral NO monetario total" 
 
 
-*************
-***ynlm_ci***
-*************
+********************************************
+*B.	Ingresos no laborales a nivel individuo*
+********************************************
 
+****************
+*B.1 ynlm_ci: Ingreso no laboral monetario público del individuo. Variable continua que indica el monto mensual del ingreso no laboral MONETARIO proveniente de otras fuentes no laborales.* 
+**************** 
 *Alquileres, dividendos, etc.
 gen transl1=ingalpag/12
 replace transl1=. if transl1==0
@@ -1057,20 +1044,15 @@ replace transl2=. if transl2==0
 egen transltot=rsum(transl1 transl2), missing
 replace transltot=. if transl1==. & transl2==. 
 
-
 *Rentas mensuales
-
 local jjj="inginte ingalqui ingjub ingben inginv ingviu ingorf ingotro"
 foreach i of local jjj {
 replace `i'=. if `i'==0
 }
-
 egen rentastot=rsum(inginte ingalqui ingjub ingben inginv ingviu ingorf ingotro), missing
 replace rentastot=. if inginte==. & ingalqui==. & ingjub==. & ingben==. & inginv==. & ingviu==. & ingorf==. & ingotro==. 
 
-
 * Otros ingresos no laborales
-
 gen frecaisf=frecasf
 
 local xxx="aisf trai trae"
@@ -1094,148 +1076,149 @@ local www="ingheren ingindem ingextra"
 foreach i of local www {
 replace `i'=. if `i'==0
 }
-
 egen yotrosnl2=rsum(ingheren ingindem ingextra), missing
 replace yotrosnl2=. if ingheren==. & ingindem==. & ingextra==. 
 replace yotrosnl2=yotrosnl2/12
 
 *Ingresos no laborales totales monetarios
-
 egen ynlm_ci=rsum(transltot rentastot yotrosnl yotrosnl2), missing
 replace ynlm_ci=. if transltot==. & rentastot==. & yotrosnl==. & yotrosnl2==.
 
 
 **************
-***ynlnm_ci***
+*B.2 ynlnm_ci: Ingreso no laboral no monetario. Variable continua que indica el monto mensual del ingreso no laboral no monetario (otras fuentes). En esta categoría se encuentran otros beneficios y transferencias no monetarias como las donaciones en alimentos, útiles escolares, becas, entre otros.***
 **************
-
 gen ynlnm_ci=.
-egen ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci)
 
 
-**********************************************************************************************
-***TCYLMPRI_CH : Identificador de los hogares en donde alguno de los miembros reporta como
-*** top-code el ingreso de la actividad principal. .
-***********************************************************************************************
-gen tcylmpri_ch = .
-label var tcylmpri_ch "Id hogar donde algún miembro reporta como top-code el ingr de activ. principal"
-
-***********************************************************************************************
-***TCYLMPRI_CI : Identificador de top-code del ingreso de la actividad principal.
-***********************************************************************************************
-gen tcylmpri_ci = .
-label var tcylmpri_ci "Identificador de top-code del ingreso de la actividad principal"
-
-*****************
-***ylmotros_ci***
-*****************
-
-gen ylmotros_ci=.
-label var ylmotros_ci "Ingreso laboral monetario de otros trabajos" 
+*******************************************
+*C.	Ingresos totales a nivel de individuo**
+*******************************************
+**************
+***C.1 ytot_ci: Ingreso mensual total del individuo que incluye las variables ylm_ci ylnm_ci ynlm_ci ynlnm_ci. ***
+**************
+*Código extraído del manual
+egen ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci),mi
 
 
-******************
-***ylnmotros_ci***
-******************
-
-gen ylnmotros_ci=.
-label var ylnmotros_ci "Ingreso laboral NO monetario de otros trabajos" 
-
-
-****************
-***remesas_ci***
-****************
-
-gen remesas_ci=otrosnltrae
-
-************************
-*** HOUSEHOLD INCOME ***
-************************
-
-*******************
-*** nrylmpri_ch ***
-*******************
-*Creating a Flag label for those households where someone has a ylmpri_ci as missing
-
-by idh_ch, sort: egen nrylmpri_ch=sum(nrylmpri_ci) if miembros_ci==1, missing
-replace nrylmpri_ch=1 if nrylmpri_ch>0 & nrylmpri_ch<.
-replace nrylmpri_ch=. if nrylmpri_ch==.
-
+****************************************************
+*D.	Ingresos laborales y no laborales a nivel hogar*
+****************************************************
 
 **************
-*** ylm_ch ***
+***D.1 ylm_ch: Variable continua que indica el monto mensual del ingreso laboral monetario del hogar, ignora las `No respuesta'.**
 **************
-
 by idh_ch, sort: egen ylm_ch=sum(ylm_ci) if miembros_ci==1, missing
-
-
-****************
-*** ylmnr_ch ***
-****************
-
-by idh_ch, sort: egen ylmnr_ch=sum(ylm_ci) if miembros_ci==1, missing
-replace ylmnr_ch=. if nrylmpri_ch==1
+label var ylm_ch "Ingreso laboral monetario del hogar" 
 
 
 ***************
-*** ylnm_ch ***
+***D.2 ylnm_ch: Ingreso laboral no monetario del hogar. Variable continua que indica el monto del ingreso laboral no monetario del hogar. ***
 ***************
-
 by idh_ch, sort: egen ylnm_ch=sum(ylnm_ci) if miembros_ci==1, missing
-
-*******************
-*** remesas_ch ***
-*******************
-
-by idh_ch, sort: egen remesas_ch=sum(remesas_ci) if miembros_ci==1, missing
+label var ylnm_ch "Ingreso laboral no monetario del hogar"
 
 
-***************
-*** ynlm_ch ***
-***************
+****************
+***D.3 ynlnm_ch: Ingreso no laboral no monetario del hogar. Variable continua que indica el monto mensual del ingreso no laboral no monetario del hogar (otras fuentes). ***
+****************
+by idh_ch, sort: egen ynlnm_ch=sum(ynlnm_ci) if miembros_ci==1, missing
+label var ynlnm_ch "Ingreso no laboral no monetario del hogar"
 
+***********
+***D.4 ynlm_ch: Ingreso no laboral monetario del hogar. Variable continua que indica el monto mensual del ingreso no laboral monetario del hogar (otras fuentes). Es la suma de ynlm_publico_ch y ynlm_privado_ch.*
+***********
 by idh_ch, sort: egen ynlm_ch=sum(ynlm_ci) if miembros_ci==1, missing
+label var ynlm_ch "Ingreso no laboral monetario del hogar"
 
-****************
-*** ynlnm_ch ***
-****************
 
-gen ynlnm_ch=.
 
-*******************
-*** autocons_ci ***
-*******************
+***********************************
+*E.	Ingresos totales a nivel hogar*
+***********************************
 
-gen autocons_ci=.
+**************
+***E.1 ytot_ch: Ingreso mensual total del hogar *
+**************
+egen double ytot_ch= rowtotal(ylm_ch ylnm_ch ynlm_ch ynlnm_ch), mi
 
-*******************
-*** autocons_ch ***
-*******************
 
-gen autocons_ch=.
 
-*******************
-*** rentaimp_ch ***
-*******************
-
-gen rentaimp_ch=alimp
-replace rentaimp_ch=rentaimp_ch*6.17 if malimp==2
-replace rentaimp_ch=. if alimp==0
-
+*********************
+*F.	Salario por hora*
+*********************
 
 *****************
-***ylhopri_ci ***
+***F.1 ylmhopri_ci: Variable continua que indica el monto del salario horario monetario de la actividad principal ***
 *****************
-
 gen ylmhopri_ci=ylmpri_ci/(horaspri_ci*4.3)
+label var ylmhopri_ci "Salario horario monetario de la actividad principal"
 
 
 ***************
-***ylmho_ci ***
-***************
-
+***F.2 ylmho_ci: Variable continua que indica el monto del salario horario monetario de todas las actividades.*
+****************
 gen ylmho_ci=ylm_ci/(horastot_ci*4.3)
+label var ylmho_ci "Salario horario monetario de todas las actividades" 
 
+
+
+*****************
+*G.	No respuesta*
+*****************
+
+****************
+*G.1 nrylmpri_ci: No respuesta a nivel individuo. Indica la no respuesta ingreso de la actividad principal. Para construir esta variable, se tiene en cuenta que no reporte ingresos laborales (ylmpri_ci==. ) y además la persona reporte estar ocupado (emp_ci==1)* 
+**************** 
+*Código extraído del manual
+gen byte nrylmpri_ci = .
+replace nrylmpri_ci = 1 if ylmpri_ci == . & emp_ci == 1
+replace nrylmpri_ci = 0 if ylmpri_ci != . & emp_ci ==1
+
+
+****************
+*G.2 nrylmpri_ch: No respuesta a nivel hogar. Hogares con algún miembro que no respondió por ingresos* 
+**************** 
+*Código extraído del manual
+*************
+by idh_ch, sort: egen byte nrylmpri_ch = sum(nrylmpri_ci) if miembros_ci==1
+replace nrylmpri_ch = 1 if nrylmpri_ch > 0 & nrylmpri_ch < .
+replace nrylmpri_ch = . if nrylmpri_ch == .
+
+************
+*H.	Remesas*
+************
+
+****************
+*H.1 remesas_ci: Variable continua que indica el monto mensual por remesas reportadas por el individuo en moneda local corriente.* 
+**************** 
+gen remesas_ci=otrosnltrae
+label var ylmho_ci "Remesas reportadas por el individuo " 
+
+****************
+*H.2 remesas_ch: Variable continua que indica el monto mensual por remesas del hogar. Esta variable se genera a partir de la variable remesas_ci.* 
+**************** 
+by idh_ch, sort: egen byte remesas_ch = sum(remesas_ci) if miembros_ci == 1
+label var ylmho_ci "Remesas del hogar" 
+
+
+**************
+*I.	Pensiones*
+**************
+
+*************
+*I.1 ypen_ci: Ingreso por pensión contributiva: Variable continua que indica el monto mensual en moneda local corriente efectivamente recibido por el individuo por pensiones contributivas en sus distintas modalidades (jubilación, vejez, pensión, etc).*
+*************
+egen ypen_ci=rsum(ingjub ingben inginv ingviu ingorf), missing 
+label var ypen_ci "Valor de la pension contributiva"
+
+
+*****************
+**I.2 ypensub_ci: Ingreso por pensión no contributiva: Variable continua que indica el monto mensual en moneda local corriente recibido por la persona por pensiones no contributivas (adultos mayores).*
+*****************
+gen byte ypensub_ci=.
+label var ypensub_ci "Valor de la pension subsidiada / no contributiva"
+	
 
 
 ****************************
@@ -1574,8 +1557,7 @@ ren ocup ocup_old
 	
 	gen miglac_ci=. 
 	label var miglac_ci "=1 si es migrante proveniente de un pais LAC"
-
-
+	
 /*_____________________________________________________________________________________________________*/
 * Asignación de etiquetas e inserción de variables externas: tipo de cambio, Indice de Precios al 
 * Consumidor (2011=100), Paridad de Poder Adquisitivo (PPA 2011),  líneas de pobreza
@@ -1623,5 +1605,3 @@ saveold "`base_out'", replace
 
 
 log close
-
-
