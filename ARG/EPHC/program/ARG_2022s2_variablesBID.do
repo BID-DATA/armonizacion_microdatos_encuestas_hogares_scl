@@ -354,6 +354,11 @@ by idh_ch, sort: egen byte nmenor1_ch=sum((relacion_ci>0 & relacion_ci<=5) & (ed
 *************
 gen miembros_ci=(relacion_ci>=1 & relacion_ci<=5)
 
+*****************
+*miembros_one_ci*
+*****************
+gen miembros_one_ci = inrange(ch03,1,10)
+
 *******************************************************
 ***           VARIABLES DE DIVERSIDAD               ***
 *******************************************************
@@ -371,6 +376,11 @@ gen miembros_ci=(relacion_ci>=1 & relacion_ci<=5)
 	*noafroind_ci*
 	**************
 	gen byte noafroind_ci =.   // se queda como missing (.) si no existe la pregunta
+	
+	**************
+	*afroind_ano_c*
+	**************
+	gen byte afroind_ano_c =.   // se queda como missing (.) si no existe la pregunta
 
 	************
 	*afroind_ci*
@@ -1307,7 +1317,7 @@ gen byte muestra_92=(aglomerado==32 | aglomera==33 | aglomera==6 | aglomera==9 |
 
 /* https://www.indec.gob.ar/uploads/informesdeprensa/eph_pobreza_03_22F5E124A94B.pdf pÃ¡gina 5-6. 
 calculo: Canasta BÃ¡sica Total promedio del hogar pobre/TamaÃ±o promedio del hogar pobre en adulto equivalente,
-Canasta BÃ¡sica Alimentaria promedio del hogar indigente/TamaÃ±o promedio del hogar indigente en adulto equivalente */ 
+Canasta BÃ¡sica Alimentaria promedio del hogar indigente/TamaÃ±o promedio del hogar indigente en adulto equivalente
 
 *promedio julio - diciembre 2020:  https://www.indec.gob.ar/uploads/informesdeprensa/eph_pobreza_02_2082FA92E916.pdf
 
@@ -1325,6 +1335,10 @@ label var lp_ci "Linea de pobreza oficial del pais"
 ********
 gen lpe_ci= .
 label var lpe_ci "Linea de indigencia oficial del pais"
+
+Cambio Juan Camilo Perdomo (Front)
+Comento esta parte para crear las líneas de pobreza abajo en la sección de variables externas
+*/
 
 **************
 *cotizando_ci*
@@ -1519,6 +1533,40 @@ inlist(ch15_cod,"239","240")) & migrante_ci == 1
 replace miglac_ci = 0 if miglac_ci != 1 & migrante_ci == 1
 replace miglac_ci =. if migrante_ci == 0
 label var miglac_ci "=1 si es migrante proveniente de un pais LAC" 
+
+
+****************************
+***VARIABLES DE EXTERNAS***
+**************************** 
+
+	****************
+	*tipo_bienestar*
+	**************** 
+	gen byte tipo_bienestar = . 
+	replace tipo_bienestar  = 1 
+	
+	**********************
+	* bienestar_agregado *
+	**********************
+	gen bienestar_agregado = itf
+	
+	*******
+	*ln_ci*
+	******
+	gen ln_ci= 131807/3.14
+
+	********
+	*lpe_ci*
+	********
+	gen lpe_ci= 57239/3.07
+	
+* https://www.indec.gob.ar/uploads/informesdeprensa/eph_pobreza_03_2302A7EBAFE4.pdf pagina 6. Canasta Basica y Total promedio del hogar/Tamaño promedio del hogar pobre en adulto equivalente
+
+	****************
+	* pobre_ine _ci*
+	**************** 
+	gen byte pobre_ine_ci=(bienestar_agregado<lp_ci)
+	
 	
 /*________________________________________________________________________________________________*/
 

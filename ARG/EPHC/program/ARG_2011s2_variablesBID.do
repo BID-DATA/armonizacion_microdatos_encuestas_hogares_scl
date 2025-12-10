@@ -372,8 +372,12 @@ by idh_ch, sort: egen byte nmenor1_ch=sum((relacion_ci>0 & relacion_ci<=5) & (ed
 	gen miembros_ci=(relacion_ci>=1 & relacion_ci<=5)
 	label variable miembros_ci "Miembro del hogar"
 	
+	*****************
+	*miembros_one_ci*
+	*****************
+	gen miembros_one_ci = inrange(ch03,1,10)
 	
-				
+	
 *******************************************************
 ***           VARIABLES DE DIVERSIDAD               ***
 *******************************************************
@@ -391,6 +395,11 @@ by idh_ch, sort: egen byte nmenor1_ch=sum((relacion_ci>0 & relacion_ci<=5) & (ed
 	*noafroind_ci*
 	**************
 	gen byte noafroind_ci =.   // se queda como missing (.) si no existe la pregunta
+	
+	**************
+	*afroind_ano_c*
+	**************
+	gen byte afroind_ano_c =.   // se queda como missing (.) si no existe la pregunta
 
 	************
 	*afroind_ci*
@@ -1840,6 +1849,28 @@ gen instcot_ci=.
 	replace miglac_ci =. if migrante_ci == 0
 	label var miglac_ci "=1 si es migrante proveniente de un pais LAC" 
 
+
+****************************
+***VARIABLES DE EXTERNAS***
+**************************** 
+
+	****************
+	*tipo_bienestar*
+	**************** 
+	gen byte tipo_bienestar = . 
+	****************
+	* pobre_ine _ci*
+	**************** 
+	gen byte pobre_ine_ci= . 
+	****************
+	* bienestar_agregado *
+	**************** 
+	gen bienestar_agregado = . 
+	****************
+	* ln_ci *
+	**************** 
+	gen ln_ci = lp_ci
+	
 
 /*_____________________________________________________________________________________________________*/
 * Asignación de etiquetas e inserción de variables externas: tipo de cambio, Indice de Precios al 

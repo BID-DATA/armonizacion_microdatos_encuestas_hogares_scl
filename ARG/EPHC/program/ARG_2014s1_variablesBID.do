@@ -317,38 +317,88 @@ replace region_c=24 if aglomerado==29                          /*Tucuman*/
 	************
 	
 	gen miembros_ci=(relacion_ci>=1 & relacion_ci<5) 
+	
+	*****************
+	*miembros_one_ci*
+	*****************
+	gen miembros_one_ci = inrange(ch03,1,10)
 
 				
 *******************************************************
 ***           VARIABLES DE DIVERSIDAD               ***
-*******************************************************				
-* Maria Antonella Pereira & Nathalia Maya - Marzo 2021	
+*******************************************************
+	*********
+	*afro_ci*
+	*********
+	gen byte afro_ci = . 	  // se queda como missing (.) si no existe la pregunta
+	
+	*********
+	*indi_ci*
+	*********	
+	gen byte ind_ci =. 		  // se queda como missing (.) si no existe la pregunta
 
-			
-	***************
-	***afroind_ci***
-	***************
-gen afroind_ci=. 
+	**************
+	*noafroind_ci*
+	**************
+	gen byte noafroind_ci =.   // se queda como missing (.) si no existe la pregunta
+	
+	**************
+	*afroind_ano_c*
+	**************
+	gen byte afroind_ano_c =.   // se queda como missing (.) si no existe la pregunta
 
-	***************
-	***afroind_ch***
-	***************
-gen afroind_ch=. 
+	************
+	*afroind_ci*
+	************
+	gen byte afroind_ci=. 
+	
+	*********
+	*afro_ch*
+	*********
+	gen byte afro_jefe = afro_ci if relacion_ci==1
+	egen afro_ch  = max(afro_jefe), by(idh_ch) 
+	drop afro_jefe
+	
+	********
+	*ind_ch*
+	********	
+	gen byte ind_jefe = ind_ci if relacion_ci==1
+	egen ind_ch = max(ind_jefe), by(idh_ch) 
+	drop ind_jefe
 
-	*******************
-	***afroind_ano_c***
-	*******************
-gen afroind_ano_c=.		
+	**************
+	*noafroind_ch*
+	**************
+	gen byte noafroind_jefe = noafroind_ci if relacion_ci==1
+	egen noafroind_ch = max(noafroind_jefe), by(idh_ch) 
+	drop noafroind_jefe
 
-	*******************
-	***dis_ci***
-	*******************
-gen dis_ci=. 
+	************
+	*afroind_ch*
+	************
+ 	gen byte afroind_jefe = afroind_ci if jefe_ci==1
+	egen afroind_ch = min(afroind_jefe), by(idh_ch) 
+	drop afroind_jefe 
 
-	*******************
-	***dis_ch***
-	*******************
-gen dis_ch=. 
+	********
+	*dis_ci*
+	********
+	gen byte dis_ci=.
+	
+	**********
+	*disWG_ci*
+	**********
+	gen byte disWG_ci=.
+	
+	********
+	*dis_ch*
+	********
+	egen byte dis_ch = max(dis_ci), by(idh_ch) 
+	
+	******************
+	*ISOalpha3_dis_ci*
+	******************
+	gen byte ARG_dis_ci = .
 
 
 			***********************************
@@ -1642,6 +1692,28 @@ gen instcot_ci=.
 	replace miglac_ci = 0 if miglac_ci != 1 & migrante_ci == 1
 	replace miglac_ci =. if migrante_ci == 0
 	label var miglac_ci "=1 si es migrante proveniente de un pais LAC" 
+	
+	
+****************************
+***VARIABLES DE EXTERNAS***
+**************************** 
+
+	****************
+	*tipo_bienestar*
+	**************** 
+	gen byte tipo_bienestar = . 
+	****************
+	* pobre_ine _ci*
+	**************** 
+	gen byte pobre_ine_ci= . 
+	****************
+	* bienestar_agregado *
+	**************** 
+	gen bienestar_agregado = . 
+	****************
+	* ln_ci *
+	**************** 
+	gen ln_ci = lp_ci
 
 
 /*_____________________________________________________________________________________________________*/

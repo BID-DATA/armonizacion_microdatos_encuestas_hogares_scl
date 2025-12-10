@@ -277,7 +277,6 @@ replace edad_ci=98 if edad_ci>=98
 **************
 recode ch07 (1 2=2 "Union formal o informal") (3=3 "Divorciado o separado") (4=4 "Viudo") (5=1 "Soltero") (else=.), gen(civil_ci) 
 label variable civil_ci "Estado civil"
-
 	
 *********
 *jefe_ci*
@@ -367,78 +366,87 @@ by idh_ch, sort: egen byte nmenor1_ch=sum((relacion_ci>0 & relacion_ci<=5) & (ed
 *************
 gen miembros_ci=(relacion_ci>=1 & relacion_ci<=5)
 
-*****************************
-***VARIABLES DE DIVERSIDAD***
-*****************************
-* Maria Antonella Pereira & Nathalia Maya - Marzo 2021	
+*****************
+*miembros_one_ci*
+*****************
+gen miembros_one_ci = inrange(ch03,1,10)
 
+*******************************************************
+***           VARIABLES DE DIVERSIDAD               ***
+*******************************************************
 
-************
-*afroind_ci*
-************
-gen afroind_ci=. 
+	*********
+	*afro_ci*
+	*********
+	gen byte afro_ci = . 	  // se queda como missing (.) si no existe la pregunta
+	
+	*********
+	*indi_ci*
+	*********	
+	gen byte ind_ci =. 		  // se queda como missing (.) si no existe la pregunta
 
+	**************
+	*noafroind_ci*
+	**************
+	gen byte noafroind_ci =.   // se queda como missing (.) si no existe la pregunta
+	
+	**************
+	*afroind_ano_c*
+	**************
+	gen byte afroind_ano_c =.   // se queda como missing (.) si no existe la pregunta
 
-************
-*afro_ci*
-************
-gen afro_ci=. 
+	************
+	*afroind_ci*
+	************
+	gen byte afroind_ci=. 
+	
+	*********
+	*afro_ch*
+	*********
+	gen byte afro_jefe = afro_ci if relacion_ci==1
+	egen afro_ch  = max(afro_jefe), by(idh_ch) 
+	drop afro_jefe
+	
+	********
+	*ind_ch*
+	********	
+	gen byte ind_jefe = ind_ci if relacion_ci==1
+	egen ind_ch = max(ind_jefe), by(idh_ch) 
+	drop ind_jefe
 
-************
-*afro_ch*
-************
-gen afro_ch=. 
+	**************
+	*noafroind_ch*
+	**************
+	gen byte noafroind_jefe = noafroind_ci if relacion_ci==1
+	egen noafroind_ch = max(noafroind_jefe), by(idh_ch) 
+	drop noafroind_jefe
 
+	************
+	*afroind_ch*
+	************
+ 	gen byte afroind_jefe = afroind_ci if jefe_ci==1
+	egen afroind_ch = min(afroind_jefe), by(idh_ch) 
+	drop afroind_jefe 
 
-************
-*ind_ci*
-************
-gen ind_ci=. 
-
-************
-*ind_ch*
-************
-gen ind_ch=. 
-
-
-************
-*afroind_ch*
-************
-gen afroind_ch=. 
-
-***************
-*afroind_ano_c*
-***************
-gen afroind_ano_c=.		
-
-
-***************
-*noafroind_ci *
-***************
-gen noafroind_ci =.		
-
-
-***************
-*noafroind_ch *
-***************
-gen noafroind_ch =.		
-
-
-********
-*dis_ci*
-********
-gen dis_ci=. 
-
-********
-*dis_ch*
-********
-gen dis_ch=. 
-
-
-********
-*disWG_ci*
-********
-gen disWG_ci=. 
+	********
+	*dis_ci*
+	********
+	gen byte dis_ci=.
+	
+	**********
+	*disWG_ci*
+	**********
+	gen byte disWG_ci=.
+	
+	********
+	*dis_ch*
+	********
+	egen byte dis_ch = max(dis_ci), by(idh_ch) 
+	
+	******************
+	*ISOalpha3_dis_ci*
+	******************
+	gen byte ARG_dis_ci = .
 	
 ***********************************
 ***VARIABLES DEL MERCADO LABORAL***
@@ -1302,7 +1310,7 @@ gen byte muestra_92=(aglomerado==32 | aglomera==33 | aglomera==6 | aglomera==9 |
 
 /* https://www.indec.gob.ar/uploads/informesdeprensa/eph_pobreza_03_22F5E124A94B.pdf pÃ¡gina 5-6. 
 calculo: Canasta BÃ¡sica Total promedio del hogar pobre/TamaÃ±o promedio del hogar pobre en adulto equivalente,
-Canasta BÃ¡sica Alimentaria promedio del hogar indigente/TamaÃ±o promedio del hogar indigente en adulto equivalente */ 
+Canasta BÃ¡sica Alimentaria promedio del hogar indigente/TamaÃ±o promedio del hogar indigente en adulto equivalente
 
 *promedio julio - diciembre 2020:  https://www.indec.gob.ar/uploads/informesdeprensa/eph_pobreza_02_2082FA92E916.pdf
 
@@ -1320,6 +1328,10 @@ label var lp_ci "Linea de pobreza oficial del pais"
 ********
 gen lpe_ci= 175150
 label var lpe_ci "Linea de indigencia oficial del pais"
+
+Cambio Juan Camilo Perdomo (Front)
+Comento esta parte para crear las líneas de pobreza abajo en la sección de variables externas
+*/
 
 **************
 *cotizando_ci*
@@ -1510,8 +1522,41 @@ inlist(ch15_cod, 239, 240)) & migrante_ci == 1
 replace miglac_ci = 0 if miglac_ci != 1 & migrante_ci == 1
 replace miglac_ci = . if migrante_ci == 0
 label var miglac_ci "=1 si es migrante proveniente de un país LAC"
-	
 
+
+****************************
+***VARIABLES DE EXTERNAS***
+**************************** 
+
+	****************
+	*tipo_bienestar*
+	**************** 
+	gen byte tipo_bienestar = . 
+	replace tipo_bienestar  = 1 
+	
+	**********************
+	* bienestar_agregado *
+	**********************
+	gen bienestar_agregado = itf
+	
+	*******
+	*ln_ci*
+	******
+	gen ln_ci= 952313/3.13
+
+	********
+	*lpe_ci*
+	********
+	gen lpe_ci= 410604/3.04
+	
+* https://www.indec.gob.ar/uploads/informesdeprensa/eph_pobreza_03_252282AE14D2.pdf pagina 7. Canasta Basica y Total promedio del hogar/Tamaño promedio del hogar pobre en adulto equivalente
+	
+	****************
+	* pobre_ine _ci*
+	**************** 
+	gen byte pobre_ine_ci=(bienestar_agregado<lp_ci)
+	
+	
 /*________________________________________________________________________________________________*/
 
 /* Asignación de etiquetas e insercion de variables externas: tipo de cambio, Indice de Precios al*/
