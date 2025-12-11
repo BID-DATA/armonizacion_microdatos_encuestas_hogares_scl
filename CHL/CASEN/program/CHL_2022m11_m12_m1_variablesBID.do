@@ -267,7 +267,14 @@ label variable nmenor1_ch "Numero de familiares menores a 1 anio"
 gen miembros_ci=(relacion_ci>=1 & relacion_ci<=5)
 label variable miembros_ci "Miembro del hogar"
 
-
+******************
+* miembros_one_ci*
+******************
+*SDPA: Servicio doméstico puertas adentro
+*la variable “numper” consigna el número de personas entrevistadas en cada hogar.
+*la variable “numper” contabiliza el número de personas por hogar, 
+*excluyendo el SDPA y sus familiares.
+gen miembros_one_ci=(nucleo > 0)
 
          ******************************
          *** VARIABLES DE DIVERSIDAD **
@@ -276,15 +283,54 @@ label variable miembros_ci "Miembro del hogar"
            pueblos indígenas, ¿[NOMBRE] |
                              pertenece?
 	*/
-	***************
-	***afroind_ci***
-	***************
 
+	*********
+	*afro_ci*
+	*********
+gen byte afro_ci=. 
+
+	***************
+	***ind_ci   ***
+	***************
+gen     ind_ci=. 
+replace ind_ci=1 if (r3 >=1 & r3 <=10 ) /* se incluyó "10. Chango" a la lista */
+replace ind_ci=0 if r3==11  /* changed to "11. Otro" this year */	
+	
+	**************
+	*noafroind_ci*
+	**************
+gen byte noafroind_ci =.
+replace  noafroind_ci =1 if afro_ci==0 & ind_ci==0
+replace  noafroind_ci =0 if afro_ci==1 | ind_ci==1
+
+    ***************
+    ***afro_ch  ***
+    ***************
+gen  afro_jefe = afro_ci if relacion_ci == 1
+egen afro_ch = min(afro_jefe), by(idh_ch) 
+drop afro_jefe
+
+	***************
+	***ind_ch   ***
+	***************
+gen  ind_jefe= ind_ci if relacion_ci==1
+egen ind_ch  = min(ind_jefe), by(idh_ch) 
+drop ind_jefe 	
+	
+	**************
+	*noafroind_ch*
+	**************
+gen byte noafroind_jefe = noafroind_ci if relacion_ci==1
+egen noafroind_ch = max(noafroind_jefe), by(idh_ch) 
+drop noafroind_jefe
+	
+	****************
+	***afroind_ci***
+	****************
 gen afroind_ci=. 
 replace afroind_ci=1 if (r3 >=1 & r3 <=10 ) /* se incluyó "10. Chango" a la lista */
 replace afroind_ci=2 if r3==0
 replace afroind_ci=3 if r3==11  /* changed to "11. Otro" this year */
-
 
 	***************
 	***afroind_ch***
@@ -296,8 +342,39 @@ drop afroind_jefe
 	*******************
 	***afroind_ano_c***
 	*******************
+*año en que se comenzó a utilizar en cada encuesta 
+*la metodología de medición de raza/etnicidad
+*(desde2020) afroind_ano_c=2020
+*(antes2020) afroind_ano_c=2006	
 gen afroind_ano_c=2020
 
+	********
+	*dis_ci*
+	********
+/* Preguntas h7a-h7f. Tiene dificultad para ver, oir, caminar, recordar, cuidado, comunicarse 
+Opciones de rpta: 1. No, ninguna dificultad /2. Sí, algo de dificultad
+ /3. Sí, mucha dificultad /4. No puede hacerlo /-88. No sabe /-99. No responde	*/	
+	gen dis_ci  = . 
+	replace dis_ci = 1 if inrange(h7a,2,4) | inrange(h7b,2,4) | inrange(h7c,2,4) | inrange(h7d,2,4) | inrange(h7e,2,4) | inrange(h7f,2,4)
+	replace dis_ci = 0 if h7a==1 & h7b==1 & h7c==1 & h7d==1 & h7e==1 & h7f==1
+
+	**********
+	*disWG_ci*
+	**********
+gen byte disWG_ci=.
+replace  disWG_ci= 1 if inrange(h7a,3,4) | inrange(h7b,3,4) | inrange(h7c,3,4) | inrange(h7d,3,4) | inrange(h7e,3,4) | inrange(h7f,3,4)
+replace  disWG_ci= 0 if h7a==1 & h7b==1 & h7c==1 & h7d==1 & h7e==1 & h7f==1
+
+	********
+	*dis_ch*
+	********
+	egen dis_ch = sum(dis_ci), by(idh_ch) 
+	replace dis_ch = 1 if (dis_ch > 0)
+
+	******************
+	*ISOalpha3_dis_ci*
+	******************
+gen byte CHL_dis_ci =dis_ci
 
 		*********************************
 		* VARIABLES DEL MERCADO LABORAL *
@@ -306,25 +383,29 @@ gen afroind_ano_c=2020
 ****************
 ****condocup_ci*
 ****************
-
-gen condocup_ci=.
+*SE AJUSTO LA EDAD A MAYOR DE 14 AHNOS. JANET PORRAS 26/11/25
+gen     condocup_ci=.
 replace condocup_ci=1 if (o1==1 | o2==1 | o3==1)
 replace condocup_ci=2 if ((o1==2 | o2==2 | o3==2) & (o6==1))
-recode condocup_ci (.=3) if edad_ci>=12 
-replace condocup_ci=4 if edad<12
-label var condocup_ci "Condicion de ocupación de acuerdo a def de cada pais"
+recode  condocup_ci (.=3) if edad_ci>=15 
+replace condocup_ci=4 if edad<15
+label var    condocup_ci "Condicion de ocupación de acuerdo a def de cada pais"
 label define condocup_ci 1 "Ocupado" 2 "Desocupado" 3 "Inactivo" 4 "Menor de PET" 
-label value condocup_ci condocup_ci
+label value  condocup_ci condocup_ci
 
 ************
 ***emp_ci***
 ************
-gen emp_ci=(condocup_ci==1)
+gen byte  emp_ci = .
+replace   emp_ci = (condocup_ci == 1) if condocup_ci != .
+label var emp_ci "Ocupados"
 
 ****************
-***desemp_ci***
+***desemp_ci ***
 ****************
-gen desemp_ci=(condocup_ci==2)
+gen byte  desemp_ci = .
+replace   desemp_ci=(condocup_ci==2) if condocup_ci != .
+label var desemp_ci "Desocupados"
 
 *************
 ***pea_ci***
@@ -334,6 +415,9 @@ gen pea_ci=(emp_ci==1 | desemp_ci==1)
 ****************
 * horaspri_ci  * 
 ****************
+*o10. ¿Cuántas horas trabaja habitualmente por semana en su trabajo, negocio o actividad principal?
+*Cuidar que la variable no exceda de 168 hrs
+*JANET PORRAS. 26/11/12
 gen horaspri_ci= o10
 replace horaspri_ci=. if o10==-88 | emp_ci!=1
 label var horaspri_ci "Horas totales trabajadas en la actividad principal"
@@ -348,15 +432,16 @@ label var horastot_ci "Horas totales trabajadas en todas las actividades"
 ****************
 * subemp_ci    * 
 **************** 
+*o11. ¿Está dispuesto(a) a trabajar más horas a la semana? 1. Sí, ahora mismo
 gen subemp_ci=0
-replace subemp_ci=1 if (horaspri_ci<=30)
+replace   subemp_ci=1 if horaspri_ci<=30 & o11==1
 label var subemp_ci "Personas en subempleo por horas"
  
 ****************
 *tiempoparc_ci * 
 **************** 
-gen tiempoparc_ci=(horaspri_ci<=30)
-replace tiempoparc_ci=. if emp_ci!=1
+gen       tiempoparc_ci=horaspri_ci<30 & o11==3
+replace   tiempoparc_ci=. if emp_ci!=1
 label var tiempoparc_c "Personas que trabajan medio tiempo" 
 
 ****************
@@ -376,7 +461,6 @@ label variable categopri_ci "Categoria ocupacional en la actividad principal"
 ****************
 *categosec_ci  * 
 ****************
-
 gen categosec_ci=.
 replace categosec_ci=1 if o30==1
 replace categosec_ci=2 if o30==2
@@ -388,6 +472,7 @@ label define categosec_ci 3"Empleado" 4" No remunerado" , add
 label value categosec_ci categosec_ci
 label variable categosec_ci "Categoria ocupacional trabajo secundario"
 
+**************** 
 * segsoc_ci    * 
 **************** 
 *Se toma afilición a pensiones
@@ -422,7 +507,7 @@ capture drop ocupa_ci
 gen ocupa_ci=.
 
 ** LA ENCUESTA 2022 NO INCLUYE EL CIUO-88, Juan C Perdomo 20/09/2023
-
+** LA ENCUESTA 2022 ADOPTO EL CIUO-08.CL, Janet Porras 24/11/2025
 /*
 replace ocupa_ci=1 if (oficio4_88>=2111 & oficio4_88<=3480) & emp_ci==1
 replace ocupa_ci=2 if (oficio4_88>=1110 & oficio4_88<=1319) & emp_ci==1
@@ -444,7 +529,7 @@ label value ocupa_ci ocupa_ci
 ****************
 * rama_ci      * 
 ****************
-
+*RAMA4 CIIU REV. 4
 destring rama4, replace
 
 gen rama_ci=.
@@ -478,7 +563,25 @@ label var ylmpri_ci "Ingreso laboral monetario actividad principal"
 ****************
 * ylnmpri_ci   * 
 **************** 
-gen ylnmpri_ci=.
+*https://observatorio.ministeriodesarrollosocial.gob.cl/encuesta-casen-2022
+*SEGUN LIBRO DE CODIGOS.
+*JANET PORRAS. 26/11/25
+/*
+y0501:asalariados	principal	-	alimentos y bebidas
+y0502: asalariados	principal	-	vales de alimentación
+y0503: asalariados	principal	-	vivienda o alojamiento
+y0504: asalariados	principal	-	vehículo para uso privado
+y0505: asalariados	principal	-	servicio de transporte
+y0506: asalariados	principal	-	estacionamiento gratuito
+y0507: asalariados	principal	-	teléfono
+y0508: asalariados	principal	-	vestimenta
+y0509: asalariados	principal	-	servicios de guardería o sala cuna
+y0510: asalariados	principal	-	leña
+y0511: asalariados	principal	-	bienes o servicios del empleador
+y0512: asalariados	principal	-	otros similares en especies
+y0801: independientes principal - especies */
+egen      ylnmpri_ci = rsum(y0501  y0502  y0503 y0504 y0505 y0506 y0507 y0508 y0509 y0510 y0511 y0512 y0801), missing
+replace   ylnmpri_ci=. if emp_ci==0
 label var ylnmpri_ci "Ingreso laboral NO monetario actividad principal" 
 
 ****************
@@ -516,19 +619,25 @@ label var nrylmpri_ci "Id no respuesta ingreso de la actividad principal"
 ****************
 * ylm_ci       * 
 **************** 
-gen ylm_ci= ytrabajocor
-replace ylm_ci=. if emp_ci!=1
-label var ylm_ci "Ingreso laboral monetario total" 
+*SE AJUSTO AL ESQUEMA DE LA METODOLOGIA. JANET PORRAS 26/11/25
+egen double ylm_ci =rowtotal(ylmpri_ci ylmsec_ci ylmotros_ci), mi
+replace     ylm_ci=. if emp_ci!=1
+label var   ylm_ci "Ingreso laboral monetario total" 
 
 ****************
 * ylnm_ci      * 
 **************** 
-gen ylnm_ci=.
+*SE AJUSTO AL ESQUEMA DE LA METODOLOGIA. JANET PORRAS 26/11/25
+egen      ylnm_ci=rsum(ylnmpri_ci ylnmsec_ci ylnmotros_ci), missing
+replace   ylnm_ci=. if ylnmpri_ci==. & ylnmsec_ci==. & ylnmotros_ci==.
 label var ylnm_ci "Ingreso laboral NO monetario total"  
 
 ****************
 * ynlm_ci      * 
 **************** 
+*yautcor:     ingreso autonomo corregido del hogar
+*ysub:        subsidios monetarios
+*ytrabajocor: ingreso del trabajo corregido
 gen inglab =  ytrabajocor *-1
 egen ynlm_ci = rsum (yautcor  inglab  ysub), missing
 replace ynlm_ci=. if yautcor==. & inglab==. & ysub==. 
@@ -583,36 +692,7 @@ replace ylmpri_ci=. if aympri==. & iympri==.
 
 label var ylmpri_ci "Ingreso laboral monetario actividad principal" 
 
-****************
-* ylnmpri_ci   * 
-**************** 
 
-/*
-y0501:asalariados	principal	-	alimentos y bebidas
-y0502: asalariados	principal	-	vales de alimentación
-y0503: asalariados	principal	-	vivienda o alojamiento
-y0504: asalariados	principal	-	vehículo para uso privado
-y0505: asalariados	principal	-	servicio de transporte
-y0506: asalariados	principal	-	estacionamiento gratuito
-y0507: asalariados	principal	-	teléfono
-y0508: asalariados	principal	-	vestimenta
-y0509: asalariados	principal	-	servicios de guardería o sala cuna
-y0510: asalariados	principal	-	leña
-y0511: asalariados	principal	-	bienes o servicios del empleador
-y0512: asalariados	principal	-	otros similares en especies
-y0801: independientes principal - especies
-*/
-
-*asalariados
-egen aylnmpri = rsum(y0501  y0502  y0503 y0504 y0505 y0506 y0507 y0508 y0509 y0510 y0511 y0512), missing
-replace aylnmpri = . if y0501==. & y0502==. &  y0503==. & y0504==. & y0505==. & y0506==. & y0507==. & y0508==. & y0509==. & y0510==. & y0511==. & y0512==. 
-
-*independientes
-gen iylnmpri = y0801
-
-egen ylnmpri_ci= rsum(aylnmpri iylnmpri)
-replace ylnmpri_ci=. if aylnmpri==. & iylnmpri==.
-label var ylnmpri_ci "Ingreso laboral NO monetario actividad principal" 
 
 ****************
 * ylmsec_ci    * 
@@ -720,8 +800,12 @@ indem==. & dona==. & devolu==. & otros==. & familiar==.
 **************** 
 gen ynlnm_ci=.
 label var ynlnm_ci "Ingreso no laboral no monetario" 
-egen ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci)
 
+****************
+* ytot_ci      * 
+**************** 
+egen ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci)
+label var ytot_ci "Ingreso total a nivel de individuo"
 
 
 ****************
@@ -764,7 +848,14 @@ gen ynlnm_ch=.
 label var ynlnm_ch "Ingreso no laboral no monetario del hogar"
 
 *****************
-* ymlhopri_ci   *
+**** ytot_ch ****
+*****************
+*LA VARIABLE NO ESTABA GENERADA. JANET PORRAS. 26/11/25
+egen double ytot_ch= rowtotal(ylm_ch ylnm_ch ynlm_ch ynlnm_ch), mi
+label var   ytot_ch "Ingreso mensual total del hogar"
+
+*****************
+* ylmhopri_ci   *
 *****************
 gen ylmhopri_ci=ylmpri_ci/(horaspri_ci*4.3)
 label var ylmhopri_ci "Salario monetario de la actividad principal" 
@@ -810,9 +901,12 @@ label var remesas_ch "Remesas mensuales del hogar"
 ****************
 * durades_ci   * 
 **************** 
-*gen durades_ci=o8/4.3 // Variable no encontrada en formulario 2020
-*replace durades_ci=. if o8==999 /*| activ!=2*/
-*label var durades_ci "Duración del desempleo en meses"
+*LA VARIABLE SI ESTA EN LA ENCUESTA DEL 2022. 
+*AJUSTADO SEGUN METODOLOGIA. JANET PORRAS. 26/11/25
+*o8. ¿Cuántas semanas buscó o ha estado buscando trabajo
+gen       durades_ci=o8*52/12
+replace   durades_ci=. if o8==-88
+label var durades_ci "Duración del desempleo en meses"
 
 ****************
 * antiguedad_ci* 
@@ -1316,13 +1410,13 @@ label var vivialqimp_ch "Alquiler mensual imputado"
 *********
 *lp_ci***
 *********
-gen lp_ci =  . 
+gen lp_ci =lp 
 label var lp_ci "Linea de pobreza oficial del pais"
 
 *********
 *lpe_ci***
 *********
-gen lpe_ci =  . 
+gen lpe_ci =li
 label var lpe_ci "Linea de indigencia oficial del pais"
 
 ****************
@@ -1336,48 +1430,95 @@ label var cotizando_ci "Cotizante a la Seguridad Social"
 ****************
 *afiliado_ci****
 ****************
-gen afiliado_ci=.	
-replace afiliado_ci=1 if o31==1
-recode afiliado_ci .=0 
+*AJUSTADO SEGUN METODOLOGIA. JANET PORRAS. 26/11/25
+gen       afiliado_ci=.	
+replace   afiliado_ci=1 if o31==1
+replace   afiliado_ci=0 if o31==2 | o31==-88
 label var afiliado_ci "Afiliado a la Seguridad Social"
 
 ****************
 *tipopen_ci*****
 ****************
-gen vejez=1 if (y28_1b==1) | (y28_1c==1)
+*https://observatorio.ministeriodesarrollosocial.gob.cl/encuesta-casen-2022
+*LIBRO DE CODIGOS BASE DE DATOS CASEN 2022 (VERSION 18 MARZO 2024)
+*SEGUN EL DOC METODOLOGICO LA VAR INDICA TIPO DE PENSION CONTRIBUTIVA O NO CONTRI SEGUN PAIS
+*EN LA VERSION ANTERIOR SE TRATA DE CONSTRUIR UNA VARIABLE QUE IDENTIFICA LOS TIPOS 
+*DE PENSIONES SEGUN ESTRUCTURA DEL PAIS PERO NO INCORPORA LOS BONOS.
+*SE OPTO POR DEJARLO EN MISSING. JANET PORRAS. 24/11/25
+
+/* VERSION ANTERIOR. y28_1. Recibe ingresos por:
+y28_1b. Jubilación o Pensión de Vejez con Aporte Previsional Solidario(edad>=65)
+y28_1c. Jubilación, Pensión de Vejez o Pensión Garantizada Universal ((edad>=37 & edad<=64) | (edad >=65 & y28_1b=2,-88))
+y28_1d. Pensión Básica Solidaria de Invalidez (edad >=18 & edad <=64 & y28_1c=2, -88)
+y28_1e. Jubilación o Pensión de Invalidez con Aporte Previsional Solidario (edad>=18 & edad<=64 & y28_1d=2,-88)
+y28_1f. Jubilación o Pensión de Invalidez ((edad>=15&edad<=17)|(edad>=18 & y28_1d=2,-88&y28_1e=2,-88)|(edad>=37&y28_1c=2,-88))
+y28_1g. Montepío o Pensión de Viudez (edad >= 16)
+y28_1h. Pensión de Orfandad (no tiene)
+y28_1i. Pensión por Leyes Especiales (Exonerados Políticos, Ley Valech, Ley Rettig, Pensión de Gracia) (no tiene)
+y28_1j. Otro (no tiene)
+gen vejez=1     if (y28_1b==1) | (y28_1c==1)
 gen invalidez=1 if (y28_1d==1) | (y28_1e==1) | (y28_1f==1)
-gen montepio=1 if y28_1g==1 
-gen orfandad=1 if y28_1h==1
-gen otros=1 if (y28_1i==1) | (y28_1j==1)
-gen tipopen_ci=.
+gen montepio=1  if y28_1g==1 
+gen orfandad=1  if y28_1h==1
+gen otros=1     if (y28_1i==1) | (y28_1j==1) 
+
+gen     tipopen_ci=.
 replace tipopen_ci = 1 if (vejez > 0 & vejez!= .)
 replace tipopen_ci = 2 if (invalidez> 0 & invalidez!= .)
 replace tipopen_ci = 3 if (montepio> 0 & montepio!= .)
 replace tipopen_ci = 4 if (orfandad> 0 & orfandad != .)
+replace tipopen_ci = 5 if (otros> 0 & otros != .)
 replace tipopen_ci = 12 if (vejez > 0 & vejez!= .) | (invalidez> 0 & invalidez!= .)
 replace tipopen_ci = 13 if (vejez > 0 & vejez!= .) | (montepio> 0 & montepio!= .)
 replace tipopen_ci = 14 if (vejez > 0 & vejez!= .) | (orfandad> 0 & orfandad != .)
-replace tipopen_ci = 23 if (invalidez> 0 & invalidez!= .)| (montepio> 0 & montepio!= .)
-replace tipopen_ci = 24 if (invalidez> 0 & invalidez!= .) | (orfandad> 0 & orfandad != .)
-replace tipopen_ci = 123 if (vejez > 0 & vejez!= .) | (invalidez> 0 & invalidez!= .) | (montepio> 0 & montepio!= .)
-replace tipopen_ci = 1234 if (vejez > 0 & vejez!= .) | (invalidez> 0 & invalidez!= .) | (montepio> 0 & montepio!= .) | (orfandad> 0 & orfandad != .)
-label define  t 1 "Jubilacion" 2 "Pension invalidez" 3 "Pension viudez" 4 "Orfandad" 12 " Jub y inv" 13 "Jub y viud" 14 "Jub y orfandad" 23 "Viud e inv" 24 "orfandad y inv"  123 "Jub inv viud" 1234 "Todas"
-label value tipopen_ci t
-label var tipopen_ci "Tipo de pension - variable original de cada pais"
-
+replace tipopen_ci = 15 if (vejez > 0 & vejez!= .) & (otros> 0 & otros != .)
+replace tipopen_ci = 23 if (invalidez> 0 & invalidez!= .) & (montepio> 0 & montepio!= .)
+replace tipopen_ci = 24 if (invalidez> 0 & invalidez!= .) & (orfandad> 0 & orfandad != .)
+replace tipopen_ci = 25 if (invalidez> 0 & invalidez!= .) & (otros> 0 & otros != .)
+replace tipopen_ci = 34 if (montepio> 0 & montepio!= .) & (orfandad> 0 & orfandad != .)
+replace tipopen_ci = 35 if (montepio> 0 & montepio!= .) & (otros> 0 & otros != .)
+replace tipopen_ci = 45 if (orfandad> 0 & orfandad != .) & (otros> 0 & otros != .)
+replace tipopen_ci = 123 if (vejez > 0 & vejez!= .) & (invalidez> 0 & invalidez!= .) & (montepio> 0 & montepio!= .)
+replace tipopen_ci = 124 if (vejez > 0 & vejez!= .) & (invalidez> 0 & invalidez!= .) & (orfandad> 0 & orfandad != .)
+replace tipopen_ci = 134 if (vejez > 0 & vejez!= .) & (montepio> 0 & montepio!= .) & (orfandad> 0 & orfandad != .)
+replace tipopen_ci = 234 if (invalidez> 0 & invalidez!= .) & (montepio> 0 & montepio!= .) & (orfandad> 0 & orfandad != .)
+replace tipopen_ci = 1234 if (vejez > 0 & vejez!= .) & (invalidez> 0 & invalidez!= .) & (montepio> 0 & montepio!= .) & (orfandad> 0 & orfandad != .)
+replace tipopen_ci = 12345 if (vejez > 0 & vejez!= .) & (invalidez> 0 & invalidez!= .) & (montepio> 0 & montepio!= .) & (orfandad> 0 & orfandad != .) & (otros> 0 & otros != .)
+label define t 1    "Jubilacion"  2 "Invalidez"  3 "Viudez" 4 "Orfandad" 5"Otro"
+label define t 12   "Jub_invali" 13 "Jub_viud"  14 "Jub_orfan" 15"Jub_otro", add
+label define t 23   "Inv_viudez" 24 "Inv_orfan" 25 "Inv_otro", add 
+label define t 34   "Viud_orfan" 35 "Viud_otro" 45 "Orfan_otro", add 
+label define t 123  "Ju_inv_viud" 124"Ju_inv_orfa" 134 "Ju_viud_orfa" 234 "In_viud_orfa", add 
+label define t 1234 "Ju_in_vi_or" 12345 "Todas", add
+label value tipopen_ci t */
+gen tipopen_ci=.
+label var tipopen_ci "Tipo de pension - variable original de cada pais" 
 
 ****************
 *instpen_ci*****
 ****************
-gen instpen_ci=.
+*LA METODOLOGIA INDICA QUE SE TRATA DE LA INST. QUE DA LA PRESTACION PREVISIONAL. 
+*PERO EL INDIVIDUO PUEDE TENER MAS DE UN TIPO DE PENSION Y POR LO TANTO MAS DE UNA INST. 
+*SE OPTO POR DEJARLO EN MISSING. JANET PORRAS. 24/11/25
+
+/* VERSION ANTERIOR
+EN BASE 2022 SE ELIMINÍ LA VARIABLE y28_3a, Juan C Perdomo 20/09/23
+gen     instpen_ci=.
 replace instpen_ci = y28_3c if vejez == 1
 replace instpen_ci = y28_3f if invalidez == 1
 replace instpen_ci = y28_3g if montepio == 1
 replace instpen_ci = y28_3h if orfandad == 1
 replace instpen_ci = y28_3j if otros == 1
+label define inst 1 "AFP, Administradora de Fondos de Pensiones"
+label define inst 2 "IPS Ex-INP",add
+label define inst 3 "CAPREDENA o DIPRECA", add
+label define inst 4 "Mutual / Instituto de Seguridad Laboral (ISL)", add
+label define inst 5 "Compañía de Seguros" 6 "Otros",add
+label value instpen_ci inst
+label var   instpen_ci "Institución proveedora de la pension - variable original de cada pais" 
+drop vejez invalidez montepio orfandad otros */
+gen instpen_ci=.
 label var instpen_ci "Institucion proveedora de la pension - variable original de cada pais" 
-
-* EN BASE 2022 SE ELIMINÍ LA VARIABLE y28_3a, Juan C Perdomo 20/09/23
 
 ****************
 *instcot_ci*****
@@ -1396,20 +1537,27 @@ label var instcot_ci "Institucion a la que cotiza - variable original de cada pa
 *****************
 *tipocontrato_ci*
 *****************
-gen tipocontrato_ci=. // No está la pregunta en la encuesta 2020
-*replace tipocontrato_ci=1 if ((o17==1 | o17==2) & o16==1) & categopri_ci==3
-*replace tipocontrato_ci=2 if ((o17==1 | o17==2) & o16==2) & categopri_ci==3
-*replace tipocontrato_ci=3 if (((o17>=3 & o17<=4) | tipocontrato_ci==.) & categopri_ci==3)
-label var tipocontrato_ci "Tipo de contrato segun su duracion"
-*label define tipocontrato_ci 1 "Permanente/indefinido" 2 "Temporal" 3 "Sin contrato/verbal" 
-*label value tipocontrato_ci tipocontrato_ci
+*o18.En su trabajo principal, ¿qué tipo de contrato o acuerdo de trabajo tiene?
+*o19.En su trabajo principal, ¿tiene contrato de trabajo escrito?
+*SE AHNADIO LA CAT. "CON CONTRATO" SEGUN METODOLOGIA. JANET PORRAS. 26/11/12 
+gen     tipocontrato_ci=. 
+replace tipocontrato_ci=0 if ((o19==1 | o19==2) & (o18==-88| o18==-99)) & categopri_ci==3
+replace tipocontrato_ci=1 if ((o19==1 | o19==2) & o18==1)               & categopri_ci==3
+replace tipocontrato_ci=2 if ((o19==1 | o19==2) & (o18==2| o18==3))     & categopri_ci==3
+replace tipocontrato_ci=3 if ((o19==3 & o19==-88) | tipocontrato_ci==.) & categopri_ci==3
+label var    tipocontrato_ci "Tipo de contrato segun su duracion"
+label define tipocontrato_ci 0 "Con contrato" 1 "Permanente/indefinido" 2 "Temporal" 3 "Sin contrato/verbal" 
+label value  tipocontrato_ci tipocontrato_ci
 
 *************
-*cesante_ci* 
+*cesante_ci * 
 *************
-gen cesante_ci=1 if o4==1 & (o6==1 | o7<=2)
-replace cesante_ci=0 if o4==2 & (o6==1 | o7<=2)
-label var cesante_ci "Desocupado - definicion oficial del pais"	
+*o4. ¿Ha trabajado alguna vez?
+*SE MODIFICO SEGUN LA METODOLOGIA. JANET PORRAS. 26/11/25
+gen byte  cesante_ci=.
+replace   cesante_ci=1 if o4==1 & condocup_ci==2
+replace   cesante_ci=0 if cesante_ci!=1 & condocup_ci==2
+label var cesante_ci "Desempleada pero trabajo anteriormente"	
 
 **************
 ***tamemp_ci**
@@ -1433,39 +1581,43 @@ label value tamemp_o tamemp_o
 gen tamemp_ci=. // No está la pregunta en la encuesta 2020
 label var tamemp_ci "# empleados en la empresa segun rangos-OECD"
 
-
 *************
 **pension_ci*
 *************
-egen auxpen=rsum(vejez invalidez montepio orfandad otros), missing
-gen pension_ci=1 if auxpen>0 & auxpen!=.
-recode pension_ci .=0 
-label var pension_ci "1=Recibe pension contributiva"
-
+*EXISTEN VARIAS CODIFICACIONES, NO SE PUEDE PRECISAR CUALES SON CONTRIBUTIVAS. JANET PORRAS. 25/11/25
+gen pension_ci=.
+label var pension_ci "Recibe pension contributiva"
 
 *************
 **ypen_ci*
 *************
-egen ypen_ci=rsum(y28_2b1 y28_2c1 y28_2e1 y28_2g1 y28_2i1), m
-replace ypen_ci=. if ypen_ci<0
+*EXISTEN VARIAS CODIFICACIONES, NO SE PUEDE PRECISAR CUALES SON CONTRIBUTIVAS. JANET PORRAS. 25/11/25
+gen       ypen_ci=.
 label var ypen_ci "Valor de la pension contributiva"
 
 ***************
 *pensionsub_ci*
 ***************
-gen pensionsub_ci=1 if (y28_1c1==1) | (y28_1g1==1) | (y28_1i1==1)
-label var pensionsub_ci "1=recibe pension subsidiada / no contributiva"
-
-* EN BASE 2022 SE ELIMINARON LAS VARIABLES y28_2amonto Y y28_2dmonto
+*SI EL ADULTO MAYOR RECIBE UNA PENSION O JUBILACION NO CONTRIBUTIVA Y 0 EL RESTO
+*NO SE ENCONTRO EL MONTO DE PENSION BASICA SOLIDARIA POR VEJEZ O INVALIDEZ
+*y28_2b1: monto jubilacion o pension de vejez sin aps 
+*y28_2b2: monto aporte previsional solidario de vejez
+*y28_2e1: monto, jubilacion o pension de invalidez sin APS Monto1 ($)
+*y28_2e2: monto aporte previsional solidario de invalidez Monto2 ($)
+*SE AGREGO LOS APORTES PREVISIONALES POR VEJEZ E INVALIDEZ. JANET PORRAS. 26/11/12 
+egen auxpens=rsum(y28_2b1 y28_2b2 y28_2e1 y28_2e2), missing
+gen       pensionsub_ci=1 if auxpens>0 & auxpens!=.
+replace   pensionsub_ci=0 if cotizando_ci==1
+recode    pensionsub_ci .=0 
+label var pensionsub_ci "Recibe pension subsidiada /no contributiva"
 
 *****************
 **ypensub_ci*
 *****************
-
-egen ypensub_ci=rsum(y280101 y280302 ymon0102 yesp0102), m
-replace ypensub_ci=. if ypensub_ci<0
-drop auxpen
+gen       ypensub_ci=auxpens
+replace   ypensub_ci=. if auxpens<0
 label var ypensub_ci "Valor de la pension subsidiada / no contributiva"
+drop auxpens
 
 **********
 **tc_ci***
@@ -1481,26 +1633,26 @@ label var tc_ci "Tipo de cambio LCU/USD"
 gen salmm_ci= 320500
 label var salmm_ci "Salario minimo legal"
 
-
-**************
+****************
 **categoinac_ci*
-**************
-gen categoinac_ci=1 if o7==12
-replace categoinac_ci=2 if o7==11
-replace categoinac_ci=3 if o7==10
-replace categoinac_ci=4 if (o7>=1 & o7<=9 ) | (o7>= 13 & o7<=17)
-label var categoinac_ci "Condición de inactividad"
-label define categoinac_ci 1 "jubilado/pensionado" 2 "estudiante" 3 "quehaceres_domesticos" 4 "otros_inactivos" 
+****************
+*SE AJUSTO SEGUN LA METODOLOGIA. JANET PORRAS. 26/11/25
+gen     categoinac_ci=1 if (o7==12 & condocup_ci== 3)
+replace categoinac_ci=2 if (o7==11 & condocup_ci== 3)
+replace categoinac_ci=3 if (o7==10 & condocup_ci== 3)
+replace categoinac_ci=4 if ((categoinac_ci != 1 | categoinac_ci != 2 | categoinac_ci != 3) & condocup_ci == 3)
+label var   categoinac_ci "Condición de inactividad"
+label defi  categoinac_ci 1 "Jubilado/pensionado" 2 "Estudiante" 3 "Quehaceres_domesticos" 4 "Otros_inactivos" 
 label value categoinac_ci categoinac_ci
 	
 ***************
 ***formal_ci***
 ***************
-gen byte formal_ci=1 if cotizando_ci==1 & (condocup_ci==1 | condocup_ci==2)
-recode formal_ci .=0 if (condocup_ci==1 | condocup_ci==2)
-label var formal_ci "1=afiliado o cotizante / PEA"
-
-g formal_1=cotizando_ci
+*SE AJUSTO SEGUN LA METODOLOGIA. JANET PORRAS. 26/11/25
+gen byte  formal_ci = .
+replace   formal_ci = 1 if (cotizando_ci == 1 | afiliado_ci == 1) & condocup_ci == 1
+replace   formal_ci = 0 if cotizando_ci == 0 & (condocup_ci == 1 | condocup_ci == 2)
+label var formal_ci "Trabajador formal"
 
 *******************
 ***  benefdes_ci  ***
@@ -1595,9 +1747,11 @@ lab val atencion_ci atencion_ci
 	*******************
 	*** migrante_ci ***
 	*******************
-	
-	gen migrante_ci=(r1b==3) if r1b!=9 & !mi(r1b)
-	label var migrante_ci "=1 si es migrante"
+*SE AJUSTO SEGUN LA METODOLOGIA. JANET PORRAS 26/11/25
+*r1b_pais_esp: Pais donde vivia su madre
+gen       migrante_ci=(r1b==3) if r1b!=9 & !mi(r1b)
+replace   migrante_ci=. if r1b==3 & r1b_pais_esp==""
+label var migrante_ci "Migrante"
 	
 	**********************
 	*** migantiguo5_ci ***
@@ -1624,26 +1778,51 @@ lab val atencion_ci atencion_ci
 	label var migrantiguo5_ci "=1 si es migrante antiguo (5 anos o mas)"
 		
 	**********************
-	*** miglac_ci ***
+	*** miglac_ci      ***
 	**********************
-	
 	gen miglac_ci= 1 if inlist(r1b_pais_esp_cod,406,408,409,412,413,414,416,417,418,420,501,502,503,505,506,508,509,512,513) & migrante_ci == 1
 	replace miglac_ci = 0 if miglac_ci != 1 & migrante_ci == 1
 	label var miglac_ci "=1 si es migrante proveniente de un pais LAC"
 
+	*****************
+    ***desalent_ci***
+    *****************	
+*o7 ¿Cuál es la razón principal por la que no buscó trabajo o no realizó alguna gestión
+*para iniciar una actividad por cuenta propia en las últimas 4 semanas?
+*7. Piensa que nadie le dará trabajo..15. Se cansó de buscar..18. No tiene interés en trabajar
+gen     desalent_ci=. 
+replace desalent_ci=0 if condocup_ci==3
+replace desalent_ci=1 if condocup_ci==3 & (o7==7| o7==15|o7==18)
+	
+   ****************
+   *tipo_bienestar*
+   ****************	
+   gen byte tipo_bienestar = . 
+   replace  tipo_bienestar = 1 
+   *replace  tipo_bienestar = 2
+   lab def tipo_bienestar 1 "Ingreso" 2 "Consumo"
+   lab val tipo_bienestar tipo_bienestar
+
+	****************
+	* pobre_ine _ci*
+	****************	
+	gen byte pobre_ine_ci= . 
+	replace  pobre_ine_ci= 0 if pobreza==3
+	replace  pobre_ine_ci= 1 if pobreza<3
+    lab def  pobre_ine_ci 0 "No pobre" 1 "Pobre"
+    lab val  pobre_ine_ci pobre_ine_ci
+
+    **********************
+    * bienestar_agregado *
+    **********************	
+    *yae: ingreso por adulto equivalente
+    gen     bienestar_agregado = . 
+    replace bienestar_agregado =yae
+	
 ***************************************************************
 *** VARIABLES NO INCLUIDAS EN LA ENCUESTA TOMADAS COMO M.V. ***
 ***************************************************************
-	gen dis_ci  = . 
-	replace dis_ci = 1 if inrange(h7a,2,4) | inrange(h7b,2,4) | inrange(h7c,2,4) | inrange(h7d,2,4) | inrange(h7e,2,4) | inrange(h7f,2,4)
-	replace dis_ci = 0 if h7a==1 & h7b==1 & h7c==1 & h7d==1 & h7e==1 & h7f==1
-
-	egen dis_ch = sum(dis_ci), by(idh_ch) 
-	replace dis_ch = 1 if (dis_ch > 0)
-
 gen antiguedad_ci=. // No está la pregunta en la encuesta 2020
-gen durades_ci=. // No está la pregunta en la encuesta 2020
-gen desalent_ci=. // No está la pregunta en la encuesta 2020
 
 
 	**************************
