@@ -253,8 +253,8 @@ use "`base_in'", clear
 	*afro_ci*
 	*********
 	 gen byte afro_ci = .
-     replace afro_ci = 1 if p02a08==4
-	 replace afro_ci = 0 if p02a08!=4 & p02a08!=.
+     replace afro_ci = 1 if p02a08==4 | p02a08 == 2
+	 replace afro_ci = 0 if p02a08!=4 & p02a08 != 2 & p02a08!=.
 	
 	*********
 	*ind_ci*
