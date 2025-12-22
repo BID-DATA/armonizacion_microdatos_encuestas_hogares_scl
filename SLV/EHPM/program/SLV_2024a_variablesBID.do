@@ -33,9 +33,9 @@ cap log off
 Pais: El Salvador
 Encuesta: EHPM
 Round: a
-Autores: Matias Rodriguez (SCL/SCL) - Email: mrodriguezm@iadb.org, 19 de diciembre de 2025
+Autores: Matias Rodriguez (SCL/SCL) - Email: mrodriguezm@iadb.org, 22 de diciembre de 2025
 Versión: 1 
-Matias Rodriguez (SCL/SCL) - Email: mrodriguezm@iadb.org, 19 de diciembre de 2025
+Matias Rodriguez (SCL/SCL) - Email: mrodriguezm@iadb.org, 22 de diciembre de 2025
 
 
 ****************************************************************************/
@@ -1162,10 +1162,6 @@ use "`base_in'", clear
 	replace ln_ci= li*2
 
 
-local log_file = "$ruta\harmonized\\`PAIS'\\`ENCUESTA'\log\\`PAIS'_`ANO'`ronda'_variablesBID.log"
-local base_in  = "$ruta\survey\\`PAIS'\\`ENCUESTA'\\`ANO'\\`ronda'\data_merge\\`PAIS'_`ANO'`ronda'.dta"
-local base_out = "$ruta\harmonized\\`PAIS'\\`ENCUESTA'\data_arm\\`PAIS'_`ANO'`ronda'_BID.dta"
-   
-saveold "`base_out'", version(12) replace
-
+compress
+save "`base_out'", replace
 cap log close
