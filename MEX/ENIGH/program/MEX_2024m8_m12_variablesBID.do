@@ -967,10 +967,12 @@ use "`base_in'", clear
 	****************
 	***aguared_ch***
 	****************
-	destring agua_ent , replace
-	gen aguared_ch=.
-	replace aguared_ch=1 if agua_ent ==1 | agua_ent ==2
-	replace aguared_ch=0 if agua_ent >=3 & agua_ent <=7
+	destring agua_ent, replace ignore(" ,") force
+	destring ab_agua,  replace ignore(" ,") force
+
+	gen byte aguared_ch = .
+	replace aguared_ch = 1 if ab_agua == 1
+	replace aguared_ch = 0 if ab_agua > 1
 
 	*****************
 	*aguafconsumo_ch*
@@ -981,16 +983,16 @@ use "`base_in'", clear
 	*aguafuente_ch*
 	*****************
 	destring ab_agua, replace
+	destring agua_noe, replace
 
 	gen byte aguafuente_ch = .
 
-	replace aguafuente_ch = 1  if ab_agua == 1
-	replace aguafuente_ch = 10 if ab_agua == 2     // pozo comunitario
-	replace aguafuente_ch = 10 if ab_agua == 3     // pozo particular
-	replace aguafuente_ch = 6  if ab_agua == 4     // pipa/camión
-	replace aguafuente_ch = 7  if ab_agua == 5     // agua de otra vivienda (sin especificar)
-	replace aguafuente_ch = 5  if ab_agua == 6     // lluvia
-	replace aguafuente_ch = 10 if ab_agua == 7     // otro (sin clasificar)
+	replace aguafuente_ch = 1  if ab_agua == 1 
+	replace aguafuente_ch = 2 if agua_noe == 2 
+	replace aguafuente_ch = 5  if ab_agua == 6 | agua_noe == 6     // lluvia
+	replace aguafuente_ch = 6  if ab_agua == 4 | agua_noe ==5    // pipa/camión
+	replace aguafuente_ch = 8 if agua_noe == 4
+	replace aguafuente_ch = 10 if inlist(ab_agua,2,3,5,7) | inlist(agua_noe, 1,3)    // otro (sin clasificar)
 
 
 	*************
@@ -1002,11 +1004,8 @@ use "`base_in'", clear
 
 	replace aguadist_ch = 1 if agua_ent == 1
 	replace aguadist_ch = 2 if agua_ent == 2
-
-	replace aguadist_ch = 3 if agua_ent == 3 & agua_noe == 2   // llave comunitaria
-	replace aguadist_ch = 3 if agua_ent == 3 & agua_noe == 4   // río
-	replace aguadist_ch = 1 if agua_ent == 3 & agua_noe == 5   // pipa → se recibe en vivienda
-	replace aguadist_ch = 1 if agua_ent == 3 & agua_noe == 6   // lluvia
+	replace aguadist_ch = 3 if agua_ent == 3 & (inlist(agua_noe,2,4))   // llave comunitaria o río
+	replace aguadist_ch = 1 if agua_ent == 3 & (inlist(agua_noe, 5, 6))   // pipa → se recibe en vivienda o lluvia
 
 	replace aguadist_ch = 0 if missing(aguadist_ch) & aguafuente_ch < .
 
@@ -1015,15 +1014,12 @@ use "`base_in'", clear
 	**************
 	destring dotac_agua, replace
 
-	gen byte aguadisp1_ch = .
-	replace aguadisp1_ch = 1 if dotac_agua == 1
-	replace aguadisp1_ch = 0 if inlist(dotac_agua,2,3,4,5)
+	gen byte aguadisp1_ch = 9
 
 	**************
 	*aguadisp2_ch*
 	**************
 	gen byte aguadisp2_ch = .
-
 	replace aguadisp2_ch = 3 if dotac_agua == 1
 	replace aguadisp2_ch = 1 if inlist(dotac_agua,2,3,4,5)
 
@@ -1062,9 +1058,7 @@ use "`base_in'", clear
 	replace bano_ch = 1 if drenaje == 1
 	replace bano_ch = 2 if drenaje == 2
 	replace bano_ch = 4 if inlist(drenaje, 3, 4)
-	replace bano_ch = 5 if drenaje == 5 & excusado != 3
-	replace bano_ch = 3 if excusado == 2 & missing(bano_ch)
-	replace bano_ch = 6 if missing(bano_ch) & excusado < .
+	replace bano_ch = 6 if drenaje == 5 & excusado != 3 | missing(bano_ch) & excusado < .
 	replace bano_ch = . if excusado == .
 
 	***************
@@ -1088,7 +1082,6 @@ use "`base_in'", clear
 	*banomejorado_ch*  Altered
 	*****************
 	gen byte banomejorado_ch = 2
-
 	replace banomejorado_ch = 1 if bano_ch <= 3 & bano_ch != 0
 	replace banomejorado_ch = 0 if (bano_ch == 0 | bano_ch >= 4) & bano_ch != 6
 		
@@ -1170,7 +1163,7 @@ do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&Exter
 	  horaspri_ci horastot_ci tiempoparc_ci categopri_ci categosec_ci rama_ci spublico_ci tamemp_ci cotizando_ci instcot_ci	afiliado_ci /// Empleo
 	  formal_ci tipocontrato_ci ocupa_ci pension_ci	pensionsub_ci tipopen_ci instpen_ci	ylmpri_ci /// Empleo
 	  ylmpri_ci ylnmpri_ci ylmsec_ci ylnmsec_ci ylmotros_ci	ylnmotros_ci ylm_ci ylnm_ci ynlm_ci ynlnm_ci ytot_ci   /// Ingresos individuo
-	  ylm_ch ylnm_ch ylmnr_ch ynlm_ch ynlnm_ch ynlm_publico_ch ynlm_privado_ch  ytot_ch /// Ingresos del hogar
+	  ylm_ch ylnm_ch ynlm_ch ynlnm_ch   ytot_ch /// Ingresos del hogar
 	  ylmhopri_ci ylmho_ci /// ingreso por hora
 	  nrylmpri_ci nrylmpri_ch /// No respuesta de ingresos 
 	  remesas_ci remesas_ch ypen_ci ypensub_ci /// Remesas y pensiones
@@ -1180,11 +1173,11 @@ do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&Exter
 	  aguared_ch aguafconsumo_ch aguafuente_ch aguadist_ch aguadisp1_ch aguadisp2_ch /// Agua y saneamineto
 	  aguatrat_ch aguamala_ch aguamejorada_ch aguamide_ch bano_ch banoex_ch banomejorado_ch sinbano_ch  /// Agua y saneamineto
 	  migrante_ci migrantiguo5_ci miglac_ci /// Migración  
-	  nmiembros_sph_ch yneto_pc_ch bene_cash_ch pensionsub_ch   /// Protección social 
+	        /// Protección social 
           /// Protección social ingresos
- 	  salmm_ci lp19_2011 lp31_2011 lp5_2011 lp_ci lpe_ci lp365_2017 lp685_2017 lp14_2017 lp81_2017 tc_c ratio_cpi2011 ratio_cpi2017 cpi_c cpi2011 cpi2017 ppp_c ppp_2011 ppp_2017, first /// Fuente externa
+ 	   lp19_2011 lp31_2011 lp5_2011  lpe_ci lp365_2017 lp685_2017 lp14_2017 lp81_2017 tc_c ratio_cpi2011 ratio_cpi2017 cpi_c cpi2011 cpi2017 ppp_c ppp_2011 ppp_2017, first /// Fuente externa
 
 
-saveold "`base_out'", version(12) replace
+saveold "`base_out'", replace
 
 cap log close
