@@ -1625,8 +1625,8 @@ use `base_in', clear
 	*/
 	
 	generate  aguared_ch =.
-	replace   aguared_ch = 1 if inlist(V05,1)  // agua por red pública
-	replace   aguared_ch = 0 if inrange(V05,2,9) // agua por red privada o del vecino
+	replace   aguared_ch = 1 if inlist(V05,1,2)  // agua por red pública
+	replace   aguared_ch = 0 if inrange(V05,3,9) // agua por red privada o del vecino
 	la var    aguared_ch "Acceso a fuente de agua por red"
 
 	***********
@@ -1658,12 +1658,12 @@ use `base_in', clear
 	*/
 	
     gen aguafuente_ch =.
-	replace aguafuente_ch = 1 if inlist(V05,1) & V06<=2
-	replace aguafuente_ch = 2 if inlist(V05,4)  | (inlist(V05,1)  &V06>2) 
-	replace aguafuente_ch = 6 if inlist(V05,6) 
-	replace aguafuente_ch = 7 if inlist(V05,7)
-	replace aguafuente_ch = 8 if inlist(V05,5)
-	replace aguafuente_ch = 10 if inlist(V05,2,3,8,9) 
+	replace aguafuente_ch = 1 if inlist(V05,1,2) & V06<=2
+	replace aguafuente_ch = 2 if inlist(V05,5)  | (inlist(V05,1,2)  &V06>2) 
+	replace aguafuente_ch = 6 if inlist(V05,7) 
+	replace aguafuente_ch = 7 if inlist(V05,8)
+	replace aguafuente_ch = 8 if inlist(V05,6)
+	replace aguafuente_ch = 10 if inlist(V05,3,4,9,99) 
 
 	label define aguafuente_ch 		1 "Red de distribución, llave privada" ///
 									2 "Llave pública, standpipe" ///
