@@ -1176,8 +1176,14 @@ gen aguafconsumo_ch=0
 *****************
 *aguafuente_ch*
 *****************
-gen aguafuente_ch =.
-
+gen aguafuente_ch = .
+replace aguafuente_ch = 1 if s01007==1 & s01010 != 3
+replace aguafuente_ch = 2 if s01007==1 & s01010==3
+replace aguafuente_ch = 4 if s01007==2         
+replace aguafuente_ch = 5 if s01007==5 
+replace aguafuente_ch = 9 if s01007==3 
+replace aguafuente_ch = 10 if (s01007==4 | s01007==6)
+replace aguafuente_ch = 10 if aguafuente_ch ==. & jefe_ci==1
 
 
 **************
@@ -1189,7 +1195,10 @@ gen aguadisp1_ch =9
 **************
 *aguadisp2_ch*
 **************
-gen aguadisp2_ch =9
+gen aguadisp2_ch = 3 if s01008==1
+replace aguadisp2_ch = 2 if s01008==2
+replace aguadisp2_ch = 1 if (s01008==3 | s01008==4)
+
 
 
 
@@ -1197,21 +1206,27 @@ gen aguadisp2_ch =9
 *****************
 *aguamejorada_ch*  Altered
 *****************
-gen aguamejorada_ch = 1 if s01007>=1 & s01007<=4
-replace aguamejorada_ch=0 if s01007>=5
-
+gen aguamejorada_ch= 2
+replace aguamejorada_ch= 0 if aguafuente_ch>7 & aguafuente_ch<10
+replace aguamejorada_ch= 1 if aguafuente_ch<=7
 
 
 *****************
 *banomejorado_ch*  Altered
 *****************
-gen banomejorado_ch=.
+gen banomejorado_ch= 2
+replace banomejorado_ch =1 if bano_ch<=3 & bano_ch!=0
+replace banomejorado_ch =0 if (bano_ch ==0 | bano_ch>=4) & bano_ch!=6
 
 
 ************
 *sinbano_ch*
 ************
-gen sinbano_ch =.
+gen sinbano_ch = .
+replace sinbano_ch = 0 if (s01011a>=1 | s01011b>=1)
+replace sinbano_ch = 1 if (s01011a==0 & s01011b==0 & s01011c==1)
+replace sinbano_ch = 3 if (s01011a==0 & s01011b==0 & s01011c>=2)
+
 
 
 *************
@@ -1239,8 +1254,14 @@ label var combust_ch "Principal combustible gas o electricidad"
 *************
 ***bano_ch***
 *************
-gen bano_ch=(s01011a>=1 | s01011b>=1 | s01011c>=1)
-label var bano_ch "El hogar tiene servicio sanitario"
+gen bano_ch=.
+replace bano_ch = 1 if (s01011a>0 | s01011b>0 | s01011c==1) & (s01012a == 1 | s01012a == 2)
+replace bano_ch = 2 if (s01011a>0 | s01011b>0 | s01011c==1) & (s01012a == 3)
+replace bano_ch = 4 if (s01011a>0 | s01011b>0 | s01011c==1) & (s01012a == 5 | s01012a == 6 )
+replace bano_ch = 6 if  (s01011a>0 | s01011b>0 | s01011c==1) & s01012a==4
+replace bano_ch = 0 if (s01011a==0 & s01011b==0) | s01011c==2  | s01012a ==7
+replace bano_ch=6 if bano_ch ==. & jefe_ci==1 
+label var bano_ch "Tipo de instalación sanitaria del hogar"
 ***************
 ***banoex_ch***
 ***************
