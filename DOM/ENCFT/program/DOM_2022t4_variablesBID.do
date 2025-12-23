@@ -1174,7 +1174,7 @@ replace aguafuente_ch = 5 if donde_proviene_agua==7
 replace aguafuente_ch = 6 if donde_proviene_agua==9
 replace aguafuente_ch = 8 if donde_proviene_agua==6
 replace aguafuente_ch = 9 if donde_proviene_agua==3
-replace aguafuente_ch = 10 if (donde_proviene_agua==8 | donde_proviene_agua==99)
+replace aguafuente_ch = 10 if (donde_proviene_agua==8 | donde_proviene_agua==99 | missing(donde_proviene_agua))
 
 *******
 ** nota
