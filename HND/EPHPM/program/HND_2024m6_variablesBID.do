@@ -1663,7 +1663,7 @@ use `base_in', clear
 	replace aguafuente_ch = 6 if inlist(V05,7) 
 	replace aguafuente_ch = 7 if inlist(V05,8)
 	replace aguafuente_ch = 8 if inlist(V05,6)
-	replace aguafuente_ch = 10 if inlist(V05,3,4,9,99) 
+	replace aguafuente_ch = 10 if inlist(V05, 3, 4, 9, 99) | missing(V05)
 
 	label define aguafuente_ch 		1 "Red de distribución, llave privada" ///
 									2 "Llave pública, standpipe" ///
