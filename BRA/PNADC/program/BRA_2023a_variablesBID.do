@@ -1210,6 +1210,17 @@ gen aguamejorada_ch= 2
 replace aguamejorada_ch= 0 if aguafuente_ch>7 & aguafuente_ch<10
 replace aguamejorada_ch= 1 if aguafuente_ch<=7
 
+*************
+***bano_ch***
+*************
+gen bano_ch=.
+replace bano_ch = 1 if (s01011a>0 | s01011b>0 | s01011c==1) & (s01012a == 1 | s01012a == 2)
+replace bano_ch = 2 if (s01011a>0 | s01011b>0 | s01011c==1) & (s01012a == 3)
+replace bano_ch = 4 if (s01011a>0 | s01011b>0 | s01011c==1) & (s01012a == 5 | s01012a == 6 )
+replace bano_ch = 6 if  (s01011a>0 | s01011b>0 | s01011c==1) & s01012a==4
+replace bano_ch = 0 if (s01011a==0 & s01011b==0) | s01011c==2  | s01012a ==7
+replace bano_ch=6 if bano_ch ==. & jefe_ci==1 
+label var bano_ch "Tipo de instalación sanitaria del hogar"
 
 *****************
 *banomejorado_ch*  Altered
@@ -1251,17 +1262,7 @@ label var luzmide_ch "Usan medidor para pagar consumo de electricidad"
 ****************
 gen combust_ch=.
 label var combust_ch "Principal combustible gas o electricidad" 
-*************
-***bano_ch***
-*************
-gen bano_ch=.
-replace bano_ch = 1 if (s01011a>0 | s01011b>0 | s01011c==1) & (s01012a == 1 | s01012a == 2)
-replace bano_ch = 2 if (s01011a>0 | s01011b>0 | s01011c==1) & (s01012a == 3)
-replace bano_ch = 4 if (s01011a>0 | s01011b>0 | s01011c==1) & (s01012a == 5 | s01012a == 6 )
-replace bano_ch = 6 if  (s01011a>0 | s01011b>0 | s01011c==1) & s01012a==4
-replace bano_ch = 0 if (s01011a==0 & s01011b==0) | s01011c==2  | s01012a ==7
-replace bano_ch=6 if bano_ch ==. & jefe_ci==1 
-label var bano_ch "Tipo de instalación sanitaria del hogar"
+
 ***************
 ***banoex_ch***
 ***************
