@@ -1382,7 +1382,7 @@ Pozo.................................08
 Camión tanque..................09
 Otro.- (Especifique)..........99*/
 gen aguafuente_ch = 1 if (donde_proviene_agua==1 | donde_proviene_agua==2)
-replace aguafuente_ch = 2 if (donde_proviene_agua==5)
+replace aguafuente_ch = 2 if inlist(donde_proviene_agua,4,5)
 replace aguafuente_ch = 5 if donde_proviene_agua==7
 replace aguafuente_ch = 6 if donde_proviene_agua==9
 replace aguafuente_ch = 8 if donde_proviene_agua==6

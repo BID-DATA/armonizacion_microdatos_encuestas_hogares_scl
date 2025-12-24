@@ -1375,12 +1375,12 @@ Pozo.................................08
 Camión tanque..................09
 Otro.- (Especifique)..........99*/
 gen aguafuente_ch = 1 if (donde_proviene_agua==1 | donde_proviene_agua==2)
-replace aguafuente_ch = 2 if (donde_proviene_agua==5)
+replace aguafuente_ch = 2 if inlist(donde_proviene_agua,4,5)
 replace aguafuente_ch = 5 if donde_proviene_agua==7
 replace aguafuente_ch = 6 if donde_proviene_agua==9
 replace aguafuente_ch = 8 if donde_proviene_agua==6
 replace aguafuente_ch = 9 if donde_proviene_agua==3
-replace aguafuente_ch = 10 if (donde_proviene_agua==8 | donde_proviene_agua==99)
+replace aguafuente_ch = 10 if (donde_proviene_agua==8 | donde_proviene_agua==99 | missing(donde_proviene_agua))
 *******
 ** nota
 ** Antes del 2023, se utilizaban las preguntas "donde_proviene_agua" por hogar para armonizar aguafuente_ch y "tiene_agua_red_publica" por vivienda para armonizar aguared_ch. Sin embargo, el proceso de calidad review-harmonization de los indicadores, revela que hay contradicciones. Por ejemplo, hay hogares que no tienen acceso a una fuente de agua por red (aguared_ch!=1), pero declaran que cuentan con red de distribución llave privada (aguafuente_ch ==1) .  La preguntas no se pensaron conjuntamente y eso trae dichas incosistencias. A partir del 2023, se decide armonizar aguared_ch y aguafuente_ch a partir de donde_proviene_agua.
