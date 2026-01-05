@@ -1176,10 +1176,9 @@ replace aguadisp2_ch = 1 if (s01008==3 | s01008==4)
 ************
 *sinbano_ch*
 ************
-gen sinbano_ch = .
-replace sinbano_ch = 0 if (s01011a>=1 | s01011b>=1)
+gen sinbano_ch = 3
+replace sinbano_ch = 0 if bano_ch>0
 replace sinbano_ch = 1 if (s01011a==0 & s01011b==0 & s01011c==1)
-replace sinbano_ch = 3 if (s01011a==0 & s01011b==0 & s01011c>=2)
 
 
 

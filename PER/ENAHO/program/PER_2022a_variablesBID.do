@@ -1696,7 +1696,9 @@ replace aguadisp2_ch = 3 if p110c==1 & p110c1 == 24
 ************
 *sinbano_ch*
 ************
-gen sinbano_ch = .
+	gen sinbano_ch =3
+	replace sinbano_ch = 0 if bano_ch>0
+	label var sinbano_ch "hogares sin acceso a instalaciones propias."
 
 
 *************

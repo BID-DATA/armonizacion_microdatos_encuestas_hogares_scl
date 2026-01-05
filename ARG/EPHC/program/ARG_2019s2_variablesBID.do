@@ -1119,9 +1119,8 @@ gen aguadisp2_ch = 9
 *sinbano_ch*
 ************
 gen sinbano_ch = 3
-replace sinbano_ch =  0 if iv8==1
-replace sinbano_ch = 1 if iv9==3
-replace sinbano_ch = 2 if iv8==2
+replace sinbano_ch =  0 if bano_ch>0
+replace sinbano_ch = 1 if iv8 == 2 & iv9==3
 *label var sinbano_ch "= 0 si tiene baño en la vivienda o dentro del terreno"
 
 *************

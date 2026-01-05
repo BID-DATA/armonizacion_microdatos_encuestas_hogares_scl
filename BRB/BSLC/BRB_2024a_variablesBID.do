@@ -1715,7 +1715,11 @@ replace bano_ch=3 if q12_36==4
 replace bano_ch=5 if q12_36==5 | q12_36==7
 replace bano_ch=6 if q12_36==9 | q12_36==97
 
-
+****************
+***sinbano_ch***
+****************
+gen sinbano_ch = 3
+replace sinbano_ch = 0 if bano_ch>0
 ***************
 ***banoex_ch***
 ***************

@@ -1290,7 +1290,9 @@ rename *, lower
 	***sinbano_ch***
 	***************
 	* 0 = tiene baño | 1 = usa público/vecino | 2 = defecación al aire libre | 3 = no especifica | . = no está
-	gen sinbano_ch = .
+	gen sinbano_ch = 3
+    replace sinbano_ch = 0 if bano_ch>0
+    replace sinbano_ch = 1 if (s01011a==0 & s01011b==0 & s01011c==1)
 
 	**********************
 	***banomejorado_ch***

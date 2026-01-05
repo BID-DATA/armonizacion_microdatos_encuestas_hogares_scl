@@ -1795,10 +1795,9 @@ use `base_in', clear
 			2	Compartido con otros hogares?	
 	*/
 	
-	gen sinbano_ch = .
-	replace sinbano_ch = 0 if H06==1 & H08==1 //Tiene instalaciones propias
-	replace sinbano_ch = 1 if H06==2 & H08==2 //Tiene instalaciones compartidas
-	replace sinbano_ch = 3 if H06==2 & (H07==. | H08==.) // El hogar no tiene baño pero no especifica cuáles alternativas se usa
+	gen sinbano_ch =3
+	replace sinbano_ch = 0 if bano_ch>0
+	label var sinbano_ch "hogares sin acceso a instalaciones propias."
 	
 		label define sinbano_ch 	0 "El hogar tiene baño propio" ///
 									1 "El hogar no tiene baño y usa instalaciones públicas/compartidas" ///
