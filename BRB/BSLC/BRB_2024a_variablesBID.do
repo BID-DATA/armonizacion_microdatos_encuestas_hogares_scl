@@ -1631,7 +1631,7 @@ gen aguafuente_ch=.
 replace aguafuente_ch=1 if q12_34==1 | q12_34==2
 replace aguafuente_ch=2 if q12_34==3
 replace aguafuente_ch=4 if q12_34==4
-replace aguafuente_ch=10 if q12_34==5
+replace aguafuente_ch=10 if q12_34==5 | q12_34==97 | missing(q12_34)
 label var aguafuente_ch "Principal fuente de agua para todos usos"
 
 
