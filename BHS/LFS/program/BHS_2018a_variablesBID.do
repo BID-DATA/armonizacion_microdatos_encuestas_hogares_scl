@@ -1024,8 +1024,7 @@ use `base_in', clear
 	replace aguafuente_ch = 1  if water_supply==1                 // piped
 	replace aguafuente_ch = 7  if water_supply==2                 // private not piped -> otra mejorada (proxy)
 	replace aguafuente_ch = 2  if water_supply==3                 // public well/tank/pump -> standpipe (proxy)
-	replace aguafuente_ch = 10 if water_supply==4                 // other -> sin clasificar
-	replace aguafuente_ch = .  if water_supply==5 | missing(water_supply)
+	replace aguafuente_ch = 10 if inlist(water_supply,4,5,9) | missing(water_supply) 
 
 	******************
 	***aguadist_ch***
