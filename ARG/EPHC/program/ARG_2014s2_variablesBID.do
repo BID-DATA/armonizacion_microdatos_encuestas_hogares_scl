@@ -1175,6 +1175,17 @@ gen aguadisp1_ch = 9
 gen aguadisp2_ch = 9
 *label var aguadisp2_ch "= 9 la encuesta no pregunta si el servicio de agua es constante"
 
+*****************
+*bano_ch         *  Altered
+*****************
+gen bano_ch=0
+replace bano_ch=6 if iv8==1
+replace bano_ch=1 if iv10<3 & iv10>=1  & iv11==1
+replace bano_ch=2 if iv10<3 & iv10>=1   & iv11==2
+replace bano_ch=3 if iv10<3 & iv10>=1   & iv11==3
+replace bano_ch=6 if iv10==3
+replace bano_ch=4 if iv11==4
+
 ************
 *sinbano_ch*
 ************
@@ -1204,20 +1215,6 @@ replace aguamala_ch = 1 if aguafuente_ch>7 & aguafuente_ch!=10
 gen aguamejorada_ch = 2
 replace aguamejorada_ch = 0 if aguafuente_ch>7 & aguafuente_ch!=10
 replace aguamejorada_ch = 1 if aguafuente_ch<=7
-
-
-*****************
-*bano_ch         *  Altered
-*****************
-gen bano_ch=0
-replace bano_ch=6 if iv8==1
-replace bano_ch=1 if iv10<3 & iv10>=1  & iv11==1
-replace bano_ch=2 if iv10<3 & iv10>=1   & iv11==2
-replace bano_ch=3 if iv10<3 & iv10>=1   & iv11==3
-replace bano_ch=6 if iv10==3
-replace bano_ch=4 if iv11==4
-
-
 
 *****************
 *banomejorado_ch*  Altered

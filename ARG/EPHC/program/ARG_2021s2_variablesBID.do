@@ -1065,6 +1065,17 @@ gen aguadisp1_ch = 9
 gen aguadisp2_ch = 9
 *label var aguadisp2_ch "= 9 la encuesta no pregunta si el servicio de agua es constante"
 
+*****************
+*bano_ch         *  Altered
+*****************
+gen bano_ch=0
+replace bano_ch=6 if iv8==1
+replace bano_ch=1 if iv10<3 & iv10>=1  & iv11==1
+replace bano_ch=2 if iv10<3 & iv10>=1   & iv11==2
+replace bano_ch=3 if iv10<3 & iv10>=1   & iv11==3
+replace bano_ch=6 if iv10==3
+replace bano_ch=4 if iv11==4 
+
 ************
 *sinbano_ch*
 ************
@@ -1094,20 +1105,6 @@ replace aguamala_ch = 1 if aguafuente_ch>7 & aguafuente_ch!=10
 gen aguamejorada_ch = 2
 replace aguamejorada_ch = 0 if aguafuente_ch>7 & aguafuente_ch!=10
 replace aguamejorada_ch = 1 if aguafuente_ch<=7
-
-
-*****************
-*bano_ch         *  Altered
-*****************
-gen bano_ch=0
-replace bano_ch=6 if iv8==1
-replace bano_ch=1 if iv10<3 & iv10>=1  & iv11==1
-replace bano_ch=2 if iv10<3 & iv10>=1   & iv11==2
-replace bano_ch=3 if iv10<3 & iv10>=1   & iv11==3
-replace bano_ch=6 if iv10==3
-replace bano_ch=4 if iv11==4 
-
-
 
 *****************
 *banomejorado_ch*  Altered
@@ -1427,26 +1424,11 @@ gen pension_ci=1 if (v2_m>0 & v2_m<.)
 recode pension_ci .=0 
 label var pension_ci "1=Recibe pension contributiva"
 
-*********
-*ypen_ci*
-*********
-gen aguinpen=v21_m/12 if v2_m>0 & v2_m!=.
-
-egen ypen_ci=rsum(v2_m aguinpen), missing
-replace ypen_ci=. if ypen_ci<0
-label var ypen_ci "Valor de la pension contributiva"
-
 ***************
 *pensionsub_ci*
 ***************
 gen byte pensionsub_ci=.
 label var pensionsub_ci "1=recibe pension subsidiada / no contributiva"
-
-************
-*ypensub_ci*
-************
-gen byte ypensub_ci=.
-label var ypensub_ci "Valor de la pension subsidiada / no contributiva"
 
 **********
 *salmm_ci*
@@ -1577,7 +1559,7 @@ label var miglac_ci "=1 si es migrante proveniente de un pais LAC"
 	****************
 	* pobre_ine _ci*
 	**************** 
-	gen byte pobre_ine_ci=(bienestar_agregado<lp_ci)
+	gen byte pobre_ine_ci=(bienestar_agregado<lpe_ci)
 
 
 /*________________________________________________________________________________________________*/
@@ -1602,7 +1584,7 @@ do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&Exter
   horaspri_ci horastot_ci tiempoparc_ci categopri_ci categosec_ci rama_ci spublico_ci tamemp_ci cotizando_ci instcot_ci	afiliado_ci /// Empleo 
   formal_ci tipocontrato_ci ocupa_ci pension_ci	pensionsub_ci tipopen_ci instpen_ci	ylmpri_ci /// Empleo 
   ylmpri_ci ylnmpri_ci ylmsec_ci ylnmsec_ci ylmotros_ci	ylnmotros_ci  ylm_ci ylnm_ci ynlm_ci ynlnm_ci nrylmpri_ci /// Ingresos individuo 
-  ylm_ch ylnm_ch ylmnr_ch ynlm_ch ynlnm_ch ylmhopri_ci ylmho_ci /// Ingresos del hogar 
+  ylm_ch ylnm_ch ynlm_ch ynlnm_ch ylmhopri_ci ylmho_ci /// Ingresos del hogar 
   nrylmpri_ci nrylmpri_ch /// No respuesta de ingresos  
   remesas_ci remesas_ch ypen_ci ypensub_ci /// Remesas y pensiones
   aedu_ci eduui_ci eduuc_ci edupre_ci eduac_ci asiste_ci edupub_ci pqnoasis1_ci asispre_ci /// Educación
@@ -1611,7 +1593,7 @@ do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&Exter
   aguared_ch aguafconsumo_ch aguafuente_ch aguadist_ch aguadisp1_ch aguadisp2_ch /// Agua y saneamineto
   aguatrat_ch aguamala_ch aguamejorada_ch aguamide_ch bano_ch banoex_ch banomejorado_ch sinbano_ch  /// Agua y saneamineto
   migrante_ci migrantiguo5_ci miglac_ci /// Migración
-  salmm_ci lp19_2011 lp31_2011 lp5_2011 lp_ci lpe_ci lp365_2017 lp685_2017 lp14_2017 lp81_2017 tc_c cpi_c cpi2011 cpi2017 ratio_cpi2011 ratio_cpi2017 /// Fuente externa
+  salmm_ci lp19_2011 lp31_2011 lp5_2011 lpe_ci lp365_2017 lp685_2017 lp14_2017 lp81_2017 tc_c cpi_c cpi2011 cpi2017 ratio_cpi2011 ratio_cpi2017 /// Fuente externa
   ppp_c ppp_2011 ppp_2017 , first /// Fuente externa 
   /// the order was created by regex functions, sph variables are excluded /// Fuente externa 
   /// the order was created by regex functions, sph variables are excluded
