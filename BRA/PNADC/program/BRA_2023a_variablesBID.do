@@ -1153,25 +1153,6 @@ replace aguadist_ch=. if s01010==.
 label var aguadist_ch "Ubicación de la principal fuente de agua"
 label def aguadist_ch 1"Adentro de la casa" 2"Afuera de la casa pero dentro del terreno" 3"Afuera de la casa y del terreno" 
 label val aguadist_ch aguadist_ch 
-*****************
-***aguamala_ch***
-*****************
-gen aguamala_ch=.
-replace aguamala_ch=(s01007==6) 
-label var aguamala_ch "Agua unimproved según MDG"
-*****************
-***aguamide_ch***
-*****************
-gen aguamide_ch=.
-label var aguamide_ch "Usan medidor para pagar consumo de agua"
-
-
-*****************
-*aguafconsumo_ch*
-*****************
-
-gen aguafconsumo_ch=0
-
 
 *****************
 *aguafuente_ch*
@@ -1185,12 +1166,29 @@ replace aguafuente_ch = 9 if s01007==3
 replace aguafuente_ch = 10 if (s01007==4 | s01007==6)
 replace aguafuente_ch = 10 if aguafuente_ch ==. & jefe_ci==1
 
+*****************
+***aguamala_ch***
+*****************
+gen aguamala_ch= 2
+replace aguamala_ch= 1 if aguafuente_ch>7 & aguafuente_ch<10
+replace aguamala_ch= 0 if aguafuente_ch<=7
+label var aguamala_ch "Agua unimproved según MDG"
+*****************
+***aguamide_ch***
+*****************
+gen aguamide_ch=.
+label var aguamide_ch "Usan medidor para pagar consumo de agua"
+
+*****************
+*aguafconsumo_ch*
+*****************
+
+gen aguafconsumo_ch=0
 
 **************
 *aguadisp1_ch*
 **************
 gen aguadisp1_ch =9
-
 
 **************
 *aguadisp2_ch*
