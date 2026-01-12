@@ -1204,7 +1204,7 @@ gen pea_ci=(emp_ci==1 | desemp_ci==1)
 	replace aguafuente_ch = 6 if inlist(v05,6) 
 	replace aguafuente_ch = 7 if inlist(v05,7)
 	replace aguafuente_ch = 8 if inlist(v05,5)
-	replace aguafuente_ch = 10 if inlist(v05,2,3,8,9) 
+	replace aguafuente_ch = 10 if inlist(v05,2,3,8,9) | missing(V05)
 
 	label define aguafuente_ch 		1 "Red de distribución, llave privada" ///
 									2 "Llave pública, standpipe" ///
