@@ -1093,11 +1093,10 @@ use "`base_in'", clear
 	******************
 	** sinbano_ch ** - 
 	*****************
-	gen sinbano_ch = .
-	replace sinbano_ch = 0 if inlist(r314,1,2,3)
-	replace sinbano_ch = 1 if r314==4 & r315==1
+	gen sinbano_ch = 3
+	replace sinbano_ch = 0 if bano_ch>0
+	replace sinbano_ch = 1 if r314==4 & r315==1 | ( r314==4 & r315==2 & inlist(r317a, 1,2))
 	replace sinbano_ch = 2 if r314==4 & r315==2 & (r317a==3|r317a==4) 
-	replace sinbano_ch = 3 if r314==4 & r315==2 & (r317a==5|r317a==.)
 
 	******************
     ** banomejorado_ch **

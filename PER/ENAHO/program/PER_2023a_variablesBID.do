@@ -1358,7 +1358,9 @@ label value  razonesnoasis_ci razonesnoasis_ci
 	************
 	*sinbano_ch*
 	************
-		gen sinbano_ch = .
+	gen sinbano_ch =3
+	replace sinbano_ch = 0 if bano_ch>0
+	label var sinbano_ch "hogares sin acceso a instalaciones propias."
 
 	*****************
 	*banomejorado_ch*  Altered

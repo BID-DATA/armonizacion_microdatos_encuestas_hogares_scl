@@ -682,16 +682,15 @@ la var nrylmpri_ci "Identificador de No respuesta del ingreso de la actividad pr
 ****************
 ***ylnmpri_ci***
 ****************
-if emp_ci==1{
-g food1=r42505a*r42505b/12 
-g ropa1=r42506a*r42506b/12 
-g merca1=r42507a*r42507b/12 
-g vivi1=r42508a*r42508b/12 
-g trans1=r42509a*r42509b/12 
-g segur1=r42510a*r42510b/12 
-g otross1=r42512a*r42512b/12 
-}
-egen ylnmpri_ci=rsum(food1 ropa1 merca1 vivi1 trans1 segur1 otross1)
+gen food1 = r42505a * r42505b / 12 if emp_ci == 1
+gen ropa1 = r42506a * r42506b / 12 if emp_ci == 1
+gen merca1 = r42507a * r42507b / 12 if emp_ci == 1
+gen vivi1 = r42508a * r42508b / 12 if emp_ci == 1
+gen trans1 = r42509a * r42509b / 12 if emp_ci == 1
+gen segur1 = r42510a * r42510b / 12 if emp_ci == 1
+gen otross1 = r42512a * r42512b / 12 if emp_ci == 1
+
+egen ylnmpri_ci = rsum(food1 ropa1 merca1 vivi1 trans1 segur1 otross1), missing
 replace ylnmpri_ci=. if emp_ci!=1
 label var ylnmpri_ci "Ingreso laboral NO monetario actividad principal"  
 
@@ -1098,9 +1097,9 @@ replace banomejorado_ch =0 if (bano_ch ==0 | bano_ch>=4) & bano_ch!=6
 *sinbano_ch*
 ************
 gen sinbano_ch = 3
-replace sinbano_ch = 1 if r318==1
-replace sinbano_ch = 2 if (r324a==4|r324a==3)  & r318==2
-replace sinbano_ch = 0 if r317a!=4
+replace sinbano=0 if bano_ch>0
+replace sinbano_ch = 1 if r318==1 | (r318 ==2 & inlist(r324a,1,2))
+replace sinbano_ch = 2 if (r324a==4 | r324a==3)& r318==2
 *label var sinbano_ch "= 0 si tiene baño en la vivienda o dentro del terreno"
 
 *************

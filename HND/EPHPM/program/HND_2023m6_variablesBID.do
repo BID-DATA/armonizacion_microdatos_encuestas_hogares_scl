@@ -1302,7 +1302,8 @@ gen pea_ci=(emp_ci==1 | desemp_ci==1)
 	************
 	*sinbano_ch*
 	************
-	gen sinbano_ch =.
+    gen sinbano_ch =3
+	replace sinbano_ch = 0 if bano_ch>0
 	label var sinbano_ch "hogares sin acceso a instalaciones propias."
 
 	label define sinbano_ch 		0 "El hogar tiene baño" ///

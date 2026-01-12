@@ -1071,13 +1071,16 @@ rename *, lower
 	***luz_ch***
 	***********
 	* 1 = electricidad | 0 = no es electricidad | . = NR/NP o no está en la base
-	gen byte luz_ch = .
+	gen luz_ch=(s01014==1)
+	label var luz_ch  "La principal fuente de iluminación es electricidad"
+
 
 	***************
 	***luzmide_ch***
 	***************
 	* 1 = con medidor | 0 = sin medidor | . = NR/NP o no está en la base
-	gen byte luzmide_ch = .
+	gen luzmide_ch=.
+	label var luzmide_ch "Usan medidor para pagar consumo de electricidad"
 
 	***************
 	***combust_ch***
@@ -1088,120 +1091,159 @@ rename *, lower
 	***********
 	***piso_ch***
 	***********
-	* pendiente metodología → missing si no está
-	gen piso_ch = .
+	gen piso_ch= 0 	if s01004==4
+	replace piso_ch=1	if s01004>=1 & s01004<=3
+	replace piso_ch=. 	if s01004==.
+	label var piso_ch "Materiales de construcción del piso"  
+	label def piso_ch 0"Piso de tierra" 1"Materiales permanentes" 2"Otros materiales"
+	label val piso_ch piso_ch
+
 
 	************
 	***pared_ch***
 	************
 	* pendiente metodología → missing si no está
-	gen pared_ch = .
+	gen pared_ch=0 if s01002==5
+	replace pared_ch=1 if s01002==1 | s01002==2 |s01002==4
+	replace pared_ch=2 if s01002==6 | s01002==3
+	replace pared_ch=. if s01002==.
+	label var pared_ch "Materiales de construcción de las paredes"
+	label def pared_ch 0"No permanentes" 1"Permanentes" 2"Otros materiales:otros"
+	label val pared_ch pared_ch
 
 	************
 	***techo_ch***
 	************
 	* pendiente metodología → missing si no está
-	gen techo_ch = .
+	gen techo_ch=0 if s01003==6
+	replace techo_ch=1 if s01003<=5
+	replace techo_ch=2 if s01003==6
+	replace techo_ch=. if s01003==.
+	label var techo_ch "Materiales de construcción del techo"
+	label def techo_ch 0"No permanentes" 1"Permanentes" 2"Otros materiales:otros"
+	label val techo_ch techo_ch
 
 	************
 	***resid_ch***
 	************
 	* 0 = recolección | 1 = quema/entierra | 2 = espacio abierto | 3 = otros | . = no está
-	gen byte resid_ch = .
+	gen resid_ch=0 if s01013==1 | s01013==2
+	replace resid_ch=1 if s01013==3 | s01013==4
+	replace resid_ch=2 if s01013==5
+	replace resid_ch=3 if s01013==6
+	replace resid_ch=. if s01013==.
+	label var resid_ch "Método de eliminación de residuos"
+	label def resid_ch 0"Recolección pública o privada" 1"Quemados o enterrados"
+	label def resid_ch 2"Tirados a un espacio abierto" 3"Otros", add
+	label val resid_ch resid_ch
 
 	***********
 	***dorm_ch***
 	***********
 	* número de dormitorios | . = no está
-	gen dorm_ch = .
+	gen dorm_ch=s01006
+	replace dorm_ch=. if s01006==99 
+	label var dorm_ch "Habitaciones para dormir"
+
 
 	****************
 	***cuartos_ch***
 	****************
 	* número de cuartos totales | . = no está
-	gen cuartos_ch = .
+	gen cuartos_ch=s01005
+	replace cuartos_ch=. if s01005==99 
+	label var cuartos_ch "Habitaciones en el hogar"
 
 	*************
 	***cocina_ch***
 	*************
-	* 1 = existe cuarto exclusivo para cocinar | 0 = no | . = no está
-	gen byte cocina_ch = .
+	gen cocina_ch=.
+	label var cocina_ch "Cuarto separado y exclusivo para cocinar"
 
 	************
 	***telef_ch***
 	************
 	* 1 = teléfono fijo | 0 = no | . = no está
-	gen byte telef_ch = .
+	gen telef_ch=(s01022==1)
+	replace telef_ch=. if s01022==.
+	label var telef_ch "El hogar tiene servicio telefónico fijo"
 
 	***************
 	***refrig_ch***
 	***************
-	* 1 = tiene refrigerador | 0 = no | . = no está
-	gen byte refrig_ch = .
-
-	*************
+	gen refrig_ch=(s01023==1 |s01023==2)
+	replace refrig_ch=. if s01023==.
+	label var refrig_ch "El hogar posee refrigerador o heladera"
+	**************
 	***freez_ch***
+	**************
+	gen freez_ch=.
+	label var freez_ch "El hogar posee congelador"
+
 	*************
-	* 1 = tiene freezer | 0 = no | . = no está
-	gen byte freez_ch = .
-
-	***********
 	***auto_ch***
-	***********
-	* 1 = tiene automóvil | 0 = no | . = no está
-	gen byte auto_ch = .
-
-	************
+	*************
+	gen auto_ch=(s01031==1)
+	replace auto_ch=. if s01031==.
+	label var auto_ch "El hogar posee automovil particular"
+	**************
 	***compu_ch***
-	************
-	* 1 = tiene computadora | 0 = no | . = no está
-	gen byte compu_ch = .
-
+	**************
+	gen compu_ch=(s01028==1)
+	label var compu_ch "El hogar posee computador"
 	*****************
 	***internet_ch***
 	*****************
-	* 1 = tiene internet hogar | 0 = no | . = no está
-	gen byte internet_ch = .
-
-	********
-	*cel_ch*
-	********
-	gen cel_ch=.
-	
+	gen internet_ch=(s01029==1)
+	label var internet_ch "El hogar posee conexión a Interne
 	************
+	***cel_ch***
+	************
+	gen cel_ch=(s01021>=1)
+	label var cel_ch "El hogar tiene servicio telefonico celular"
+	**************
 	***vivi1_ch***
-	************
-	* 1 = casa | 2 = depto | 3 = otros | . = no está
-	gen byte vivi1_ch = .
-
-	***********
-	*vivi2_ch*
-	***********
-	gen vivi2_ch=.
-	
+	**************
+	gen vivi1_ch=1 if s01001==1
+	replace vivi1_ch=2 if s01001==2
+	replace vivi1_ch=3 if s01001==3
+	label var vivi1_ch "Tipo de vivienda en la que reside el hogar"
+	label def vivi1_ch 1"Casa" 2"Departamento" 3"Otros"
+	label val vivi1_ch vivi1_ch
+	**************
+	***vivi2_ch***
+	**************
+	gen vivi2_ch=(vivi1_ch==1 | vivi1_ch==2)
+	replace vivi2_ch=. if vivi1_ch==.
+	label var vivi2_ch "La vivienda es casa o departamento"
 	*****************
 	***viviprop_ch***
 	*****************
-	* 0 = alquilada | 1 = propia pagada | 2 = propia en pago | 3 = cedida/usufructo | . = no está
-	gen byte viviprop_ch = .
-
-	****************
-	***vivitit_ch***
-	****************
-	* 1 = con título | 0 = sin título | . = no está
-	gen byte vivitit_ch = .
-
+	gen viviprop_ch=0 if s01017==3
+	replace viviprop_ch=1 if s01017==1
+	replace viviprop_ch=2 if s01017==2
+	replace viviprop_ch=3 if s01017>=4 /*corrigo =3 no =4, revisar en anios anteriores */
+	replace viviprop_ch=. if s01017==.
+	label var viviprop_ch "Propiedad de la vivienda"
+	label def viviprop_ch 0"Alquilada" 1"Propia y totalmente pagada" 2"Propia y en proceso de pago"
+	label def viviprop_ch 3"Ocupada (propia de facto)", add
+	label val viviprop_ch viviprop_ch
 	****************
 	***vivialq_ch***
 	****************
-	* monto mensual de alquiler | . = no está
-	gen double vivialq_ch = .
-
-	*********************
+	gen vivialq_ch=s01019
+	replace vivialq_ch=. if s01019>=999999999 | vivialq_ch<0
+	label var vivialq_ch "Alquiler mensual"
+	*******************
 	***vivialqimp_ch***
-	*********************
-	* monto mensual de alquiler imputado | . = no está
-	gen double vivialqimp_ch = .
+	*******************
+	gen vivialqimp_ch=s01019 if s01017==3
+	label var vivialqimp_ch "Alquiler mensual imputado"
+	****************
+	***vivitit_ch***
+	****************
+	gen vivitit_ch=.
+	label var vivitit_ch "El hogar posee un título de propiedad"
 
 ****************************
 ***VARIABLES DE WASH***
@@ -1209,8 +1251,8 @@ rename *, lower
 	**************
 	***aguared_ch***
 	**************
-	* 1 = por red | 0 = fuera de red | . = no está
-	gen byte aguared_ch = .
+	gen aguared_ch=(s01007==1) 
+	label var aguared_ch "Acceso a fuente de agua por red"
 
 	***********************
 	***aguafconsumo _ch***
@@ -1218,20 +1260,32 @@ rename *, lower
 	* 0 = la encuesta NO pregunta agua para beber
 	* 1..10 = categorías JMP (si existiera la pregunta)
 	* Aquí, como no está en la base → asignamos 0 (no pregunta)
-	gen byte aguafconsumo_ch = 0
+	gen aguafconsumo_ch=0
 
 	********************
 	***aguafuente_ch***
 	********************
-	* 1..10 = categorías JMP para fuente general | . = no está
-	gen byte aguafuente_ch = .
-
+	gen aguafuente_ch = .
+	replace aguafuente_ch = 1 if s01007==1 & s01010 != 3
+	replace aguafuente_ch = 2 if s01007==1 & s01010==3
+	replace aguafuente_ch = 4 if s01007==2         
+	replace aguafuente_ch = 5 if s01007==5 
+	replace aguafuente_ch = 9 if s01007==3 
+	replace aguafuente_ch = 10 if (s01007==4 | s01007==6)
+	replace aguafuente_ch = 10 if aguafuente_ch ==. & jefe_ci==1
 	******************
 	***aguadist_ch***
 	******************
 	* 0 = no se especifica | 1 = dentro | 2 = en el lote | 3 = fuera del lote
 	* Si no está la pregunta → 0
-	gen byte aguadist_ch = 0
+	gen aguadist_ch=.
+	replace aguadist_ch=1 if s01010==1
+	replace aguadist_ch=2 if s01010==2
+	replace aguadist_ch=3 if s01010==3
+	replace aguadist_ch=. if s01010==. 
+	label var aguadist_ch "Ubicación de la principal fuente de agua"
+	label def aguadist_ch 1"Adentro de la casa" 2"Afuera de la casa pero dentro del terreno" 3"Afuera de la casa y del terreno" 
+	label val aguadist_ch aguadist_ch 
 
 	*******************
 	***aguadisp1_ch***
@@ -1245,59 +1299,74 @@ rename *, lower
 	*******************
 	* 1 = < mitad del tiempo | 2 = > mitad | 3 = sin cortes | 9 = no existe la pregunta
 	* Si no está la pregunta → 9
-	gen byte aguadisp2_ch = 9
-
+	gen aguadisp2_ch = 3 if s01008==1
+	replace aguadisp2_ch = 2 if s01008==2
+	replace aguadisp2_ch = 1 if (s01008==3 | s01008==4)
 	******************
 	***aguatrat_ch***
 	******************
-	* 1 = trata | 0 = no trata | . = no está
-	gen byte aguatrat_ch = .
+	gen aguatrat_ch =9
 
 	******************
 	***aguamala_ch***
 	******************
-	* 0 = mejorada | 1 = no mejorada | 2 = no se puede especificar
-	* Si no hay fuente → 2
-	gen byte aguamala_ch = 2
+	gen aguamala_ch= 2
+	replace aguamala_ch= 1 if aguafuente_ch>7 & aguafuente_ch<10
+	replace aguamala_ch= 0 if aguafuente_ch<=7
+	label var aguamala_ch "Agua unimproved según MDG"
+
 
 	**********************
 	***aguamejorada_ch***
 	**********************
-	* 1 = mejorada | 0 = no mejorada | 2 = no se puede especificar
-	* Si no hay fuente → 2
-	gen byte aguamejorada_ch = 2
+	gen aguamejorada_ch= 2
+	replace aguamejorada_ch= 0 if aguafuente_ch>7 & aguafuente_ch<10
+	replace aguamejorada_ch= 1 if aguafuente_ch<=7
 
 	******************
 	***aguamide_ch***
 	******************
 	* 1 = con medidor | 0 = sin medidor | . = no está
 	gen byte aguamide_ch = .
+	label var aguamide_ch "Usan medidor para pagar consumo de agua"
 
 	************
 	***bano_ch***
 	************
 	* 0 = sin inst. | 1 = red | 2 = fosa | 3 = letrina mejorada | 4 = descarga a cuerpo de agua/suelo
 	* 5 = no mejorada | 6 = no clasificable | . = no está
-	gen byte bano_ch = .
+	gen bano_ch=.
+	replace bano_ch = 1 if (s01011a>0 | s01011b>0 | s01011c==1) & (s01012a == 1 | s01012a == 2)
+	replace bano_ch = 2 if (s01011a>0 | s01011b>0 | s01011c==1) & (s01012a == 3)
+	replace bano_ch = 4 if (s01011a>0 | s01011b>0 | s01011c==1) & (s01012a == 5 | s01012a == 6 )
+	replace bano_ch = 6 if  (s01011a>0 | s01011b>0 | s01011c==1) & s01012a==4
+	replace bano_ch = 0 if (s01011a==0 & s01011b==0) | s01011c==2  | s01012a ==7
+	replace bano_ch=6 if bano_ch ==. & jefe_ci==1 
+	label var bano_ch "Tipo de instalación sanitaria del hogar"
 
 	**************
 	***banoex_ch***
 	**************
-	* 1 = uso exclusivo | 0 = compartido | . = no está
-	gen byte banoex_ch = .
+	*Pregunta única, se pregunta si el banio es de uso exclusivo para moradores
+	gen banoex_ch=(s01011a>=1)
+	label var banoex_ch "El servicio sanitario es exclusivo del hogar"
 
 	***************
 	***sinbano_ch***
 	***************
 	* 0 = tiene baño | 1 = usa público/vecino | 2 = defecación al aire libre | 3 = no especifica | . = no está
-	gen sinbano_ch = .
+	gen sinbano_ch = 3
+    replace sinbano_ch = 0 if bano_ch>0
+    replace sinbano_ch = 1 if (s01011a==0 & s01011b==0 & s01011c==1)
 
 	**********************
 	***banomejorado_ch***
 	**********************
 	* 1 = mejorado | 0 = no mejorado | 2 = no clasificable
 	* Si no hay info de bano_ch → 2
-	gen byte banomejorado_ch = 2
+	gen banomejorado_ch= 2
+	replace banomejorado_ch =1 if bano_ch<=3 & bano_ch!=0
+	replace banomejorado_ch =0 if (bano_ch ==0 | bano_ch>=4) & bano_ch!=6
 	
 		
 ****************************

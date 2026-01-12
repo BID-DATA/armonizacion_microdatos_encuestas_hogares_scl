@@ -1115,13 +1115,23 @@ gen aguadisp1_ch = 9
 gen aguadisp2_ch = 9
 *label var aguadisp2_ch "= 9 la encuesta no pregunta si el servicio de agua es constante"
 
+*****************
+*bano_ch         *  Altered
+*****************
+gen bano_ch=0
+replace bano_ch=6 if iv8==1
+replace bano_ch=1 if iv10<3 & iv10>=1  & iv11==1
+replace bano_ch=2 if iv10<3 & iv10>=1   & iv11==2
+replace bano_ch=3 if iv10<3 & iv10>=1   & iv11==3
+replace bano_ch=6 if iv10==3
+replace bano_ch=4 if iv11==4 
+
 ************
 *sinbano_ch*
 ************
 gen sinbano_ch = 3
-replace sinbano_ch =  0 if iv8==1
-replace sinbano_ch = 1 if iv9==3
-replace sinbano_ch = 2 if iv8==2
+replace sinbano_ch =  0 if bano_ch>0
+replace sinbano_ch = 1 if iv8 == 2 & iv9==3
 *label var sinbano_ch "= 0 si tiene baño en la vivienda o dentro del terreno"
 
 *************
@@ -1145,20 +1155,6 @@ replace aguamala_ch = 1 if aguafuente_ch>7 & aguafuente_ch!=10
 gen aguamejorada_ch = 2
 replace aguamejorada_ch = 0 if aguafuente_ch>7 & aguafuente_ch!=10
 replace aguamejorada_ch = 1 if aguafuente_ch<=7
-
-
-*****************
-*bano_ch         *  Altered
-*****************
-gen bano_ch=0
-replace bano_ch=6 if iv8==1
-replace bano_ch=1 if iv10<3 & iv10>=1  & iv11==1
-replace bano_ch=2 if iv10<3 & iv10>=1   & iv11==2
-replace bano_ch=3 if iv10<3 & iv10>=1   & iv11==3
-replace bano_ch=6 if iv10==3
-replace bano_ch=4 if iv11==4 
-
-
 
 *****************
 *banomejorado_ch*  Altered
@@ -1691,7 +1687,7 @@ gen instcot_ci=.
 	****************
 	* pobre_ine _ci*
 	**************** 
-	gen byte pobre_ine_ci=(bienestar_agregado<lp_ci)
+	gen byte pobre_ine_ci=(bienestar_agregado<lpe_ci)
 
 
 /*_____________________________________________________________________________________________________*/
@@ -1725,7 +1721,7 @@ do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&Exter
   aguared_ch aguafconsumo_ch aguafuente_ch aguadist_ch aguadisp1_ch aguadisp2_ch /// Agua y saneamineto
   aguatrat_ch aguamala_ch aguamejorada_ch aguamide_ch bano_ch banoex_ch banomejorado_ch sinbano_ch  /// Agua y saneamineto
   migrante_ci migrantiguo5_ci miglac_ci /// Migración
-  salmm_ci lp19_2011 lp31_2011 lp5_2011 lp_ci lpe_ci lp365_2017 lp685_2017 lp14_2017 lp81_2017 tc_c cpi_c cpi2011 cpi2017 ratio_cpi2011 ratio_cpi2017 /// Fuente externa
+  salmm_ci lp19_2011 lp31_2011 lp5_2011 lpe_ci lp365_2017 lp685_2017 lp14_2017 lp81_2017 tc_c cpi_c cpi2011 cpi2017 ratio_cpi2011 ratio_cpi2017 /// Fuente externa
   ppp_c ppp_2011 ppp_2017 , first /// Fuente externa 
   /// the order was created by regex functions, sph variables are excluded /// Fuente externa 
   /// the order was created by regex functions, sph variables are excluded

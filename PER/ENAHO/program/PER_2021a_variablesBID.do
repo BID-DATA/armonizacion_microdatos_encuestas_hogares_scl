@@ -1691,11 +1691,23 @@ replace aguadisp2_ch = 1 if (p110c2<4 | p110c1 < 12 | p110c3 <12)
 replace aguadisp2_ch = 2 if p110c2>=4 & (p110c1>=12 | p110c3 <12)
 replace aguadisp2_ch = 3 if p110c==1 & p110c1 == 24
 
+*****************
+*bano_ch         *  Altered
+*****************
+
+gen bano_ch=0
+replace bano_ch=1 if (p111a==1|p111a==2)
+replace bano_ch = 2 if p111a==4
+replace bano_ch=3 if p111a==5
+replace bano_ch=4 if (p111a==6|p111a==8)
+replace bano_ch = 6 if (p111a == 3 | p111a ==7)
 
 ************
 *sinbano_ch*
 ************
-gen sinbano_ch = .
+	gen sinbano_ch =3
+	replace sinbano_ch = 0 if bano_ch>0
+	label var sinbano_ch "hogares sin acceso a instalaciones propias."
 
 
 *************
@@ -1719,21 +1731,6 @@ replace aguamala_ch = 1 if aguafuente_ch>7 & aguafuente_ch!=10
 gen aguamejorada_ch = 2
 replace aguamejorada_ch = 0 if aguafuente_ch>7 & aguafuente_ch!=10
 replace aguamejorada_ch = 1 if aguafuente_ch<=7
-
-
-
-*****************
-*bano_ch         *  Altered
-*****************
-
-gen bano_ch=0
-replace bano_ch=1 if (p111a==1|p111a==2)
-replace bano_ch = 2 if p111a==4
-replace bano_ch=3 if p111a==5
-replace bano_ch=4 if (p111a==6|p111a==8)
-replace bano_ch = 6 if (p111a == 3 | p111a ==7)
-
-
 
 *****************
 *banomejorado_ch*  Altered
