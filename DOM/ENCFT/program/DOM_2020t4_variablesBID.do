@@ -1080,8 +1080,8 @@ label variable asispre_ci "Asistencia a Educacion preescolar"
 ***asiste_ci***
 ***************
 
-generat asiste_ci=1 if asiste_centro_educativo ==1 
-replace asiste_ci=0 if asiste_centro_educativo ==2
+generat asiste_ci=1 if asiste_centro_educativo ==1 & porque_no_estudia!=1
+replace asiste_ci=0 if asiste_centro_educativo ==2 & porque_no_estudia!=1
 replace asiste_ci=. if asiste_centro_educativo ==.
 label variable asiste_ci "Asiste actualmente a la escuela"
 
