@@ -397,15 +397,11 @@ use "`base_in'", clear
 	*razonesnoasis_ci*
 	**************
 	gen razonesnoasis_ci=. 
-	replace razonesnoasis_ci=1 if r219==3
-	replace razonesnoasis_ci=2 if r219==1
-	replace razonesnoasis_ci=3 if r219==4  | r219==5  | r219==6
-	replace razonesnoasis_ci=4 if r219==10
-	replace razonesnoasis_ci=5 if r219==2  | r219==12 | r219==15 | r219==16
-	replace razonesnoasis_ci=6 if r219==8
-	replace razonesnoasis_ci=7 if r219==7 
-	replace razonesnoasis_ci=8 if r219==9  | r219==13 | r219==14 | r219==18
-	replace razonesnoasis_ci=9 if r219==11 | r219==17 
+	replace razonesnoasis_ci=1 if r219==3 | r219 ==1
+	replace razonesnoasis_ci=2 if r219==8  | r219==10 | r219 ==11
+	replace razonesnoasis_ci=3 if r219==2  | r219==12 | r219==15 | r219==16 | r219 ==4 | r219== 5 | r219==2 | r219 ==6 
+	replace razonesnoasis_ci=4 if r219==9  | r219==13 | r219==14 | r219==18 | r219 ==7
+	replace razonesnoasis_ci=5 if r219==17
 
 	***********
 	*edupub_ci*
