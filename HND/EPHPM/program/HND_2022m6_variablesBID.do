@@ -830,21 +830,24 @@ egen ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci)
 	g byte edupre_ci=. 
 	la var edupre_ci "Tiene Educacion preescolar"
 	
+	// 20.01.2026 se corrigen las variables de educación superior
 
 	**************
 	***eduui_ci*** 
 	**************
-	g byte eduui_ci=(ed07==2 & inrange(ed05,6,8)) // no finalizó estudios
-	replace eduui_ci=1 if inrange(ed10,6,8) & eduui_ci==0
+	g byte eduui_ci=0
+	replace eduui_ci= 1 if (ed07==2 & inrange(ed05,7,9)) // no finalizó estudios
+	replace eduui_ci=1 if inrange(ed10,7,9) 
 	replace eduui_ci=. if aedu_ci==. 
 	la var eduui_ci "Universitaria o Terciaria Incompleta"
 
 	**************
 	***eduuc_ci*** 
 	**************
-	g byte eduuc_ci=(ed07==1 & inrange(ed05,6,8))
-	replace eduuc_ci=1 if inrange(ed05,9,11) 
-	replace eduuc_ci=1 if inrange(ed10,9,10)  & eduuc_ci==0
+	g byte eduuc_ci=0
+	replace eduuc_ci=1 if (ed07==1 & inrange(ed05,7,9))
+	replace eduuc_ci=1 if ed05==10
+	
 	replace eduuc_ci=. if aedu_ci==.
 	la var eduuc_ci "Universitaria o Terciaria Completa"
 
@@ -852,8 +855,9 @@ egen ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci)
 	***eduac_ci***
 	**************
 	gen byte eduac_ci=.
-	replace eduac_ci= 1 if eduui_ci+eduuc_ci==1
-	replace eduac_ci= 0 if eduui_ci+eduuc_ci==0
+	replace eduac_ci=0 if (inrange(ed05, 7,8)| inrange(ed10, 7,8))
+	replace eduac_ci=1 if (inrange(ed05, 9,10)| inrange(ed10, 9,10))
+
 	label variable eduac_ci "Superior universitario vs superior no universitario"
 
 	***************

@@ -1097,7 +1097,7 @@ escolar como proxy de asistencia.
 *******************************************
 
 gen aedu_ci = . 
-replace aedu_ci = 0 if p03a03 == 1 // Preprimaria
+replace aedu_ci = 0 if p03a03 == 1 | p03a02==3 // Preprimaria o nunca asistió
 replace aedu_ci = p03a04 if p03a03 == 2 // Primaria
 replace aedu_ci = p03a04 + 6 if p03a03 == 3 // Básico
 replace aedu_ci = p03a04 + 9 if p03a03 == 4 // Diversificado
