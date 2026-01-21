@@ -435,6 +435,7 @@ replace dis_ch=1 if dis_ch>=1 & dis_ch!=.
 ******************************************************************************
 *	LABOR MARKET
 ******************************************************************************
+
 ****************
 ****condocup_ci*
 ****************
@@ -458,6 +459,11 @@ trabajar como aquella de catorce años en adelante, de acuerdo con la Ley
 Federal del Trabajo.
 Fuente:http://www.inegi.org.mx/inegi/contenidos/espanol/prensa/comunicados/ocupbol.asp */
 
+************
+***emp_ci***
+************
+
+gen byte emp_ci=(condocup_ci==1)
 
 ****************
 *afiliado_ci****
@@ -634,11 +640,7 @@ gen pea1_ci=(emp_ci==1 | desemp1_ci==1)
 gen pea2_ci=.
 gen pea3_ci=.
 */
-************
-***emp_ci***
-************
 
-gen byte emp_ci=(condocup_ci==1)
 
 ****************
 ***desemp_ci***

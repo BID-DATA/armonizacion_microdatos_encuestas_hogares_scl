@@ -351,6 +351,13 @@ label var condocup_ci "condicion de ocupacion utilizando definicion del pais"
 trabajar como aquella de catorce años en adelante, de acuerdo con la ley 
 federal del trabajo.
 fuente:http://www.inegi.org.mx/inegi/contenidos/espanol/prensa/comunicados/ocupbol.asp */
+
+************
+***emp_ci***
+************
+
+gen byte emp_ci=(condocup_ci==1)
+
 ****************
 *afiliado_ci****
 ****************
@@ -3044,12 +3051,6 @@ replace pea1_ci=. if trabajon==.
 gen pea2_ci=.
 gen pea3_ci=.
 */
-
-************
-***emp_ci***
-************
-
-gen byte emp_ci=(condocup_ci==1)
 
 ****************
 ***desemp_ci***
