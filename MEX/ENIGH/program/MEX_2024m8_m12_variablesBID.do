@@ -507,7 +507,7 @@ use "`base_in'", clear
 	***************	
 	destring pres_* servmed* inscr_* inst_* atemed tam_emp1  contrato1, replace
 	gen afiliado_ci=0 if condocup_ci==1 | condocup_ci==2  
-	replace afiliado_ci=1 if (pres_81==8 | pres_82==8) | (inscr_1 == 1  & (servmed_3==3 | servmed_5==5 | servmed_6==6 | servmed_7==7))  /* inscrito en prestaciones de salud por trabajo*/
+	replace afiliado_ci=1 if (pres_81==8 | pres_82==8) /* inscrito en prestaciones de salud por trabajo*/
 	
 	**************
 	***formal_ci***

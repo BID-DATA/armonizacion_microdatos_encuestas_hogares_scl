@@ -451,13 +451,18 @@ trabajar como aquella de catorce años en adelante, de acuerdo con la Ley
 Federal del Trabajo.
 Fuente:http://www.inegi.org.mx/inegi/contenidos/espanol/prensa/comunicados/ocupbol.asp */
 
+************
+***emp_ci***
+************
+
+gen byte emp_ci=(condocup_ci==1)
 
 ****************
 *afiliado_ci****
 ****************
 destring pres_* servmed* inscr_* inst_* atemed tam_emp1  contrato1, replace
 generat afiliado_ci=0 if condocup_ci==1 | condocup_ci==2  
-replace afiliado_ci=1 if (pres_141==14) | (inscr_1 == 1  & (servmed_3==3 | servmed_5==5 | servmed_6==6 | servmed_7==7))  /* inscrito en prestaciones de salud por trabajo*/
+replace afiliado_ci=1 if (pres_141==14 | pres_142==14)  /* inscrito en prestaciones de salud por trabajo*/
 *replace afiliado_ci=1 if (inst_1==1 | inst_2==2 | inst_3==3 | inst_4==4) & atemed==1 & afiliado_ci==0 
 label var afiliado_ci "Afiliado a la Seguridad Social"
 *Nota: seguridad social comprende solo los que en el futuro me ofrecen una pension.
@@ -475,7 +480,9 @@ label var tipopen_ci "Tipo de pension - variable original de cada pais"
 ****************
 *cotizando_ci***   
 ****************
-gen cotizando_ci=. /*Revisar las variables inst_1 ó pres_91 */
+gen byte cotizando_ci = .
+replace cotizando_ci = 1 if emp_ci==1 & segsoc=="1"   // cotiza
+replace cotizando_ci = 0 if emp_ci==1 & segsoc=="2"   // no cotiza
 label var cotizando_ci "Cotizante a la Seguridad Social"
 *Nota: solo seguro social publico, con el cual tenga derecho a pensiones en el futuro.
 ****************
@@ -622,11 +629,6 @@ gen pea1_ci=(emp_ci==1 | desemp1_ci==1)
 gen pea2_ci=.
 gen pea3_ci=.
 */
-************
-***emp_ci***
-************
-
-gen byte emp_ci=(condocup_ci==1)
 
 ****************
 ***desemp_ci***
@@ -1809,7 +1811,7 @@ log close
 
 
 
-
+
 
 
 

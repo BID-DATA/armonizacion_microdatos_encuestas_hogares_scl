@@ -351,6 +351,13 @@ label var condocup_ci "condicion de ocupacion utilizando definicion del pais"
 trabajar como aquella de catorce años en adelante, de acuerdo con la ley 
 federal del trabajo.
 fuente:http://www.inegi.org.mx/inegi/contenidos/espanol/prensa/comunicados/ocupbol.asp */
+
+************
+***emp_ci***
+************
+
+gen byte emp_ci=(condocup_ci==1)
+
 ****************
 *afiliado_ci****
 ****************
@@ -358,7 +365,7 @@ fuente:http://www.inegi.org.mx/inegi/contenidos/espanol/prensa/comunicados/ocupb
 destring pres_* servmed_* inscr_* inscr_* inst_* atemed tam_emp_1  contrato_1, replace
 gen afiliado_ci=0     if condocup_ci==1 | condocup_ci==2 /*se pregunta todas las personas pero me quedo con la pea*/	
 *replace afiliado_ci=1 if (pres_8==8) | (inscr_1 == 1  & (servmed_3==3 | servmed_5==5 | servmed_6==6 | servmed_7==7)) 
-replace afiliado_ci=1 if (pres_8_1==8) | (inscr_1 == 1  & (servmed_3==3 | servmed_5==5 | servmed_6==6 | servmed_7==7)) 
+replace afiliado_ci=1 if (pres_8_1==8 | pres_8_2==8) 
 label var afiliado_ci "afiliado a la seguridad social"
 *nota: seguridad social comprende solo los que en el futuro me ofrecen una pension.
 ****************
@@ -369,8 +376,10 @@ label var tipopen_ci "tipo de pension - variable original de cada pais"
 ****************
 *cotizando_ci***   
 ****************
-gen cotizando_ci=. /*revisar las variables inst_1 ó pres_91 */
-label var cotizando_ci "cotizante a la seguridad social"
+gen byte cotizando_ci = .
+replace cotizando_ci = 1 if emp_ci==1 & segsoc==1   // cotiza
+replace cotizando_ci = 0 if emp_ci==1 & segsoc==2   // no cotiza
+label var cotizando_ci "Cotizante a la Seguridad Social"
 *nota: solo seguro social publico, con el cual tenga derecho a pensiones en el futuro.
 ****************
 *cotizapri_ci***
@@ -3042,12 +3051,6 @@ replace pea1_ci=. if trabajon==.
 gen pea2_ci=.
 gen pea3_ci=.
 */
-
-************
-***emp_ci***
-************
-
-gen byte emp_ci=(condocup_ci==1)
 
 ****************
 ***desemp_ci***
