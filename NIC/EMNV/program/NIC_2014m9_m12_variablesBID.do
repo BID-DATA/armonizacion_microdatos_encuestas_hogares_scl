@@ -1149,6 +1149,7 @@ label variable asispre_ci "Asistencia a Educacion preescolar"
 gen asiste_ci = .
 replace asiste_ci = 1 if s4p15 == 1
 replace asiste_ci = 0 if s4p15 == 2
+replace asiste_ci = 0 if s4p15 == . 
 label variable asiste_ci "Asiste actualmente a la escuela"
 
 **************

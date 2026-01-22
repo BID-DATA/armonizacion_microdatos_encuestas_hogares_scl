@@ -1078,7 +1078,7 @@ label var ylmho_ci "Salario monetario de todas las actividades"
 *******************************************
 
 gen aedu_ci = .
-replace	 aedu_ci = 0  if (p03a05a == 0 | p03a05a == 1) // Ninguno, Preprimaria
+replace	 aedu_ci = 0  if (p03a05a == . | p03a05a == 1) // Ninguno, Preprimaria - "Ninguno" no se incluye como opción, se toma la no respuesta como "ninguno" ya que es consistente con el histórico. 
 replace aedu_ci = p03a05b if p03a05a == 2 // Primaria
 replace aedu_ci = 6 + p03a05b if (p03a05a == 3 | p03a05a == 4) // Básico, Diversificado
 replace aedu_ci = 11 + p03a05b if p03a05a == 5 // Superior

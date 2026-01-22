@@ -1079,8 +1079,8 @@ egen ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci)
 	replace aedu_ci = 4          if nivinst==2 & (anoinst==2)
 	replace aedu_ci = 6          if nivinst==2 & (anoinst==3)*/
 	replace aedu_ci = 0          if nivinst==3
-	replace aedu_ci = anoinst-1    if nivinst==4 // Se le resta 1 dado que el nivel primaria y educación básica tienen incluido el primera año de educación inicial
-	replace aedu_ci = anoinst-1    if nivinst==5
+	replace aedu_ci = anoinst   if nivinst==4 
+	replace aedu_ci = anoinst-1    if nivinst==5 // Se le resta 1 dado que educación básica tienen incluido el primer año de educación inicial
 	* siguiente linea Mod Ivan B./EDU 2015, 12
 	replace aedu_ci=0 if aedu_ci==-1
 	replace aedu_ci = anoinst+6  if nivinst==6
