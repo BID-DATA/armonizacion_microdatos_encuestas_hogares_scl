@@ -1148,6 +1148,7 @@ replace migrantiguo5_ci = . if migrante_ci==0
 
 destring p3373s3, replace
 
+
 gen miglac_ci=(migrante_ci==1 & inlist(p3373s3, ///
 32,   /* Argentina */ ///
 68,   /* Bolivia */ ///
