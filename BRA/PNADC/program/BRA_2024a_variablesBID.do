@@ -378,19 +378,11 @@ rename *, lower
 	*************
 	*condocup_ci*
 	*************
-	gen byte condocup_ci = .
-
-	* 1 = Ocupados
-	replace condocup_ci = 1 if vd4002 == 1
-
-	* 2 = Desocupados
-	replace condocup_ci = 2 if vd4002 == 2
-
-	* 4 = Menores de la edad mínima (14 en PNADC)
-	replace condocup_ci = 4 if edad_ci < 14
-
-	* 3 = Inactivos (≥14 años, no ocupados ni desocupados)
-	replace condocup_ci = 3 if edad_ci >= 14 & condocup_ci == .
+	gen condocup_ci = .
+	replace condocup_ci = 1 if (v4001 == 1 | v4002 == 1 | v4003 == 1 | v4004 == 1 | v4005 == 1)
+	replace condocup_ci = 2 if  v4005 == 2 & (v4071 == 1 & v4072a! = 9) /*tomaron alguna providencia en la semana de referencia*/
+	replace condocup_ci = 3 if condocup_ci == .
+	replace condocup_ci = 4 if edad_ci < 10
 
 	***********************
 	*** categoinac_ci   ***
@@ -499,10 +491,9 @@ rename *, lower
 	***************
 	***horastot_ci ***
 	***************	
-	gen horastot_ci = vd4031
-	replace horastot_ci = . if vd4031 == .
-	replace horastot_ci = . if horastot_ci > 168
-	replace horastot_ci = . if emp_ci == 0
+	egen horastot_ci = rsum(v4039c v4056c v4062c) if edad_ci >= 14 & nempleos_ci! = .
+	replace horastot_ci = . if emp_ci == 0 
+	replace horastot_ci = . if (horaspri_ci == . & v4056 == . & v4062 == .) | horastot_ci > 150
 		
 	**************************
 	***  tiempoparc_ci     ***
@@ -586,22 +577,8 @@ rename *, lower
 	***************
 	***cotizando_ci***
 	***************	
-	gen byte cotizando_ci = .
-
-	* 1. Cotiza en trabajo principal (INSS)
-	replace cotizando_ci = 1 if emp_ci==1 & v4032==1
-
-	* 2. Cotiza en trabajo secundario
-	replace cotizando_ci = 1 if emp_ci==1 & v4049==1
-
-	* 3. Cotiza en otros trabajos
-	replace cotizando_ci = 1 if emp_ci==1 & v4059==1
-
-	* 4. Ocupado pero NO cotiza en ningún trabajo → 0
-	replace cotizando_ci = 0 if emp_ci==1 & cotizando_ci==.
-
-	* 5. No ocupados → 0
-	replace cotizando_ci = 0 if emp_ci==0
+	gen cotizando_ci=0     if condocup_ci==1 | condocup_ci==2 
+	replace cotizando_ci=1 if (vd4012==1) & cotizando_ci==0
 
 	***************
 	***afiliado_ci***
@@ -609,24 +586,6 @@ rename *, lower
 		
 	gen byte afiliado_ci = .
 
-	* 1. Cotizantes (implica afiliación)
-	replace afiliado_ci = 1 if v4032==1 | v4049==1 | v4059==1
-
-	* 2. Empleado formal: carteira assinada → afiliado
-	replace afiliado_ci = 1 if v4029==1
-
-	* 3. Servidor público estatutário
-	replace afiliado_ci = 1 if v4028==1
-
-	* 4. Militares (régimen previsional propio)
-	replace afiliado_ci = 1 if v4012==2
-
-	* 5. Todos los ocupados sin ninguna afiliación → 0
-	replace afiliado_ci = 0 if emp_ci==1 & afiliado_ci==.
-
-	* 6. Desocupados o inactivos → 0
-	replace afiliado_ci = 0 if emp_ci==0
-			
 	***************
 	***instcot_ci***
 	***************	
@@ -641,9 +600,7 @@ rename *, lower
 	**************
 	***formal_ci***
 	**************
-	gen byte formal_ci = .
-	replace formal_ci  =  1 if (cotizando_ci == 1 | afiliado_ci == 1) & condocup_ci == 1
-	replace formal_ci = 0 if cotizando_ci == 0 & (condocup_ci == 1 | condocup_ci == 2)
+	gen formal_ci=(cotizando_ci==1)
 	
 	*******************
 	***tipocontrato_ci***
@@ -740,99 +697,64 @@ rename *, lower
 	*************
 	* ylmpri_ci *
 	*************
-	gen double ylmpri_ci = v403312
-	replace ylmpri_ci = . if v403312 < 0 | v403312 >= 999999 | emp_ci != 1
+	gen ylmpri_ci = v403312
+	replace ylmpri_ci = . if v403312 < 0 | v403312 >= 999999 | emp_ci! = 1
 
 	************
 	* ylmsec_ci *
 	************
-	gen double ylmsec_ci = v405012
-	replace ylmsec_ci = . if v405012 < 0 | v405012 >= 999999 | emp_ci != 1
+	gen ylmsec_ci = v405012
+	replace ylmsec_ci = . if v405012 < 0 | v405012 >= 999999 | emp_ci! = 1
   
 	**************
 	* ylmotros_ci *
 	**************
-	gen double ylmotros_ci = . 
-	replace ylmotros_ci = v405812 if edad_ci >= 10
-	replace ylmotros_ci = 0 if v405812 == 0
-
-	* valores inválidos → missing
-	replace ylmotros_ci = . if v405812 < 0 | v405812 >= 999999
-
-	* inactivos / desocupados → deben tener 0
-	replace ylmotros_ci = 0 if emp_ci != 1
-
-	* no remunerados → deben tener 0
-	replace ylmotros_ci = 0 if categopri_ci == 4
+	gen ylmotros_ci = v405812
+	replace ylmotros_ci = . if v405812 < 0 | v405812 >= 999999 | emp_ci! = 1
 
 	*********
 	* ylm_ci *
 	*********
-    * Total laboral monetario: principal + secundarios + otros
-    egen double ylm_ci = rowtotal(ylmpri_ci ylmsec_ci ylmotros_ci), mi
-
+	egen ylm_ci = rsum(ylmpri_ci ylmsec_ci ylmotros_ci)
+	replace ylm_ci = . if ylmpri_ci == . & ylmsec_ci == . & ylmotros_ci == .
+	
 	**************
 	* ylnmpri_ci *
 	**************
-	gen double ylnmpri_ci = v403322 if v40332 == 2
-	replace ylnmpri_ci = . if v403322 < 0 | v403322 >= 999999 | emp_ci != 1
-
+	gen ylnmpri_ci = v403322 if v40332 == 2
+	replace ylnmpri_ci = . if v403322 < 0 | v403322 >= 999999 | emp_ci! = 1
+	
 	**************
 	* ylnmsec_ci *
 	**************
-	gen double ylnmsec_ci = v405022
-	replace ylnmsec_ci = . if v405022 < 0 | v405022 >= 999999 | emp_ci != 1
+	gen ylnmsec_ci = v405022
+	replace ylnmsec_ci = . if v405022 < 0 | v405022 >= 999999 | emp_ci! = 1
 
 	******************
 	*** ylnmotros_ci ***
 	******************
-	gen double ylnmotros_ci = . 
-	replace ylnmotros_ci = v405822 if edad_ci >= 10
-	replace ylnmotros_ci = 0 if v405822 == 0
-
-	replace ylnmotros_ci = . if v405822 < 0 | v405822 >= 999999
-
-	* inactivos / desocupados → deben tener 0
-	replace ylnmotros_ci = 0 if emp_ci != 1
-
-	* no remunerados → deben tener 0
-	replace ylnmotros_ci = 0 if categopri_ci == 4
+	gen ylnmotros_ci = v405822
+	replace ylnmotros_ci = . if v405822 < 0 | v405822 >= 999999 | emp_ci! = 1
 
 	**********
 	* ylnm_ci *
 	**********
-    * Total laboral NO monetario
-    capture drop ylnm_ci
-    egen double ylnm_ci = rowtotal(ylnmpri_ci ylnmsec_ci ylnmotros_ci), mi
-    replace  ylnm_ci = . if ylnm_ci < 0 & ylnm_ci != .
-
+	egen ylnm_ci = rsum(ylnmpri_ci ylnmsec_ci ylnmotros_ci)
+	replace ylnm_ci = . if ylnmpri_ci == . & ylnmsec_ci == . & ylnmotros_ci == .
+	
 	**********
 	* ynlm_ci *
 	**********
-	* Lista de ingresos NO laborales monetarios según PNADC 2024
-	local ynlm_vars v5001a2 v5002a2 v5003a2 v5004a2 v5005a2 v5006a2 v5007a2 v5008a2
-
-	* Limpiar valores especiales
-	foreach v of local ynlm_vars {
-		replace `v' = . if `v' < 0 | `v' >= 999999
+	foreach var of varlist v5001a2 v5002a2 v5003a2 v5004a2 v5005a2 v5006a2 v5007a2 { 
+	replace `var' = . if `var' >= 999999 | `var' < 0
 	}
-
-	* Sumar todos los ingresos NO laborales monetarios
-	egen double ynlm_ci = rowtotal(`ynlm_vars'), missing
-
-	* Aplicar grupo de referencia
-	replace ynlm_ci = . if edad_ci < 10
-
-	* Si todas son missing → dejar missing
-	replace ynlm_ci = . if ynlm_ci == 0 & ///
-		v5001a2 == . & v5002a2 == . & v5003a2 == . & ///
-		v5004a2 == . & v5005a2 == . & v5006a2 == . & ///
-		v5007a2 == . & v5008a2 == .
+	egen ynlm_ci = rsum(v5001a2 v5002a2 v5003a2 v5004a2 v5005a2 v5006a2 v5007a2) if edad_ci >= 10
+	replace ynlm_ci = . if (v5001a2 == . & v5002a2 == . & v5003a2 == . & v5004a2 == . & v5005a2 == . & v5006a2 == . & v5007a2 == .) | ynlm_ci < 0
 
 	***********
 	* ynlnm_ci *
 	***********
-    generate double ynlnm_ci = . 
+    generate ynlnm_ci = . 
     
 	**********
 	* ytot_ci *
@@ -842,17 +764,17 @@ rename *, lower
 	*********
 	* ylm_ch *
 	*********
-    bysort idh_ch: egen double ylm_ch = total(ylm_ci) if miembros_ci==1
-
+	by idh_ch, sort: egen ylm_ch = sum(ylm_ci) if miembros_ci == 1
+	
 	**********
 	* ylnm_ch *
 	**********
-	bysort idh_ch: egen double ylnm_ch = total(ylnm_ci) if miembros_ci==1
+	by idh_ch, sort: egen ylnm_ch = sum(ylnm_ci) if miembros_ci == 1
 
 	***********
 	* ynlnm_ch *
 	***********
-	bysort idh_ch: egen double ynlnm_ch = total(ynlnm_ci) if miembros_ci==1
+	gen ynlnm_ch = .
 
 	*********
 	* ynlm_ch *
@@ -891,12 +813,12 @@ rename *, lower
 	*************
 	* remesas_ci *
 	*************
-    generate double remesas_ci = .
+    generate remesas_ci = .
 
 	*************
 	* remesas_ch *
 	*************
-    bysort idh_ch: egen double remesas_ch = total(remesas_ci) if miembros_ci==1
+	gen remesas_ch = .
 
 	**********
 	* ypen_ci *
