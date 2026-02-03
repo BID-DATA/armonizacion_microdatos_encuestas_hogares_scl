@@ -1145,7 +1145,50 @@ replace migrantiguo5_ci = . if migrante_ci==0
 **********************
 *** miglac_ci ***
 **********************
-gen miglac_ci=.
+
+destring p3373s3, replace
+
+
+gen miglac_ci=(migrante_ci==1 & inlist(p3373s3, ///
+32,   /* Argentina */ ///
+68,   /* Bolivia */ ///
+76,   /* Brasil */ ///
+152,  /* Chile */ ///
+170,  /* Colombia */ ///
+188,  /* Costa Rica */ ///
+192,  /* Cuba */ ///
+214,  /* República Dominicana */ ///
+218,  /* Ecuador */ ///
+222,  /* El Salvador */ ///
+320,  /* Guatemala */ ///
+332,  /* Haití */ ///
+340,  /* Honduras */ ///
+484,  /* México */ ///
+558,  /* Nicaragua */ ///
+591,  /* Panamá */ ///
+600,  /* Paraguay */ ///
+604,  /* Perú */ ///
+630,  /* Puerto Rico */ ///
+858,  /* Uruguay */ ///
+862,  /* Venezuela */ ///
+44,   /* Bahamas */ ///
+52,   /* Barbados */ ///
+84,   /* Belice */ ///
+28,   /* Antigua y Barbuda */ ///
+212,  /* Dominica */ ///
+308,  /* Granada */ ///
+388,  /* Jamaica */ ///
+659,  /* Saint Kitts y Nevis */ ///
+662,  /* Santa Lucía */ ///
+670,  /* San Vicente y las Granadinas */ ///
+780,  /* Trinidad y Tabago */ ///
+328,  /* Guyana */ ///
+740,  /* Suriname */ ///
+533,  /* Aruba */ ///
+531   /* Curazao */ ///
+)) if migrante_ci!=. 
+
+
 	
 
 		****************************
