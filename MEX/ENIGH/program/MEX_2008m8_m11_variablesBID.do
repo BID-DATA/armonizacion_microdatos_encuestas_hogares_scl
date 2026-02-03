@@ -182,7 +182,7 @@ label var idp_ci "id de la persona en el hogar"
 *	pais_c
 ******************************
 
-gen str3 pais_c="mex"
+gen str3 pais_c="MEX"
 
 ******************************
 *	anio_c
