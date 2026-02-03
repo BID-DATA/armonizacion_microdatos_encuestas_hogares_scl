@@ -1075,11 +1075,10 @@ label variable asiste_ci "Asiste actualmente a la escuela"
 * Line of code with indicator pqnoasis_ci was deleted*****************
 * Line of code with indicator pqnoasis_ci was deleted
 
-******************
-***pqnoasis1_ci***
-******************
-**Daniela Zuluaga- Enero 2018: Se agrega la variable pqnoasis1_ci**
-gen pqnoasis1_ci=.
+**********************
+***razonesnoasis_ci***
+**********************
+gen byte razonesnoasis_ci = .
 
 ***************
 * Line of code with indicator repite_ci was deleted***************
@@ -1490,7 +1489,7 @@ do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&Exter
   ylm_ch ylnm_ch ylmnr_ch ynlm_ch ynlnm_ch ylmhopri_ci ylmho_ci /// Ingresos del hogar 
   nrylmpri_ci nrylmpri_ch /// No respuesta de ingresos  
   remesas_ci remesas_ch ypen_ci ypensub_ci /// Remesas y pensiones
-  aedu_ci eduui_ci eduuc_ci edupre_ci eduac_ci asiste_ci edupub_ci pqnoasis1_ci asispre_ci /// Educación
+  aedu_ci eduui_ci eduuc_ci edupre_ci eduac_ci asiste_ci edupub_ci razonesnoasis_ci asispre_ci /// Educación
   luz_ch luzmide_ch combust_ch piso_ch pared_ch techo_ch resid_ch dorm_ch cuartos_ch cocina_ch telef_ch refrig_ch /// Vivienda
   freez_ch auto_ch compu_ch internet_ch cel_ch vivi1_ch vivi2_ch viviprop_ch vivitit_ch vivialq_ch vivialqimp_ch /// Vivienda
   aguared_ch aguafconsumo_ch aguafuente_ch aguadist_ch aguadisp1_ch aguadisp2_ch /// Agua y saneamineto
