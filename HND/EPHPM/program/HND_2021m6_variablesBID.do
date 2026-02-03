@@ -144,8 +144,9 @@ tostring idp_ci, replace
 ***********
 *factor_ci*
 ***********
-* La encuesta es por hogares, no hay factor para individuos
-gen factor_ci=.
+* La encuesta es por hogares, no hay factor para individuos, por consistencia se mantiene mismo valor que variable factor
+gen factor_ci=factor
+label var factor_ci "Factor de Expansion de los individuos"
 
 ***********
 *factor_ch*
