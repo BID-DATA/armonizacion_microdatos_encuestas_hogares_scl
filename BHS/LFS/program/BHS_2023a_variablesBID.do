@@ -766,19 +766,10 @@ use `base_in', clear
 	**************
 	gen asiste_ci = .
 
-	* 1 = asiste a un centro educativo
-	replace asiste_ci = 1 if major_activity == 5
-
-	* 0 = no asiste
-	replace asiste_ci = 0 if inlist(major_activity, 1,2,3,4,6,7)
-
-	* missing
-	replace asiste_ci = . if major_activity == 9
-
 	**************
-	***pqnoasis1_ci***
+	***razonesnoasis_ci***
 	**************
-	gen byte pqnoasis1_ci = .
+	gen byte razonesnoasis_ci = .
 
 	**************
 	***edupub_ci***
