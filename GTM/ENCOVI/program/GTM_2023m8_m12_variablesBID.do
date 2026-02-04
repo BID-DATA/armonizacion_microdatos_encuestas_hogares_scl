@@ -93,7 +93,7 @@ label value zona_c zona_c
 gen str3 pais_c="GTM"
 label variable pais_c "Nonmbre del Pais"
 
-gen anio_c=2014
+gen anio_c=2023
 label variable anio_c "Año de la Encuesta"
 
 * Periodo de Referencia: del 07/00 al 11/00.
