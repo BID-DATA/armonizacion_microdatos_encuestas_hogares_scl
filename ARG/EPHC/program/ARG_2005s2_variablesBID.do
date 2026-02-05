@@ -1410,7 +1410,7 @@ replace bano_ch=6 if iv8==1
 replace bano_ch=1 if iv10<3 & iv10>=1  & iv11==1
 replace bano_ch=2 if iv10<3 & iv10>=1   & iv11==2
 replace bano_ch=3 if iv10<3 & iv10>=1   & iv11==3
-replace bano_ch=6 if iv10==3 | iv8 ==0
+replace bano_ch=6 if iv10==3|iv8 ==0|missing(iv8)
 replace bano_ch=4 if iv11==4
 
 ***************

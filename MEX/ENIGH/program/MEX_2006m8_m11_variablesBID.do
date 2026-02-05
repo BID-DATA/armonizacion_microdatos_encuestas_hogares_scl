@@ -3850,7 +3850,7 @@ replace bano_ch=0 if bano17==2
 replace bano_ch=1 if drenaje21==1 & bano17==1 
 replace bano_ch=2 if drenaje21==2 & bano17==1 
 replace bano_ch=4 if (drenaje21==4 | drenaje21==3) & bano17==1
-replace bano_ch=6 if drenaje21==5 & bano17==1 |(bano17 ==. & jefe_ci ==1)
+replace bano_ch=6 if drenaje21==5 & bano17==1 |(bano17 ==. & jefe_ci ==1) | bano17==""
 
 ***************
 ***banoex_ch***
@@ -3872,7 +3872,7 @@ replace banomejorado_ch =0 if (bano_ch ==0 | bano_ch>=4) & bano_ch!=6
 *sinbano_ch*
 ************
 gen sinbano_ch = 3
-replace sinbano_ch = 0 if bano17 == 1
+replace sinbano_ch = 0 if bano_ch >0
 replace sinbano_ch = 1 if bano17 == 2 & drenaje21 <=4
 replace sinbano_ch = 3 if bano17 == 2 & drenaje21 ==5
 *label var sinbano_ch "= 0 si tiene baño en la vivienda o dentro del terreno"
