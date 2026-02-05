@@ -1250,7 +1250,7 @@ replace bano_ch=0 if p5020==6
 replace bano_ch=1 if p5020==1
 replace bano_ch=2 if p5020==2
 replace bano_ch=4 if p5020==5
-replace bano_ch=6 if p5020==3 | p5020 ==4 | missing(P5020)
+replace bano_ch=6 if p5020==3 | p5020 ==4 | missing(p5020)
 replace bano_ch=6 if bano_ch ==. & jefe_ci==1
 
 ***************
