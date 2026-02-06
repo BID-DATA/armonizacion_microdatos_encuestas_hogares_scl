@@ -3522,7 +3522,7 @@ replace bano_ch=0 if excus==2
 replace bano_ch=1 if drenaje==1 & excus==1 
 replace bano_ch=2 if drenaje==2 & excus==1 
 replace bano_ch=4 if (drenaje==4 | drenaje==3) & excus==1
-replace bano_ch=6 if drenaje==5 & excus==1 | (drenaje==. & jefe_ci ==1)|excus==""
+replace bano_ch=6 if drenaje==5 & excus==1 | (drenaje==. & jefe_ci ==1)|missing(excus)
 
 ***************
 ***banoex_ch***
