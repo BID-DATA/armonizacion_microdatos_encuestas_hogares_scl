@@ -1615,11 +1615,12 @@ label var aguared_ch "Acceso a fuente de agua por red"
 *********************
 
 gen aguafconsumo_ch =.
-replace aguafconsumo_ch=1 if q12_26==1
+replace aguafconsumo_ch=1 if q12_26==1 | q12_26==4
 replace aguafconsumo_ch=2 if q12_26==6
 replace aguafconsumo_ch=3 if q12_26==3
 replace aguafconsumo_ch=6 if q12_26==2
-replace aguafconsumo_ch=6 if q12_26==5 | q12_26==4
+replace aguafconsumo_ch=7 if q12_26==5
+replace aguafconsumo_ch=10 if q12_26==97
 label var aguafconsumo_ch "Principal fuente de agua para beber"
 
 
@@ -1630,8 +1631,8 @@ label var aguafconsumo_ch "Principal fuente de agua para beber"
 gen aguafuente_ch=.
 replace aguafuente_ch=1 if q12_34==1 | q12_34==2
 replace aguafuente_ch=2 if q12_34==3
-replace aguafuente_ch=4 if q12_34==4
-replace aguafuente_ch=10 if q12_34==5 | q12_34==97 | missing(q12_34)
+replace aguafuente_ch=7 if q12_34==5
+replace aguafuente_ch=10 if q12_34==4 | q12_34==97 | missing(q12_34)
 label var aguafuente_ch "Principal fuente de agua para todos usos"
 
 

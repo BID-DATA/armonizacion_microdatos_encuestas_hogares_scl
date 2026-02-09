@@ -1382,7 +1382,7 @@ replace bano_ch=0 if P5020==6
 replace bano_ch=1 if P5020==1
 replace bano_ch=2 if P5020==2
 replace bano_ch=4 if P5020==5
-replace bano_ch=6 if P5020==3 | P5020 ==4
+replace bano_ch=6 if P5020==3 | P5020 ==4 |missing(P5020)
 replace bano_ch=6 if bano_ch ==. & jefe_ci==1
 
 ***************
@@ -1405,7 +1405,7 @@ replace banomejorado_ch =0 if (bano_ch ==0 | bano_ch>=4) & bano_ch!=6
 *sinbano_ch*
 ************
 gen sinbano_ch = 3
-replace sinbano_ch = 0 if P5020<6
+replace sinbano_ch = 0 if bano_ch>0
 
 *label var sinbano_ch "= 0 si tiene baño en la vivienda o dentro del terreno"
 
