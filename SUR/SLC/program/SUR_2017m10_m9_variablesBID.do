@@ -1162,7 +1162,7 @@ gen aguamide_ch = .
 gen bano_ch=.
 replace bano_ch=0
 replace bano_ch=2 if q13_14==1
-replace bano_ch=4 if q13_14==4 | q13_14==5
+replace bano_ch=0 if q13_14==4 | q13_14==5
 replace bano_ch=6 if q13_14==6 | q13_14==2|q13_14==3
 
 ***************
@@ -1182,7 +1182,7 @@ replace banomejorado_ch =0 if (bano_ch ==0 | bano_ch>=4) & bano_ch!=6
 *sinbano_ch*
 ************
 gen sinbano_ch = 3
-replace sinbano_ch = 0 if q13_14!=5
+replace sinbano_ch = 0 if bano_ch>0
 *label var sinbano_ch "= 0 si tiene baño en la vivienda o dentro del terreno"
 
 *************

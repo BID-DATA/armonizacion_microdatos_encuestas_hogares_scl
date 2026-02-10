@@ -1799,7 +1799,7 @@ replace bano_ch=1 if s8_12==1 & s8_14 ==1
 replace bano_ch=2 if s8_12==1 & s8_14 ==2
 replace bano_ch=3 if s8_12==1 & s8_14 ==3
 replace bano_ch=4 if s8_12==1 & s8_14 ==4
-
+replace bano_ch=6 if s8_12==1 & missing(s8_14)
 ***************
 ***banoex_ch***
 ***************
@@ -1819,7 +1819,7 @@ replace banomejorado_ch =0 if (bano_ch ==0 | bano_ch>=4) & bano_ch!=6
 *sinbano_ch*
 ************
 gen sinbano_ch = 3
-replace sinbano_ch = 0 if s8_12 == 1
+replace sinbano_ch = 0 if bano_ch>0
 *label var sinbano_ch "= 0 si tiene baño en la vivienda o dentro del terreno"
 
 *************
