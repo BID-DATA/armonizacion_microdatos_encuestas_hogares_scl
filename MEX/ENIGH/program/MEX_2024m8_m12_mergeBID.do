@@ -171,91 +171,49 @@ drop if (clave=="P016" & aguinaldo2!=1)
 
 *--------------------------------------------------------------
 * === DEFLACTORES: base agosto-2024 (ago24 = 100)
-*     TODO: Reemplaza estos números por los oficiales (INPC o deflactores ENIGH)
-*     Si aún no tienes dic-2024, deja dic24 comentado y usa dic23.
 *--------------------------------------------------------------
 
-* --- 2023 (fin de año, por si aguinaldo se pagó en dic-2023)
-* scalar dic23 = 97.500   // <-- TODO: reemplazar por valor oficial
+scalar feb24 = 0.982855
+scalar mar24 = 0.985678
+scalar abr24 = 0.987670
+scalar may24 = 0.985840
+scalar jun24 = 0.989567
+scalar jul24 = 0.999926
+scalar ago24 = 1.000000
+scalar sep24 = 1.000493
+scalar oct24 = 1.000493
 
-* --- 2024 (ene–jul confirmados; ago=100 base; dic24 opcional si ya está)
-scalar ene24 = 98.100   // <-- TODO
-scalar feb24 = 98.900   // <-- TODO
-scalar mar24 = 99.300   // <-- TODO
-scalar abr24 = 99.700   // <-- TODO
-scalar may24 = 100.100  // <-- TODO
-scalar jun24 = 100.400  // <-- TODO
-scalar jul24 = 100.700  // <-- TODO
-scalar ago24 = 100      // base
-
-* Si ya tienes INPC/deflactor de dic-2024, descomenta y pon el valor:
-* scalar dic24 = 103.100 // <-- TODO: reemplazar si está disponible
-
-*--------------------------------------------------------------
-* === Deflactación de ingresos mensuales (ing_1 ... ing_6)
-*     Notas:
-*     - El código asume que mes_k toma valores 2..10 (feb..oct) como en tu script.
-*     - Dividimos cada ing_k por el deflactor del mes correspondiente para llevar a ago-2024.
-*--------------------------------------------------------------
 destring mes_*, replace
-
-* Utilidad: divide por escalar sólo si existe
-capture program drop _defl_si
-program define _defl_si
-    syntax varname, mes(integer)
-    local e ""
-
-    if (`mes'==2)  local e "feb24"
-    else if (`mes'==3)  local e "mar24"
-    else if (`mes'==4)  local e "abr24"
-    else if (`mes'==5)  local e "may24"
-    else if (`mes'==6)  local e "jun24"
-    else if (`mes'==7)  local e "jul24"
-    else if (`mes'==8)  local e "ago24"
-    else if (`mes'==9)  local e "sep24"
-    else if (`mes'==10) local e "oct24"
-
-    capture confirm scalar `e'
-    if !_rc {
-        quietly replace `varlist' = `varlist' / `e'
-    }
-end
-
-* Aplica a ing_6 ... ing_1 de acuerdo a tus reglas originales:
-quietly {
-    replace ing_6=ing_6 if mes_6>=.   // asegura missing si mes no válido
-    _defl_si ing_6, mes(2)
-    _defl_si ing_6, mes(3)
-    _defl_si ing_6, mes(4)
-    _defl_si ing_6, mes(5)
-
-    _defl_si ing_5, mes(3)
-    _defl_si ing_5, mes(4)
-    _defl_si ing_5, mes(5)
-    _defl_si ing_5, mes(6)
-
-    _defl_si ing_4, mes(4)
-    _defl_si ing_4, mes(5)
-    _defl_si ing_4, mes(6)
-    _defl_si ing_4, mes(7)
-
-    _defl_si ing_3, mes(5)
-    _defl_si ing_3, mes(6)
-    _defl_si ing_3, mes(7)
-    _defl_si ing_3, mes(8)
-
-    _defl_si ing_2, mes(6)
-    _defl_si ing_2, mes(7)
-    _defl_si ing_2, mes(8)
-    * si no tienes sep24/oct24 definidos, omite estas dos líneas:
-    _defl_si ing_2, mes(9)
-    _defl_si ing_2, mes(10)
-
-    _defl_si ing_1, mes(7)
-    _defl_si ing_1, mes(8)
-    _defl_si ing_1, mes(9)
-    _defl_si ing_1, mes(10)
-}
+replace ing_6=ing_6/feb24 if mes_6==2
+replace ing_6=ing_6/mar24 if mes_6==3
+replace ing_6=ing_6/abr24 if mes_6==4
+replace ing_6=ing_6/may24 if mes_6==5
+ 
+ 
+replace ing_5=ing_5/mar24 if mes_5==3
+replace ing_5=ing_5/abr24 if mes_5==4
+replace ing_5=ing_5/may24 if mes_5==5
+replace ing_5=ing_5/jun24 if mes_5==6
+ 
+replace ing_4=ing_4/abr24 if mes_4==4
+replace ing_4=ing_4/may24 if mes_4==5
+replace ing_4=ing_4/jun24 if mes_4==6
+replace ing_4=ing_4/jul24 if mes_4==7
+ 
+replace ing_3=ing_3/may24 if mes_3==5
+replace ing_3=ing_3/jun24 if mes_3==6
+replace ing_3=ing_3/jul24 if mes_3==7
+replace ing_3=ing_3/ago24 if mes_3==8
+ 
+replace ing_2=ing_2/jun24 if mes_2==6
+replace ing_2=ing_2/jul24 if mes_2==7
+replace ing_2=ing_2/ago24 if mes_2==8
+replace ing_2=ing_2/sep24 if mes_2==9
+ 
+replace ing_1=ing_1/jul24 if mes_1==7
+replace ing_1=ing_1/ago24 if mes_1==8
+replace ing_1=ing_1/sep24 if mes_1==9
+replace ing_1=ing_1/oct24 if mes_1==10
 
 *--------------------------------------------------------------
 * === Tratamiento especial: utilidades y aguinaldo
@@ -1130,7 +1088,8 @@ use "$ruta\trabajos.dta",clear
 * Modificación Mayra Sáenz: Se unifica con la base de personas con la de ingresos, de vivienda y de gastos
 *_________________________________________________________________________________________________________*
 use "$ruta\poblacion.dta", clear //Base nueva
-gen str folio= folioviv + foliohog
+gen str2 hog2 = substr("0"+string(real(foliohog),"%9.0f"), -2, 2)
+gen str12 folio = folioviv + hog2
 order folio, first
 sort folio numren, stable
 
