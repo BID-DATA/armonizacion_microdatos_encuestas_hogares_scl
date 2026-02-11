@@ -627,7 +627,7 @@ drop vejez invalidez montepio orfandad otros
 	************
 	* ylmsec_ci *
 	************
-	gen  double ylmsec_ci3 = ytrabajocor-yoprcor   if emp_ci==1
+	gen  double ylmsec_ci = ytrabajocor-yoprcor   if emp_ci==1
 
 	**************
 	* ylmotros_ci *
