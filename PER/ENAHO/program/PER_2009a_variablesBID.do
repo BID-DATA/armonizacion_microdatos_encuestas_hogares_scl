@@ -370,7 +370,7 @@ label variable miembros_ci "Miembro del hogar"
 *******************************************************
 ***           VARIABLES DE DIVERSIDAD               ***
 *******************************************************
-**Pregunta (solo al jefe y cónyugue) por sus antepasados y de acuerdo a sus costumbres, �ud. se considera:(p46 p47) (1 quechua; 2 aymara; 3 nativo o indígena de la amazonía; 4 negro/ mulato/zambo; 5 blanco; 6 mestizo; 7 otro; 8 no sabe)
+**Pregunta (solo al jefe y cónyugue) por sus antepasados y de acuerdo a sus costumbres,  ud. se considera:(p46 p47) (1 quechua; 2 aymara; 3 nativo o indígena de la amazonía; 4 negro/ mulato/zambo; 5 blanco; 6 mestizo; 7 otro; 8 no sabe)
 **Remplazar la variable afroind_ci por missing ya que no se le pregunta a todos los miembros del hogar
 
 
@@ -1678,7 +1678,7 @@ replace banomejorado_ch =0 if (bano_ch ==0 | bano_ch>=4) & bano_ch!=6
 *sinbano_ch*
 ************
 gen sinbano_ch = 0
-replace sinbano_ch =3 if p111 == 9
+replace sinbano_ch =3 if p111 == 6
 
 
 *************
