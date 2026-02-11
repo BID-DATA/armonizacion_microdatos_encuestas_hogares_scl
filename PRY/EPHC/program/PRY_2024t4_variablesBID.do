@@ -1929,10 +1929,10 @@ e02tde	Ingreso mensual que recibe de ayuda familiar del exterior (deflactado)
 	replace aguafconsumo_ch = 4  if (v08==5 | v08==6)
 	replace aguafconsumo_ch = 5  if v08==10
 	replace aguafconsumo_ch = 6  if v08==12
-	replace aguafconsumo_ch = 7  if v08==8 | ((v08==1 | v08==2 |v08==3| v08==4 |v08==5|v08==6|v08==8|v08==10|v08==11|v08==12) & v09==5)
+	replace aguafconsumo_ch = 7  if inlist(v08,1,2,3,4,5,6,8,10,11,12) & inlist(v09,5,8)
 	replace aguafconsumo_ch = 8  if v08==13
 	replace aguafconsumo_ch = 9  if v08==9 | v08==7
-	replace aguafconsumo_ch = 10 if v08==14 
+	replace aguafconsumo_ch = 10 if inlist(v08,14,99) 
 
 
 	*****************
