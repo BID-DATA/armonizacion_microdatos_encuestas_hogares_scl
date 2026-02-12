@@ -489,9 +489,9 @@ label var tipopen_ci "Tipo de pension - variable original de cada pais"
 *cotizando_ci***   
 ****************
 gen byte cotizando_ci = .
-replace cotizando_ci = 1 if emp_ci==1 & segsoc=="1"   // cotiza
-replace cotizando_ci = 0 if emp_ci==1 & segsoc=="2"   // no cotiza
-label var cotizando_ci "Cotizante a la Seguridad Social"
+
+replace cotizando_ci = 1 if condocup_ci==1 & inscr_1==1   // cotiza por el trabajo
+replace cotizando_ci = 0 if condocup_ci==1 & inscr_1!=1   // no cotiza
 *Nota: solo seguro social publico, con el cual tenga derecho a pensiones en el futuro.
 ****************
 *cotizapri_ci***
