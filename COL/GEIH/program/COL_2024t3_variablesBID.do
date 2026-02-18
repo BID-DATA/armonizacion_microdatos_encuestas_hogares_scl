@@ -521,8 +521,8 @@ replace spublico_ci = (p6430 == 2 | p7050 ==2)
 ***************
 ***tamemp_ci ***
 ***************	
-
-* p7360 ¿Cuántas personas en total tenía la empresa, negocio o finca, donde ... trabajaba? 
+* Actualizado para considerar pregunta realizada a Ocupados 17/02/2026
+* p3069 ¿Cuántas personas en total tiene la empresa, negocio o finca, donde ... trabajaba? (Ocupados)
 
 * 1 -	Trabaja solo
 * 2 -	2 a 3 personas
@@ -536,9 +536,9 @@ replace spublico_ci = (p6430 == 2 | p7050 ==2)
 * 10 - 201 o más personas
 
 gen  byte tamemp_ci = .
-replace tamemp_ci=1 if p7360>=1 & p7360<=3
-replace tamemp_ci=2 if p7360>=4 & p7360<=7
-replace tamemp_ci=3 if p7360>=8 & p7360<=10
+replace tamemp_ci=1 if p3069>=1 & p3069<=3
+replace tamemp_ci=2 if p3069>=4 & p3069<=7
+replace tamemp_ci=3 if p3069>=8 & p3069<=10
 	
 ******************
 ***cotizando_ci***

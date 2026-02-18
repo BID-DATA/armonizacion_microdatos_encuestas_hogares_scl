@@ -537,10 +537,11 @@ label var cesante_ci "Desocupado - definicion oficial del pais"
 *************
 *tamemp_ci***
 *************
+* Actualizado para considerar pregunta realizada a Ocupados 17/02/2026
 gen tamemp_ci=.
-replace tamemp_ci=1 if p7360>=1 & p7360<=3
-replace tamemp_ci=2 if p7360>=4 & p7360<=7
-replace tamemp_ci=3 if p7360>=8 & p7360<=10
+replace tamemp_ci=1 if p3069>=1 & p3069<=3
+replace tamemp_ci=2 if p3069>=4 & p3069<=7
+replace tamemp_ci=3 if p3069>=8 & p3069<=10
 label var tamemp_ci "# empleados en la empresa"
 label define tamemp_ci 1 "Pequena" 2 "Mediana" 3 "Grande"
 label value tamemp_ci tamemp_ci
