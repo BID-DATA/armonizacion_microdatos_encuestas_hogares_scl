@@ -4,8 +4,8 @@
 			Script de merge - Unión de módulos en una sola base 
 País: Ecuador
 Año: 2024
-Autores: Oscar Jaramillo SPL / Jillie Chang SCL 
-Última versión: 07JUL2015
+Autores: Oscar Jaramillo SPL / Matias Rodriguez SCL 
+Última versión: 02/18/2026
 División: SPL/SCL y SCL/SCL - IADB
 *******************************************************************************/
 
@@ -22,9 +22,8 @@ local PAIS ECU
 local ENCUESTA ENEMDU
 local ANIO 2024
 local RONDA m12
-
 local log_file = "$ruta\harmonized\\`PAIS'\\`ENCUESTA'\log\\`PAIS'_`ANIO'`ronda'_variablesBID.log"
-local base_in  = "$ruta\survey\\`PAIS'\\`ENCUESTA'\\`ANIO'\\`RONDA'\data_orig\\" 
+local base_in  = "$ruta\survey\\`PAIS'\\`ENCUESTA'\\`ANIO'\\`RONDA'\data_orig" 
 local base_out = "$ruta\survey\\`PAIS'\\`ENCUESTA'\\`ANIO'\\`RONDA'\\data_merge\\`PAIS'_`ANIO'`RONDA'.dta"
 
 capture log close
@@ -35,50 +34,70 @@ log using "`log_file'", replace
 *****************************************************************************/
 
 * Base de hogares
-
-use "`base_in'\enemdu_vivienda_hogar_2024_12.dta", clear
-duplicates report id_vivienda id_hogar 
+import spss "`base_in'\enemdu_vivienda_hogar_2024_12.sav", clear
+tostring ciudad, replace
+duplicates r id_vivienda id_hogar
 /*--------------------------------------
    Copies | Observations       Surplus
 ----------+---------------------------
-        1 |        27610             0
+        1 |        8726             0
 --------------------------------------*/
+sort area estrato upm vivienda hogar 
+capture ssc install renlabv
+capture ssc install elabel
 
-* Sort de base
-use "`base_in'\enemdu_persona_2024_12.dta", clear
+renlabv
+saveold "`base_in'\hogares.dta",  version(12) replace
+
+
+* Base de personas
+import spss "`base_in'\enemdu_persona_2024_12.sav", clear
+tostring ciudad, replace
 duplicates report id_vivienda id_hogar id_persona
 /*
 --------------------------------------
    Copies | Observations       Surplus
 ----------+---------------------------
-        1 |        27610             0
+        1 |        27880             0
 --------------------------------------*/
-tostring ciudad, replace
 
-merge m:1 id_vivienda id_hogar  using "`base_in'\enemdu_vivienda_hogar_2024_12.dta"
+capture ssc install renlabv
+capture ssc install elabel
+
+renlabv
+sort area estrato upm vivienda hogar p01
+saveold "`base_in'\miembros.dta", version(12) replace
+
 
 /****************************************************************************
   III. Verificar que merge se haya hecho correctamente y no hayan duplicados
 *****************************************************************************/
-tab _merge
-drop if _merge <3
+merge m:1 area estrato upm  vivienda hogar using "`base_in'\hogares.dta"
 drop _merge
+
 
 duplicates report id_vivienda id_hogar id_persona
 /*
 --------------------------------------
    Copies | Observations       Surplus
 ----------+---------------------------
-        1 |        27610             0
+        1 |        27610              0
 --------------------------------------*/
 
 /***************************************************************************
   IV. Guardar la base
 ****************************************************************************/
-compress
-save "`base_out'", replace
+*destring fexp ingpc,  dpcomma replace
+*destring *, replace
+saveold "`base_out'", version(12) replace
 
-log close
+*log close
+
+
+
+
+
+
 
 
 
