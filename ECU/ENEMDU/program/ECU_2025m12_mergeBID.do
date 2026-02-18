@@ -36,7 +36,6 @@ log using "`log_file'", replace
 * Base de hogares
 import spss "`base_in'\enemdu_vivienda_hogar_2025_12.sav", clear
 tostring ciudad, replace
-id_vivienda id_hogar
 /*--------------------------------------
    Copies | Observations       Surplus
 ----------+---------------------------
