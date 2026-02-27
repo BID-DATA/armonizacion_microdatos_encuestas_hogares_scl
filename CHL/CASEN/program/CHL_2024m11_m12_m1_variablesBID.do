@@ -272,42 +272,35 @@ use "`base_in'", clear
 ***           VARIABLES DE DIVERSIDAD               ***
 
 *******************************************************
-	*********
-	*afro_ci*
-	*********
-	gen byte afro_ci = . 	  // se queda como missing (.) si no existe la pregunta
-	
-	*********
-	*indi_ci*
-	*********	
-	gen byte ind_ci =. 		  // se queda como missing (.) si no existe la pregunta
 
-	**************
-	*noafroind_ci*
-	**************
-	gen byte noafroind_ci =.   // se queda como missing (.) si no existe la pregunta
-	
-	
-	**************
-	*afroind_ano_c*
-	**************
-	gen byte afroind_ano_c =.   // se queda como missing (.) si no existe la pregunta	
+	*************
+	***afro_ci***
+	*************
+	gen byte afro_ci = . 
+	replace afro_ci = 1 if r5a==1 | r5b==1
+	replace afro_ci = 0 if r5a == 2 & r5b == 2
 
 	************
-	*afroind_ci*
+	***ind_ci***
 	************
-	gen byte afroind_ci=. 
-	replace afroind_ci=1 if (r3 >=1 & r3 <=10 ) /* se incluyó "10. Chango" a la lista */
-	replace afroind_ci=2 if r3==0
-	replace afroind_ci=3 if r3==11  /* changed to "11. Otro" this year */
-	
+	gen byte ind_ci = .
+	replace ind_ci = 1 if inrange(r3, 1, 11)
+	replace ind_ci = 0 if r3 == 12
+
+	******************
+	***noafroind_ci***
+	******************
+	gen byte noafroind_ci = .
+	replace noafroind_ci = 1 if (afro_ci == 0 & ind_ci == 0)
+	replace noafroind_ci = 0 if (afro_ci == 1 | ind_ci == 1)
+
 	*********
 	*afro_ch*
 	*********
 	gen byte afro_jefe = afro_ci if relacion_ci==1
 	egen afro_ch  = max(afro_jefe), by(idh_ch) 
 	drop afro_jefe
-	
+
 	********
 	*ind_ch*
 	********	
@@ -321,35 +314,51 @@ use "`base_in'", clear
 	gen byte noafroind_jefe = noafroind_ci if relacion_ci==1
 	egen noafroind_ch = max(noafroind_jefe), by(idh_ch) 
 	drop noafroind_jefe
+	
+	*******************
+	***afroind_ano_c***
+	*******************
+	gen afroind_ano_c = 2024
+
+	***************
+	***afroind_ci***
+	***************
+	gen afroind_ci =. 
+	replace afroind_ci = 1 if ind_ci==1
+	replace afroind_ci = 2 if afro_ci==1
+	replace afroind_ci = 3 if noafroind_ci==1
 
 	************
 	*afroind_ch*
 	************
- 	gen byte afroind_jefe = afroind_ci if jefe_ci==1
+	gen byte afroind_jefe = afroind_ci if jefe_ci==1
 	egen afroind_ch = min(afroind_jefe), by(idh_ch) 
 	drop afroind_jefe 
+
 
 	********
 	*dis_ci*
 	********
 	gen byte dis_ci=.
-	
+	replace dis_ci = 1 if inrange(h7a,2,4) | inrange(h7b,2,4) | inrange(h7c,2,4) | inrange(h7d,2,4) | inrange(h7e,2,4) | inrange(h7f,2,4)
+	replace dis_ci = 0 if h7a==1 & h7b==1 & h7c==1 & h7d==1 & h7e==1 & h7f==1
+
 	**********
 	*disWG_ci*
 	**********
 	gen byte disWG_ci=.
-	replace disWG_ci=1 if disc_wg==1
-	replace disWG_ci=0 if disc_wg==0
-	
+	replace disWG_ci=1 if inrange(h7a,3,4) | inrange(h7b,3,4) | inrange(h7c,3,4) | inrange(h7d,3,4) | inrange(h7e,3,4) | inrange(h7f,3,4)
+	replace disWG_ci=0 if inrange(h7a,1,2) & inrange(h7b,1,2) & inrange(h7c,1,2) & inrange(h7d,1,2) & inrange(h7e,1,2) & inrange(h7f,1,2)
+
 	********
 	*dis_ch*
 	********
 	egen byte dis_ch = max(dis_ci), by(idh_ch) 
-	
+
 	******************
 	*ISOalpha3_dis_ci*
 	******************
-	gen byte chl_dis_ci = disWG_ci
+	gen byte CHL_dis_ci = dis_ci
 	
 ****************************
 ***VARIABLES DE MERCADO LABORAL***
@@ -1198,3 +1207,4 @@ local base_out = "$ruta\harmonized\\`PAIS'\\`ENCUESTA'\data_arm\\`PAIS'_`ANO'`ro
 saveold "`base_out'", version(12) replace
 
 cap log close
+
