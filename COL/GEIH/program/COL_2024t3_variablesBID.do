@@ -562,8 +562,7 @@ gen  byte instcot_ci = p6930
 ***formal_ci***
 **************
 gen byte formal_ci = .
-replace formal_ci  =  1 if (cotizando_ci == 1 | afiliado_ci == 1) & condocup_ci == 1
-replace formal_ci = 0 if cotizando_ci == 0 & (condocup_ci == 1 | condocup_ci == 2)
+replace formal_ci  = (cotizando_ci == 1)
 	
 *********************
 ***tipocontrato_ci***
