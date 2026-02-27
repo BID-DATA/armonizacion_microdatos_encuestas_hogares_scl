@@ -1197,8 +1197,13 @@ Estado a través de los programas sociales.
 	gen ln_ci = . 
 	replace ln_ci = lp
 	
-
-	
+recast str244 e4a_esp e7 o7_esp o9a o9b o24, force
+foreach v of varlist _all {
+    local lbl : variable label `v'
+    if length("`lbl'") > 80 {
+        label variable `v' `"`=substr("`lbl'", 1, 80)'"'
+    }
+}
 	
 local log_file = "$ruta\harmonized\\`PAIS'\\`ENCUESTA'\log\\`PAIS'_`ANO'`ronda'_variablesBID.log"
 local base_in  = "$ruta\survey\\`PAIS'\\`ENCUESTA'\\`ANO'\\`ronda'\data_merge\\`PAIS'_`ANO'`ronda'.dta"
@@ -1207,4 +1212,5 @@ local base_out = "$ruta\harmonized\\`PAIS'\\`ENCUESTA'\data_arm\\`PAIS'_`ANO'`ro
 saveold "`base_out'", version(12) replace
 
 cap log close
+
 
