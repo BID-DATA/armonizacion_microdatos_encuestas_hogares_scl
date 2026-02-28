@@ -12,7 +12,7 @@ set more off
 * El servidor contiene las bases de datos MECOVI.
 *________________________________________________________________________________________________________________*
  
-/*global ruta = "${surveysFolder}"
+global ruta = "${surveysFolder}"
 
 local PAIS TTO
 local ENCUESTA HBS
@@ -45,9 +45,9 @@ Detalle de procesamientos o modificaciones anteriores:
 
 use "`base_in'", clear
 
-*/
 
-use "/Users/linamariaariasparedes/Library/CloudStorage/OneDrive-Personal/Work/BID/2025/SCLData/Bases/survey/TTO/HBS 2023/TTO_2023a.dta"
+
+
 **********************************
 ***VARIABLES DEL IDENTIFICACION***
 **********************************
