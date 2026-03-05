@@ -1,5 +1,5 @@
-*Elaboración: Mayra Sáenz
-*Marzo,2017
+*Elaboración: Lina Arias
+*febrero, 2026
 global ruta = "${surveysFolder}"
 
 local PAIS TTO
