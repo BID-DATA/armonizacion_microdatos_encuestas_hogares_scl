@@ -11,22 +11,20 @@ set more off
 * El servidor contiene las bases de datos ENEIC.
 *________________________________________________________________________________________________________________*
  
-*global ruta = "${surveysFolder}"
-
-global ruta = "C:\Users\RSENRA\OneDrive - Inter-American Development Bank Group\Desktop\GTM 2025"
+global ruta = "${surveysFolder}"
+global gitFolder = "${gitFolder}"
 
 local PAIS GTM
 local ENCUESTA ENEIC
 local ANO "2025"
 local ronda t1
-*local log_file = "$ruta\harmonized\\`PAIS'\\`ENCUESTA'\log\\`PAIS'_`ANO'`ronda'_variablesBID.log"
+
+local log_file = "$ruta\harmonized\\`PAIS'\\`ENCUESTA'\log\\`PAIS'_`ANO'`ronda'_variablesBID.log"
 local base_in  = "$ruta\survey\\`PAIS'\\`ENCUESTA'\\`ANO'\\`ronda'\data_merge\\`PAIS'_`ANO'`ronda'.dta"
 local base_out = "$ruta\harmonized\\`PAIS'\\`ENCUESTA'\data_arm\\`PAIS'_`ANO'`ronda'_BID.dta"
-   
-*capture log close
-*cap log using "`log_file'", replace 
-*
-*cap log off
+
+capture log close
+log using "`log_file'", replace 
 
 /***************************************************************************
               BASES DE DATOS DE ENCUESTA DE HOGARES - SOCIOMETRO 
