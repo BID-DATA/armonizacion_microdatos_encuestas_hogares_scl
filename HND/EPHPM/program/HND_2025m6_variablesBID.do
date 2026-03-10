@@ -141,7 +141,7 @@ use "`base_in'", clear
 	*********
 	gen byte sexo_ci=.
 	replace sexo_ci = 1 if SEXO==1
-	replace sexo_ci = 2 if sexo==2
+	replace sexo_ci = 2 if SEXO==2
 
 	*********
 	*edad_ci*
@@ -781,12 +781,12 @@ use "`base_in'", clear
 	*************
 	*pqnoasis1_ci*
 	**************
-	gen pqnoasis1_ci=. 
-	replace pqnoasis1_ci =  1 if inlist(ED04,8, 13)
-	replace pqnoasis1_ci =  2 if inlist(ED04,3)
-	replace pqnoasis1_ci =  3 if  inlist(ED04,4, 12, 6)
-	replace pqnoasis1_ci =  4 if inlist(ED04,5)
-	replace pqnoasis1_ci =  5 if inlist(ED04,1,	2, 7, 9, 10, 11,12,14,15)
+	gen razonesnoasis_ci=. 
+	replace razonesnoasis_ci =  1 if inlist(ED04,8, 13)
+	replace razonesnoasis_ci =  2 if inlist(ED04,3)
+	replace razonesnoasis_ci =  3 if  inlist(ED04,4, 12, 6)
+	replace razonesnoasis_ci =  4 if inlist(ED04,5)
+	replace razonesnoasis_ci =  5 if inlist(ED04,1,	2, 7, 9, 10, 11,12,14,15)
 	
 
 	***********
@@ -1120,12 +1120,46 @@ use "`base_in'", clear
 	replace ln_ci = .
 	
 
+		
+/*_____________________________________________________________________________________________________*/
+* Asignación de etiquetas e inserción de variables externas: tipo de cambio, Indice de Precios al 
+* Consumidor (2011=100), Paridad de Poder Adquisitivo (PPA 2011),  líneas de pobreza
+/*_____________________________________________________________________________________________________*/
+
+
+do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&ExternalVars_Harmonized_DataBank.do"
+
+/*_____________________________________________________________________________________________________*/
+* Verificación de que se encuentren todas las variables armonizadas 
+/*_____________________________________________________________________________________________________*/
+
+order region_BID_c region_c pais_c anio_c mes_c zona_c factor_ch idh_ch	idp_ci factor_ci factor_ch /// Identificación 
+sexo_ci edad_ci relacion_ci civil_ci jefe_ci nconyuges_ch nhijos_ch notropari_ch notronopari_ch nempdom_ch /// Demográficas 
+clasehog_ch nmiembros_ch miembros_ci nmayor21_ch nmenor21_ch nmayor65_ch nmenor6_ch nmenor1_ch /// Demográficas 
+afro_ci ind_ci noafroind_ci afroind_ci afro_ch ind_ch noafroind_ch afroind_ch dis_ci disWG_ci dis_ch HND_dis_ci /// Diversidad
+condocup_ci categoinac_ci emp_ci cesante_ci desemp_ci subemp_ci durades_ci pea_ci nempleos_ci antiguedad_ci desalent_ci  /// Empleo
+horaspri_ci horastot_ci tiempoparc_ci categopri_ci categosec_ci rama_ci spublico_ci tamemp_ci cotizando_ci instcot_ci	afiliado_ci /// Empleo 
+formal_ci tipocontrato_ci ocupa_ci pension_ci	pensionsub_ci tipopen_ci instpen_ci	ylmpri_ci /// Empleo 
+ylmpri_ci ylnmpri_ci ylmsec_ci ylnmsec_ci ylmotros_ci	ylnmotros_ci  ylm_ci ylnm_ci ynlm_ci ynlnm_ci nrylmpri_ci /// Ingresos individuo 
+ylm_ch ylnm_ch ynlm_ch ynlnm_ch ylmhopri_ci ylmho_ci /// Ingresos del hogar 
+nrylmpri_ci nrylmpri_ch /// No respuesta de ingresos  
+remesas_ci remesas_ch ypen_ci ypensub_ci /// Remesas y pensiones
+aedu_ci eduui_ci eduuc_ci edupre_ci eduac_ci asiste_ci edupub_ci razonesnoasis_ci asispre_ci /// Educación
+luz_ch luzmide_ch combust_ch piso_ch pared_ch techo_ch resid_ch dorm_ch cuartos_ch cocina_ch telef_ch refrig_ch /// Vivienda
+freez_ch auto_ch compu_ch internet_ch cel_ch vivi1_ch viviprop_ch vivitit_ch vivialq_ch vivialqimp_ch /// Vivienda
+aguared_ch aguafconsumo_ch aguafuente_ch aguadist_ch aguadisp1_ch aguadisp2_ch /// Agua y saneamineto
+aguatrat_ch aguamala_ch aguamejorada_ch aguamide_ch bano_ch banoex_ch banomejorado_ch sinbano_ch  /// Agua y saneamineto
+migrante_ci migrantiguo5_ci /// Migración
+lp19_2011 lp31_2011 lp5_2011 lpe_ci lp365_2017 lp685_2017 lp14_2017 lp81_2017 tc_c cpi_c cpi2011 cpi2017 ratio_cpi2011 ratio_cpi2017 /// Fuente externa
+ppp_c ppp_2011 ppp_2017 , first /// Fuente externa 
 	
-	
-local log_file = "$ruta\harmonized\\`PAIS'\\`ENCUESTA'\log\\`PAIS'_`ANO'`ronda'_variablesBID.log"
-local base_in  = "$ruta\survey\\`PAIS'\\`ENCUESTA'\\`ANO'\\`ronda'\data_merge\\`PAIS'_`ANO'`ronda'.dta"
-local base_out = "$ruta\harmonized\\`PAIS'\\`ENCUESTA'\data_arm\\`PAIS'_`ANO'`ronda'_BID.dta"
-   
+*Versión 12 no acepta labels con más de 79 caracteres
+ foreach i of varlist _all {
+local longlabel: var label `i'
+local shortlabel = substr(`"`longlabel'"',1,79)
+label var `i' `"`shortlabel'"'
+}
+
 saveold "`base_out'", version(12) replace
 
 cap log close
