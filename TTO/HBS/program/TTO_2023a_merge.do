@@ -1,6 +1,6 @@
 *Elaboración: Lina Arias
 *febrero, 2026
-global ruta = "${surveysFolder}"
+global ruta = "\\sapidbshares.file.core.windows.net\\idbrestrictedshares\\SCL_DATAFILES_RESTRICTED"
 
 local PAIS TTO
 local ENCUESTA HBS
