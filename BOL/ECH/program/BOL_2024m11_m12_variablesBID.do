@@ -1,4 +1,4 @@
-* (Versión Stata 12)
+* (Versión Stata 19)
 clear
 set more off
 *________________________________________________________________________________________________________________*
@@ -18,16 +18,12 @@ local ENCUESTA ECH
 local ANO "2024"
 local ronda m11_m12
 
-/*
 local log_file = "$ruta\harmonized\\`PAIS'\\`ENCUESTA'\\log\\`PAIS'_`ANO'`ronda'_variablesBID.log"
 local base_in  = "$ruta\survey\\`PAIS'\\`ENCUESTA'\\`ANO'\\`ronda'\data_merge\\`PAIS'_`ANO'`ronda'.dta"
 local base_out = "$ruta\harmonized\\`PAIS'\\`ENCUESTA'\data_arm\\`PAIS'_`ANO'`ronda'_BID.dta"
 
 capture log close
 log using "`log_file'", replace
-*/
-local base_in  = "C:\Users\MAYTES\OneDrive - Inter-American Development Bank Group\Documents\SCL Data\Armonizacion Bolivia 2024\2024\m11_m12\data_merge\BOL_2024m11_m12.dta"
-local base_out = "C:\Users\MAYTES\OneDrive - Inter-American Development Bank Group\Documents\SCL Data\Armonizacion Bolivia 2024\2024\m11_m12\BOL_2024m11_m12.dta"
 
 /***************************************************************************
                  BASES DE DATOS DE ENCUESTA DE HOGARES - SOCIOMETRO 
