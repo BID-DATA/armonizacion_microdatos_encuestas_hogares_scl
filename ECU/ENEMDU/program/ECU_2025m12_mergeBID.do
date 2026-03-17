@@ -20,7 +20,7 @@ global ruta = "${surveysFolder}"
  
 local PAIS ECU
 local ENCUESTA ENEMDU
-local ANIO 2022
+local ANIO 2025
 local RONDA m12
 local log_file = "$ruta\harmonized\\`PAIS'\\`ENCUESTA'\log\\`PAIS'_`ANIO'`ronda'_variablesBID.log"
 local base_in  = "$ruta\survey\\`PAIS'\\`ENCUESTA'\\`ANIO'\\`RONDA'\data_orig" 
