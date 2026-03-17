@@ -1,4 +1,4 @@
-* (Versión Stata 12)
+* (Versión Stata 19)
 clear
 set more off
 
@@ -13,11 +13,8 @@ El servidor contiene las bases de datos MECOVI.
 
 ssc install elabel
  
-*global in = "${surveysFolder}\survey\BOL\ECH\2024\m11_m12\data_orig\BD_EH2024"
-*global out = "${surveysFolder}\survey\BOL\ECH\2024\m11_m12\data_merge\"
-
-global in = "C:\Users\MAYTES\OneDrive - Inter-American Development Bank Group\Documents\SCL Data\Armonizacion Bolivia 2024\2024\m11_m12\data_orig"
-global out = "C:\Users\MAYTES\OneDrive - Inter-American Development Bank Group\Documents\SCL Data\Armonizacion Bolivia 2024\2024\m11_m12\data_merge"
+global in = "${surveysFolder}\survey\BOL\ECH\2024\m11_m12\data_orig\BD_EH2024"
+global out = "${surveysFolder}\survey\BOL\ECH\2024\m11_m12\data_merge"
 
 /* 
                  BASES DE DATOS DE ENCUESTA DE HOGARES 
@@ -33,21 +30,21 @@ SCL/GDI - IADB
 
 
 *** Vivienda *****
-	import spss using "$in\BD_EH2024\EH2024_Vivienda.sav", case(lower) clear
+	import spss using "$in\EH2024_Vivienda.sav", case(lower) clear
 	duplicates report folio // 12178 obs
 	elabel rename (*) (*_vivienda)
 	compress
 	save "$in\eh2024_vivienda.dta", replace
 
 *** Persona ***
-	import spss using "$in\BD_EH2024\EH2024_Persona.sav", case(lower) clear
+	import spss using "$in\EH2024_Persona.sav", case(lower) clear
 	duplicates report folio nro // 39497 obs
 	elabel rename (*) (*_persona)
 	compress
 	save "$in\eh2024_persona.dta", replace
 
 *** Equipamiento ***
-	import spss using "$in\BD_EH2024\EH2024_Equipamiento.sav", case(lower) clear
+	import spss using "$in\EH2024_Equipamiento.sav", case(lower) clear
 
 	rename s08b_1 posee_
 	rename s08b_2 nro_
