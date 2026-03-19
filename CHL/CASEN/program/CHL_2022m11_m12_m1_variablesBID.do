@@ -1219,13 +1219,10 @@ label var freez_ch "El hogar posee congelador"
 ***************
 * auto_ch     * 
 ***************
-/*
-bysort idh_ch: egen auto_ch=sum(r15==1) // No está la pregunta en la encuesta 2020
+
+bysort idh_ch: egen auto_ch=sum(r15==1)
 replace auto_ch=1 if auto_ch>=1 & auto_ch!=.
 replace auto_ch=. if r15==9
-label var auto_ch "El hogar posee automovil particular"
-*/
-gen auto_ch=. // No está la pregunta en la encuesta 2020
 label var auto_ch "El hogar posee automovil particular"
 
 ***************
@@ -1264,9 +1261,9 @@ label var cel_ch "El hogar tiene servicio telefónico celular"
 ***************
 * vivi1_ch    * 
 *************** 
-gen vivi1_ch=1 if v1==1
-replace vivi1_ch=2 if v1==2
-replace vivi1_ch=3 if v1>=6 & v1<=10
+gen vivi1_ch=1 if v1>=1 & v1<=3
+replace vivi1_ch=2 if v1>=4 & v1<=5
+replace vivi1_ch=3 if v1>=6 & v1!=.
 label var vivi1_ch "Tipo de vivienda en la que reside el hogar"
 label def vivi1_ch 1"Casa" 2"Departamento" 3"Otros"
 label val vivi1_ch vivi1_ch
