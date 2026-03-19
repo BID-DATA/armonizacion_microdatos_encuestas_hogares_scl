@@ -25,7 +25,7 @@ global gitFolder = "${gitFolder}"
 
 local PAIS ECU
 local ENCUESTA ENEMDU
-local ANO "2024"
+local ANO "2025"
 local ronda m12 
 
 
@@ -92,7 +92,7 @@ use `base_in', clear
 	************
 	***anio_c***
 	************
-	gen anio_c = 2024
+	gen anio_c = 2025
 
 	***********
 	***mes_c***
@@ -1090,13 +1090,13 @@ use `base_in', clear
 	***ln_ci***
 	***********
 	* https://www.ecuadorencifras.gob.ec/pobreza-por-ingresos/
-	gen ln_ci = 91.43
+	gen ln_ci = 92.4
 
 	*************
 	***lpe_ci ***
 	*************
 	* https://www.ecuadorencifras.gob.ec/pobreza-por-ingresos/
-	gen lpe_ci = 51.53
+	gen lpe_ci = 52.07
 	
 	
 local log_file = "$ruta\harmonized\\`PAIS'\\`ENCUESTA'\log\\`PAIS'_`ANO'`ronda'_variablesBID.log"
