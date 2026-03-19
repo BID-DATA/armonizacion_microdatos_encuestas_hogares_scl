@@ -81,7 +81,7 @@ use "`base_in'", clear
 	*************
 	* pais_c    *
 	*************
-	gen str3 pais_c="..."
+	gen str3 pais_c="CHL"
 
 	******
 	*anio*
@@ -378,11 +378,13 @@ use "`base_in'", clear
 	*******************
 	***categoinac_ci***
 	*******************
-	gen byte categoinac_ci = .
-	replace categoinac_ci = 1 if (o7==12 & condocup_ci == 3)
-	replace categoinac_ci = 2 if  (o7==11 & condocup_ci == 3)
-	replace categoinac_ci = 3 if  (o7==10 & condocup_ci == 3)
-	replace categoinac_ci = 4 if  ((categoinac_ci != 1 | categoinac_ci != 2 | categoinac_ci != 3) & condocup_ci == 3)
+	gen categoinac_ci=1 if o7==12
+	replace categoinac_ci=2 if o7==11
+	replace categoinac_ci=3 if o7==10
+	replace categoinac_ci=4 if (o7>=1 & o7<=9 ) | (o7>= 13 & o7<=17)
+	label var categoinac_ci "Condición de inactividad"
+	label define categoinac_ci 1 "jubilado/pensionado" 2 "estudiante" 3 "quehaceres_domesticos" 4 "otros_inactivos"
+	label value categoinac_ci categoinac_ci
 
 	
 	**********
@@ -402,7 +404,7 @@ use "`base_in'", clear
 	***desemp_ci***
 	***************	
 	gen byte desemp_ci = .
-	replace desemp_ci = (condocup_ci == 2) if condocup_ci! = .
+	replace desemp_ci = (condocup_ci == 2) if condocup_ci != .
 	
 	***************
 	***subemp_ci***
@@ -618,7 +620,7 @@ replace instpen_ci = y29_3e if invalidez == 1
 replace instpen_ci = y29_6f if montepio == 1
 replace instpen_ci = y29_3g if orfandad == 1
 
-replace instpen_ci =. if instpen==-88
+replace instpen_ci =. if instpen_ci==-88
 label define instpen_ci 1 "AFP" 2 "IPS ex-INP" 3 "CAPREDENA o DIPRECA" 4 "MUTUAL O ISL" 5 "COMPANIA DE SEGUROS" 6 "Otros"
 label value instpen_ci instpen_ci
 	
@@ -728,7 +730,7 @@ Estado a través de los programas sociales.
 	*********
 	* ynlm_ch *
 	*********
-    egen double ynlm_ch = rowtotal(ynlm_ci) if miembros_ci==1, mi
+	by idh_ch, sort: egen ynlm_ch=sum(ynlm_ci) if miembros_ci==1, missing
  
 	**********
 	* ytot_ch *
@@ -883,9 +885,10 @@ Estado a través de los programas sociales.
 	***********
 	*combust_ch*
 	***********
-	gen combust_ch=.
-	replace combust_ch=0 if  v34a==1 | v34a==2 | v34a==5 | v34a==6
-	replace combust_ch=1 if  v34a==	3 | v34a==4 | v34a==7 | v34a==8	
+	gen combust_ch = .
+	replace combust_ch = 1 if inlist(v34a, 1, 2, 5, 6)   /* gas licuado, gas red, electricidad, solar */
+	replace combust_ch = 0 if inlist(v34a, 3, 4, 7, 8)   /* kerosene, leña/carbón, no usa, no tiene */
+
 	
 	***********
 	*piso_ch*
@@ -914,8 +917,10 @@ Estado a través de los programas sociales.
 	***********
 	*dorm_ch*
 	***********
-	gen dorm_ch=.
-	replace dorm_ch=v27a if v27a!=-88
+	
+	gen dorm_ch=v27a
+	replace dorm_ch=v29a if p10==2
+	recode dorm_ch (-88=.)
 	
 	***********
 	*cuartos_ch*
@@ -950,8 +955,11 @@ Estado a través de los programas sociales.
 	***********
 	*auto_ch*
 	***********
-	gen auto_ch=.
 
+	bysort idh_ch: egen auto_ch=sum(r15==1)
+	replace auto_ch=1 if auto_ch>=1 & auto_ch!=.
+	replace auto_ch=. if r15==9
+	label var auto_ch "El hogar posee automovil particular"
 	
 	***********
 	*compu_ch*
@@ -967,13 +975,15 @@ Estado a través de los programas sociales.
 	replace internet_ch=0 if internet_ch==. & (r17a==2 | r17b==2 | r17c==2 | r17d==2 | r17e==2)
 	
 	
-	***********
-	*vivi1_ch*
-	***********
-	gen vivi1_ch=.
-	*replace vivi1_ch=1 if ...	
-	*replace vivi1_ch=2 if ...
-	*replace vivi1_ch=3 if ...
+	***************
+	* vivi1_ch    * 
+	*************** 
+	gen vivi1_ch=1 if v1>=1 & v1<=3
+	replace vivi1_ch=2 if v1>=4 & v1<=5
+	replace vivi1_ch=3 if v1>=6 & v1!=.
+	label var vivi1_ch "Tipo de vivienda en la que reside el hogar"
+	label def vivi1_ch 1"Casa" 2"Departamento" 3"Otros"
+	label val vivi1_ch vivi1_ch
 	
 	***********
 	*viviprop_ch*
@@ -1012,47 +1022,31 @@ Estado a través de los programas sociales.
 	***********
 	gen byte aguared_ch =.
 	replace aguared_ch = 1 if v20==1
-	replace aguared_ch = 0 if v20>1 & v20<8
+	replace aguared_ch = 0 if v20!=1
 
 	***********
 	*aguafconsumo _ch*
 	***********
-	gen byte aguafconsumo_ch =.
-	/*replace aguafconsumo _ch = 0 if …
-	replace aguafconsumo _ch = 1 if …
-	replace aguafconsumo _ch = 2 if …
-	replace aguafconsumo _ch = 3 if …
-	replace aguafconsumo _ch = 4 if …
-	replace aguafconsumo _ch = 5 if …
-	replace aguafconsumo _ch = 6 if …
-	replace aguafconsumo _ch = 7 if …
-	replace aguafconsumo _ch = 8 if …
-	replace aguafconsumo _ch = 9 if …
-	replace aguafconsumo _ch = 10 if …
-*/
+	gen aguafconsumo_ch = 0
+
 	***********
 	*aguafuente_ch*
 	***********	
-	gen byte aguafuente_ch =.
-	/*replace aguafuente_ch = 1 if …
-	replace aguafuente_ch = 2 if …
-	replace aguafuente_ch = 3 if …
-	replace aguafuente_ch = 4 if …
-	replace aguafuente_ch = 5 if …
-	replace aguafuente_ch = 6 if …
-	replace aguafuente_ch = 7 if …
-	replace aguafuente_ch = 8 if …
-	replace aguafuente_ch = 9 if …
-	replace aguafuente_ch = 10 if …
-	*/
+	gen aguafuente_ch=.
+	replace aguafuente_ch = 1 if v20==1 & v22<=2
+	replace aguafuente_ch = 2 if v20==1 & v22>2
+	replace aguafuente_ch = 6 if v20==6
+	replace aguafuente_ch = 8 if v20==5
+	replace aguafuente_ch = 10 if (v20==7 | v20==4)
+	replace aguafuente_ch = 10 if aguafuente_ch ==. & jefe_ci==1
+	
 	******************
 	** aguadist_ch ** - 
 	*****************
-	gen byte aguadist_ch  =.
-	replace aguadist_ch = 1 if v22==1
-	replace aguadist_ch = 2 if v22==2
-	replace aguadist_ch = 3 if v22==3
-	replace aguadist_ch = 0 if missing(aguadist_ch) & aguafuente_ch!=.
+	gen aguadist_ch=0
+	replace aguadist_ch=1 if v22==1
+	replace aguadist_ch=2 if v22==2
+	replace aguadist_ch=3 if v22==3
 	
 	******************
 	** aguadisp1_ch ** - 
@@ -1114,19 +1108,14 @@ Estado a través de los programas sociales.
 	******************
 	** banoex_ch ** - 
 	*****************
-	gen byte banoex_ch = .
-	*replace banoex_ch = 0 if …
-	*replace banoex_ch = 1 if …
+	gen byte banoex_ch = 9
 	
 	******************
 	** sinbano_ch ** - 
 	*****************
-	gen sinbano_ch = .
-	*replace sinbano_ch = 0 if …
-	*replace sinbano_ch = 1 if…
-	*replace sinbano_ch = 2 if…
-	*replace sinbano_ch = 3 if…
-		
+	gen sinbano_ch = 3
+	replace sinbano_ch = 0 if v23==1
+	
 	******************
     ** banomejorado_ch ** - 
     *****************
