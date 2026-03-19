@@ -1084,9 +1084,9 @@ label var luzmide_ch "El hogar usa un medidor para pagar el consumo de electrici
 ***************
 * combust_ch  *
 ***************
-gen combust_ch=.
-*replace combust_ch=1 if v36a==1  | v36a==6 | v36a==2 eliminaron la pregunta de la encuesta 2020
-*replace combust_ch=0 if v36a==7 | v36a==8 | v36a==3 | v36a==4 | v36a==5 | v36a==9
+gen combust_ch = .
+replace combust_ch = 1 if inlist(v34a, 1, 2, 5, 6)   /* gas licuado, gas red, electricidad, solar */
+replace combust_ch = 0 if inlist(v34a, 3, 4, 7, 8)   /* kerosene, leña/carbón, no usa, no tiene */
 label var combust_ch "Principal combustible gas o electricidad" 
 
 
