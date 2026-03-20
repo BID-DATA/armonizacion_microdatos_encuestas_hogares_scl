@@ -302,21 +302,35 @@ by idh_ch, sort: egen byte nmenor1_ch=sum((relacion_ci>0 & relacion_ci<=5) & (ed
 	*********
 	*afro_ci*
 	*********
-	gen byte afro_ci = . 	  // se queda como missing (.) si no existe la pregunta
+	**Pregunta: De acuerdo con su cultura, pueblo o rasgos físicos, … es o se reconoce como:(p6080)
+	*1- Indigena 2- Gitano - Rom 3- Raizal del archipiélago de San Andrés y providencia 
+	*4- Palenquero de San basilio o descendiente 5- Negro(a), mulato(a), Afrocolombiano(a) o Afrodescendiente 
+	*6- Ninguno de los anteriores (mestizo, blanco, etc)
+	
+	tab p6080, m
+	gen byte afro_ci = . 	  
+	replace afro_ci = 1 if p6080 == 3 | p6080 == 4 | p6080 == 5
+	replace afro_ci = 0 if p6080 != 3 & p6080 != 4 & p6080 != 5 & p6080 != .
 	
 	*********
 	*ind_ci*
 	*********	
-	gen byte ind_ci =. 		  // se queda como missing (.) si no existe la pregunta
+	gen byte ind_ci =. 		  	
+	replace ind_ci = 1 if p6080 == 1
+	replace ind_ci = 0 if p6080 != 1 & p6080 != .
+	
+	tab ind_ci, m
+	
 
 	**************
 	*noafroind_ci*
 	**************
-	gen byte noafroind_ci =.   // se queda como missing (.) si no existe la pregunta
+	gen byte noafroind_ci =.  
 	replace noafroind_ci =1 if (afro_ci==0 & ind_ci==0)
 	replace noafroind_ci =0 if (afro_ci==1 | ind_ci==1)
 	replace noafroind_ci =. if (afro_ci==. | ind_ci==.) //Esto solo en el caso que se tenga ambas opciones no disponibles. 
-	ta noafroind_ci,m
+	ta noafroind_ci, m
+	
 
 	************
 	*afroind_ci*
@@ -327,12 +341,14 @@ by idh_ch, sort: egen byte nmenor1_ch=sum((relacion_ci>0 & relacion_ci<=5) & (ed
 	replace afroind_ci=3 if noafroind_ci == 1
 	ta afroind_ci,m
 	
+	
 	*********
 	*afro_ch*
 	*********
 	gen byte afro_jefe = afro_ci if relacion_ci==1
 	egen afro_ch  = max(afro_jefe), by(idh_ch) 
 	drop afro_jefe
+	
 	
 	********
 	*ind_ch*
@@ -341,6 +357,7 @@ by idh_ch, sort: egen byte nmenor1_ch=sum((relacion_ci>0 & relacion_ci<=5) & (ed
 	egen ind_ch = max(ind_jefe), by(idh_ch) 
 	drop ind_jefe
 
+	
 	**************
 	*noafroind_ch*
 	**************
