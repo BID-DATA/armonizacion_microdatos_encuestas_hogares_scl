@@ -342,19 +342,28 @@ label variable miembros_ci "Miembro del hogar"
 *******************************************************
 ***           VARIABLES DE DIVERSIDAD               ***
 *******************************************************
+
+* Pregunta encuesta original: ¿Se considera perteneciente a alguno de los siguientes pueblos originarios / indígenas...
+* Variable encuesta original: s1_10
+	* 1: Quechua; 2: Aymara; 3: Guaraní; 4: Chiquitano; 5: Mojeño;
+	* 6: Otro (especifique) > s1_10b
+	* 7: Ninguno;
+	* 8: Menores de 12 años que no deben responder esta pregunta
+
 	*********
 	*afro_ci*
 	*********
+	tab s1_10b, m
 	gen byte afro_ci = .
 	replace afro_ci = 1 if s1_10b == "AFROS"
-	replace afro_ci = 0 if s1_10b != "AFROS"
+	replace afro_ci = 0 if s1_10b != "AFROS" & s1_10 != 8 // Se agrega la exclusión de los menores de 12 años que no responden la pregunta
 	
 	*********
 	*ind_ci*
 	*********	
 	gen byte ind_ci = .
-	replace ind_ci = 1 if inrange(s1_10, 1,6) 
-	replace ind_ci = 0 if s1_10 == 7
+	replace ind_ci = 1 if inrange(s1_10, 1, 6) 
+	replace ind_ci = 0 if s1_10 == 7 | s1_10b == "AFROS"  // Se agrega la exclusión de los AFROS para que no se crucen las variables afro e ind
 	
 	**************
 	*noafroind_ci*
