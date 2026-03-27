@@ -253,43 +253,43 @@ use "`base_in'", clear
 	******************
 	***nmiembros_ch***
 	******************
-	by idh_ch, sort: egen nmiembros_ch=sum(relacion_ci>=1 & relacion_ci<=4)
+	by idh_ch, sort: egen nmiembros_ch=sum(relacion_ci>=1 & relacion_ci<=5)
 	label variable nmiembros_ch "Numero de familiares en el hogar"
 
 	*****************
 	***nmayor21_ch***
 	*****************
-	by idh_ch, sort: egen nmayor21_ch=sum((relacion_ci>=1 & relacion_ci<=4) & edad_ci>=21)
+	by idh_ch, sort: egen nmayor21_ch=sum((relacion_ci>=1 & relacion_ci<=5) & edad_ci>=21)
 	label variable nmayor21_ch "Numero de familiares mayores a 21 anios"
 
 	*****************
 	***nmenor21_ch***
 	*****************
-	by idh_ch, sort: egen nmenor21_ch=sum((relacion_ci>=1 & relacion_ci<=4) & edad_ci<21)
+	by idh_ch, sort: egen nmenor21_ch=sum((relacion_ci>=1 & relacion_ci<=5) & edad_ci<21)
 	label variable nmenor21_ch "Numero de familiares menores a 21 anios"
 
 	*****************
 	***nmayor65_ch***
 	*****************
-	by idh_ch, sort: egen nmayor65_ch=sum((relacion_ci>=1 & relacion_ci<=4) & edad_ci>=65)
+	by idh_ch, sort: egen nmayor65_ch=sum((relacion_ci>=1 & relacion_ci<=5) & edad_ci>=65)
 	label variable nmayor65_ch "Numero de familiares mayores a 65 anios"
 
 	****************
 	***nmenor6_ch***
 	****************
-	by idh_ch, sort: egen nmenor6_ch=sum((relacion_ci>=1 & relacion_ci<=4) & edad_ci<6)
+	by idh_ch, sort: egen nmenor6_ch=sum((relacion_ci>=1 & relacion_ci<=5) & edad_ci<6)
 	label variable nmenor6_ch "Numero de familiares menores a 6 anios"
 
 	****************
 	***nmenor1_ch***
 	****************
-	by idh_ch, sort: egen nmenor1_ch=sum((relacion_ci>=1 & relacion_ci<=4) & edad_ci<1)
+	by idh_ch, sort: egen nmenor1_ch=sum((relacion_ci>=1 & relacion_ci<=5) & edad_ci<1)
 	label variable nmenor1_ch "Numero de familiares menores a 1 anio"
 
 	****************
 	***miembros_ci***
 	****************
-	gen miembros_ci=(relacion_ci<5)
+	gen miembros_ci=(relacion_ci<=5)
 	label variable miembros_ci "Numero de miembros del hogar"
 
 
