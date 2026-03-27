@@ -757,13 +757,11 @@ use "`base_in'", clear
 	gen eduac_ci = 1 if eduui_ci+eduuc_ci==1
 	replace eduac_ci= 0 if eduui_ci+eduuc_ci==0
 	replace eduac_ci = . if aedu_ci == .
-	
 		
 	***********
 	*edupre_ci*
 	***********
 	gen byte edupre_ci=.
-
 
 	************
 	*asispre_ci*
@@ -775,10 +773,9 @@ use "`base_in'", clear
 	***********
 	*asiste_ci*
 	***********
-	gen asiste_ci=.
-	replace asiste_ci=0 if ED03==1
-	replace asiste_ci=1 if ED03==2
-
+	gen	asiste_ci=. 
+	replace asiste_ci=1 if ED03==1 
+	replace asiste_ci=0 if ED03==2
 
 	*************
 	*pqnoasis1_ci*
