@@ -112,9 +112,11 @@ use "`base_in'", clear
 	******************
 	*idh_ch (idhogar)*
 	******************
-	gen idh_ch=HOGAR
-	tostring idh_ch, replace
-
+	format HOGAR %30.0f
+	gen double idh_ch=HOGAR
+    format idh_ch %30.0f
+	tostring idh_ch, replace format ("%30.0f") 
+		
 	***************
 	****idp_ci*****
 	***************
