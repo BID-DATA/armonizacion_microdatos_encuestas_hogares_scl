@@ -42,7 +42,7 @@ Detalle de procesamientos o modificaciones anteriores:
 ****************************************************************************/
 
 
-use `base_in', clear
+use "`base_in'", clear
 
 /***************************************************************************************************************************
  							armonización 2007
@@ -413,9 +413,9 @@ gen compu_ch=.
 replace compu_ch= 1 if d22_14_1 ==1
 replace compu_ch= 0 if d22_14_1 ==2
 
-gen internet_ch=.
-replace internet_ch= 1 if d22_15_1 ==1 | d22_15_2 ==1
-replace internet_ch= 0 if d22_15_1 ==2
+gen internet_ch = 0
+replace internet_ch = 1 if ((d22_15_1 == 1 & d22_15_2 == 2) | (d22_15_1 == 2 & d22_15_2 == 1) | (d22_15_1 == 1 & d22_15_2 == 1))
+replace internet_ch = 0 if (d22_15_1 == 2 & d22_15_2 == 2)
 
 gen cel_ch=.
 replace cel_ch= 1 if d22_17_1 ==1
