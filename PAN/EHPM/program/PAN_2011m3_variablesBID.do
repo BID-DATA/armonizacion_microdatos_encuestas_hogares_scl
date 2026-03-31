@@ -42,7 +42,7 @@ Detalle de procesamientos o modificaciones anteriores:
 ****************************************************************************/
 
 
-use `base_in', clear
+use "`base_in'", clear
 
 
 		**********************************
@@ -930,6 +930,7 @@ replace compu_ch=0 if h6b_comput ==2
 
 gen internet_ch=0
 replace internet_ch=1 if h6b2_inter ==1
+replace internet_ch=0 if h6b2_inter ==2
 
 gen cel_ch=0
 replace cel_ch=1 if h6d_celula ==1

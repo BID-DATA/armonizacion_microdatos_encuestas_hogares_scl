@@ -42,7 +42,7 @@ Detalle de procesamientos o modificaciones anteriores:
 ****************************************************************************/
 
 
-use `base_in', clear
+use "`base_in'", clear
 
 
 		**********************************
@@ -766,7 +766,11 @@ gen refrig_ch=.
 gen freez_ch=.
 gen auto_ch=.
 gen compu_ch=(h4_computa==1)
-gen internet_ch=.
+
+gen internet_ch = 0
+replace internet_ch = 1 if ((h5a_serv_i == 1 & h5b_serv_i == 2) | (h5a_serv_i == 2 & h5b_serv_i == 1) | (h5a_serv_i == 1 & h5b_serv_i == 1))
+replace internet_ch = 0 if (h5a_serv_i == 2 & h5b_serv_i == 2)
+
 gen cel_ch=.
 gen vivi1_ch=.
 gen vivi2_ch=.

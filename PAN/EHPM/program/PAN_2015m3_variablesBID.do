@@ -41,7 +41,7 @@ Detalle de procesamientos o modificaciones anteriores:
 *************************************************************************** */
 
 
-use `base_in', clear
+use "`base_in'", clear
 
 		**********************************
 		***VARIABLES DEL IDENTIFICACION***
@@ -1134,10 +1134,11 @@ gen auto_ch=.
 
 gen compu_ch=(h4_computa==1)
 
-gen internet_ch= (h5_serv_in ==1 | h5_serv__a==1)
+gen internet_ch = 0
+replace internet_ch = 1 if ((h5_serv_in == 1 & h5_serv__a == 2) | (h5_serv_in == 2 & h5_serv__a == 1) | (h5_serv_in == 1 & h5_serv__a == 1))
+replace internet_ch = 0 if (h5_serv_in == 2 & h5_serv__a == 2)
 
 gen cel_ch=(h2d_celula==1)
-
 gen vivi1_ch=.
 replace vivi1_ch = 1 if (v1a_tipo_d>=1 & v1a_tipo_d<=3)
 replace vivi1_ch = 2 if v1a_tipo_d==4
