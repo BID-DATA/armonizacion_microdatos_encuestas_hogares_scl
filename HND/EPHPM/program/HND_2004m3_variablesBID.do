@@ -1366,7 +1366,7 @@ label value  pqnoasis1_ci pqnoasis1_ci
 * Ya que no contamos con bases originales para hacer merge nuevamente, expandimos variables de vivienda a nivel de hogar. 
 
 foreach var of varlist v01 v02 v03 v04 v05a v05b v05c v05d1 v05d2 v05e v06a v06b v06c v07 v08 v09 v10a v10b v10c v11a v11b v11c v11d ///
-v11e v11f v11g v11h v11i v11j v12a v12b v13a v13b1 v13b2 {
+v11e v11f v11g v11h v11i v11j v12a v12b v13a v13b1 v13b2 p10 {
 bys idh_ch: egen `var'_hog = max(`var') 
 }
 
@@ -1374,8 +1374,8 @@ bys idh_ch: egen `var'_hog = max(`var')
 ***aguared_ch***
 ****************
 generate aguared_ch =.
-replace aguared_ch = 1 if v05b<=2 
-replace aguared_ch = 0 if v05b>2
+replace aguared_ch = 1 if v05b_hog<=2 
+replace aguared_ch = 0 if v05b_hog>2  & v05b_hog!= .
 la var aguared_ch "Acceso a fuente de agua por red"
 
 *****************
@@ -1388,50 +1388,52 @@ gen aguafconsumo_ch = 0
 *****************
 *aguafuente_ch*
 *****************
-gen aguafuente_ch = 1 if v05b<=2 & v05e<=2
-replace aguafuente_ch = 2 if (v05b<=2 & v05e>2)
-replace aguafuente_ch = 6 if v05b==6
-replace aguafuente_ch = 7 if v05b==7
-replace aguafuente_ch = 8 if v05b==5
-replace aguafuente_ch = 10 if  v05b==8 |v05b==3 | v05b==4|(v05b==. & jefe_ci!=.)
+gen aguafuente_ch = .
+replace aguafuente_ch = 1 if v05b_hog<=2 & v05e_hog<=2
+replace aguafuente_ch = 2 if (v05b_hog<=2 & v05e_hog>2) & v05b_hog != . & v05e_hog != .
+replace aguafuente_ch = 6 if v05b_hog==6
+replace aguafuente_ch = 7 if v05b_hog==7
+replace aguafuente_ch = 8 if v05b_hog==5
+replace aguafuente_ch = 10 if  v05b_hog==8 |v05b_hog==3 | v05b_hog==4
 
 *************
 *aguadist_ch*
 *************
-gen aguadist_ch=0
-replace aguadist_ch= 1 if v05e==1
-replace aguadist_ch= 2 if v05e==2
-replace aguadist_ch= 3 if v05e==3|v05e ==4
+gen aguadist_ch=.
+replace aguadist_ch= 1 if v05e_hog==1
+replace aguadist_ch= 2 if v05e_hog==2
+replace aguadist_ch= 3 if v05e_hog==3|v05e_hog ==4
+replace aguadist_ch = 0 if aguadist_ch == . & aguafuente_ch!=.
 
 **************
 *aguadisp1_ch*
 **************
-gen aguadisp1_ch =9
-replace aguadisp1_ch = 1 if v05c == 1
-replace aguadisp1_ch = 0 if v05c == 2
+gen aguadisp1_ch =. 
+replace aguadisp1_ch = 1 if v05c_hog == 1
+replace aguadisp1_ch = 0 if v05c_hog == 2
+replace aguadisp1_ch = 9 if v05c_hog == . & inrange(v05b_hog, 3, 8)
 
 **************
 *aguadisp2_ch*
 **************
 gen aguadisp2_ch =.
-replace aguadisp2_ch = 1 if v05d1<=7.5 | v05d2<12
-replace aguadisp2_ch = 2 if (v05d1>7.5 & v05d1<15) & (v05d2>=12 & v05d2<24)
-replace aguadisp2_ch = 3 if v05d1==15 & v05d2 ==24
-
+replace aguadisp2_ch = 1 if v05d1_hog<=7.5 | v05d2_hog<12
+replace aguadisp2_ch = 2 if (v05d1_hog>7.5 & v05d1_hog<15) & (v05d2_hog>=12 & v05d2_hog<24)
+replace aguadisp2_ch = 3 if v05d1_hog==15 & v05d2_hog ==24
+replace aguadisp2_ch = 9 if v05c_hog==1 & (v05d1_hog ==. | v05d2_hog ==.)
 
 *************
 *aguamala_ch*  Altered
 *************
 gen aguamala_ch = 2
 replace aguamala_ch = 0 if aguafuente_ch<=7
-replace aguamala_ch = 1 if aguafuente_ch>7 & aguafuente_ch!=10
-
+replace aguamala_ch = 1 if aguafuente_ch>7 & aguafuente_ch!=10 & aguafuente_ch!= .
 
 *****************
 *aguamejorada_ch*  Altered
 *****************
 gen aguamejorada_ch = 2
-replace aguamejorada_ch = 0 if aguafuente_ch>7 & aguafuente_ch!=10
+replace aguamejorada_ch = 0 if aguafuente_ch>7 & aguafuente_ch!=10 & aguafuente_ch!=.
 replace aguamejorada_ch = 1 if aguafuente_ch<=7 
 
 
@@ -1447,19 +1449,20 @@ label var aguamide_ch "Usan medidor para pagar consumo de agua"
 *bano_ch         *  Altered
 *****************
 gen bano_ch=.
-replace bano_ch=1 if v06b==1
-replace bano_ch=2 if v06b==2
-replace bano_ch=3 if ( v06b==6 | v06b==7)
-replace bano_ch=4 if (v06b==3 | v06b==4)
-replace bano_ch=6 if v06b==8 | v06b==5 |(v06b==. & jefe_ci!=.)
-replace bano_ch=0 if v06a==2
+replace bano_ch=1 if v06b_hog==1
+replace bano_ch=2 if v06b_hog==2
+replace bano_ch=3 if (v06b_hog==6 | v06b_hog==7)
+replace bano_ch=4 if (v06b_hog==3 | v06b_hog==4)
+replace bano_ch=6 if v06b_hog==8 | v06b_hog==5 |(v06b_hog==. & v06a_hog!=.)
+replace bano_ch=0 if v06a_hog==2 & v06b_hog==.
+
 ***************
 ***banoex_ch***
 ***************
 generate banoex_ch=.
-replace banoex_ch = 9 if v06a==2
-replace banoex_ch = 1 if v06c==1
-replace banoex_ch = 0 if v06c==2
+replace banoex_ch = 9 if v06a_hog==2 & v06b_hog==.
+replace banoex_ch = 1 if v06c_hog==1
+replace banoex_ch = 0 if v06c_hog==2
 la var banoex_ch "El servicio sanitario es exclusivo del hogar"
 
 
@@ -1468,14 +1471,14 @@ la var banoex_ch "El servicio sanitario es exclusivo del hogar"
 *****************
 gen banomejorado_ch= 2
 replace banomejorado_ch =1 if bano_ch<=3 & bano_ch!=0
-replace banomejorado_ch =0 if (bano_ch ==0 | bano_ch>=4) & bano_ch!=6
+replace banomejorado_ch =0 if (bano_ch ==0 | bano_ch>=4) & bano_ch!=6 & bano_ch!=.
 
 
 ************
 *sinbano_ch*
 ************
 gen sinbano_ch = 3
-replace sinbano_ch = 0 if bano_ch>0
+replace sinbano_ch = 0 if bano_ch>0  & bano_ch!=.
 
 *label var sinbano_ch "= 0 si tiene baño en la vivienda o dentro del terreno"
 
@@ -1691,8 +1694,8 @@ replace internet_ch=0 if p10 ==2
 */
 
 gen internet_ch=.
-replace internet_ch=1 if p10 ==1
-replace internet_ch=0 if p10 ==2
+replace internet_ch=1 if p10_hog ==1
+replace internet_ch=0 if p10_hog ==2
 
 ********
 *cel_ch*
@@ -1722,7 +1725,7 @@ replace vivi1_ch=3 if (v01>=5 & v01<=8) | v01==3
 gen vivi1_ch=.
 replace vivi1_ch=1 if v01_hog==1 | v01_hog==2
 replace vivi1_ch=2 if v01_hog==4
-replace vivi1_ch=3 if (v01_hog>=5 & v01_hog<=8) | v01==3 
+replace vivi1_ch=3 if (v01_hog>=5 & v01_hog<=8) | v01_hog==3 
 
 **********
 *vivi2_ch*
