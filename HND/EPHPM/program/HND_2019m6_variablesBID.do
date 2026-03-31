@@ -1651,6 +1651,7 @@ replace internet_ch=. if at03_hog==. & at05_1_hog==.
 *cel_ch*
 ********
 gen cel_ch=(at09_hog)
+replace cel_ch=0 if at09_hog==2
 replace cel_ch=. if at09_hog==.
 
 **********
