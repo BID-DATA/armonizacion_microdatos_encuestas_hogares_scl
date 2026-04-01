@@ -412,7 +412,7 @@ use `base_in', clear
 	*********
 	*ind_ci: Identifica a los encuestados en función de su autoidentificación étnica o racial indígena*
 	*********	
-	gen ind_ci=(inlist(CH308,1,3,4,5,6,7,8,9)==1) if CH308!=.
+	gen ind_ci=(inlist(CH308,3,4,5,6,7,8,9)==1) if CH308!=.
 
 	**************
 	*noafroind_ci: Identificar encuestados que NO son afrodescendientes NI indígenas según autoidentificación étnico-racial*
