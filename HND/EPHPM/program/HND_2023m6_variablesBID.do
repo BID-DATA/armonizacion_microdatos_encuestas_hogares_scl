@@ -296,6 +296,10 @@ use "`base_in'", clear
 *******************************************************
 ***           VARIABLES DE DIVERSIDAD               ***
 *******************************************************
+/* Pregunta original: CH308. Usted se autoidentifica como:
+     1 Garífuna; 2 Negro ingles
+     3 Tolupán; 4 Pech (paya); 5 Misquito; 6 Nahua; 7 Lenca; 8 Tawahka (Sumo); 9 Maya Chortí; 
+	 10 Mestizo / ladino;  11 No sabe / ninguno; 12 Otro (especifique)	 */
 
 	***************
 	****afro_ci****
@@ -306,7 +310,7 @@ use "`base_in'", clear
 	***************
 	*****ind_ci****
 	***************
-	gen ind_ci=(inlist(ch308,1,3,4,5,6,7,8,9)==1) if ch308!=.
+	gen ind_ci=(inlist(ch308,3,4,5,6,7,8,9)==1) if ch308!=.
 	
 	**************
 	*noafroind_ci*
