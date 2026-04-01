@@ -880,15 +880,15 @@ gen cocina_ch=(v3f!=0)
  *************** 
 sort idh_ch
 by idh_ch: egen telef_ch=sum(r10c==1)
-replace telef_ch=1 if telef_ch>=1
-replace telef_ch=. if r10c==9 | r10c==.
+replace telef_ch=1 if telef_ch>=1 
+*replace telef_ch=. if r10c==9 | r10c==.
 
  ***************
  ***refrig_ch***
  *************** 
 by idh_ch: egen refrig_ch=sum(r10b==1)
 replace refrig_ch=1 if refrig_ch>=1
-replace refrig_ch=. if r10b==9 | r10b==.
+*replace refrig_ch=. if r10b==9 | r10b==.
 
  ***************
  ***freez_ch***
@@ -905,21 +905,21 @@ gen auto_ch=.
  *************** 
 bys idh_ch: egen compu_ch=sum(r10f==1)
 replace compu_ch=1 if compu_ch>=1
-replace compu_ch=. if r10f==9 | r10f==.
+*replace compu_ch=. if r10f==9 | r10f==.
 
  ***************
  ***internet_ch***
  *************** 
 by idh_ch: egen internet_ch=sum(r10g==1 | r10h==1)
 replace internet_ch=1 if internet_ch>=1
-replace internet_ch=. if (r10g==9 & r10h==9) | (r10g==. & r10h==.) 
+*replace internet_ch=. if (r10g==9 & r10h==9) | (r10g==. & r10h==.) 
 
  *************
  ***cel_ch***
  ************* 
 by idh_ch: egen cel_ch=sum(r11==1 | r11==2)
 replace cel_ch=1 if cel_ch>=1
-replace cel_ch=. if r11==9 | r11==.
+*replace cel_ch=. if r11==9 | r11==.
 
  ***************
  ***vivi1_ch***
