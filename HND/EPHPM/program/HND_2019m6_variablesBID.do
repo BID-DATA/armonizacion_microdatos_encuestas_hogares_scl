@@ -1399,12 +1399,18 @@ label value  pqnoasis1_ci pqnoasis1_ci
 **********************************
 **** VARIABLES DE LA VIVIENDA ****
 **********************************
+/*Anomalía: La base viene con información de vivienda solo para la jefatura de hogar en los meses de marzo y junio (septiembre y diciembre estan ok)*/
+
+foreach var of varlist dv* dh* at* {
+bys idh_ch: egen `var'_hog = max(`var') 
+}
+
 ****************
 ***aguared_ch***
 ****************
 generate aguared_ch =.
-replace aguared_ch = 1 if dv105==1 
-replace aguared_ch = 0 if dv105!=1
+replace aguared_ch = 1 if dv105_hog==1 
+replace aguared_ch = 0 if dv105_hog!=1 & dv105_hog!= .
 la var aguared_ch "Acceso a fuente de agua por red"
 
 *****************
@@ -1418,20 +1424,21 @@ gen aguafconsumo_ch = 0
 *aguafuente_ch*
 *****************
 gen aguafuente_ch =.
-replace aguafuente_ch = 1 if dv105==1 & dv106<=2
-replace aguafuente_ch = 2 if (dv105==1 & dv106>2) | dv105==4
-replace aguafuente_ch = 6 if dv105==6
-replace aguafuente_ch = 7 if dv105==7
-replace aguafuente_ch = 8 if dv105==5
-replace aguafuente_ch = 10 if dv105==9 | dv105==2 | dv105==3 |dv105==8 | dv105 == 97 | (dv105==. & jefe_ci!=.)
+replace aguafuente_ch = 1 if dv105_hog==1 & dv106_hog<=2
+replace aguafuente_ch = 2 if (dv105_hog==1 & dv106_hog>2 & dv106_hog!= .) | dv105_hog==4
+replace aguafuente_ch = 6 if dv105_hog==6
+replace aguafuente_ch = 7 if dv105_hog==7
+replace aguafuente_ch = 8 if dv105_hog==5
+replace aguafuente_ch = 10 if dv105_hog==9 | dv105_hog==2 | dv105_hog==3 |dv105_hog==8 | dv105_hog == 97 
 
 *************
 *aguadist_ch*
 *************
-gen aguadist_ch=0
-replace aguadist_ch= 1 if dv106==1
-replace aguadist_ch= 2 if dv106==2
-replace aguadist_ch= 3 if dv106==3 | dv106 ==4
+gen aguadist_ch=.
+replace aguadist_ch= 1 if dv106_hog==1
+replace aguadist_ch= 2 if dv106_hog==2
+replace aguadist_ch= 3 if dv106_hog==3 | dv106_hog ==4
+replace aguadist_ch = 0 if aguadist_ch == . & aguafuente_ch!=.
 
 **************
 *aguadisp1_ch*
@@ -1448,13 +1455,13 @@ gen aguadisp2_ch = 9
 *************
 gen aguamala_ch = 2
 replace aguamala_ch = 0 if aguafuente_ch<=7
-replace aguamala_ch = 1 if aguafuente_ch>7 & aguafuente_ch!=10
+replace aguamala_ch = 1 if aguafuente_ch>7 & aguafuente_ch!=10 & aguafuente_ch!= .
 
 *****************
 *aguamejorada_ch*  Altered
 *****************
 gen aguamejorada_ch = 2
-replace aguamejorada_ch = 0 if aguafuente_ch>7 & aguafuente_ch!=10
+replace aguamejorada_ch = 0 if aguafuente_ch>7 & aguafuente_ch!=10 & aguafuente_ch!=.
 replace aguamejorada_ch = 1 if aguafuente_ch<=7 
 
 *****************
@@ -1468,20 +1475,20 @@ label var aguamide_ch "Usan medidor para pagar consumo de agua"
 *bano_ch         *  Altered
 *****************
 gen bano_ch=.
-replace bano_ch=0 if dh204==2
-replace bano_ch=1 if dh205==1
-replace bano_ch=2 if dh205==2
-replace bano_ch=3 if dh205==6 | dh205==7
-replace bano_ch=4 if (dh205==3 | dh205==4)
-replace bano_ch=6 if dh205>=8 | dh205==5 
+replace bano_ch=0 if dh204_hog==2 
+replace bano_ch=1 if dh205_hog==1
+replace bano_ch=2 if dh205_hog==2
+replace bano_ch=3 if dh205_hog==6 | dh205_hog==7
+replace bano_ch=4 if (dh205_hog==3 | dh205_hog==4)
+replace bano_ch=6 if bano_ch == . & (dh205_hog==5 | dh205_hog==8 | dh205_hog == 97)
 
 ***************
 ***banoex_ch***
 ***************
 generate banoex_ch=.
-replace banoex_ch = 9 if dh204 ==2
-replace banoex_ch = 1 if dh206==1
-replace banoex_ch = 0 if dh206==2
+replace banoex_ch = 9 if dh204_hog ==2
+replace banoex_ch = 1 if dh206_hog==1
+replace banoex_ch = 0 if dh206_hog==2
 la var banoex_ch "El servicio sanitario es exclusivo del hogar"
 
 
@@ -1490,14 +1497,14 @@ la var banoex_ch "El servicio sanitario es exclusivo del hogar"
 *****************
 gen banomejorado_ch= 2
 replace banomejorado_ch =1 if bano_ch<=3 & bano_ch!=0
-replace banomejorado_ch =0 if (bano_ch ==0 | bano_ch>=4) & bano_ch!=6
+replace banomejorado_ch =0 if (bano_ch ==0 | bano_ch>=4) & bano_ch!=6 & bano_ch!=.
 
 
 ************
 *sinbano_ch*
 ************
 gen sinbano_ch = 3
-replace sinbano_ch = 0 if bano_ch>0
+replace sinbano_ch = 0 if bano_ch>0 & bano_ch!=.
 
 *label var sinbano_ch "= 0 si tiene baño en la vivienda o dentro del terreno"
 
@@ -1512,8 +1519,9 @@ gen aguatrat_ch = 9
 ********
 *luz_ch*
 ********
-gen luz_ch=1 if  dv107==1 |  dv107==2 |  dv107==3 
-replace luz_ch=0 if  dv107>=4 &   dv107<=8
+gen luz_ch=.
+replace luz_ch=1 if  dv107_hog==1 |  dv107_hog==2 |  dv107_hog==3 
+replace luz_ch=0 if  dv107_hog>=4 &   dv107_hog<=8
 
 ************
 *luzmide_ch*
@@ -1523,16 +1531,17 @@ gen luzmide_ch=.
 ************
 *combust_ch*
 ************
-gen combust_ch=1 if dh203==3 | dh203==2 | dh203==4
-replace combust_ch=0 if dh203==5 | dh203==1
+gen combust_ch=.
+replace combust_ch=1 if dh203_hog==3 | dh203_hog==2 | dh203_hog==4
+replace combust_ch=0 if dh203_hog==5 | dh203_hog==1
 
 
 * DZ Jul 2017: corrección nueva categoría respecto al anio anterior**
 gen des1_ch=.
-replace des1_ch=0 if dh204==2
-replace des1_ch=1 if (dh205==1|dh205==2)
-replace des1_ch=2 if (dh205==5|dh205==6|dh205==7 |dh205==8)
-replace des1_ch=3 if (dh205==3|dh205==4)
+replace des1_ch=0 if dh204_hog==2
+replace des1_ch=1 if (dh205_hog==1|dh205_hog==2)
+replace des1_ch=2 if (dh205_hog==5|dh205_hog==6|dh205_hog==7 |dh205_hog==8)
+replace des1_ch=3 if (dh205_hog==3|dh205_hog==4)
 label var des1_ch "Tipo de desague según unimproved de MDG"
 label def des1_ch 0"No tiene servicio sanitario" 1"Conectado a red general o cámara séptica"
 label def des1_ch 2"Letrina o conectado a pozo ciego" 3"Desemboca en río o calle", add
@@ -1553,62 +1562,64 @@ label val des2_ch des2_ch
 
 * DZ Jul 2017: corrección nueva categoría respecto al anio anterior**
 gen des2_ch=.
-replace des2_ch=1 if (dh205==1|dh205==2|dh205==5|dh205==6|dh205==7 |dh205==8)
-replace des2_ch=2 if (dh205==4|dh205==3|dh205==8)
-replace des2_ch=0 if dh204==2
+replace des2_ch=1 if (dh205_hog==1|dh205_hog==2|dh205_hog==5|dh205_hog==6|dh205_hog==7 |dh205_hog==8)
+replace des2_ch=2 if (dh205_hog==4|dh205_hog==3|dh205_hog==8)
+replace des2_ch=0 if dh204_hog==2
 label var des2_ch "Tipo de desague sin incluir definición MDG"
 label def des2_ch 0"No tiene servicio sanitario" 1"Conectado a red general, cámara séptica, pozo o letrina"
 label def des2_ch 2"Cualquier otro caso", add
 label val des2_ch des2_ch
 	
 gen piso_ch=.
-replace piso_ch=0 if dv103==7
-replace piso_ch=1 if dv103>=1 & dv103<=6 
-replace piso_ch=2 if dv103==8 
+replace piso_ch=0 if dv103_hog==7
+replace piso_ch=1 if dv103_hog>=1 & dv103_hog<=6 
+replace piso_ch=2 if dv103_hog==8 
 
 gen techo_ch=.
-replace techo_ch=0 if dv104==6 | dv104==7
-replace techo_ch=1 if dv104>=1 & dv104<=5
-replace techo_ch=2 if dv104==8| dv104==9 | dv104==10
+replace techo_ch=0 if dv104_hog==6 | dv104_hog==7
+replace techo_ch=1 if dv104_hog>=1 & dv104_hog<=5
+replace techo_ch=2 if dv104_hog>=8 & dv104_hog<=11
 
 * DZ Jul 2017: corrección nueva categoría respecto al anio anterior**
 gen pared_ch=.
-replace pared_ch=0 if dv102>=6 & dv102<=7
-replace pared_ch=1 if dv102>=1 & dv102<=5
-replace pared_ch=2 if dv102==8
+replace pared_ch=0 if dv102_hog>=6 & dv102_hog<=7
+replace pared_ch=1 if dv102_hog>=1 & dv102_hog<=5
+replace pared_ch=2 if dv102_hog==8
 
 label var pared_ch "Materiales de construcción de las paredes"
 label def pared_ch 0"No permanentes" 1"Permanentes" 2 "Otros"
 label val pared_ch pared_ch
 	
 gen resid_ch=.
-replace resid_ch=0 if ( dv108 ==1| dv108 ==3)
-replace resid_ch=1 if ( dv108 ==4| dv108 ==6)
-replace resid_ch=2 if ( dv108 ==2| dv108 ==7)
-replace resid_ch=3 if ( dv108 ==5| dv108 ==8)
+replace resid_ch=0 if ( dv108_hog ==1| dv108_hog ==3)
+replace resid_ch=1 if ( dv108_hog ==4| dv108_hog ==6)
+replace resid_ch=2 if ( dv108_hog ==2| dv108_hog ==7)
+replace resid_ch=3 if ( dv108_hog ==5| dv108_hog ==8)
 
 gen dorm_ch=.
-replace dorm_ch=dv112
+replace dorm_ch=dv112_hog
 
 gen cuartos_ch=.
-replace cuartos_ch=dv111
+replace cuartos_ch=dv111_hog
 
 ***********
 *cocina_ch*
 ***********
-gen cocina_ch=(dh201==1)
-replace cocina_ch=. if dh201==.
+gen cocina_ch=(dh201_hog==1)
+replace cocina_ch=. if dh201_hog==.
 
 **********
 *telef_ch*
 **********
 
-gen telef_ch=((dh207_7>=1 & dh207_7<=2) | (dh207_8>=1 & dh207_8<=6))
+gen telef_ch=((dh207_7_hog>=1 & dh207_7_hog<=2) | (dh207_8_hog>=1 & dh207_8_hog<=6))
+replace telef_ch=. if dh207_7_hog==. & dh207_8_hog==.
 
 ***********
 *regrig_ch*
 ***********
-gen refrig_ch=(dh207_1>=1 & dh207_1<=11)
+gen refrig_ch=(dh207_1_hog>=1 & dh207_1_hog<=8)
+replace refrig_ch=. if dh207_1_hog==.
 
 **********
 *freez_ch*
@@ -1619,34 +1630,37 @@ gen freez_ch=.
 *auto_ch*
 *********
 * DZ Jul 2017: corrección de categoría respecto al anio anterior**
-gen auto_ch= (dh207_9>=1 & dh207_9<=6)
+gen auto_ch= (dh207_9_hog>=1 & dh207_9_hog<=6)
+replace auto_ch=. if dh207_9_hog==.
 
 **********
 *compu_ch*
 **********
 * DZ Jul 2017: corrección de categoría respecto al anio anterior**
-gen compu_ch=(dh207_12>=1 & dh207_12<=6)
+gen compu_ch=(dh207_12_hog>=1 & dh207_12_hog<=6)
+replace compu_ch=. if dh207_12_hog==.
 
 *************
 *internet_ch*
 *************
 
-gen internet_ch=(at03==1 & at05_1==1)
-replace internet_ch=. if at03==. & at05_1==.
+gen internet_ch=(at03_hog==1 & at05_1_hog==1)
+replace internet_ch=. if at03_hog==. & at05_1_hog==.
 
 ********
 *cel_ch*
 ********
-gen cel_ch=(at09)
-replace cel_ch=. if at09==.
+gen cel_ch=(at09_hog)
+replace cel_ch=0 if at09_hog==2
+replace cel_ch=. if at09_hog==.
 
 **********
 *vivi1_ch*
 **********
 gen vivi1_ch=.
-replace vivi1_ch=1 if dv101==1 | dv101==2
-replace vivi1_ch=2 if dv101==4
-replace vivi1_ch=3 if dv101==5 | dv101==3 | dv101==7
+replace vivi1_ch=1 if dv101_hog==1 | dv101_hog==2
+replace vivi1_ch=2 if dv101_hog==4
+replace vivi1_ch=3 if dv101_hog==5 | dv101_hog==3 | dv101_hog==7
 label var vivi1_ch "Tipo de vivienda en la que reside el hogar"
 label def vivi1_ch 1"Casa" 2"Departamento" 3"Otros"
 label val vivi1_ch vivi1_ch
@@ -1662,10 +1676,10 @@ replace vivi2_ch=0 if vivi1_ch==3
 *viviprop_ch*
 *************
 gen viviprop_ch=.
-replace viviprop_ch=0 if dv109==1
-replace viviprop_ch=1 if dv109==3
-replace viviprop_ch=2 if dv109==2
-replace viviprop_ch=3 if (dv109==4 | dv109==5 | dv109==6 | dv109==7)
+replace viviprop_ch=0 if dv109_hog==1
+replace viviprop_ch=1 if dv109_hog==3
+replace viviprop_ch=2 if dv109_hog==2
+replace viviprop_ch=3 if (dv109_hog==4 | dv109_hog==5 | dv109_hog==6 | dv109_hog==7)
 label var viviprop_ch "Propiedad de la vivienda"
 label def viviprop_ch 0"Alquilada" 1"Propia y totalmente pagada" 2"Propia y en proceso de pago"
 label def viviprop_ch 3"Ocupada (propia de facto)", add
@@ -1675,8 +1689,8 @@ label val viviprop_ch viviprop_ch
 *	vivitit_ch
 ******************************
 gen vivitit_ch=.
-replace vivitit_ch=1 if dv110==1 | dv110==2
-replace vivitit_ch=0 if dv110==3
+replace vivitit_ch=1 if dv110_hog==1 | dv110_hog==2
+replace vivitit_ch=0 if dv110_hog==3
 label var vivitit_ch "El hogar posee un titulo de propiedad"
 
 
@@ -1684,7 +1698,7 @@ label var vivitit_ch "El hogar posee un titulo de propiedad"
 *	vivialq_ch
 ******************************
 gen vivialq_ch=.
-replace vivialq_ch= dv107pago
+replace vivialq_ch= dv107pago_hog
 label var vivialq_ch "Alquiler mensual"
 *Renta = Monto de la renta mensual de la vivienda
 

@@ -1323,8 +1323,8 @@ bys idh_ch: egen `var'_hog=max(`var')
 ***aguared_ch***
 ****************
 generate aguared_ch =.
-replace aguared_ch = 1 if v05b<=2 
-replace aguared_ch = 0 if v05b>2
+replace aguared_ch = 1 if v05b_hog<=2 
+replace aguared_ch = 0 if v05b_hog>2 & v05b_hog!= .
 la var aguared_ch "Acceso a fuente de agua por red"
 
 *****************
@@ -1337,20 +1337,22 @@ gen aguafconsumo_ch = 0
 *****************
 *aguafuente_ch*
 *****************
-gen aguafuente_ch = 1 if v05b<=2 & v05c<=2
-replace aguafuente_ch = 2 if (v05b<=2 & v05c>2)
-replace aguafuente_ch = 6 if v05b==6
-replace aguafuente_ch = 7 if v05b==7
-replace aguafuente_ch = 8 if v05b==5
-replace aguafuente_ch = 10 if  v05b==8 |v05b==3 | v05b==4|(v05b==. & jefe_ci!=.)
+gen aguafuente_ch = .
+replace aguafuente_ch = 1 if v05b_hog<=2 & v05c_hog<=2
+replace aguafuente_ch = 2 if (v05b_hog<=2 & v05c_hog>2) & v05b_hog != . & v05c_hog != .
+replace aguafuente_ch = 6 if v05b_hog==6
+replace aguafuente_ch = 7 if v05b_hog==7
+replace aguafuente_ch = 8 if v05b_hog==5
+replace aguafuente_ch = 10 if  v05b_hog==8 |v05b_hog==3 | v05b_hog==4
 
 *************
 *aguadist_ch*
 *************
-gen aguadist_ch=0
-replace aguadist_ch= 1 if v05c==1
-replace aguadist_ch= 2 if v05c==2
-replace aguadist_ch= 3 if v05c==3|v05c ==4
+gen aguadist_ch=.
+replace aguadist_ch= 1 if v05c_hog==1
+replace aguadist_ch= 2 if v05c_hog==2
+replace aguadist_ch= 3 if v05c_hog==3|v05c_hog==4
+replace aguadist_ch = 0 if aguadist_ch == . & aguafuente_ch!=.
 
 **************
 *aguadisp1_ch*
@@ -1369,14 +1371,14 @@ gen aguadisp2_ch = 9
 *************
 gen aguamala_ch = 2
 replace aguamala_ch = 0 if aguafuente_ch<=7
-replace aguamala_ch = 1 if aguafuente_ch>7 & aguafuente_ch!=10
+replace aguamala_ch = 1 if aguafuente_ch>7 & aguafuente_ch!=10 & aguafuente_ch!= .
 
 
 *****************
 *aguamejorada_ch*  Altered
 *****************
 gen aguamejorada_ch = 2
-replace aguamejorada_ch = 0 if aguafuente_ch>7 & aguafuente_ch!=10
+replace aguamejorada_ch = 0 if aguafuente_ch>7 & aguafuente_ch!=10 & aguafuente_ch!=.
 replace aguamejorada_ch = 1 if aguafuente_ch<=7 
 
 
@@ -1392,20 +1394,20 @@ label var aguamide_ch "Usan medidor para pagar consumo de agua"
 *bano_ch         *  Altered
 *****************
 gen bano_ch=.
-replace bano_ch=1 if v06b==1
-replace bano_ch=2 if v06b==2
-replace bano_ch=3 if ( v06b==6 | v06b==7)
-replace bano_ch=4 if (v06b==3 | v06b==4)
-replace bano_ch=6 if v06b==8 | v06b==5 |(v06b==. & jefe_ci!=.)
-replace bano_ch=0 if v06a==2
+replace bano_ch=1 if v06b_hog==1
+replace bano_ch=2 if v06b_hog==2
+replace bano_ch=3 if ( v06b_hog==6 | v06b_hog==7)
+replace bano_ch=4 if (v06b_hog==3 | v06b_hog==4)
+replace bano_ch=6 if v06b_hog==9 | v06b_hog==5 | (v06b_hog==. & v06a_hog!=.)
+replace bano_ch=0 if v06a_hog==2 & v06b_hog==.
 
 ***************
 ***banoex_ch***
 ***************
 generate banoex_ch=.
-replace banoex_ch = 9 if v06a==2
-replace banoex_ch = 1 if v06c==1
-replace banoex_ch = 0 if v06c==2
+replace banoex_ch = 9 if (v06a_hog==2 & v06b_hog==. & v06c_hog==.) | (v06a_hog!=. & v06c_hog>2 & v06c_hog<.)
+replace banoex_ch = 1 if v06c_hog==1
+replace banoex_ch = 0 if v06c_hog==2
 la var banoex_ch "El servicio sanitario es exclusivo del hogar"
 
 
@@ -1414,14 +1416,14 @@ la var banoex_ch "El servicio sanitario es exclusivo del hogar"
 *****************
 gen banomejorado_ch= 2
 replace banomejorado_ch =1 if bano_ch<=3 & bano_ch!=0
-replace banomejorado_ch =0 if (bano_ch ==0 | bano_ch>=4) & bano_ch!=6
+replace banomejorado_ch =0 if (bano_ch ==0 | bano_ch>=4) & bano_ch!=6 & bano_ch!=.
 
 
 ************
 *sinbano_ch*
 ************
 gen sinbano_ch = 3
-replace sinbano_ch = 0 if bano_ch>0
+replace sinbano_ch = 0 if bano_ch>0 & bano_ch!=.
 
 *label var sinbano_ch "= 0 si tiene baño en la vivienda o dentro del terreno"
 
@@ -1456,7 +1458,7 @@ replace des1_ch=3 if v06b==3 | v06b==4
 */
 
 gen des1_ch=.
-replace des1_ch=0 if v06a_hog==2
+replace des1_ch=0 if v06a_hog==2 
 replace des1_ch=1 if v06b_hog==1 | v06b_hog==2
 replace des1_ch=2 if v06b_hog==5 | v06b_hog==6 | v06b_hog==7
 replace des1_ch=3 if v06b_hog==3 | v06b_hog==4
@@ -1651,8 +1653,8 @@ replace vivitit_ch=0 if v13a_hog==2
 
 
 gen vivialq_ch=.
-replace vivialq_ch=v10c if v10c<99999 & v10b==1 & viviprop_ch==0
-replace vivialq_ch=v10c/17.73 if v10c<99999 & v10b==2 & viviprop_ch==0
+replace vivialq_ch=v10c_hog if v10c_hog<99999 & v10b_hog==1 & viviprop_ch==0
+replace vivialq_ch=v10c_hog/17.73 if v10c_hog<99999 & v10b_hog==2 & viviprop_ch==0
 
 gen vivialqimp_ch=.
 
