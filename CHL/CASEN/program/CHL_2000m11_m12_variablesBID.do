@@ -190,7 +190,7 @@ gen auto_ch=.
 by idh_ch: egen compu_ch=sum(p6==1)
 replace compu_ch=1 if compu_ch>=1
 by idh_ch: egen internet_ch=sum(p7==1)
-replace compu_ch=1 if compu_ch==1
+replace internet_ch=1 if internet_ch>=1
 
 /*****
 cel_ch
@@ -198,7 +198,7 @@ cel_ch
 sort idh_ch
 by idh_ch: egen cel_ch=sum(p8==1)
 replace cel_ch=1 if cel_ch>=1
-replace cel_ch=. if p8==9 | p8==.
+replace cel_ch=. if p8==. //p8==9 sin dato es a nivel individual
 
 gen vivi1_ch=1 if v22==1 | v22==2
 replace vivi1_ch=2 if v22==3
