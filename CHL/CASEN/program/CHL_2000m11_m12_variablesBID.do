@@ -52,196 +52,140 @@ use `base_in', clear
 		***VARIABLES DEL IDENTIFICACION***
 		**********************************
 		
-	****************
-	* region_BID_c *
-	****************
-	
+****************
+* region_BID_c *
+****************	
 gen region_BID_c=4
-/***** revision July 29,2005  Suzanne
 
-removed condition (& edad_ci<18) froom the following two lines:
+***************
+***region_c ***
+***************
+gen region_c=.
 
-by idh_ch: egen byte nhijos_ch=sum((relacion_ci==3) & edad_ci<18)
-by idh_ch: egen byte notropari_ch=sum((relacion_ci==4) & edad_ci>=18)
+*************
+* pais_c    *
+*************
+gen pais_c="CHL"
 
-******* revision June 8 2006 MFP
-removed desemp1 and desemp2 because the reference period of 2 months implies that those variables
-can't be created.
-Now desemp3== old definition of desemp1
+*************
+* anio_c    *
+*************
+gen anio_c=2000
 
-previous code:
+*************
+* mes_ch    *
+*************
+gen mes_c=11
 
-gen desemp1_ci=(o1==2 & o2==2 & o3==1) *El periodo de referencia de la encuesta es de dos meses!
-gen desemp2_ci=(desemp1_ci | (o1==2 & o2==2 & o3==2 & (o7==7)))
-gen desemp3_ci=(desemp2_ci | (o4>8 & o4<=300))
-***/
+*************
+* zona_c    *
+*************
+gen zona_c=z
+replace zona_c=0 if z==2
 
-/*** revision October 16 2006 (Victoria)
-The code for the education dummies was changed in order to make it
-comparable with the following years and also to make the returns
-to education coherent. 
-Old code can be seen in the "VARIABLES EDUCATIVAS" sector
+***************
+***estrato_ci**
+***************
+clonevar estrato_ci=estrato
 
-Also two new conditions were added to the creation of aedu_ci
-*/
+***************
+***upm_ci***
+***************
+gen upm_ci=. 
 
-/*** revision October 23 2006 (Victoria)
-Change the code for ynlm_ci that double counted some variables.
-Old code can be seen in the "VARIABLES DE DEMANDA LABORAL" section
-*/
-/*** revision January 24 2007 (Ma Fda)
-Change the code for firmapeq. It was created as tamfirma(1=more than 5 employees)
-This change implied the respective change in sociometro's program (DONE!)
-*/
-
-/**** revision August 2007 (Victoria) ***
-
-With the unification Sociometro/Equis we decided to add two new varibales: howner and floor.
-This variables were already created for Atlas
-
-gen howner=(viviprop_ch==1 | viviprop==2);
-replace howner=. if viviprop_ch==.;
-gen floor=(piso_ch==1);
-replace floor=. if piso_ch==.;
-
-Also, the orginal data was replaced with the new Mecovi versions
-*****/
-
-
-/******************
-VARIABLES DEL HOGAR
-*******************/
-gen factor_ch=expr
+*************
+* idh_ch    *
+*************
 ren segmento seg
 ren folio f
 egen idh_ch=group(r p c z seg f)
 tostring idh_ch, replace
 
+*************
+* idp_ci    *
+*************
 gen idp_ci=o
 tostring idp_ci, replace
 
-gen zona_c=z
-replace zona_c=0 if z==2
-gen pais_c="CHL"
-gen anio_c=2000
-gen mes_c=11
+*************
+* factor_ch *
+*************
+gen factor_ch=expr
+
+***************
+* factor_ci   * 
+***************
+gen factor_ci=expr
+
+
+		/*********************
+		VARIABLES DEMOGRAFICAS
+		*********************/
+
+***************
+* sexo_ci     * 
+***************
+gen sexo_ci=sexo
+
+***************
+* edad_ci     * 
+***************
+gen edad_ci=edad
+
+***************
+***relacion_ci***
+***************
 gen relacion_ci=pco1
 replace relacion_ci=4 if pco1>=4 & pco1<=10
 replace relacion_ci=5 if pco1==11
 replace relacion_ci=6 if pco1==12
 
-/*************************************
-VARIABLES DE INFRAESTRUCTURA DEL HOGAR
-**************************************/
-gen aguared_ch=(v11==1 | v11==2 | v11==3)
-gen aguadist_ch=v12
-gen aguamala_ch=(v11==5|v11==6)
-gen aguamide_ch=(v11==1 |v11==2)
-gen luz_ch=(v15<=5)
-gen luzmide_ch=(v15==1 | v15==2)
-replace luzmide_ch=. if luz_ch==0
-gen combust_ch=.
-gen bano_ch=((v9!=0 & v32==.) | v32>0 & v32<=3)
-gen banoex_ch=(v32==. | v32<v9)
-replace banoex_ch=. if bano_ch==0 
-gen des1_ch=0 if bano_ch==0 | v14==7
-replace des1_ch=1 if v14==1 | v14==2
-replace des1_ch=2 if v14==3 | v14==4
-replace des1_ch=3 if v14==5 | v14==6
-gen des2_ch=des1_ch
-replace des2_ch=. if des1_ch==3
-gen piso_ch=0 if v18==5
-replace piso_ch=1 if v18<5
-gen pared_ch=0 if v16>=4 & v16<=7
-replace pared_ch=1 if v16<4
-replace pared_ch=2 if v16==8
-gen techo_ch=0 if v20>=5
-replace techo_ch=1 if v20<5
-gen resid_ch=.
-
- **Daniela Zuluaga- Enero 2018: Se agregan las variables aguamejorada_ch y banomejorado_ch cuya sintaxis fue elaborada por Mayra Saenz**
-	
- *********************
- ***aguamejorada_ch***
- *********************
-g       aguamejorada_ch = 1 if (v11 >=1 & v11 <=4)
-replace aguamejorada_ch = 0 if (v11 >=5 & v11 <=6) | v12 == 3 
-
- *********************
- ***banomejorado_ch***
- *********************
-g       banomejorado_ch = 1 if  (v14 >=1 & v14 <=4) 
-replace banomejorado_ch = 0 if  (v14 >=5 & v14 <=7)
-
-gen dorm_ch=v4 
-egen piezaviv=rsum(v4 v5 v6 v7 v8 v9 v10), missing
-replace piezaviv=. if v4==. & v5==. & v6==. & v7==. & v8==. & v9==. & v10==. 
-egen piezahog=rsum(v27 v28 v29 v30 v31 v32 v33), missing
-replace piezahog=. if v27==. & v28==. & v29==. & v30==. & v31==. & v32==. & v33==. 
-gen cuartos_ch=piezaviv 
-gen cocina_ch=(v8!=0)
-sort idh_ch
-by idh_ch: egen telef_ch=sum(p3==1)
-replace telef_ch=1 if telef_ch>=1
-by idh_ch: egen refrig_ch=sum(p2==1)
-replace refrig_ch=1 if refrig_ch>=1
-gen freez_ch=.
-gen auto_ch=.
-by idh_ch: egen compu_ch=sum(p6==1)
-replace compu_ch=1 if compu_ch>=1
-by idh_ch: egen internet_ch=sum(p7==1)
-replace compu_ch=1 if compu_ch==1
-
-/*****
-cel_ch
-*****/
-sort idh_ch
-by idh_ch: egen cel_ch=sum(p8==1)
-replace cel_ch=1 if cel_ch>=1
-replace cel_ch=. if p8==9 | p8==.
-
-gen vivi1_ch=1 if v22==1 | v22==2
-replace vivi1_ch=2 if v22==3
-replace vivi1_ch=3 if v22>3
-gen vivi2_ch=(vivi1_ch==1 | vivi1_ch==2)
-gen viviprop_ch=0 if v23==5 | v23==6
-replace viviprop_ch=1 if v23==1 | v23==3
-replace viviprop_ch=2 if v23==2 | v23==4
-replace viviprop_ch=3 if v23==10
-replace viviprop_ch=4 if v23>6 & v23<=9
-recode v24 (99999999=.)
-gen vivitit_ch=.
-gen vivialq_ch=v24 if viviprop_ch==0 /*Cuanto paga y cuanto pagaria estan en la misma pregunta*/
-gen vivialqimp_ch=v24 if viviprop_ch!=0
-
-
-/* new variables August 2007 */
-
-gen howner=(viviprop_ch==1 | viviprop==2)
-replace howner=. if viviprop_ch==.
-gen floor=(piso_ch==1)
-replace floor=. if piso_ch==.
-
-
-/*********************
-VARIABLES DEMOGRAFICAS
-*********************/
-gen factor_ci=expr
-gen sexo_ci=sexo
-gen edad_ci=edad
-
+***************
+* civil_ci    * 
+***************
 gen civil_ci=1 if ecivil==7
 replace civil_ci=2 if ecivil==1 | ecivil==2
 replace civil_ci=3 if ecivil==3 | ecivil==4 | ecivil==5
 replace civil_ci=4 if ecivil==6
 
+****************
+* miembros_ci   * 
+****************
+gen miembros_ci=(relacion_ci>=1 & relacion_ci<=5)
+
+***************
+* jefe_ci     * 
+***************
 gen jefe_ci=(relacion_ci==1)
-sort idh_ch
-by idh_ch: egen byte nconyuges_ch=sum(relacion_ci==2) 
-by idh_ch: egen byte nhijos_ch=sum(relacion_ci==3)
-by idh_ch: egen byte notropari_ch=sum(relacion_ci==4)
-by idh_ch: egen byte notronopari_ch=sum(relacion_ci==5)
-by idh_ch: egen byte nempdom_ch=sum(relacion_ci==6)
+
+****************
+* nconyuges_ch * 
+****************
+by idh_ch, sort: egen nconyuges_ch=sum(relacion_ci==2)
+
+****************
+* nhijos_ch    * 
+****************
+by idh_ch, sort: egen nhijos_ch=sum(relacion_ci==3)
+
+****************
+* notropari_ch * 
+****************
+by idh_ch, sort: egen notropari_ch=sum(relacion_ci==4)
+
+******************
+* notronopari_ch * 
+******************
+by idh_ch, sort: egen notronopari_ch=sum(relacion_ci==5)
+
+****************
+* nempdom_ch   * 
+****************
+by idh_ch, sort: egen nempdom_ch=sum(relacion_ci==6)
+
+****************
+* clasehog_ch  * 
+****************
 gen byte clasehog_ch=0
 replace clasehog_ch=1 if nhijos_ch==0 & nconyuges_ch==0 & notropari_ch==0 & notronopari_ch==0 /*Unipersonal*/
 replace clasehog_ch=2 if nhijos_ch>0 & notropari_ch==0 & notronopari_ch==0 /*Nuclear (child with or without spouse but without other relatives)*/
@@ -249,67 +193,128 @@ replace clasehog_ch=2 if nhijos_ch==0 & nconyuges_ch>0 & notropari_ch==0 & notro
 replace clasehog_ch=3 if notropari_ch>0 & notronopari_ch==0 /*Ampliado*/
 replace clasehog_ch=4 if ((nconyuges_ch>0 | nhijos_ch>0 | notropari_ch>0) & (notronopari_ch>0))/*Compuesto (some relatives plus non relative)*/
 replace clasehog_ch=5 if nhijos_ch==0 & nconyuges_ch==0 & notropari_ch==0 & notronopari_ch>0 /*Corresidente*/
+
+****************
+* nmiembros_ch * 
+****************
 sort idh_ch
 by idh_ch, sort: egen byte nmiembros_ch=sum(relacion_ci>0 & relacion_ci<=5)
+
+****************
+* nmayor21_ch  * 
+****************
 by idh_ch, sort: egen byte nmayor21_ch=sum((relacion_ci>0 & relacion_ci<=5) & (edad_ci>=21 & edad_ci<=98))
+
+****************
+* nmenor21_ch  * 
+****************
 by idh_ch, sort: egen byte nmenor21_ch=sum((relacion_ci>0 & relacion_ci<=5) & (edad_ci<21))
+
+****************
+* nmayor65_ch  * 
+****************
 by idh_ch, sort: egen byte nmayor65_ch=sum((relacion_ci>0 & relacion_ci<=5) & (edad_ci>=65 & edad_ci!=.))
+
+****************
+* nmwnor6_ch   * 
+****************
 by idh_ch, sort: egen byte nmenor6_ch=sum((relacion_ci>0 & relacion_ci<=5) & (edad_ci<6))
+
+****************
+* nmenor1_ch   * 
+****************
 by idh_ch, sort: egen byte nmenor1_ch=sum((relacion_ci>0 & relacion_ci<=5) & (edad_ci<1))
 
-gen miembros_ci=(relacion_ci>=1 & relacion_ci<=5)
-label variable miembros_ci "Miembro del hogar"
-
-
-	***************
-	***upm_ci***
-	***************
-gen upm_ci=. 
-
-	***************
-	***estrato_ci**
-	***************
-
-clonevar estrato_ci=estrato
-label variable estrato_ci "Estrato"
+******************
+* miembros_one_ci* 
+******************
+gen miembros_one_ci=(pco1>=1 & pco1<=11)
 
 
           ******************************
           *** VARIABLES DE DIVERSIDAD **
           ******************************
-*Nathalia Maya & Antonella Pereira
-*Julio 2021	
 
-	***************
-	***afroind_ci***
-	***************
+***********
+* afro_ci *
+***********
+gen afro_ci = .
+
+***************
+***ind_ci***
+***************
 **Pregunta: Pueblos indígenas, pertenece usted o es descendiente de alguno de ellos? (etnia) (Aimara 1; Rapa-Nui 2; Quechua 3; Mapuche 4; Atacameño 5; Coya 6; Kawashkar 7; Yagán 8; No pertenece a ningún pueblo indígena 0; sin dato 9)
-gen afroind_ci=. 
-replace afroind_ci=1 if (etnia >=1 & etnia <=8 )
-replace afroind_ci=3 if etnia==0
-replace afroind_ci=. if etnia==9
+gen ind_ci=. 
+replace ind_ci=1 if (etnia >=1 & etnia <=8 )
+replace ind_ci=0 if etnia==0
 
-	***************
-	***afroind_ch***
-	***************
+*****************
+***noafroind_ci**
+*****************
+gen byte noafroind_ci = . 
+replace noafroind_ci = 1 if afro_ci==0 & ind_ci==0
+replace noafroind_ci = 0 if afro_ci==1 | ind_ci==1
+
+***************
+***afro_ch***
+***************
+gen afro_jefe = afro_ci if relacion_ci == 1
+egen afro_ch = min(afro_jefe), by(idh_ch) 
+drop afro_jefe
+
+***************
+***ind_ch***
+***************
+gen ind_jefe = ind_ci if relacion_ci == 1
+egen ind_ch = min(ind_jefe), by(idh_ch) 
+drop ind_jefe
+
+***************
+***noafroind_ch***
+***************
+gen noafroind_jefe = noafroind_ci if relacion_ci == 1
+egen noafroind_ch = min(noafroind_jefe), by(idh_ch) 
+drop noafroind_jefe
+
+*******************
+***afroind_ano_c***
+*******************
+gen afroind_ano_c=2000
+
+***************
+***afroind_ci**
+***************
+gen afroind_ci =. 
+replace afroind_ci = 1 if ind_ci==1
+replace afroind_ci = 2 if afro_ci==1
+replace afroind_ci = 3 if noafroind_ci==1
+
+***************
+***afroind_ch***
+***************
 gen afroind_jefe= afroind_ci if relacion_ci==1
 egen afroind_ch  = min(afroind_jefe), by(idh_ch) 
 drop afroind_jefe
 
-	*******************
-	***afroind_ano_c***
-	*******************
-gen afroind_ano_c=2000
-
-	*******************
-	***dis_ci***
-	*******************
+*******************
+***dis_ci***
+*******************
 gen dis_ci=. 
 
-	*******************
-	***dis_ch***
-	*******************
-gen dis_ch=. 
+*******************
+***disWG_ci***
+*******************
+gen disWG_ci=.
+
+*******************
+***CHL_dis_ci***
+*******************
+gen CHL_dis_ci =dis_ci
+
+*******************
+***dis_ch***
+*******************
+egen dis_ch = max(dis_ci), by(idh_ch) 
 
 
 /***************************
@@ -1277,6 +1282,8 @@ replace lpe_ci= 20281     if zona_c==1  /*urbana*/
 replace lpe_ci= 15616     if zona_c==0	/*rural*/
 label var lpe_ci "Linea de indigencia oficial del pais"
 
+* Fuente: https://www.desarrollosocialyfamilia.gob.cl/btca/txtcompleto/DIGITALIZADOS/Folletos%20Mide/mds-135-2004.pdf
+
 ****************
 *cotizando_ci***
 ****************
@@ -1445,7 +1452,6 @@ gen ylmotros_ci=.
 gen tcylmpri_ci =.
 gen tcylmpri_ch =.
 gen autocons_ci=.
-gen region_c=.
 
 *YL -> elimino var comp para que no genere problemas al SOCIOMETERO (esta var no es necesaria)
 drop comp
@@ -1529,6 +1535,98 @@ replace atencion_ci=. if s22==9
 label var atencion_ci "Dificultad de acceso a salud por problemas de atencion"
 lab def atencion_ci 0 "No" 1 "Si"
 lab val atencion_ci atencion_ci
+
+/*************************************
+VARIABLES DE INFRAESTRUCTURA DEL HOGAR
+**************************************/
+gen aguared_ch=(v11==1 | v11==2 | v11==3)
+gen aguadist_ch=v12
+gen aguamala_ch=(v11==5|v11==6)
+gen aguamide_ch=(v11==1 |v11==2)
+gen luz_ch=(v15<=5)
+gen luzmide_ch=(v15==1 | v15==2)
+replace luzmide_ch=. if luz_ch==0
+gen combust_ch=.
+gen bano_ch=((v9!=0 & v32==.) | v32>0 & v32<=3)
+gen banoex_ch=(v32==. | v32<v9)
+replace banoex_ch=. if bano_ch==0 
+gen des1_ch=0 if bano_ch==0 | v14==7
+replace des1_ch=1 if v14==1 | v14==2
+replace des1_ch=2 if v14==3 | v14==4
+replace des1_ch=3 if v14==5 | v14==6
+gen des2_ch=des1_ch
+replace des2_ch=. if des1_ch==3
+gen piso_ch=0 if v18==5
+replace piso_ch=1 if v18<5
+gen pared_ch=0 if v16>=4 & v16<=7
+replace pared_ch=1 if v16<4
+replace pared_ch=2 if v16==8
+gen techo_ch=0 if v20>=5
+replace techo_ch=1 if v20<5
+gen resid_ch=.
+
+ **Daniela Zuluaga- Enero 2018: Se agregan las variables aguamejorada_ch y banomejorado_ch cuya sintaxis fue elaborada por Mayra Saenz**
+	
+ *********************
+ ***aguamejorada_ch***
+ *********************
+g       aguamejorada_ch = 1 if (v11 >=1 & v11 <=4)
+replace aguamejorada_ch = 0 if (v11 >=5 & v11 <=6) | v12 == 3 
+
+ *********************
+ ***banomejorado_ch***
+ *********************
+g       banomejorado_ch = 1 if  (v14 >=1 & v14 <=4) 
+replace banomejorado_ch = 0 if  (v14 >=5 & v14 <=7)
+
+gen dorm_ch=v4 
+egen piezaviv=rsum(v4 v5 v6 v7 v8 v9 v10), missing
+replace piezaviv=. if v4==. & v5==. & v6==. & v7==. & v8==. & v9==. & v10==. 
+egen piezahog=rsum(v27 v28 v29 v30 v31 v32 v33), missing
+replace piezahog=. if v27==. & v28==. & v29==. & v30==. & v31==. & v32==. & v33==. 
+gen cuartos_ch=piezaviv 
+gen cocina_ch=(v8!=0)
+sort idh_ch
+by idh_ch: egen telef_ch=sum(p3==1)
+replace telef_ch=1 if telef_ch>=1
+by idh_ch: egen refrig_ch=sum(p2==1)
+replace refrig_ch=1 if refrig_ch>=1
+gen freez_ch=.
+gen auto_ch=.
+by idh_ch: egen compu_ch=sum(p6==1)
+replace compu_ch=1 if compu_ch>=1
+by idh_ch: egen internet_ch=sum(p7==1)
+replace compu_ch=1 if compu_ch==1
+
+/*****
+cel_ch
+*****/
+sort idh_ch
+by idh_ch: egen cel_ch=sum(p8==1)
+replace cel_ch=1 if cel_ch>=1
+replace cel_ch=. if p8==9 | p8==.
+
+gen vivi1_ch=1 if v22==1 | v22==2
+replace vivi1_ch=2 if v22==3
+replace vivi1_ch=3 if v22>3
+gen vivi2_ch=(vivi1_ch==1 | vivi1_ch==2)
+gen viviprop_ch=0 if v23==5 | v23==6
+replace viviprop_ch=1 if v23==1 | v23==3
+replace viviprop_ch=2 if v23==2 | v23==4
+replace viviprop_ch=3 if v23==10
+replace viviprop_ch=4 if v23>6 & v23<=9
+recode v24 (99999999=.)
+gen vivitit_ch=.
+gen vivialq_ch=v24 if viviprop_ch==0 /*Cuanto paga y cuanto pagaria estan en la misma pregunta*/
+gen vivialqimp_ch=v24 if viviprop_ch!=0
+
+
+/* new variables August 2007 */
+
+gen howner=(viviprop_ch==1 | viviprop==2)
+replace howner=. if viviprop_ch==.
+gen floor=(piso_ch==1)
+replace floor=. if piso_ch==.
 
 
 ******************************
@@ -1654,6 +1752,28 @@ lab val atencion_ci atencion_ci
 	label value ine02 ine02
 	label var ine02 " Segunda division politico-administrativa, Provincia"
 	
+	
+****************************
+***VARIABLES DE EXTERNAS***
+**************************** 
+
+	****************
+	*tipo_bienestar*
+	**************** 
+	gen byte tipo_bienestar = 1
+	****************
+	* pobre_ine _ci*
+	**************** 
+	gen byte pobre_ine_ci= inlist(corte, 1, 2)
+	****************
+	* bienestar_agregado *
+	**************** 
+	gen bienestar_agregado = ypchaj
+	****************
+	* ln_ci *
+	**************** 
+	gen ln_ci = lp_ci	
+
 		
 /*_____________________________________________________________________________________________________*/
 * Asignación de etiquetas e inserción de variables externas: tipo de cambio, Indice de Precios al 
