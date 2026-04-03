@@ -763,30 +763,14 @@ label var ypeoficial_ch "Ingreso per cápita generado por el país"
 
 */
 
-gen byte aedu_ci = .
 
-*Modificación Mayra Sáenz - se utiliza la p06b06a p06b06b en lugar de la p06b25a p06b25b
-
-*** preprimaria
-replace aedu_ci=0 if p06b06a==1 
-
-
-*** primaria
-replace aedu_ci=p06b06b  if p06b06a==2
-
-
-*** basica
-replace aedu_ci=6 + p06b06b if p06b06a==3
-
-*** diversificado
-replace aedu_ci=9 + p06b06b if p06b06a==4
-
-
-*** educacion superior
-replace aedu_ci=12 + p06b06b if p06b06a==5 
-
-*** post-grado
-replace aedu_ci=17 + p06b06b if p06b06a==6
+gen aedu_ci = .
+replace	 aedu_ci = 0  if (p06b25a == 0 | p06b25a== 1) // Ninguno Preprimaria
+replace aedu_ci = p06b25b if p06b25a == 2 // Primaria
+replace aedu_ci = 6 + p06b25b if (p06b25a == 3 | p06b25a == 4) // Básico, Diversificado
+replace aedu_ci = 11 + p06b25b if p06b25a== 5 // Superior
+replace aedu_ci = 16 + p06b25b if (p06b25a == 6 | p06b25a == 7) // Postgrado 
+label var aedu_ci "Anios de educacion aprobados"
 
 
 *Para los que no están asistiendo actualmente 
@@ -1094,6 +1078,8 @@ egen ylnmpri_ci=rsum(alim vivi ropa transp), missing
 replace ylnmpri_ci=. if (alim==. & vivi==. & ropa==. & transp==.) | p10b04>4   
 label var ylnmpri_ci " ingreso laboral no monetario ocupacion principal"
 
+
+
 ****************************
 *** ocupacion secundaria ***
 ****************************
@@ -1228,6 +1214,9 @@ label var autocons_ci "autoconsumo individual"
 gen ynlnm_ci=.
 label var ynlnm_ci "ingreso no laboral no monetario"
 
+egen double ytot_ci= rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci), mi
+
+
 ************************************************************************************
 *** ingresos distintos del trabajo en dinero o bienes (montos totales del hogar) ***
 ************************************************************************************
@@ -1355,7 +1344,7 @@ gen id_afro_ci = .
 
 do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&ExternalVars_Harmonized_DataBank.do"
 
-order region_BID_c region_c pais_c anio_c mes_c zona_c factor_ch	idh_ch	idp_ci	factor_ci sexo_ci edad_ci ///
+cap order region_BID_c region_c pais_c anio_c mes_c zona_c factor_ch	idh_ch	idp_ci	factor_ci sexo_ci edad_ci ///
 afroind_ci afroind_ch afroind_ano_c dis_ci dis_ch relacion_ci civil_ci jefe_ci nconyuges_ch nhijos_ch notropari_ch notronopari_ch nempdom_ch ///
 clasehog_ch nmiembros_ch miembros_ci nmayor21_ch nmenor21_ch nmayor65_ch nmenor6_ch	nmenor1_ch	condocup_ci ///
 categoinac_ci nempleos_ci emp_ci antiguedad_ci	desemp_ci cesante_ci durades_ci	pea_ci desalent_ci subemp_ci ///

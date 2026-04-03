@@ -22,7 +22,7 @@ local base_in1  = "$ruta\survey\\`PAIS'\\`ENCUESTA'\\`ANO'\\`ronda'\data_merge\\
 local base_in2  = "$ruta\survey\\`PAIS'\\`ENCUESTA'\\`ANO'\\`ronda'\data_merge\\`PAIS'_`ANO'`ronda'_resto.dta"
 local base_out1 = "$ruta\harmonized\\`PAIS'\\`ENCUESTA'\data_arm\areas\\`PAIS'_`ANO'`ronda'_cabeceraBID.dta"
 local base_out  = "$ruta\harmonized\\`PAIS'\\`ENCUESTA'\data_arm\\`PAIS'_`ANO'`ronda'_BID.dta"
-use `base_in2', clear                        
+                   
 capture log close
 log using "`log_file'", replace 
 
@@ -49,6 +49,13 @@ use `base_in1', clear
 gen region_c=.
 label value region_c region_c
 label var region_c "division politico-administrativa, departamento"
+
+**************
+***  ine01  ***
+***************
+gen ine01=.
+label value ine01 ine01
+label var ine01 "division politico-administrativa, departamento"
 
 ************
 * Region_BID *
@@ -107,6 +114,27 @@ label define mes_c 6 "Junio" 7 " Julio" 8 "Agosto",add
 label define mes_c 9 "Septiembre" 10 "Octubre" 11 "Noviembre" 12 "Diciembre", add
 label value mes_c mes_c
 
+***************
+***factor_ci***
+***************
+label variable factor_ci "Factor de expansion del individuo"
+
+***************
+***upm_ci***
+***************
+gen upm_ci=.
+label variable upm_ci "Unidad Primaria de Muestreo"
+
+***************
+***estrato_ci***
+***************
+gen estrato_ci=.
+label variable estrato_ci "Estrato"
+
+		****************************
+		***VARIABLES DEMOGRAFICAS***
+		****************************
+
 *****************
 ***relacion_ci***
 *****************
@@ -124,16 +152,6 @@ label define relacion_ci 1 "Jefe/a" 2 "Esposo/a" 3 "Hijo/a" 4 "Otros parientes" 
 label define relacion_ci 6 "Empleado/a domestico/a", add
 label value relacion_ci relacion_ci
 
-
-****************************
-***VARIABLES DEMOGRAFICAS***
-****************************
-
-***************
-***factor_ci***
-***************
-label variable factor_ci "Factor de expansion del individuo"
-
 **********
 ***sexo***
 **********
@@ -149,17 +167,6 @@ label value sexo_ci sexo_ci
 gen edad_ci=real(ca_5_T01)
 label variable edad_ci "Edad del individuo"
 
-*************************
-*** VARIABLES DE RAZA ***
-*************************
-
-* MGR Oct. 2015: modificaciones realizadas en base a metodología enviada por SCL/GDI Maria Olga Peña
-
-gen raza_idioma_ci = . 
-gen id_ind_ci = .
-gen id_afro_ci = .
-gen raza_ci=.
-
 *****************
 ***civil_ci***
 *****************
@@ -172,7 +179,6 @@ label variable civil_ci "Estado civil"
 label define civil_ci 1 "Soltero" 2 "Union formal o informal"
 label define civil_ci 3 "Divorciado o separado" 4 "Viudo" , add
 label value civil_ci civil_ci
-
 
 *************
 ***jefe_ci***
@@ -291,11 +297,89 @@ by idh_ch, sort: egen nmenor1_ch=sum((miembros_ci==1) & edad<1)
 label variable nmenor1_ch "Numero de familiares menores a 1 anio"
 
 
+*******************************************************
+***           VARIABLES DE DIVERSIDAD               ***
+*******************************************************
+	*********
+	*afro_ci*
+	*********
+	gen byte afro_ci = . 	  // se queda como missing (.) si no existe la pregunta
+	
+	*********
+	*ind_ci*
+	*********	
+	gen byte ind_ci =. 		  // se queda como missing (.) si no existe la pregunta
+
+	**************
+	*noafroind_ci*
+	**************
+	gen byte noafroind_ci =.   // se queda como missing (.) si no existe la pregunta
+	replace noafroind_ci =1 if (afro_ci==0 & ind_ci==0)
+	replace noafroind_ci =0 if (afro_ci==1 | ind_ci==1)
+	replace noafroind_ci =. if (afro_ci==. | ind_ci==.) //Esto solo en el caso que se tenga ambas opciones no disponibles. 
+	ta noafroind_ci,m
+
+	************
+	*afroind_ci*
+	************
+	gen byte afroind_ci=. 
+	replace afroind_ci=1 if ind_ci==1 
+	replace afroind_ci=2 if afro_ci==1
+	replace afroind_ci=3 if noafroind_ci == 1
+	ta afroind_ci,m
+	
+	*********
+	*afro_ch*
+	*********
+	gen byte afro_jefe = afro_ci if relacion_ci==1
+	egen afro_ch  = max(afro_jefe), by(idh_ch) 
+	drop afro_jefe
+	
+	********
+	*ind_ch*
+	********	
+	gen byte ind_jefe = ind_ci if relacion_ci==1
+	egen ind_ch = max(ind_jefe), by(idh_ch) 
+	drop ind_jefe
+
+	**************
+	*noafroind_ch*
+	**************
+	gen byte noafroind_jefe = noafroind_ci if relacion_ci==1
+	egen noafroind_ch = max(noafroind_jefe), by(idh_ch) 
+	drop noafroind_jefe
+
+	************
+	*afroind_ch*
+	************
+ 	gen byte afroind_jefe = afroind_ci if jefe_ci==1
+	egen afroind_ch = min(afroind_jefe), by(idh_ch) 
+	drop afroind_jefe 
+
+	********
+	*dis_ci*
+	********
+	gen byte dis_ci=.
+	
+	**********
+	*disWG_ci*
+	**********
+	gen byte disWG_ci=.
+	
+	********
+	*dis_ch*
+	********
+	egen byte dis_ch = max(dis_ci), by(idh_ch) 
+	
+	******************
+	*ISOalpha3_dis_ci*
+	******************
+	gen byte COL_dis_ci = .
 
 
-************************************
-*** VARIABLES DEL MERCADO LABORAL***
-************************************
+		************************************
+		*** VARIABLES DEL MERCADO LABORAL***
+		************************************
 
 /************************************************************************************************************
 * 3. Creación de nuevas variables de SS and LMK a incorporar en Armonizadas
@@ -925,9 +1009,9 @@ gen ylmho_ci=ylm_ci/(horastot_ci*4.3)
  replace tcylm_ci= 1 if ylm_ci==9999998
  
  
-****************************
-***VARIABLES DE EDUCACION***
-****************************
+		****************************
+		***VARIABLES DE EDUCACION***
+		****************************
 /*
 En Colombia, la educación primaria dura 5 años y la educación secundaria *
 *6 años y universitaria hasta 5-7 años, dependiendo la carrera*/ 
@@ -967,125 +1051,102 @@ replace yedc=18 if yedc1==507
 
 gen byte aedu_ci=yedc
 
+
+
 **************
 ***eduno_ci***
 **************
-
-gen byte eduno_ci=0
-replace eduno_ci=1 if aedu_ci==0
+g byte eduno_ci = aedu_ci == 0
 replace eduno_ci=. if aedu_ci==.
-label variable eduno_ci "Cero anios de educacion"
+la var eduno_ci "Sin educación"
 
 **************
 ***edupi_ci***
 **************
-
-gen byte edupi_ci=0
-replace edupi_ci=1 if aedu_ci>0 & aedu_ci<5
+g byte edupi_ci = (aedu_ci >= 1 & aedu_ci < 5) 
 replace edupi_ci=. if aedu_ci==.
-label variable edupi_ci "Primaria incompleta"
-
+la var edupi_ci "Primaria incompleta"
+	
 **************
 ***edupc_ci***
 **************
-
-gen byte edupc_ci=0
-replace edupc_ci=1 if aedu_ci==5
+g byte edupc_ci = aedu_ci == 5 
 replace edupc_ci=. if aedu_ci==.
-label variable edupc_ci "Primaria completa"
+la var edupc_ci "Primaria completa"
 
 **************
 ***edusi_ci***
 **************
-
-gen byte edusi_ci=0
-replace edusi_ci=1 if aedu_ci>5 & aedu_ci<11
+g byte edusi_ci = (aedu_ci >= 6 & aedu_ci < 11) 
 replace edusi_ci=. if aedu_ci==.
-label variable edusi_ci "Secundaria incompleta"
+la var edusi_ci "Secundaria incompleta"
 
 **************
 ***edusc_ci***
 **************
-
-gen byte edusc_ci=0
-replace edusc_ci=1 if aedu_ci==11
+g byte edusc_ci = (aedu_ci==11) 
 replace edusc_ci=. if aedu_ci==.
-label variable edusc_ci "Secundaria completa"
+la var edusc_ci "Secundaria completa"
+
+	
+**************
+***eduui_ci***
+**************
+g byte eduui_ci = (aedu_ci>11 & aedu_ci<16)
+replace eduui_ci=. if aedu_ci==.
+la var eduui_ci "Superior incompleto"
+
+**************
+***eduuc_ci***
+**************
+g byte eduuc_ci = (aedu_ci>=16 & aedu_ci!=.)
+replace eduuc_ci=. if aedu_ci==.
+la var eduuc_ci "Superior completo"
 
 ***************
 ***edus1i_ci***
 ***************
-
-** SE DEFINE PRIMER CICLO DE SECUNDARIA LOS PRIMEROS 4 DE 6 ANIOS **
-
-gen byte edus1i_ci=0
-replace edus1i_ci=1 if aedu_ci>5 & aedu_ci<9
+g byte edus1i_ci = (aedu_ci >= 6 & aedu_ci < 9)
 replace edus1i_ci=. if aedu_ci==.
-label variable edus1i_ci "1er ciclo de la secundaria incompleto" 
+la var edus1i_ci "1er ciclo de la secundaria incompleto"
 
 ***************
 ***edus1c_ci***
 ***************
-
-gen byte edus1c_ci=0
-replace edus1c_ci=1 if aedu_ci==9
+g byte edus1c_ci = aedu_ci == 9
 replace edus1c_ci=. if aedu_ci==.
-label variable edus1c_ci "1er ciclo de la secundaria completo" 
+la var edus1c_ci "1er ciclo de la secundaria completo"
 
-** SE DEFINE SEGUNDO CICLO DE SECUNDARIA LOS ULTIMOS 2 DE 6 ANIOS **
-
-gen byte edus2i_ci=0
-replace edus2i_ci=1 if aedu_ci>9 & aedu_ci<11
+***************
+***edus2i_ci***
+***************
+g byte edus2i_ci = aedu_ci == 10 
 replace edus2i_ci=. if aedu_ci==.
-label variable edus2i_ci "2do ciclo de la secundaria incompleto" 
+la var edus2i_ci "2do ciclo de la secundaria incompleto"
 
 ***************
 ***edus2c_ci***
 ***************
-
-gen byte edus2c_ci=0
-replace edus2c_ci=1 if aedu_ci==11
+g byte edus2c_ci = (aedu_ci == 11)
 replace edus2c_ci=. if aedu_ci==.
-label variable edus2c_ci "2do ciclo de la secundaria completo" 
-
-**************
-***eduui_ci***
-**************
-
-gen byte eduui_ci=0
-replace eduui_ci=1 if aedu_ci>11 & aedu_ci<16
-replace eduui_ci=. if aedu_ci==.
-label variable eduui_ci "Universitaria incompleta"
-
-***************
-***eduuc_ci****
-***************
-
-gen byte eduuc_ci=0
-replace eduuc_ci=1 if aedu_ci>=16
-replace eduuc_ci=. if aedu_ci==.
-label variable eduuc_ci "Universitaria incompleta o mas"
+la var edus2c_ci "2do ciclo de la secundaria completo"
 
 
 ***************
 ***edupre_ci***
 ***************
-
-gen byte edupre_ci=(yedc1==200|yedc1==201)
-replace edupre_ci=. if aedu_ci==.
-label variable edupre_ci "Educacion preescolar"
-
+g byte edupre_ci =.
+la var edupre_ci "Educación preescolar"
 
 **************
 ***eduac_ci***
 **************
 gen byte eduac_ci=.
 label variable eduac_ci "Superior universitario vs superior no universitario"
-
+	
 ***************
 ***asiste_ci***
 ***************
-
 gen asiste_ci=.
 replace asiste_ci=1 if ca_10_T01=="1"
 replace asiste_ci=0 if ca_10_T01=="2"
@@ -1094,190 +1155,256 @@ label variable asiste_ci "Asiste actualmente a la escuela"
 *****************
 ***pqnoasis_ci***
 *****************
-
 gen pqnoasis_ci=.
 
 **************
 *pqnoasis1_ci*
 **************
 **Daniela Zuluaga- Enero 2018: Se agrega la variable pqnoasis1_ci cuya sintaxis fue elaborada por Mayra Saenz**
-
-g       pqnoasis1_ci = .
+g pqnoasis1_ci = .
 
 ***************
 ***repite_ci***
 ***************
-
 gen repite_ci=.
 label variable repite_ci "Esta repitendo el grado o curso"
 
 ******************
 ***repiteult_ci***
 ******************
-
 gen repiteult_ci=.
 label variable repiteult_ci "Esta repitendo el ultimo grado o curso"
 
 ***************
 ***edupub_ci***
 ***************
-
 gen edupub_ci=.
 
-********************************************
-***Variables de Infraestructura del hogar***
-********************************************
+		********************************************
+		***Variables de Infraestructura del hogar***
+		********************************************
 
 ***************
 **aguared_ch***
 ***************
+destring ca_5_T00_, replace
+gen aguared_ch=(ca_5_T00_==1 | ca_5_T00_==2)
+la var aguared_ch "Acceso a fuente de agua por red"
 
-gen aguared_ch=(ca_5_T00_=="1" | ca_5_T00_=="2")
 
+*****************
+*aguafconsumo_ch*
+*****************
+*se clasificó 1995 sobre la base del 2021
+gen aguafconsumo_ch = 0 //2021 0 La encuesta no pregunta sobre agua para beber
+replace aguafconsumo_ch = 1 if ca_5_T00_==1  //2021 1 De acueducto por tubería
+replace aguafconsumo_ch = 2 if ca_5_T00_==5 // 2021 7 De pila pública 
+replace aguafconsumo_ch = 3 if ca_5_T00_==0  //2021 10 Agua embotellada o en bolsa
+replace aguafconsumo_ch = 5 if ca_5_T00_==7  //2021 5 Aguas lluvias
+replace aguafconsumo_ch = 6 if ca_5_T00_==6 //2021 8 Carrotanque
+replace aguafconsumo_ch = 7 if ca_5_T00_==2 //2021 2 De otra fuente por tubería
+replace aguafconsumo_ch = 8 if ca_5_T00_==3  //2021 6 Río, quebrada, nacimiento o manantial
+replace aguafconsumo_ch = 9 if (ca_5_T00_==4) //2021 4 De pozo sin bomba, aljibe, jagüey o barreno + 9 Aguatero
+replace aguafconsumo_ch = 10 if (ca_5_T00_==8) //2021 3 De pozo con bomba 
+
+*****************
+*aguafuente_ch*
+*****************
+gen aguafuente_ch =.
+replace aguafuente_ch = 1 if ca_5_T00_==1
+replace aguafuente_ch = 2 if ca_5_T00_==5 
+replace aguafuente_ch = 3 if ca_5_T00_==0  
+replace aguafuente_ch = 5 if ca_5_T00_==7 
+replace aguafuente_ch = 6 if ca_5_T00_==6 
+replace aguafuente_ch = 7 if ca_5_T00_==2 
+replace aguafuente_ch = 8 if ca_5_T00_==3 
+replace aguafuente_ch = 9 if (ca_5_T00_==4) 
+replace aguafuente_ch = 10 if (ca_5_T00_==8) 
+replace aguafuente_ch = 10 if aguafuente_ch ==. & jefe_ci==1
 
 ****************
 **aguadist_ch***
 ****************
-
 gen aguadist_ch=.
+
+**************
+*aguadisp1_ch*
+**************
+gen aguadisp1_ch =9
+
+**************
+*aguadisp2_ch*
+**************
+gen aguadisp2_ch = 9
+*label var aguadisp2_ch "= 9 la encuesta no pregunta si el servicio de agua es constante"
 
 ****************
 **aguamala_ch***
 ****************
+gen aguamala_ch = 2
+replace aguamala_ch = 0 if aguafuente_ch<=7
+replace aguamala_ch = 1 if aguafuente_ch>7 & aguafuente_ch!=10
 
-gen aguamala_ch=.
-replace aguamala_ch=(ca_5_T00_ !="1" & ca_5_T00_ !="2")
+*****************
+*aguamejorada_ch*  Altered
+*****************
+gen aguamejorada_ch = 2
+replace aguamejorada_ch = 0 if aguafuente_ch>7 & aguafuente_ch!=10
+replace aguamejorada_ch = 1 if aguafuente_ch<=7
+*label var aguamejorada_ch "= 1 si la fuente de agua es mejorada"
 
 ****************
 **aguamide_ch***
 ****************
-
 gen aguamide_ch=.
+label var aguamide_ch "Usan medidor para pagar consumo de agua"
+
+****************
+****bano_ch*****
+****************
+destring ca_3_T00_, replace
+gen bano_ch=.
+replace bano_ch=1 if ca_3_T00_==1
+replace bano_ch=2 if ca_3_T00_==2
+replace bano_ch=4 if ca_3_T00_==5
+replace bano_ch=6 if ca_3_T00_==3 | ca_3_T00_ ==4
+replace bano_ch=6 if bano_ch ==. & jefe_ci==1
+la var bano_ch"Tipo de instalación sanitaria que tiene el hogar"
+la def bano_ch 	1 "Indoro a red de desagüe" 				///
+				2 "Indoro a fosa séptica" 	///
+				3 "Letrina mejorada / otra instalación mejorada" 			///
+				4 "Indoro/letrina a cuerpo de agua superficial o suelo" ///
+				5 "Instalación no mejorada" ///
+				6 "Instalación que no se puede clasificar "
+				
+**************
+***banoex_ch***
+***************
+generate banoex_ch=.
+la var banoex_ch "El servicio sanitario es exclusivo del hogar"
+
+*****************
+*banomejorado_ch*  Altered
+*****************
+gen banomejorado_ch= 2
+replace banomejorado_ch =1 if bano_ch<=3 & bano_ch!=0
+replace banomejorado_ch =0 if (bano_ch ==0 | bano_ch>=4) & bano_ch!=6
+
+************
+*sinbano_ch*
+************
+gen sinbano_ch = 3
+replace sinbano_ch = 0 if ca_3_T00_<6
+
+*************
+*aguatrat_ch*
+*************
+gen aguatrat_ch = 9
+*label var aguatrat_ch "= 9 la encuesta no pregunta de si se trata el agua antes de consumirla"
 
 ****************
 *****luz_ch*****
 ****************
-
-gen luz_ch=(ca_5_T003 =="1")
-*1 si la vivienda tiene conexion a energia electrica*
-*ver pregunta 5 del datos de la vivienda*
-
+destring ca_5_T003, replace
+gen luz_ch=(ca_5_T003==1)
+replace luz_ch=. if ca_5_T003==.
+la var luz_ch  "La principal fuente de iluminación es electricidad"
 
 ****************
 ***luzmide_ch***
 ****************
-
 gen luzmide_ch=.
 
 ****************
 ***combust_ch***
 ****************
-
 gen combust_ch=.
-
-****************
-****bano_ch*****
-****************
-*Se corrige ca_3_T00_=="." por ca_3_T00_!="."
-
-gen bano_ch=.
-replace bano_ch=(ca_3_T00_!="4" & ca_3_T00_!=".")
-
-
-****************
-****banoex_ch***
-****************
-
-gen banoex_ch=.
-replace banoex_ch=(ca_4_T00_=="1")
-
 
 ****************
 ****des1_ch*****
 ****************
-
-* Modificaciones Marcela Rubio Septiembre 2014: variable des1_ch habia sido creada como missing
-
+destring ca_3_T00_, replace
 gen des1_ch=.
-replace des1_ch = 0 if ca_3_T00_=="4"
-replace des1_ch = 1 if ca_3_T00_=="1" | ca_3_T00_=="2"
-replace des1_ch = 2 if ca_3_T00_=="3" 
+replace des1_ch=0 if ca_3_T00_==4
+replace des1_ch=1 if ca_3_T00_==1|ca_3_T00_==2
+replace des1_ch=2 if ca_3_T00_==3
+	la var des1_ch "Tipo de desague inadecuado (unimproved) según MDG"
+	la def des1_ch 	0 "No tiene servicio sanitario" 				///
+					1 "Conectado a red general o cámara séptica" 	///
+					2 "Letrina o conectado a pozo ciego" 			///
+					3 "Desemboca en río o calle"
+					
+* Modificaciones Marcela Rubio Septiembre 2014: variable des1_ch habia sido creada como missing
 
 ****************
 ****des2_ch*****
 ****************
-
-* Modificaciones Marcela Rubio Septiembre 2014: variable des2_ch habia sido creada como missing
-gen des2_ch=.
-replace des2_ch = 0 if ca_3_T00_=="4"
-replace des2_ch = 1 if ca_3_T00_=="1" | ca_3_T00_=="2" | ca_3_T00_=="3" 
-
+destring  ca_3_T01, replace
+g des2_ch = .
+replace des2_ch = 0 if bano_ch == 0
+replace des2_ch = 1 if ca_3_T01 == 1 |ca_3_T01 == 2 |ca_3_T01 == 3
+replace des2_ch = 2 if ca_3_T01 == 4
+la var des2_ch "Tipo de desague sin incluir definición MDG"
+la def des2_ch 	0 "No tiene servicio sanitario" 								///
+					1 "Conectado a red general, cámara pséptica, pozo o letrina" 	///
+					2 "Cualquier otro caso"
+la val des2_ch des2_ch
 
 ****************
 ****piso_ch*****
 ****************
+destring ca_4_T00, replace
+g piso_ch = (ca_4_T00 != 5 & ca_4_T00 != .)
+replace piso_ch = . if ca_4_T00 == .
+la var piso_ch "Materiales de construcción del piso"  
+la def piso_ch 	0 "Piso de tierra" 			///
+				1 "Materiales permanentes: cemento, cerámica, mosaico, madera" ///
+				2 "otros materiales: natural, otros"
+la val piso_ch piso_ch
 
-gen piso_ch=.
-replace piso_ch=(ca_4_T00~="5") 
 
 ****************
 ****pared_ch****
 ****************
+destring ca_3_T00, replace
+g pared_ch = .
+replace pared_ch = 0 if ca_3_T00 == 7
+replace pared_ch = 1 if ca_3_T00==1 |ca_3_T00==2|ca_3_T00==3
+replace pared_ch = 2 if ca_3_T00==4 |ca_3_T00==5 |ca_3_T00==6
+la var pared_ch "Materiales de la pared"  
+la def pared_ch 0 "No permanentes: desechos, zinc, tela, cartón." 			///
+				1 "Materiales permanentes: paredes de ladrillo, adobe revocado, cemento y hormigón." ///
+				2 "Otros materiales: naturales, otros."
+la val pared_ch pared_ch
 
-*Para unificar la creación de esta variable se cambia la programación
-*gen pared_ch=.
-*replace pared_ch=(ca_3_T00!="7" & ca_3_T00!="5")
-
-gen pared_ch=.
-replace pared_ch=(ca_3_T00=="1" | ca_3_T00=="2" | ca_3_T00=="3" | ca_3_T00=="6")
-
-*5 no permanente: guadua, caña*
-*7 no permanente: tela y desechos*
  
 ****************
 ****techo_ch****
 ****************
-
 gen techo_ch=.
 
 ****************
 ****resid_ch****
 ****************
-
-gen resid_ch=.
-
-**Daniela Zuluaga- Enero 2018: Se agregan las variables aguamejorada_ch y banomejorado_ch cuya sintaxis fue elaborada por Mayra Saenz**
-	
- *********************
- ***aguamejorada_ch***
- *********************
-destring ca_5_T00_  , replace
-g       aguamejorada_ch = 1 if (ca_5_T00_ >=1 & ca_5_T00_ <=2) | (ca_5_T00_ >=4 & ca_5_T00_ <=5) | ca_5_T00_==7
-replace aguamejorada_ch = 0 if  ca_5_T00_==3 | ca_5_T00_==6 | ca_5_T00_==8
-			
- *********************
- ***banomejorado_ch***
- *********************
-g       banomejorado_ch = .
+g resid_ch = .
 
 ****************
 ****dorm_ch*****
 ****************
-
 gen dorm_ch=.
 replace dorm_ch=real(ca_2_T00_)
 
 ****************
 ***cuartos_ch***
 ****************
-
+*Cantidad de habitaciones en el hogar (se incluye en esta suma el baño y la cocina)
 gen cuartos_ch=.
 replace cuartos_ch=real(ca_1_T00_)
 
 ****************
 ***cocina_ch****
 ****************
-
+*Variable dicotómica que indica con valor 1 si existe un cuarto separado y exclusivo para cocinar en el hogar y con 0 el resto.
 gen cocina_ch=.
 replace cocina_ch=(ca_6_T00_=="3")
 
@@ -1285,94 +1412,143 @@ replace cocina_ch=(ca_6_T00_=="3")
 ****************
 ****telef_ch****
 ****************
-
 gen telef_ch=(ca_5_T004=="1")
 
 ****************
 ****refrig_ch***
 ****************
-
-
 gen refrig_ch=.
 
 ****************
 ****freez_ch****
 ****************
-
 gen freez_ch=.
-
 
 ****************
 ****auto_ch****
-****************
-
+***************
 gen auto_ch=.
 
 ****************
 ****compu_ch****
 ****************
-
 gen compu_ch=.
 
 ****************
 **internet_ch***
 ****************
-
 gen internet_ch=.
 
 ****************
 ****cel_ch******
 ****************
-
 gen cel_ch=.
 
 ****************
 ****vivi1_ch****
 ****************
-
-gen vivi1_ch=.
-replace vivi1_ch=real(ca_1_T00)
-replace vivi1_ch=3 if vivi1_ch>2 & vivi1_ch!=.
-
+destring ca_1_T00, replace
+g vivi1_ch = 1     	 if ca_1_T00 == 1
+replace vivi1_ch = 2 if ca_1_T00 == 2
+replace vivi1_ch= 3 if ca_1_T00 >= 3 &  ca_1_T00<9 
+replace vivi1_ch = . if ca_1_T00 == .
+la var vivi1_ch "Tipo de vivienda en la que reside el hogar"
+la de vivi1_ch	1 "Casa" ///
+				2 "Departamento" ///
+				3 "Otros"
+la val vivi1_ch vivi1_ch
 
 ****************
 ****vivi2_ch****
 ****************
-
 gen vivi2_ch=.
 replace vivi2_ch=(vivi1_ch==1 |vivi1_ch==2)
+la var vivi2_ch "La vivienda es casa o departamento"
 
 
 *******************
 ****viviprop_ch****
 *******************
+destring ca_8_T00_ , replace
+g 		viviprop_ch = 0 if ca_8_T00_ == 3
+replace viviprop_ch= 1 if ca_8_T00_ == 1  
+replace viviprop_ch  = 2 if ca_8_T00_ == 2
+replace viviprop_ch  = 3 if ca_8_T00_ == 5 |ca_8_T00_ == 4
+la var viviprop_ch "Estado de propiedad de la vivienda en la que reside el hogar."
+la de viviprop_ch	0 "Alquilada " ///
+				1 "Propia y totalmente pagada" ///
+				2 "Propia y en proceso de pago" ///
+				3 "Ocupada (propia de facto)"
 
-gen viviprop_ch=real(ca_8_T00_)
-replace viviprop_ch=0 if viviprop_ch==3 | viviprop_ch==4 
-replace viviprop_ch=3 if viviprop_ch==5 
 
 ******************
 ****vivitit_ch****
 ******************
-
 gen vivitit_ch=.
 
 *******************
 ****vivialq_ch****
 *******************
-
 gen vivialq_ch=real(ca_9_T00_)
 replace vivialq_ch=. if vivialq_ch>=9999998 
 
 *********************
 ****vivialqimp_ch****
 *********************
-
 gen vivialqimp_ch=.
 
 gen ylnmotros_ci=.
 gen ylmotros_ci=. 
 gen  tcylmpri_ch =.
+
+*******************
+*** benefdes_ci ***
+*******************
+g benefdes_ci=.
+label var benefdes_ci "=1 si tiene seguro de desempleo"
+
+*******************
+*** ybenefdes_ci **
+*******************
+g ybenefdes_ci=.
+label var ybenefdes_ci "Monto de seguro de desempleo"
+
+
+******************************
+*** VARIABLES DE MIGRACION ***
+******************************
+
+*Variables incluidas por SCL/MIG Fernando Morales
+
+	*******************
+	*** migrante_ci ***
+	*******************
+	gen migrante_ci=.
+	label var migrante_ci "=1 si es migrante"
+	
+	**********************
+	*** migantiguo5_ci ***
+	**********************
+	gen migantiguo5_ci=.
+	label var migantiguo5_ci "=1 si es migrante antiguo (5 anos o mas)"
+		
+	**********************
+	*** migrantelac_ci ***
+	**********************
+	gen migrantelac_ci=.
+	label var migrantelac_ci "=1 si es migrante proveniente de un pais LAC"
+	
+	**********************
+	*** migrantiguo5_ci ***
+	**********************
+	gen migrantiguo5_ci=.
+	label var migrantiguo5_ci "=1 si es migrante antiguo (5 anos o mas)"
+		
+	**********************
+	*** miglac_ci ***
+	**********************
+	gen miglac_ci=.
+	label var miglac_ci "=1 si es migrante proveniente de un pais LAC"
 
 *----------------------------------------------------------------------------------*
 *----------------------------------------------------------------------------------*
@@ -1391,6 +1567,13 @@ gen region_c=.
 label value region_c region_c
 label var region_c "division politico-administrativa, departamento"
 
+**************
+***  ine01  ***
+***************
+gen ine01=.
+label value ine01 ine01
+label var ine01 "division politico-administrativa, departamento"
+
 ************
 * Region_BID *
 ************
@@ -1402,10 +1585,8 @@ label value region_BID_c region_BID_c
 ***************
 ***factor_ch***
 ***************
-
 gen factor_ch=factor_ci
 label variable factor_ch "Factor de expansion del hogar"
-
 
 ***************
 ****idh_ch*****
@@ -1414,20 +1595,16 @@ gen idh_ch=re_IDENT
 sort idh_ch
 label variable idh_ch "ID del hogar"
 
-
 **************
 ****idp_ci****
 **************
-
 bysort idh_ch:gen idp_ci=_n 
 label variable idp_ci "ID de la persona en el hogar"
 
 **********
 ***zona***
 **********
-
 gen byte zona_c=0
-
 label variable zona_c "Zona del pais"
 label define zona_c 1 "Urbana" 0 "Rural"
 label value zona_c zona_c
@@ -1435,27 +1612,33 @@ label value zona_c zona_c
 ************
 ****pais****
 ************
-
 gen str3 pais_c="COL"
 label variable pais_c "Pais"
 
 **********
 ***anio***
 **********
-
 gen anio_c=1995
 label variable anio_c "Anio de la encuesta"
 
 *********
 ***mes***
 *********
-
 gen mes_c=9
 label variable mes_c "Mes de la encuesta"
 label define mes_c 1 "Enero" 2 "Febrero" 3 "Marzo" 4 "Abril" 5 "Mayo"
 label define mes_c 6 "Junio" 7 " Julio" 8 "Agosto",add
 label define mes_c 9 "Septiembre" 10 "Octubre" 11 "Noviembre" 12 "Diciembre", add
 label value mes_c mes_c
+
+***************
+***factor_ci***
+***************
+label variable factor_ci "Factor de expansion del individuo"
+
+		****************************
+		***VARIABLES DEMOGRAFICAS***
+		****************************
 
 *****************
 ***relacion_ci***
@@ -1469,98 +1652,66 @@ replace relacion_ci=3 if paren==3 | paren==4
 replace relacion_ci=4 if paren==5
 replace relacion_ci=5 if paren==6 | paren==7 | paren==8 | paren==10 
 replace relacion_ci=6 if paren==9
-
-
 label variable relacion_ci "Relacion con el jefe del hogar"
 label define relacion_ci 1 "Jefe/a" 2 "Esposo/a" 3 "Hijo/a" 4 "Otros parientes" 5 "Otros no parientes"
 label define relacion_ci 6 "Empleado/a domestico/a", add
-
 label value relacion_ci relacion_ci
-
-
-****************************
-***VARIABLES DEMOGRAFICAS***
-****************************
-
-***************
-***factor_ci***
-***************
-
-label variable factor_ci "Factor de expansion del individuo"
 
 **********
 ***sexo***
 **********
-
 gen sexo_ci=.
 replace sexo_ci=1 if re_4_T02=="1"
 replace sexo_ci=2 if re_4_T02=="2"
-
 label define sexo_ci 1 "Hombre" 2 "Mujer"
 label value sexo_ci sexo_ci
 
 **********
 ***edad***
 **********
-
 gen edad_ci=real(re_5_T02)
 label variable edad_ci "Edad del individuo"
-
-*************
-** raza_ci **
-*************
-gen raza_ci=.
 
 *****************
 ***civil_ci***
 *****************
-
-
 gen civil_ci=.
 replace civil_ci=1 if re_6_T02=="5"
 replace civil_ci=2 if re_6_T02=="1" | re_6_T01=="3" 
 replace civil_ci=3 if re_6_T02=="2"
 replace civil_ci=4 if re_6_T02=="4" 
-
 label variable civil_ci "Estado civil"
 label define civil_ci 1 "Soltero" 2 "Union formal o informal"
 label define civil_ci 3 "Divorciado o separado" 4 "Viudo" , add
 label value civil_ci civil_ci
 
-
 *************
 ***jefe_ci***
 *************
-
 gen jefe_ci=(relacion_ci==1)
 label variable jefe_ci "Jefe de hogar"
-
 
 ******************
 ***nconyuges_ch***
 ******************
-
 by idh_ch, sort: egen nconyuges_ch=sum(relacion_ci==2)
 label variable nconyuges_ch "Numero de conyuges"
 
 ***************
 ***nhijos_ch***
 ***************
-
 by idh_ch, sort: egen nhijos_ch=sum(relacion_ci==3)
 label variable nhijos_ch "Numero de hijos"
 
 ******************
 ***notropari_ch***
 ******************
-
 by idh_ch, sort: egen notropari_ch=sum(relacion_ci==4)
 label variable notropari_ch "Numero de otros familiares"
 
 ********************
 ***notronopari_ch***
 ********************
-
 by idh_ch, sort: egen notronopari_ch=sum(relacion_ci==5)
 label variable notronopari_ch "Numero de no familiares"
 
@@ -1568,14 +1719,12 @@ label variable notronopari_ch "Numero de no familiares"
 ****************
 ***nempdom_ch***
 ****************
-
 by idh_ch, sort: egen nempdom_ch=sum(relacion_ci==6)
 label variable nempdom_ch "Numero de empleados domesticos"
 
 *****************
 ***clasehog_ch***
 *****************
-
 gen byte clasehog_ch=0
 **** unipersonal
 replace clasehog_ch=1 if nhijos_ch==0 & nconyuges_ch==0 & notropari_ch==0 & notronopari_ch==0
@@ -1587,7 +1736,6 @@ replace clasehog_ch=3 if notropari_ch>0 & notronopari_ch==0
 replace clasehog_ch=4 if ((nconyuges_ch>0 | nhijos_ch>0 | notropari_ch>0) & (notronopari_ch>0))
 **** corresidente
 replace clasehog_ch=5 if nhijos_ch==0 & nconyuges_ch==0 & notropari_ch==0 & notronopari_ch>0
-
 label variable clasehog_ch "Tipo de hogar"
 label define clasehog_ch 1 " Unipersonal" 2 "Nuclear" 3 "Ampliado" 
 label define clasehog_ch 4 "Compuesto" 5 " Corresidente", add
@@ -1601,7 +1749,6 @@ by idh_ch, sort: egen nmiembros_ch=sum(relacion_ci>=1 & relacion_ci<=4)
 label variable nmiembros_ch "Numero de familiares en el hogar"
 *todos menos pensionistas paren7, trabajadores paren8, servicio paren9 y sus hijos paren10 *
 
-
 ****************
 ***miembros_ci***
 ****************
@@ -1610,47 +1757,75 @@ label variable nmiembros_ch "Numero de familiares en el hogar"
 gen miembros_ci=(relacion_ci>=1 & relacion_ci<=4)
 label variable miembros_ci "Miembro del hogar"
 
-
 *****************
 ***nmayor21_ch***
 *****************
-
 by idh_ch, sort: egen nmayor21_ch=sum(miembros_ci==1 & edad>=21)
 label variable nmayor21_ch "Numero de familiares mayores a 21 anios"
 
 *****************
 ***nmenor21_ch***
 *****************
-
 by idh_ch, sort: egen nmenor21_ch=sum(miembros_ci==1 & edad<21)
 label variable nmenor21_ch "Numero de familiares menores a 21 anios"
 
 *****************
 ***nmayor65_ch***
 *****************
-
 by idh_ch, sort: egen nmayor65_ch=sum(miembros_ci==1 & edad>=65)
 label variable nmayor65_ch "Numero de familiares mayores a 65 anios"
 
 ****************
 ***nmenor6_ch***
 ****************
-
 by idh_ch, sort: egen nmenor6_ch=sum(miembros_ci==1 & edad<6)
 label variable nmenor6_ch "Numero de familiares menores a 6 anios"
 
 ****************
 ***nmenor1_ch***
 ****************
-
 by idh_ch, sort: egen nmenor1_ch=sum(miembros_ci==1 & edad<1)
 label variable nmenor1_ch "Numero de familiares menores a 1 anio"
 
 
+		*******************************
+		*** VARIABLES DE DIVERSIDAD ***
+		*******************************
 
-************************************
-*** VARIABLES DEL MERCADO LABORAL***
-************************************
+****************
+***afroind_ci***
+****************
+gen afroind_ci=. 
+label var afroind_ci "Raza o etnia del individuo"
+
+***************
+***afroind_ch***
+***************
+gen afroind_ch  = .
+label var afroind_ch "Raza/etnia del hogar en base a raza/etnia del jefe de hogar"
+
+*******************
+***afroind_ano_c***
+*******************
+gen afroind_ano_c=.
+label var afroind_ano_c "Año Cambio de Metodología Medición Raza/Etnicidad"
+
+*******************
+***dis_ci***
+*******************
+gen dis_ci=. 
+label var dis_ci "Personas con discapacidad"
+
+*******************
+***dis_ch***
+*******************
+gen dis_ch=. 
+lab var dis_ch "Hogares con miembros con discapacidad"
+
+
+		************************************
+		*** VARIABLES DEL MERCADO LABORAL***
+		************************************
 
 *********
 *lp25_ci
@@ -1956,9 +2131,7 @@ label variable categopri_ci "Categoria ocupacional trabajo principal"
 ******************
 ***categosec_ci***
 ******************
-
 gen categosec_ci=.
-
 /* no disponible para urbano 
 gen categ=real(re_38_T04)
 replace categosec_ci=1 if categ ==4
@@ -1975,14 +2148,12 @@ label variable categosec_ci "Categoria ocupacional trabajo secundario"
 *****************
 ***contrato_ci***
 *****************
-
 gen contrato_ci=.
 /*no disponible*/
 
 ***************
 ***segsoc_ci***
 ***************
-
 gen segsoc_ci=.
 /*NA*/
 
@@ -1993,20 +2164,17 @@ gen segsoc_ci=.
 *****************
 ***nempleos_ci***
 *****************
-
 gen nempleos_ci=.
 
 *****************
 ***firmapeq_ci***
 *****************
-
 *gen byte firmapeq_ci=.
 /*NA*/
 
 *****************
 ***spublico_ci***
 *****************
-
 gen spublico_ci=.
 
 **************
@@ -2038,7 +2206,6 @@ no existe 		      (8)
 NO CLASIFICADOS  	99
 */
 replace re_27_T04="." if re_27_T04=="00"
-
 destring re_27_T04, replace
 gen ocupa_ci=.
 replace ocupa_ci=1 if (re_27_T04>=1 & re_27_T04<=19)  & emp_ci==1  
@@ -2073,7 +2240,6 @@ drop rama1
 ****************
 ***durades_ci***
 ****************
-
 gen durades_ci=real(re_45_T06)/4.3
 replace durades_ci=. if re_45_T06=="99"
 /* está truncada en 98*/
@@ -2081,7 +2247,6 @@ replace durades_ci=. if re_45_T06=="99"
 *******************
 ***antiguedad_ci***
 *******************
-
 gen antiguedad_ci=.
 
 
@@ -2118,21 +2283,17 @@ replace ylmpri=. if yprid1==. & yprid==.
 *****************
 ***nrylmpri_ci***
 *****************
-
 gen nrylmpri_ci=.
 
 *****************
 *** ylnmpri_ci***
 *****************
-
 gen ylnmpri_ci=.
 
 ***************
 ***ylmsec_ci***
 ***************
-
 gen ylmsec_ci=.
-
 gen ylmsec=real(re_39_T04)
 replace ylmsec=. if re_39_T04=="9999999" |re_39_T04=="9999998" 
 
@@ -2144,7 +2305,6 @@ gen ylnmsec_ci=.
 ************
 ***ylm_ci***
 ************
-
 *para inactivos y desempleados VER COUNTRY SPECIFIC CODE BOOK
 gen yprid2=real(re_56_T0708) if re_56_T0701=="1" & re_56_T0702==""  & re_56_T0703=="" & re_56_T0704=="" & re_56_T0705=="" & re_56_T0706=="" & re_56_T0707=="" 
 replace yprid2=. if (re_56_T0708=="9999999" | re_56_T0708=="9999998")
@@ -2155,13 +2315,11 @@ replace ylm_ci=. if ylmpri==. & ylmsec==. & yprid2==.
 *****************
 ***nrylm_ci***
 *****************
-
 gen nrylm_ci=(ylm_ci==. & emp_ci==1)
 
 *************
 ***ylnm_ci***
 *************
-
 gen ylnm_ci=.
 
 *************
@@ -2173,20 +2331,16 @@ gen ylnm_ci=.
 gen temi=real(re_56_T0708)
 replace temi=. if re_56_T0701=="1" & re_56_T0702==""  & re_56_T0703=="" & re_56_T0704=="" & re_56_T0705=="" & re_56_T0706=="" & re_56_T0707=="" 
 replace temi=. if (re_56_T0708=="9999999" | re_56_T0708=="9999998")
-
 *ocupados*
 gen temo=real(re_44_T0507) if emp_ci==1 
 replace temo=. if (re_44_T0507=="9999999" | re_44_T0507=="9999998")
 replace temo=. if emp_ci==0 
-
 egen ynlm_ci=rsum(temi temo)
 replace ynlm_ci=. if temo==. & temi==.
-
 
 *****************
 ***remesas_ci***
 *****************
-
 gen remesas_ci=.
 gen ynlnm_ci=.
 
@@ -2218,13 +2372,11 @@ replace nrylm_ch=. if nrylm_ch==.
 *************
 *** ylm_ch***
 *************
-
 by idh_ch, sort: egen ylm_ch=sum(ylm_ci) if miembros_ci==1
 
 ****************
 *** ylmnr_ch ***
-****************
-
+**************
 by idh_ch, sort: egen ylmnr_ch=sum(ylm_ci) if miembros_ci==1
 replace ylmnr_ch=. if nrylm_ch==1
 
@@ -2238,21 +2390,17 @@ by idh_ch, sort: egen ylnm_ch=sum(ylnm_ci) if miembros_ci==1
 **********************************
 *** remesas_ch & remesasnm_ch ***
 **********************************
-
 gen remesash=.
-
 by idh_ch, sort: egen remesasi=sum(remesas_ci) if miembros_ci==1
 replace remesasi=. if remesasi==0
 egen remesas_ch=rsum(remesasi remesash)
 replace remesas_ch=. if remesasi==. 
-
 gen remesasnm_ch=.
 
 
 ***************
 *** ynlm_ch ***
 ***************
-
 by idh_ch, sort: egen ynlm=sum(ynlm_ci) if miembros_ci==1
 egen ynlm_ch=rsum(ynlm remesash)
 replace ynlm_ch=. if ynlm==. 
@@ -2261,59 +2409,50 @@ drop ynlm
 ****************
 *** ynlnm_ch ***
 ****************
-
 gen ynlnm_ch=remesasnm_ch
 
 *******************
 *** autocons_ci ***
 *******************
-
 gen autocons_ci=.
 
 
 *******************
 *** autocons_ch ***
 *******************
-
 by idh_ch, sort: egen autocons_ch=sum(autocons_ci) if miembros_ci==1
 
 *******************
 *** rentaimp_ch ***
 *******************
-
 gen rentaimp_ch=.
 
 *****************
 ***ylhopri_ci ***
 *****************
-
 gen ylmhopri_ci=.
 
 
 ***************
 ***ylmho_ci ***
 ***************
-
 gen ylmho_ci=ylm_ci/(horastot_ci*4.3)
 
 **************************
   *** tcylmpri_ci ***
 **************************
- 
- ** TOP CODE **
- 
- gen tcylmpri_ci= .
+  ** TOP CODE **
+  gen tcylmpri_ci= .
  replace tcylmpri_ci= 0 if ylmpri_ci>=0 & ylmpri_ci<=9999997
  replace tcylmpri_ci= 1 if ylmpri_ci==9999998
  
  
-****************************
-***VARIABLES DE EDUCACION***
-****************************
+		****************************
+		***VARIABLES DE EDUCACION***
+		****************************
 /*
 En Colombia, la educación primaria dura 5 años y la educación secundaria *
 *6 años y universitaria hasta 5-7 años, dependiendo la carrera*/ 
-
 
 *** Missings
 gen byte yedc=.
@@ -2350,113 +2489,91 @@ replace yedc=18 if yedc1==507
 
 gen byte aedu_ci=yedc
 
+
 **************
 ***eduno_ci***
 **************
-
-gen byte eduno_ci=0
-replace eduno_ci=1 if aedu_ci==0
+g byte eduno_ci = aedu_ci == 0
 replace eduno_ci=. if aedu_ci==.
-label variable eduno_ci "Cero anios de educacion"
+la var eduno_ci "Sin educación"
 
 **************
 ***edupi_ci***
 **************
-
-gen byte edupi_ci=0
-replace edupi_ci=1 if aedu_ci>0 & aedu_ci<5
+g byte edupi_ci = (aedu_ci >= 1 & aedu_ci < 5) 
 replace edupi_ci=. if aedu_ci==.
-label variable edupi_ci "Primaria incompleta"
-
+la var edupi_ci "Primaria incompleta"
+	
 **************
 ***edupc_ci***
 **************
-
-gen byte edupc_ci=0
-replace edupc_ci=1 if aedu_ci==5
+g byte edupc_ci = aedu_ci == 5 
 replace edupc_ci=. if aedu_ci==.
-label variable edupc_ci "Primaria completa"
+la var edupc_ci "Primaria completa"
 
 **************
 ***edusi_ci***
 **************
-
-gen byte edusi_ci=0
-replace edusi_ci=1 if aedu_ci>5 & aedu_ci<11
+g byte edusi_ci = (aedu_ci >= 6 & aedu_ci < 11) 
 replace edusi_ci=. if aedu_ci==.
-label variable edusi_ci "Secundaria incompleta"
+la var edusi_ci "Secundaria incompleta"
 
 **************
 ***edusc_ci***
 **************
-
-gen byte edusc_ci=0
-replace edusc_ci=1 if aedu_ci==11
+g byte edusc_ci = (aedu_ci==11) 
 replace edusc_ci=. if aedu_ci==.
-label variable edusc_ci "Secundaria completa"
+la var edusc_ci "Secundaria completa"
+
+	
+**************
+***eduui_ci***
+**************
+g byte eduui_ci = (aedu_ci>11 & aedu_ci<16)
+replace eduui_ci=. if aedu_ci==.
+la var eduui_ci "Superior incompleto"
+
+**************
+***eduuc_ci***
+**************
+g byte eduuc_ci = (aedu_ci>=16 & aedu_ci!=.)
+replace eduuc_ci=. if aedu_ci==.
+la var eduuc_ci "Superior completo"
 
 ***************
 ***edus1i_ci***
 ***************
-
-** SE DEFINE PRIMER CICLO DE SECUNDARIA LOS PRIMEROS 4 DE 6 ANIOS **
-
-gen byte edus1i_ci=0
-replace edus1i_ci=1 if aedu_ci>5 & aedu_ci<9
+g byte edus1i_ci = (aedu_ci >= 6 & aedu_ci < 9)
 replace edus1i_ci=. if aedu_ci==.
-label variable edus1i_ci "1er ciclo de la secundaria incompleto" 
+la var edus1i_ci "1er ciclo de la secundaria incompleto"
 
 ***************
 ***edus1c_ci***
 ***************
-
-gen byte edus1c_ci=0
-replace edus1c_ci=1 if aedu_ci==9
+g byte edus1c_ci = aedu_ci == 9
 replace edus1c_ci=. if aedu_ci==.
-label variable edus1c_ci "1er ciclo de la secundaria completo" 
+la var edus1c_ci "1er ciclo de la secundaria completo"
 
-** SE DEFINE SEGUNDO CICLO DE SECUNDARIA LOS ULTIMOS 2 DE 6 ANIOS **
-
-gen byte edus2i_ci=0
-replace edus2i_ci=1 if aedu_ci>9 & aedu_ci<11
+***************
+***edus2i_ci***
+***************
+g byte edus2i_ci = aedu_ci == 10 
 replace edus2i_ci=. if aedu_ci==.
-label variable edus2i_ci "2do ciclo de la secundaria incompleto" 
+la var edus2i_ci "2do ciclo de la secundaria incompleto"
 
 ***************
 ***edus2c_ci***
 ***************
-
-gen byte edus2c_ci=0
-replace edus2c_ci=1 if aedu_ci==11
+g byte edus2c_ci = (aedu_ci == 11)
 replace edus2c_ci=. if aedu_ci==.
-label variable edus2c_ci "2do ciclo de la secundaria completo" 
-
-**************
-***eduui_ci***
-**************
-
-gen byte eduui_ci=0
-replace eduui_ci=1 if aedu_ci>11 & aedu_ci<16
-replace eduui_ci=. if aedu_ci==.
-label variable eduui_ci "Universitaria incompleta"
-
-***************
-***eduuc_ci****
-***************
-
-gen byte eduuc_ci=0
-replace eduuc_ci=1 if aedu_ci>=16
-replace eduuc_ci=. if aedu_ci==.
-label variable eduuc_ci "Universitaria incompleta o mas"
+la var edus2c_ci "2do ciclo de la secundaria completo"
 
 
 ***************
 ***edupre_ci***
 ***************
-
-gen byte edupre_ci=.
-label variable edupre_ci "Educacion preescolar"
-
+g byte edupre_ci =.
+la var edupre_ci "Educación preescolar"
 
 **************
 ***eduac_ci***
@@ -2467,7 +2584,6 @@ label variable eduac_ci "Superior universitario vs superior no universitario"
 ***************
 ***asiste_ci***
 ***************
-
 gen asiste_ci=.
 replace asiste_ci=1 if re_9_T02=="1"
 replace asiste_ci=0 if re_9_T02=="2"
@@ -2476,290 +2592,393 @@ label variable asiste_ci "Asiste actualmente a la escuela"
 *****************
 ***pqnoasis_ci***
 *****************
-
 gen pqnoasis_ci=.
 
 **************
 *pqnoasis1_ci*
 **************
 **Daniela Zuluaga- Enero 2018: Se agrega la variable pqnoasis1_ci cuya sintaxis fue elaborada por Mayra Saenz**
-
-g       pqnoasis1_ci = .
+g pqnoasis1_ci = .
 
 ***************
 ***repite_ci***
 ***************
-
 gen repite_ci=.
 label variable repite_ci "Esta repitendo el grado o curso"
 
 ******************
 ***repiteult_ci***
 ******************
-
 gen repiteult_ci=.
 label variable repiteult_ci "Esta repitendo el ultimo grado o curso"
 
 ***************
 ***edupub_ci***
 ***************
-
 gen edupub_ci=.
 
-********************************************
-***Variables de Infraestructura del hogar***
-********************************************
+
+		********************************************
+		***Variables de Infraestructura del hogar***
+		********************************************
 
 ***************
 **aguared_ch***
 ***************
+destring re_5_T01, replace
+gen aguared_ch=(re_5_T01==1 | re_5_T01==2)
+la var aguared_ch "Acceso a fuente de agua por red"
 
-gen aguared_ch=(re_5_T01=="1" | re_5_T01=="2")
+*****************
+*aguafconsumo_ch*
+*****************
+*se clasificó 1995 sobre la base del 2021
+gen aguafconsumo_ch = 0 //2021 0 La encuesta no pregunta sobre agua para beber
+replace aguafconsumo_ch = 1 if re_5_T01==1  //2021 1 De acueducto por tubería
+replace aguafconsumo_ch = 2 if re_5_T01==5 // 2021 7 De pila pública 
+replace aguafconsumo_ch = 5 if re_5_T01==7  //2021 5 Aguas lluvias
+replace aguafconsumo_ch = 6 if re_5_T01==6 //2021 8 Carrotanque
+replace aguafconsumo_ch = 7 if re_5_T01==2 //2021 2 De otra fuente por tubería
+replace aguafconsumo_ch = 8 if re_5_T01==3  //2021 6 Río, quebrada, nacimiento o manantial
+replace aguafconsumo_ch = 9 if re_5_T01==4 //2021 4 De pozo sin bomba, aljibe, jagüey o barreno + 9 Aguatero
+replace aguafconsumo_ch = 10 if re_5_T01==8 
 
+*****************
+*aguafuente_ch*
+*****************
+gen aguafuente_ch =.
+replace aguafconsumo_ch = 1 if re_5_T01==1  
+replace aguafconsumo_ch = 2 if re_5_T01==5 
+replace aguafconsumo_ch = 5 if re_5_T01==7  
+replace aguafconsumo_ch = 6 if re_5_T01==6 
+replace aguafconsumo_ch = 7 if re_5_T01==2 
+replace aguafconsumo_ch = 8 if re_5_T01==3  
+replace aguafconsumo_ch = 9 if re_5_T01==4 
+replace aguafconsumo_ch = 10 if re_5_T01==8 
+replace aguafuente_ch = 10 if aguafuente_ch ==. & jefe_ci==1
 
 ****************
 **aguadist_ch***
 ****************
-
 gen aguadist_ch=.
+
+**************
+*aguadisp1_ch*
+**************
+gen aguadisp1_ch =9
+
+**************
+*aguadisp2_ch*
+**************
+gen aguadisp2_ch = 9
+*label var aguadisp2_ch "= 9 la encuesta no pregunta si el servicio de agua es constante"
 
 ****************
 **aguamala_ch***
 ****************
+gen aguamala_ch = 2
+replace aguamala_ch = 0 if aguafuente_ch<=7
+replace aguamala_ch = 1 if aguafuente_ch>7 & aguafuente_ch!=10
 
-gen aguamala_ch=.
-replace aguamala_ch=(re_5_T01 !="1" & re_5_T01 !="2")
+*****************
+*aguamejorada_ch*  Altered
+*****************
+gen aguamejorada_ch = 2
+replace aguamejorada_ch = 0 if aguafuente_ch>7 & aguafuente_ch!=10
+replace aguamejorada_ch = 1 if aguafuente_ch<=7
+*label var aguamejorada_ch "= 1 si la fuente de agua es mejorada"
 
 ****************
 **aguamide_ch***
 ****************
-
 gen aguamide_ch=.
+label var aguamide_ch "Usan medidor para pagar consumo de agua"
+
+****************
+****bano_ch*****
+****************
+destring re_3_T01, replace
+gen bano_ch=.
+replace bano_ch=1 if re_3_T01==1 //Sanitario conectado a alcantarillado
+replace bano_ch=2 if re_3_T01==2 //Sanitario conectado a pozo séptico
+replace bano_ch=4 if re_3_T01==3 //Letrina
+replace bano_ch=6 if re_3_T01==4 //No tiene sanitario
+replace bano_ch=6 if bano_ch ==. & jefe_ci==1
+la var bano_ch"Tipo de instalación sanitaria que tiene el hogar"
+la def bano_ch 	1 "Indoro a red de desagüe" 				///
+				2 "Indoro a fosa séptica" 	///
+				3 "Letrina mejorada / otra instalación mejorada" 			///
+				4 "Indoro/letrina a cuerpo de agua superficial o suelo" ///
+				5 "Instalación no mejorada" ///
+				6 "Instalación que no se puede clasificar "
+
+
+****************
+****banoex_ch***
+****************
+gen banoex_ch=.
+replace banoex_ch=(re_4_T01=="1")
+
+************
+*sinbano_ch*
+************
+gen sinbano_ch = 3
+replace sinbano_ch = 0 if re_3_T01<6
+
+*************
+*aguatrat_ch*
+*************
+gen aguatrat_ch = 9
+*label var aguatrat_ch "= 9 la encuesta no pregunta de si se trata el agua antes de consumirla"
+
 
 ****************
 *****luz_ch*****
 ****************
-
 gen luz_ch=(re_5i_T013 =="1")
 *se construyó como=1 si la vivienda tiene conexión a energía eléctrica*
 
 ****************
 ***luzmide_ch***
 ****************
-
 gen luzmide_ch=.
 
 ****************
 ***combust_ch***
 ****************
-
 gen combust_ch=.
-
-****************
-****bano_ch*****
-****************
-
-gen bano_ch=.
-replace bano_ch=(re_3_T01=="1"| re_3_T01=="2"| re_3_T01=="3")
-
-
-****************
-****banoex_ch***
-****************
-
-gen banoex_ch=.
-replace banoex_ch=(re_4_T01=="1")
-
 
 ****************
 ****des1_ch*****
 ****************
-
 * Modificaciones Marcela Rubio Septiembre 2014: variable des1_ch habia sido creada como missing
-
+destring re_3_T01, replace
 gen des1_ch=.
-replace des1_ch = 0 if re_3_T01=="4"
-replace des1_ch = 1 if re_3_T01=="1" | re_3_T01=="2"
-replace des1_ch = 2 if re_3_T01=="3" 
-
+replace des1_ch=0 if re_3_T01==4
+replace des1_ch=1 if re_3_T01==1|re_3_T01==2
+replace des1_ch=2 if re_3_T01==3
+	la var des1_ch "Tipo de desague inadecuado (unimproved) según MDG"
+	la def des1_ch 	0 "No tiene servicio sanitario" 				///
+					1 "Conectado a red general o cámara séptica" 	///
+					2 "Letrina o conectado a pozo ciego" 			///
+					3 "Desemboca en río o calle"
+					
 ****************
 ****des2_ch*****
 ****************
+g des2_ch = .
+replace des2_ch = 0 if bano_ch == 0
+replace des2_ch = 1 if re_3_T01 == 1 |re_3_T01 == 2 |re_3_T01 == 3
+replace des2_ch = 2 if re_3_T01 == 4
+la var des2_ch "Tipo de desague sin incluir definición MDG"
+la def des2_ch 	0 "No tiene servicio sanitario" 								///
+					1 "Conectado a red general, cámara pséptica, pozo o letrina" 	///
+					2 "Cualquier otro caso"
+la val des2_ch des2_ch
 
-* Modificaciones Marcela Rubio Septiembre 2014: variable des2_ch habia sido creada como missing
-gen des2_ch=.
-replace des2_ch = 0 if re_3_T01=="4"
-replace des2_ch = 1 if re_3_T01=="1" | re_3_T01=="2" | re_3_T01=="3" 
 
 ****************
 ****piso_ch*****
 ****************
-
-gen piso_ch=.
-replace piso_ch=(re_4i_T01~="5") 
-replace piso_ch=. if re_4i_T01==""
+destring re_4i_T01, replace
+g piso_ch = (re_4i_T01 != 5 & re_4i_T01!= .)
+replace piso_ch = . if re_4i_T01== .
+la var piso_ch "Materiales de construcción del piso"  
+la def piso_ch 	0 "Piso de tierra" 			///
+				1 "Materiales permanentes: cemento, cerámica, mosaico, madera" ///
+				2 "otros materiales: natural, otros" 
+la val piso_ch piso_ch
 
 ****************
 ****pared_ch****
 ****************
+destring re_3i_T01, replace
+g pared_ch = .
+replace pared_ch = 0 if re_3i_T01 == 7
+replace pared_ch = 1 if (re_3i_T01==1|re_3i_T01==2|re_3i_T01==3)
+replace pared_ch = 2 if (re_3i_T01==4|re_3i_T01==5|re_3i_T01==6)
+la var pared_ch "Materiales de la pared"  
+la def pared_ch 0 "No permanentes: desechos, zinc, tela, cartón." 			///
+				1 "Materiales permanentes: paredes de ladrillo, adobe revocado, cemento y hormigón." ///
+				2 "Otros materiales: naturales, otros."
+la val pared_ch pared_ch
 
-*Para unificar la creación de esta variable se cambia la programación
-
-*gen pared_ch=.
-*replace pared_ch=(re_3i_T01!="7" & re_3i_T01!="5")
-*replace pared_ch=. if re_3i_T01==""
-
-
-gen pared_ch=.
-replace pared_ch=(re_3i_T01=="1" | re_3i_T01=="2" | re_3i_T01=="3" | re_3i_T01=="6")
-
-
-*Bahareque: Pared de palos entretejidos con cañas y barro*
-*no permanente: guadua o caña(5) y tela /desechos (7)*
- 
 ****************
 ****techo_ch****
 ****************
-
 gen techo_ch=.
 
 ****************
 ****resid_ch****
 ****************
-
 gen resid_ch=.
 
 **Daniela Zuluaga- Enero 2018: Se agregan las variables aguamejorada_ch y banomejorado_ch cuya sintaxis fue elaborada por Mayra Saenz**
 	
- *********************
- ***aguamejorada_ch***
- *********************
-destring re_5_T01  , replace
-g       aguamejorada_ch = 1 if (re_5_T01  >=1 & re_5_T01 <=2) | (re_5_T01 >=4 & re_5_T01 <=5) | re_5_T01 ==7
-replace aguamejorada_ch = 0 if  re_5_T01 ==3 | re_5_T01 ==6 | re_5_T01 ==8
-			
- *********************
- ***banomejorado_ch***
- *********************
-g       banomejorado_ch = .
 
 ****************
 ****dorm_ch*****
 ****************
-
 gen dorm_ch=.
 replace dorm_ch=real(re_2_T01)
 
 ****************
 ***cuartos_ch***
 ****************
-
 gen cuartos_ch=.
 replace cuartos_ch=real(re_1_T01)
 replace cuartos_ch=. if re_1_T01=="99"
+
 ****************
 ***cocina_ch****
 ****************
-
 gen cocina_ch=.
 replace cocina_ch=(re_6_T01=="2")
-
 
 ****************
 ****telef_ch****
 ****************
-
 gen telef_ch=(re_5i_T014=="1")
 
 ****************
 ****refrig_ch***
 ****************
-
-
 gen refrig_ch=.
 
 ****************
 ****freez_ch****
 ****************
-
 gen freez_ch=.
-
 
 ****************
 ****auto_ch****
 ****************
-
 gen auto_ch=.
 
 ****************
 ****compu_ch****
 ****************
-
 gen compu_ch=.
 
 ****************
 **internet_ch***
 ****************
-
 gen internet_ch=.
 
 ****************
 ****cel_ch******
 ****************
-
 gen cel_ch=.
 
 ****************
 ****vivi1_ch****
 ****************
-
-gen vivi1_ch=.
-replace vivi1_ch=real(re_1i_T01)
-replace vivi1_ch=3 if vivi1_ch>2 & vivi1_ch<=8
-
+destring re_1i_T01 , replace
+g       vivi1_ch = 1 if re_1i_T01 == 1
+replace vivi1_ch = 2 if re_1i_T01 == 2
+replace vivi1_ch = 3 if re_1i_T01 >= 3 &  re_1i_T01<9 
+replace vivi1_ch = . if re_1i_T01 == .
+la var vivi1_ch "Tipo de vivienda en la que reside el hogar"
+la de vivi1_ch 	1 "Casa" ///
+				2 "Departamento" ///
+				3 "Otros"
+la val vivi1_ch vivi1_ch
 
 ****************
 ****vivi2_ch****
 ****************
-
 gen vivi2_ch=.
 replace vivi2_ch=(vivi1_ch==1 |vivi1_ch==2)
-
+la var vivi2_ch "La vivienda es casa o departamento"
 
 *******************
 ****viviprop_ch****
 *******************
+destring re_8_T01, replace
+g 		viviprop_ch = 0 if re_8_T01== 3
+replace viviprop_ch = 1 if re_8_T01== 1  
+replace viviprop_ch = 2 if re_8_T01== 2
+replace viviprop_ch = 3 if re_8_T01== 5 |re_8_T01== 4
+la var  viviprop_ch "Estado de propiedad de la vivienda en la que reside el hogar."
+la de viviprop_ch	0 "Alquilada " ///
+				1 "Propia y totalmente pagada"  ///
+				2 "Propia y en proceso de pago" ///
+				3 "Ocupada (propia de facto)"
 
-gen viviprop_ch=real(re_8_T01)
-replace viviprop_ch=0 if viviprop_ch==3 | viviprop_ch==4 
-replace viviprop_ch=3 if viviprop_ch==5 
 
 ******************
 ****vivitit_ch****
 ******************
-
 gen vivitit_ch=.
 
 *******************
 ****vivialq_ch****
 *******************
-
 gen vivialq_ch=real(re_9_T01)
 replace vivialq_ch=. if vivialq_ch>=9999998 |vivialq_ch==9999
-
 
 *********************
 ****vivialqimp_ch****
 *********************
-
 gen vivialqimp_ch=.
 
 gen ylnmotros_ci=.
 gen ylmotros_ci=. 
 gen  tcylmpri_ch =.
 
+*******************
+*** benefdes_ci ***
+*******************
+g benefdes_ci=.
+label var benefdes_ci "=1 si tiene seguro de desempleo"
+
+*******************
+*** ybenefdes_ci **
+*******************
+g ybenefdes_ci=.
+label var ybenefdes_ci "Monto de seguro de desempleo"
+
+
+******************************
+*** VARIABLES DE MIGRACION ***
+******************************
+
+*Variables incluidas por SCL/MIG Fernando Morales
+
+	*******************
+	*** migrante_ci ***
+	*******************
+	gen migrante_ci=.
+	label var migrante_ci "=1 si es migrante"
+	
+	**********************
+	*** migantiguo5_ci ***
+	**********************
+	gen migantiguo5_ci=.
+	label var migantiguo5_ci "=1 si es migrante antiguo (5 anos o mas)"
+		
+	**********************
+	*** migrantelac_ci ***
+	**********************
+	gen migrantelac_ci=.
+	label var migrantelac_ci "=1 si es migrante proveniente de un pais LAC"
+	
+	**********************
+	*** migrantiguo5_ci ***
+	**********************
+	gen migrantiguo5_ci=.
+	label var migrantiguo5_ci "=1 si es migrante antiguo (5 anos o mas)"
+		
+	**********************
+	*** miglac_ci ***
+	**********************
+	gen miglac_ci=.
+	label var miglac_ci "=1 si es migrante proveniente de un pais LAC"
+
+
 append using "`base_out1'"
 order re_* ca_*
+
 
 /*_____________________________________________________________________________________________________*/
 * Asignación de etiquetas e inserción de variables externas: tipo de cambio, Indice de Precios al 
@@ -2773,24 +2992,21 @@ do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&Exter
 * Verificación de que se encuentren todas las variables armonizadas 
 /*_____________________________________________________________________________________________________*/
 
-order region_BID_c region_c pais_c anio_c mes_c zona_c factor_ch	idh_ch	idp_ci	factor_ci sexo_ci edad_ci ///
-raza_idioma_ci  id_ind_ci id_afro_ci raza_ci  relacion_ci civil_ci jefe_ci nconyuges_ch nhijos_ch notropari_ch notronopari_ch nempdom_ch ///
+cap order region_BID_c region_c pais_c anio_c mes_c zona_c factor_ch	idh_ch	idp_ci	factor_ci sexo_ci edad_ci ///
+afroind_ci afroind_ch afroind_ano_c dis_ci dis_ch relacion_ci civil_ci jefe_ci nconyuges_ch nhijos_ch notropari_ch notronopari_ch nempdom_ch ///
 clasehog_ch nmiembros_ch miembros_ci nmayor21_ch nmenor21_ch nmayor65_ch nmenor6_ch	nmenor1_ch	condocup_ci ///
+afro_ci ind_ci noafroind_ci afroind_ci afro_ch ind_ch noafroind_ch afroind_ch dis_ci disWG_ci dis_ch COL_dis_ci /// Diversidad
 categoinac_ci nempleos_ci emp_ci antiguedad_ci	desemp_ci cesante_ci durades_ci	pea_ci desalent_ci subemp_ci ///
 tiempoparc_ci categopri_ci categosec_ci rama_ci spublico_ci tamemp_ci cotizando_ci instcot_ci	afiliado_ci ///
 formal_ci tipocontrato_ci ocupa_ci horaspri_ci horastot_ci	pensionsub_ci pension_ci tipopen_ci instpen_ci	ylmpri_ci nrylmpri_ci ///
 tcylmpri_ci ylnmpri_ci ylmsec_ci ylnmsec_ci	ylmotros_ci	ylnmotros_ci ylm_ci	ylnm_ci	ynlm_ci	ynlnm_ci ylm_ch	ylnm_ch	ylmnr_ch  ///
 ynlm_ch	ynlnm_ch ylmhopri_ci ylmho_ci rentaimp_ch autocons_ci autocons_ch nrylmpri_ch tcylmpri_ch remesas_ci remesas_ch	ypen_ci	ypensub_ci ///
 salmm_ci tc_c ipc_c lp19_c lp31_c lp5_c lp_ci lpe_ci aedu_ci eduno_ci edupi_ci edupc_ci	edusi_ci edusc_ci eduui_ci eduuc_ci	edus1i_ci ///
-edus1c_ci edus2i_ci edus2c_ci edupre_ci eduac_ci asiste_ci pqnoasis_ci pqnoasis1_ci	repite_ci repiteult_ci edupub_ci tecnica_ci ///
+edus1c_ci edus2i_ci edus2c_ci edupre_ci eduac_ci asiste_ci pqnoasis_ci pqnoasis1_ci	repite_ci repiteult_ci edupub_ci ///
 aguared_ch aguadist_ch aguamala_ch aguamide_ch luz_ch luzmide_ch combust_ch	bano_ch banoex_ch des1_ch des2_ch piso_ch aguamejorada_ch banomejorado_ch  ///
 pared_ch techo_ch resid_ch dorm_ch cuartos_ch cocina_ch telef_ch refrig_ch freez_ch auto_ch compu_ch internet_ch cel_ch ///
-vivi1_ch vivi2_ch viviprop_ch vivitit_ch vivialq_ch	vivialqimp_ch , first
-
-
-
+vivi1_ch vivi2_ch viviprop_ch vivitit_ch vivialq_ch	vivialqimp_ch migrante_ci migantiguo5_ci migrantelac_ci, first
 compress
-
 
 saveold "`base_out'", replace
 
