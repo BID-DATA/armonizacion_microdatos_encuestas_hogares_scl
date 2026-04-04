@@ -675,7 +675,7 @@ use `base_in', clear
 	
 	* Recordar condocup_ci==3  -- Inactivo
 	
-	gen byte desalent_ci=.
+	gen byte desalent_ci=0
 	replace desalent_ci=1 if condocup_ci==3 &  p545==2 &  (p549==1 | p549==2) //Se consideran los que creen que no les darán trabajo como desanimados
 	replace desalent_ci=0 if condocup_ci==3 & desalent_ci==.  //Se pone como 0 al resto 
 	
