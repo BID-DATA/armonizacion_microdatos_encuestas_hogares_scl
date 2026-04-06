@@ -141,7 +141,18 @@ gen luz_ch=(v15<=5)
 gen luzmide_ch=(v15==1 | v15==2)
 replace luzmide_ch=. if luz_ch==0
 gen combust_ch=.
-gen bano_ch=((v9!=0 & v32==.) | v32>0 & v32<=3)
+
+*****************
+*bano_ch        *
+*****************
+gen bano_ch=.
+replace bano_ch=0 if v14==7
+replace bano_ch=1 if v14==1
+replace bano_ch=2 if v14==2
+replace bano_ch=3 if v14==3 | v14==4 
+replace bano_ch=4 if v14==5
+replace bano_ch=6 if v14==6 | v14==9
+
 gen banoex_ch=(v32==. | v32<v9)
 replace banoex_ch=. if bano_ch==0 
 gen des1_ch=0 if bano_ch==0 | v14==7
