@@ -1154,7 +1154,7 @@ gen freez_ch=.
 *by idh_ch: egen auto_ch=sum(r9a>=1) /* for 2006  */
 *replace auto_ch=1 if auto_ch>=1
 
-bys idh_ch: egen byte auto_ch=sum(r9a>0 & r9a<9)
+bys idh_ch: egen byte auto_ch=sum(r9a>0 & r9a!=. & r9a!=9)
 replace auto_ch=1 if auto_ch>=1 & auto_ch!=.
 
 ***************
