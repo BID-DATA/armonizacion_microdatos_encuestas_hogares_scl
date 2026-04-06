@@ -1321,9 +1321,8 @@ label var freez_ch "El hogar posee congelador"
 ***************
 * auto_ch     * 
 ***************
-bysort idh_ch: egen auto_ch=sum(r13b==1)
+bysort idh_ch: egen auto_ch=sum(r12==1 & r13b>=1 & r13b<=9)
 replace auto_ch=1 if auto_ch>=1 & auto_ch!=.
-replace auto_ch=. if r13b==9
 label var auto_ch "El hogar posee automovil particular"
 
 ***************
