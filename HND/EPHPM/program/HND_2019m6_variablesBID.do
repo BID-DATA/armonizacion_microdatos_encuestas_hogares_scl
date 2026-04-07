@@ -1436,9 +1436,9 @@ replace aguafuente_ch = 10 if dv105_hog==9 | dv105_hog==2 | dv105_hog==3 |dv105_
 *************
 gen aguadist_ch=.
 replace aguadist_ch= 1 if dv106_hog==1
-replace aguadist_ch= 2 if dv106_hog==2
-replace aguadist_ch= 3 if dv106_hog==3 | dv106_hog ==4
-replace aguadist_ch = 0 if aguadist_ch == . & aguafuente_ch!=.
+replace aguadist_ch= 2 if dv106_hog==2 | dv106_hog==3
+replace aguadist_ch= 3 if dv106_hog ==4
+replace aguadist_ch = 0 if dv106_hog==. & aguadist_ch == .
 
 **************
 *aguadisp1_ch*
