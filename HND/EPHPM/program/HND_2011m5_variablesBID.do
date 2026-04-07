@@ -1322,10 +1322,11 @@ replace aguafuente_ch = 10 if  dv06==10 |dv06==3 | dv06==4|dv06==9|(dv06==. & je
 *************
 *aguadist_ch*
 *************
-gen aguadist_ch=0
+gen aguadist_ch=.
 replace aguadist_ch= 1 if dv09==1
-replace aguadist_ch= 2 if dv09==2
-replace aguadist_ch= 3 if dv09==3|dv09 ==4
+replace aguadist_ch= 2 if dv09==2 | dv09==3
+replace aguadist_ch= 3 if dv09==4
+replace aguadist_ch= 0 if dv09==. & aguadist_ch==.
 
 **************
 *aguadisp1_ch*
