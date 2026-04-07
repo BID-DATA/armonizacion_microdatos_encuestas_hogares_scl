@@ -1226,6 +1226,7 @@ gen pea_ci=(emp_ci==1 | desemp_ci==1)
 	replace aguadist_ch= 1 if v06==1
 	replace aguadist_ch= 2 if v06==2 | v06==3 
 	replace aguadist_ch= 3 if v06 ==4
+	replace aguadist_ch= 0 if v06 ==. & aguadist_ch==.
 	
 	label define aguadist_ch 		1 "Adentro de la vivienda" ///
 									2 "Afuera de la vivienda, pero adentro del terreno" ///
