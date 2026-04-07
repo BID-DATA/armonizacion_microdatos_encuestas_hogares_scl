@@ -1331,10 +1331,11 @@ replace aguafuente_ch = 10 if  v05b==9 |v05b==3 | v05b==4|(v05b==. & jefe_ci!=.)
 *************
 *aguadist_ch*
 *************
-gen aguadist_ch=0
+gen aguadist_ch=.
 replace aguadist_ch= 1 if v05e==1
-replace aguadist_ch= 2 if v05e==2
-replace aguadist_ch= 3 if v05e==3|v05e ==4
+replace aguadist_ch= 2 if v05e==2 | v05e==3
+replace aguadist_ch= 3 if v05e==4
+replace aguadist_ch= 0 if (v05e==. | v05e==9) & aguadist_ch==.
 
 **************
 *aguadisp1_ch*
