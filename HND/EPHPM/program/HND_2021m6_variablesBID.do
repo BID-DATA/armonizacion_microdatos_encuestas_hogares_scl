@@ -1125,7 +1125,7 @@ gen aguafuente_ch = .
 *************
 *aguadist_ch*
 *************
-gen aguadist_ch = .
+gen aguadist_ch = 0  // No se especifica
 
 **************
 *aguadisp1_ch*
@@ -1183,7 +1183,8 @@ la var banoex_ch "El servicio sanitario es exclusivo del hogar"
 ***************
 **sinbano_ch***
 ***************
-generate sinbano_ch = .
+generate sinbano_ch = 3
+replace sinbano_ch = 0 if bano_ch>0
 
 *****************
 *banomejorado_ch*
