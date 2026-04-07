@@ -1690,8 +1690,9 @@ use `base_in', clear
 	
 	gen aguadist_ch=.
 	replace aguadist_ch= 1 if V06==1 // Adentro de la vivienda
-	replace aguadist_ch= 2 if V06==2 //Fuera de la vivienda, pero adentro de la propiedad
-	replace aguadist_ch= 3 if V06==3 & V06==4 //Fuera de la propiedad
+	replace aguadist_ch= 2 if V06==2 | V06==3 //Fuera de la vivienda, pero adentro de la propiedad o a menos de 100 metros de la propiedad
+	replace aguadist_ch= 3 if V06==4 //Fuera de la propiedad
+	replace aguadist_ch= 0 if V06==. & aguadist_ch == . //No especifica
 	
 	label define aguadist_ch 		1 "Adentro de la vivienda" ///
 									2 "Afuera de la vivienda, pero adentro del terreno" ///
