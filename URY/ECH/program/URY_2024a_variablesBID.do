@@ -466,9 +466,7 @@ label value region_c region_c
 	***************
 	***desalent_ci***
 	***************
-	gen byte desalent_ci= .
-	replace desalent_ci = 1 if f108==4 & condocup_ci==3
-	replace desalent_ci=0 if f108!=4 & condocup_ci==3
+	gen byte desalent_ci = (f108==4 & condocup_ci==3)
 	replace desalent_ci =. if emp_ci ==.
 
 	***************
@@ -592,9 +590,7 @@ label value region_c region_c
 	**************
 	**pension_ci***
 	**************
-	gen byte pension_ci=. 
-	replace pension_ci=1 if g_it_1==1 |g_it_2==1
-	replace pension_ci=0 if  g_it_1==2 |g_it_2==2
+	gen byte pension_ci = (g_it_1==1 | g_it_2==1)
 	
 	***************
 	**pensionsub_ci**
