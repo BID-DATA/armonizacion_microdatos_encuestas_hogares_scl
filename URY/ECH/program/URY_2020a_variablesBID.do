@@ -698,8 +698,7 @@ label var ypen_ci "Valor de la pension contributiva"
 ***************
 *pensionsub_ci*
 ***************
-*DZ Mayo 2020 se dejó de incluir variable en cuestionario
-gen pensionsub_ci= .
+gen pensionsub_ci= ((f125==1) | (f125==3 & edad_ci>69))
 label var pensionsub_ci "1=recibe pension subsidiada / no contributiva"
 
 *****************
