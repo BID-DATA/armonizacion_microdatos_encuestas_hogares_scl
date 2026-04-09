@@ -116,16 +116,8 @@ saveold "`t3'col_`zona'_viv.dta", replace
 * Sección incluida por SCL/MIG Fernando Morales 
 
 use "`m7'\Julio_mig.dta", clear
-foreach v of varlist _all {
-	local lowname=lower("`v'")
-	cap: rename `v' `lowname'
-}
 
 append using "`m8'\Agosto_mig.dta"
-foreach v of varlist _all {
-	local lowname=lower("`v'")
-	cap: rename `v' `lowname'
-}
 
 append using "`m9'\Septiembre_mig.dta"
 foreach v of varlist _all {
