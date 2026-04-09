@@ -1002,14 +1002,14 @@ gen aguadisp2_ch = 9
 *************
 gen aguamala_ch = 2
 replace aguamala_ch = 0 if aguafuente_ch<=7
-replace aguamala_ch = 1 if aguafuente_ch>7 & aguafuente_ch!=10
+replace aguamala_ch = 1 if aguafuente_ch>7 & aguafuente_ch!=10 & aguafuente_ch!=.
 *label var aguamala_ch "= 1 si la fuente de agua no es mejorada"
 
 *****************
 *aguamejorada_ch*  Altered
 *****************
 gen aguamejorada_ch = 2
-replace aguamejorada_ch = 0 if aguafuente_ch>7 & aguafuente_ch!=10
+replace aguamejorada_ch = 0 if aguafuente_ch>7 & aguafuente_ch!=10 & aguafuente_ch!=.
 replace aguamejorada_ch = 1 if aguafuente_ch<=7
 *label var aguamejorada_ch "= 1 si la fuente de agua es mejorada"
 
@@ -1032,7 +1032,6 @@ replace bano_ch=3 if v23_sistema==3|v23_cajon==4
 replace bano_ch=4 if v23_cajon==5
 replace bano_ch=5 if v23_sistema==7 
 replace bano_ch=6 if v23_cajon==6
-replace bano_ch=6 if bano_ch ==. & jefe_ci==1
 
 ***************
 ***banoex_ch***
@@ -1068,16 +1067,18 @@ gen aguatrat_ch = 9
 ***************
 * luz_ch      *
 ***************
-gen luz_ch=. //(v24<=5) // No está la pregunta en la encuesta 2020
-*replace luz_ch=. if v24==.
+gen luz_ch=. 
+replace luz_ch=1 if v24>0 & v24<8
+replace luz_ch=0 if v24==8
 label var luz_ch "La principal fuente de iluminación es electricidad"
 
 
 ***************
 * luzmide_ch  *
 ***************
-gen luzmide_ch=. //(v24==1 | v24==2) // No está la pregunta en la encuesta 2020
-*replace luzmide_ch=. if luz_ch==0
+gen luzmide_ch=.
+replace luzmide_ch=0 if v24>=3 & v24<8
+replace luzmide_ch=1 if v24>0 & v24<3
 label var luzmide_ch "El hogar usa un medidor para pagar el consumo de electricidad"
 
 
@@ -1220,9 +1221,9 @@ label var freez_ch "El hogar posee congelador"
 * auto_ch     * 
 ***************
 
-bysort idh_ch: egen auto_ch=sum(r15==1)
+bysort idh_ch: egen auto_ch=sum(r14==1) //r15 > cantidad de autos disponibles
 replace auto_ch=1 if auto_ch>=1 & auto_ch!=.
-replace auto_ch=. if r15==9
+replace auto_ch=. if r14==.
 label var auto_ch "El hogar posee automovil particular"
 
 ***************
@@ -1233,18 +1234,14 @@ bysort idh_ch: egen compu_ch=sum(r16d==1) // No está la pregunta en la encuesta
 replace compu_ch=1 if compu_ch>=1 & compu_ch!=.
 label var compu_ch "El hogar posee computadora"
 */
-gen compu_ch=. // No está la pregunta en la encuesta 2020
+gen compu_ch=. // No está la pregunta en la encuesta 2022
 label var compu_ch "El hogar posee computadora"
 
 ***************
 * internet_ch * 
 ***************
-/*
-bysort idh_ch: egen internet_ch=sum(r17a==1 | r17b==1 | r17c==1 | r17d==1) // No está la pregunta en la encuesta 2020
+bysort idh_ch: egen internet_ch=sum(r17a==1 | r17b==1 | r17c==1 | r17d==1 | r17e==1)
 replace internet_ch=1 if internet_ch>=1 & internet_ch!=.
-label var internet_ch "El hogar tiene conexión a Internet"
-*/
-gen internet_ch=. // No está la pregunta en la encuesta 2020
 label var internet_ch "El hogar tiene conexión a Internet"
 
 *************
@@ -1255,7 +1252,7 @@ bysort idh_ch: egen cel_ch=sum(r22>=1 & r22<=3) // No está la pregunta en la en
 replace cel_ch=1 if cel_ch>=1 &  cel_ch!=.
 label var cel_ch "El hogar tiene servicio telefónico celular"
 */
-gen cel_ch=. // No está la pregunta en la encuesta 2020
+gen cel_ch=. // No está la pregunta en la encuesta 2022
 label var cel_ch "El hogar tiene servicio telefónico celular"
 
 ***************

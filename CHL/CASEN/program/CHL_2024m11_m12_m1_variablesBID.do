@@ -956,9 +956,9 @@ Estado a través de los programas sociales.
 	*auto_ch*
 	***********
 
-	bysort idh_ch: egen auto_ch=sum(r15==1)
+	bysort idh_ch: egen auto_ch=sum(r14==1)  // r15 > cantidad de autos
 	replace auto_ch=1 if auto_ch>=1 & auto_ch!=.
-	replace auto_ch=. if r15==9
+	replace auto_ch=. if r14==.
 	label var auto_ch "El hogar posee automovil particular"
 	
 	***********
@@ -1100,10 +1100,10 @@ Estado a través de los programas sociales.
 	replace bano_ch = 0 if v23==2
 	replace bano_ch = 1 if v23==1 & v23_sistema==1
 	replace bano_ch = 2 if v23==1 & v23_sistema==2
-	replace bano_ch = 3 if v23==1 & v23_sistema==3 | v23_sistema==4
-	*replace bano_ch = 4 if …
+	replace bano_ch = 3 if (v23==1 & v23_sistema==3) | v23_cajon==4
+	replace bano_ch = 4 if v23_cajon==5
 	replace bano_ch = 5 if v23==1 & v23_sistema==7
-	*replace bano_ch = 6 if …
+	replace bano_ch = 6 if v23_cajon==6
 		
 	******************
 	** banoex_ch ** - 

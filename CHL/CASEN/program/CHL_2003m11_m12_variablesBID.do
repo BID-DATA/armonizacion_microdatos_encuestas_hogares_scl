@@ -756,8 +756,7 @@ replace bano_ch=1 if v6==1
 replace bano_ch=2 if v6==2
 replace bano_ch=3 if v6==3 | v6==4 
 replace bano_ch=4 if v6==5
-replace bano_ch=6 if v6==6
-replace bano_ch=6 if bano_ch ==. & jefe_ci==1
+replace bano_ch=6 if v6==6 | v6==9
 
 ***************
 ***banoex_ch***

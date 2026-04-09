@@ -141,7 +141,18 @@ gen luz_ch=(v15<=5)
 gen luzmide_ch=(v15==1 | v15==2)
 replace luzmide_ch=. if luz_ch==0
 gen combust_ch=.
-gen bano_ch=((v9!=0 & v32==.) | v32>0 & v32<=3)
+
+*****************
+*bano_ch        *
+*****************
+gen bano_ch=.
+replace bano_ch=0 if v14==7
+replace bano_ch=1 if v14==1
+replace bano_ch=2 if v14==2
+replace bano_ch=3 if v14==3 | v14==4 
+replace bano_ch=4 if v14==5
+replace bano_ch=6 if v14==6 | v14==9
+
 gen banoex_ch=(v32==. | v32<v9)
 replace banoex_ch=. if bano_ch==0 
 gen des1_ch=0 if bano_ch==0 | v14==7
@@ -190,7 +201,7 @@ gen auto_ch=.
 by idh_ch: egen compu_ch=sum(p6==1)
 replace compu_ch=1 if compu_ch>=1
 by idh_ch: egen internet_ch=sum(p7==1)
-replace compu_ch=1 if compu_ch==1
+replace internet_ch=1 if internet_ch>=1
 
 /*****
 cel_ch
@@ -198,7 +209,7 @@ cel_ch
 sort idh_ch
 by idh_ch: egen cel_ch=sum(p8==1)
 replace cel_ch=1 if cel_ch>=1
-replace cel_ch=. if p8==9 | p8==.
+replace cel_ch=. if p8==. //p8==9 sin dato es a nivel individual
 
 gen vivi1_ch=1 if v22==1 | v22==2
 replace vivi1_ch=2 if v22==3
