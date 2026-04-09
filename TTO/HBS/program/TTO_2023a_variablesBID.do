@@ -1093,7 +1093,8 @@ use "`base_in'", clear
 	*****************
     *migrante_ci****
     ****************
-	gen byte migrante_ci= .
+	gen migrante_ci= (p07==1)
+
 
 	
 	****************
