@@ -1045,13 +1045,13 @@ use "`base_in'", clear
 	****************	
 	gen byte migrantiguo5_ci= .
 	replace migrantiguo5_ci = 1 if (migrante_ci==1 & p02a06b>=5)
-	replace migrantiguo5_ci = 0 if migrante_ci == 0
+	replace migrantiguo5_ci = 0 if (migrante_ci==1 & p02a06b<5)
 
 	****************
 	 *miglac_ci*
 	****************	
 	gen byte miglac_ci = inlist(p02a05f, 3003, 3004, 3005, 3006, 3007, 3008, 3010, 3011, 3012, 3013, 3014, 3015, 3016, 3020, 3021, 3022, 3023, 3030, 3035, 3040, 3043, 3044, 3098)
-	replace miglac_ci = . if migrante_ci == 0
+	replace miglac_ci = . if migrante_ci != 1
 
 
 ****************************
