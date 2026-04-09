@@ -86,7 +86,9 @@ label value ine01 ine01
 *    ZONA     *
 ***************
 gen byte zona_c = (urban_rural == 1)
-replace zona_c = . if missing(urban_rural)
+replace zona_c = . if missing(urban_rural) 
+
+
 
 label variable zona_c "Zona geográfica"
 label define zona_c 0 "Rural" 1 "Urbana"
