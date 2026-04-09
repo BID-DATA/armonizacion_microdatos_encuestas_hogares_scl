@@ -524,8 +524,8 @@ replace rama_ci=9 if ((rama4d_r4>=5811 & rama4d_r4<=6022) | (rama4d_r4>=6201 & r
 ***************
 ***spublico_ci ***
 ***************	
-gen  byte spublico_ci = .
-replace spublico_ci = (p6430 == 2 | p7050 ==2) 
+gen  byte spublico_ci = (p6430 == 2 | p7050 ==2)
+replace spublico_ci = . if emp_ci == 0
 	
 ***************
 ***tamemp_ci ***
