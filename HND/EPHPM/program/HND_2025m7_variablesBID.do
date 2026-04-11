@@ -1036,8 +1036,7 @@ use "`base_in'", clear
  	replace bano_ch=1 if inlist(H07,1)
 	replace bano_ch=2 if inlist(H07,2) 
 	replace bano_ch=3 if inlist(H07,5, 6,7) 
-	replace bano_ch=4 if inlist(H07,3) 
-	replace bano_ch=5 if inlist(H07,4) 
+	replace bano_ch=4 if inlist(H07,3,4) 
 	replace bano_ch=6 if inlist(H07,8) 
 		
 	******************
