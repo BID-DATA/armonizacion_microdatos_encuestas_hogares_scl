@@ -11,7 +11,6 @@ set more off
  *________________________________________________________________________________________________________________*
  
 
-
 global ruta = "${surveysFolder}"
 
 local PAIS CHL
@@ -243,19 +242,23 @@ gen dis_ch=.
 VARIABLES DE DEMANDA LABORAL
 ****************************/
 
-****************
-****condocup_ci*
-****************
+*********************
+*** condocup_ci   ***
+*********************
 
-gen condocup_ci=.
-replace condocup_ci=1 if (o1==1 | o2==1)
-replace condocup_ci=2 if ((o1==2 | o2==2) & (o3==1))
-recode condocup_ci (.=3) if edad_ci>=12 
-replace condocup_ci=4 if edad<12
-label var condocup_ci "Condicion de ocupación de acuerdo a def de cada pais"
-label define condocup_ci 1 "Ocupado" 2 "Desocupado" 3 "Inactivo" 4 "Menor de PET" 
-label value condocup_ci condocup_ci
+gen byte condocup_ci = .
 
+* 1. Ocupados
+replace condocup_ci = 1 if o1==1 | o2==1
+
+* 2. Desocupados (no trabajó y buscó empleo)
+replace condocup_ci = 2 if condocup_ci==. & (o1==2 & o2==2) & o3==1
+
+* 3. Inactivos (resto mayores de edad laboral)
+replace condocup_ci = 3 if condocup_ci==. & edad_ci >= 12
+
+* 4. Menores de la PET (Chile: < 12 años)
+replace condocup_ci = 4 if edad_ci < 12
 
 ************
 ***emp_ci***
@@ -293,24 +296,39 @@ label define ocupa_ci  7 "obreros no agricolas, conductores de maq y ss de trans
 label define ocupa_ci  8 "FFAA" 9 "Otras", add
 label value ocupa_ci ocupa_ci
 
-*************
-** rama_ci***
-*************
-/*
-gen rama_ci=substr(string(o8),1,1)
-destring rama_ci, replace
-replace rama_ci=. if emp_ci==0 | rama_ci<=0
-*/
-gen rama_ci=.
-replace rama_ci=1 if (o8>=1000 & o8<=1499) & emp_ci==1
-replace rama_ci=2 if (o8>=2000 & o8<=2999) & emp_ci==1
-replace rama_ci=3 if (o8>=3000 & o8<=3999) & emp_ci==1
-replace rama_ci=4 if (o8>=4000 & o8<=4999) & emp_ci==1
-replace rama_ci=5 if (o8>=5000 & o8<=5999) & emp_ci==1
-replace rama_ci=6 if (o8>=6000 & o8<=6999) & emp_ci==1
-replace rama_ci=7 if (o8>=7000 & o8<=7999) & emp_ci==1
-replace rama_ci=8 if (o8>=8000 & o8<=8999) & emp_ci==1
-replace rama_ci=9 if (o8>=9000 & o8<=9990) & emp_ci==1
+****************
+*** rama_ci ***
+****************
+*"Actividad económica (CIIU 1 dígito)"
+
+gen byte rama_ci = .     // inicializa
+
+* 1 Agricultura, silvicultura y pesca
+replace rama_ci = 1 if inrange(o8, 1000, 1499) & emp_ci==1
+
+* 2 Explotación de minas y canteras
+replace rama_ci = 2 if inrange(o8, 2000, 2999) & emp_ci==1
+
+* 3 Industrias manufactureras
+replace rama_ci = 3 if inrange(o8, 3000, 3999) & emp_ci==1
+
+* 4 Electricidad, gas y agua
+replace rama_ci = 4 if inrange(o8, 4000, 4999) & emp_ci==1
+
+* 5 Construcción
+replace rama_ci = 5 if inrange(o8, 5000, 5999) & emp_ci==1
+
+* 6 Comercio, restaurantes, hoteles
+replace rama_ci = 6 if inrange(o8, 6000, 6999) & emp_ci==1
+
+* 7 Transporte, almacenamiento y comunicaciones
+replace rama_ci = 7 if inrange(o8, 7000, 7999) & emp_ci==1
+
+* 8 Establecimientos financieros, inmobiliarias y servicios empresariales
+replace rama_ci = 8 if inrange(o8, 8000, 8999) & emp_ci==1
+
+* 9 Servicios sociales, comunales, personales y Gobierno
+replace rama_ci = 9 if inrange(o8, 9000, 9999) & emp_ci==1
 
 
 /*************************************************************************************************************
@@ -521,28 +539,34 @@ replace ysubaj1=0 if ysubaj==.
 gen negylm=-ylm_ci
 replace negylm=0 if ylm_ci==.
 
-egen ynlm_ci = rsum(yautaj1 negylm ysubaj1), missing
-replace ynlm_ci=. if yautaj==. & ylm_ci==. & ysubaj==. 
+*************
+* ynlm_ci
+*************
+egen ynlm_ci = rsum( ///
+    yautaj /// ingreso autónomo
+    ysubaj /// subsidios monetarios
+    ycapaj /// ingreso de capital
+    yoasaj /// otros ingresos - asalariados
+    yonaaj /// otros ingresos - no asalariados
+ 	ycesaj
+), missing
 
+* Missing si todas están missing
+replace ynlm_ci = . if yautaj==. & ysubaj==. & ycapaj==. ///
+                    & yoasaj==. & yonaaj==. & ycesaj==.
 
-/*
-gen ynlm_ci = yautaj1 - ylm_ci + ysubaj1
-replace ynlm_ci=. if yautaj==. & ylm_ci==. & ysubaj==. */
-****
 ****************
 * ynlnm_ci     * 
 **************** 
 gen ynlnm_ci=.
 egen ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci)
 
-
 ****************
 * nrylmpri_ch  * 
 **************** 
-sort idh_ch 
-by idh_ch: egen nrylmpri_ch=max(nrylmpri_ci) if miembros_ci==1
-*by idh_ch: egen nrylmpri1_ch=max(nrylmpri1_ci) if miembros_ci==1, missing
-*by idh_ch: egen nrylmpri2_ch=max(nrylmpri2_ci) if miembros_ci==1, missing
+by idh_ch, sort: egen byte nrylmpri_ch = sum(nrylmpri_ci) if miembros_ci==1
+replace nrylmpri_ch = 1 if nrylmpri_ch > 0 & nrylmpri_ch < .
+replace nrylmpri_ch = . if nrylmpri_ch == .
 
 ****************
 * ylm_ch       * 
@@ -578,7 +602,12 @@ gen ylmnr2_ch=ylm2_ch
 replace ylmnr2_ch=. if nrylmpri2_ch==1
 */
 
+****************
+* ynlm_ch      * 
+**************** 
 by idh_ch: egen ynlm_ch=sum(ynlm_ci)if miembros_ci==1, missing
+
+
 gen ynlnm_ch=.
 gen ylmhopri_ci=ylmpri_ci/(horaspri_ci*4.2)
 replace ylmhopri_ci=. if ylmhopri_ci<=0
@@ -607,9 +636,15 @@ gen remesas_ci=.
 **************** 
 gen remesas_ch=.
 
-gen durades_ci=o4/4.3
-replace durades_ci=. if o4==999 /*| activ!=2*/
-label var durades_ci "Duración del desempleo"
+****************
+***durades_ci***
+****************
+
+gen durades_ci = .     // inicializa como missing
+
+* solo para desocupados con semanas válidas
+replace durades_ci = o4 * (52/12) if condocup_ci == 2 & o4 < 999
+
 
 g year=anio_c
 g mes=12
@@ -640,19 +675,62 @@ gen pea1_ci=.
 gen pea2_ci=.
 gen pea3_ci=(emp_ci==1 | desemp3_ci==1)
 */
-*gen desalent_ci=(o1==2 & o2==2 & o3==2 & o7==8)
-gen desalent_ci=(o1==2 & o2==2 & o3==2 & o6==8)
+**********************
+*** desalent_ci 
+**********************
+
+gen byte desalent_ci = .
+
+* Desalentados: inactivos que no buscaron y alegan desánimo
+replace desalent_ci = 1 if condocup_ci==3 ///
+    & o3==2 ///
+    & o6==8 
+
+* No desalentados entre los inactivos
+replace desalent_ci = 0 if condocup_ci==3 & desalent_ci!=1
+
+tab desalent_ci condocup_ci, miss
+
+tab o6 if desalent_ci==1
+
+****************
+* subemp_ci    * 
+**************** 
 
 gen subemp_ci=.
+
+*********************
+* tiempoparc_ci     *
+*********************
 gen tiempoparc_ci=.
-gen categopri_ci=.
-replace categopri_ci=1 if o9==1
-replace categopri_ci=2 if o9==2
-replace categopri_ci=3 if o9>=3 & o9<=7
-replace categopri_ci=4 if o9==8
-replace categopri_ci=. if emp_ci==0
-replace categopri_ci=0 if o9==9
+
+******************************
+*** categopri_ci 
+******************************
+
+gen byte categopri_ci = .
+
+* 1 Patrón o empleador
+replace categopri_ci = 1 if o9 == 1 & emp_ci == 1
+
+* 2 Cuenta propia o independiente
+replace categopri_ci = 2 if o9 == 2 & emp_ci == 1
+
+* 3 Asalariados (público, empresas públicas, privado, doméstico y FF.AA.)
+replace categopri_ci = 3 if inlist(o9,3,4,5,6,7,9) & emp_ci == 1
+
+* 4 Trabajadores no remunerados
+replace categopri_ci = 4 if o9 == 8 & emp_ci == 1
+
+* Missing en no ocupados
+replace categopri_ci = . if emp_ci != 1
+
+******************************
+*** categosec_ci 
+******************************
+
 gen categosec_ci=.
+
 
 /*
 gen contrato_ci=(o11>=1 & o11<=2)
@@ -1226,13 +1304,21 @@ replace tipocontrato_ci=3 if (o11>=3 | tipocontrato_ci==.) & categopri_ci==3
 label var tipocontrato_ci "Tipo de contrato segun su duracion"
 label define tipocontrato_ci 1 "Permanente/indefinido" 2 "Temporal" 3 "Sin contrato/verbal" 
 label value tipocontrato_ci tipocontrato_ci
-	
-*************
-*cesante_ci* 
-*************
-gen cesante_ci=1 if o5==1
-replace cesante_ci=0 if o5==2
-label var cesante_ci "Desocupado - definicion oficial del pais"	
+
+*****************
+*** cesante_ci ***
+*****************
+
+gen byte cesante_ci = .
+
+* 1 = Cesante (desocupado que trabajó antes)
+replace cesante_ci = 1 if o5 == 1 & condocup_ci == 2
+
+* 0 = Desocupado que nunca ha trabajado
+replace cesante_ci = 0 if o5 == 2 & condocup_ci == 2
+
+* Missing en ocupados, inactivos y menores PET
+replace cesante_ci = . if condocup_ci != 2
 
 
 **************
@@ -1312,18 +1398,22 @@ label var tecnica_ci "1=formacion terciaria tecnica"
 ****************
 **categoinac_ci*
 ****************
+gen categoinac_ci = .
 
+* 1 Jubilados o pensionados
+replace categoinac_ci = 1 if o6 == 5 & condocup_ci == 3
 
-gen categoinac_ci=1 if o6==5
-replace categoinac_ci=2 if o6==4
-replace categoinac_ci=3 if o6==1
-replace categoinac_ci=4 if o6==2 | o6==3 | o6==6 | o6==7 | o6==8 | o6==9 | o6==10
+* 2 Estudiantes
+replace categoinac_ci = 2 if o6 == 4 & condocup_ci == 3
 
+* 3 Quehaceres domésticos
+replace categoinac_ci = 3 if o6 == 1 & condocup_ci == 3
 
-label var categoinac_ci "Condición de inactividad"
-	label define categoinac_ci 1 "jubilado/pensionado" 2 "estudiante" 3 "quehaceres_domesticos" 4 "otros_inactivos" 
-	label value categoinac_ci categoinac_ci
-	
+* 4 Otros inactivos
+replace categoinac_ci = 4 if inlist(o6, 2,3,6,7,8,9,10) & condocup_ci == 3
+
+* Missing cuando no es inactivo
+replace categoinac_ci = . if condocup_ci != 3
 
 ***************
 ***formal_ci***
