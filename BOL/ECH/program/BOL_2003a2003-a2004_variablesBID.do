@@ -557,8 +557,6 @@ label var condocup_ci "Condicion de ocupación de acuerdo a def de cada pais"
 label define condocup_ci 1 "Ocupado" 2 "Desocupado" 3 "Inactivo" 4 "Menor que 7" 
 label value condocup_ci condocup_ci
 
-
-
 *************
 *cesante_ci* 
 *************
@@ -639,9 +637,16 @@ label var pea_ci "Población Económicamente Activa"
 *****************
 ***desalent_ci***
 *****************
+gen byte desalent_ci = 0
 
-gen desalent_ci=(emp_ci==0 & (a4_08==3 | a4_08==4))
-replace desalent_ci=. if emp_ci==.
+* Desánimo solo para INACTIVOS (condocup_ci==3) y razones 3 o 4
+replace desalent_ci = 1 if condocup_ci == 3 ///
+    & inlist(a4_08, 3, 4)
+
+* Missing cuando no aplica
+replace desalent_ci = . if condocup_ci != 3
+
+label var desalent_ci "Trabajadores desalentados"
 
 *****************
 ***horaspri_ci***
@@ -887,6 +892,7 @@ gen durades_ci=.
 replace durades_ci=a4_10a/4.3  if a4_10b==2
 replace durades_ci=a4_10a      if a4_10b==4
 replace durades_ci=a4_10a*12   if a4_10b==6
+replace durades_ci = . if condocup_ci != 2
 
 *******************
 ***antiguedad_ci***
@@ -900,7 +906,7 @@ gen antiguedad_ci=.
 gen categoinac_ci =1 if (a4_07==3 & condocup_ci==3)
 replace categoinac_ci = 2 if  (a4_07==1 & condocup_ci==3)
 replace categoinac_ci = 3 if  (a4_07==2 & condocup_ci==3)
-replace categoinac_ci = 4 if  ((categoinac_ci ~=1 & categoinac_ci ~=2 & categoinac_ci ~=3) & condocup_ci==3)
+replace categoinac_ci = 4 if  (missing(categoinac_ci) & condocup_ci==3)
 label var categoinac_ci "Categoría de inactividad"
 label define categoinac_ci 1 "jubilados o pensionados" 2 "Estudiantes" 3 "Quehaceres domésticos" 4 "Otros" 
 

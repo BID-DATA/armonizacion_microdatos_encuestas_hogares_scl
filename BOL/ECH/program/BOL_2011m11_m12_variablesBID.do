@@ -500,18 +500,29 @@ label value condocup_ci condocup_ci
 */
 * Homologacion toda la serie 05/27/2014 MGD
 
-gen condocup_ci=.
 *Mod. MLO 2015,10: se consideran otras causas excepcionales 
-*replace condocup_ci=1 if s5_01==1 | s5_02<=6  | s5_03==1
-replace condocup_ci=1 if s5_01==1 | s5_02<=6 | (s5_03>=1 & s5_03<=7)
-*replace condocup_ci=2 if (s5_01==2 | s5_02==7 | s5_03>1) & (s5_05==1) & (s5_04==1)
-replace condocup_ci=2 if (s5_01==2 | s5_02==7 | s5_03>7) & (s5_05==1) & (s5_04==1)
-*2015,10 MLO la encuesta pregunta a partir de 7 años (no 10)
+gen byte condocup_ci = .
 
-recode condocup_ci .=3 if edad_ci>=7
-recode condocup_ci .=4 if edad_ci<7
-label var condocup_ci "Condicion de ocupación de acuerdo a def de cada pais"
-label define condocup_ci 1 "Ocupado" 2 "Desocupado" 3 "Inactivo" 4 "Menor que 7" 
+* 1. OCUPADOS
+replace condocup_ci = 1 if s5_01 == 1                   /// trabajó ≥ 1 hora
+    | inrange(s5_02, 1, 6)                              /// actividad informal
+    | inrange(s5_03, 1, 7)                              /// ausente con empleo
+
+* 2. DESOCUPADOS (no trabajó, no actividad, no empleo + disponible + buscó)
+replace condocup_ci = 2 if condocup_ci == .             ///
+    & s5_01 == 2                                         ///
+    & s5_02 == 7                                         ///
+    & s5_03 == 8                                         ///
+    & s5_04 == 1                                         ///
+    & s5_05 == 1
+
+* 3. INACTIVOS
+replace condocup_ci = 3 if condocup_ci == . & edad_ci >= 7
+
+* 4. MENORES
+replace condocup_ci = 4 if edad_ci < 7
+
+label define condocup_ci 1 "Ocupado" 2 "Desocupado" 3 "Inactivo" 4 "Menor que edad mínima"
 label value condocup_ci condocup_ci
 
 *************
@@ -599,8 +610,15 @@ label var pea_ci "Población Económicamente Activa"
 *****************
 ***desalent_ci***
 *****************
-gen desalent_ci=(emp_ci==0 & (s5_15==3 | s5_15==4))
-replace desalent_ci=. if emp_ci==.
+gen byte desalent_ci = 0
+
+* Desánimo solo para INACTIVOS (condocup_ci==3) y razones 3 o 4
+replace desalent_ci = 1 if condocup_ci == 3 ///
+    & inlist(s5_15, 3, 4)
+
+* Missing cuando no aplica
+replace desalent_ci = . if condocup_ci != 3
+
 label var desalent_ci "Trabajadores desalentados"
 
 *****************
@@ -809,6 +827,7 @@ gen durades_ci=.
 replace durades_ci=s5_13a/4.3  if s5_13b==2
 replace durades_ci=s5_13a      if s5_13b==4
 replace durades_ci=s5_13a*12   if s5_13b==8
+replace durades_ci = . if condocup_ci != 2
 label variable durades_ci "Duracion del desempleo en meses"
 
 *******************
@@ -827,7 +846,7 @@ label var antiguedad_ci "Antiguedad en la actividad actual en anios"
 gen categoinac_ci =1 if (s5_14==3 & condocup_ci==3)
 replace categoinac_ci = 2 if  ( s5_14==1 & condocup_ci==3)
 replace categoinac_ci = 3 if  ( s5_14==2 & condocup_ci==3)
-replace categoinac_ci = 4 if  ((categoinac_ci ~=1 & categoinac_ci ~=2 & categoinac_ci ~=3) & condocup_ci==3)
+replace categoinac_ci = 4 if  (missing(categoinac_ci) & condocup_ci==3)
 label var categoinac_ci "Categoría de inactividad"
 label define categoinac_ci 1 "jubilados o pensionados" 2 "Estudiantes" 3 "Quehaceres domésticos" 4 "Otros"
 

@@ -500,18 +500,24 @@ gen instcot_ci=.
 ****************
 ****condocup_ci*
 ****************
-destring ocupado desocupado pei, i("NA") replace
+gen byte condocup_ci = .
 
-gen condocup_ci=.
-replace condocup_ci=1 if ocupado==1 
-replace condocup_ci=2 if desocupado==1 
-replace condocup_ci=3 if pei==1
+* 1. OCUPADOS: trabajó o estuvo ausente con empleo
+replace condocup_ci = 1 if s04a_01 == 1
+replace condocup_ci = 1 if inrange(s04a_03,1,9)
 
-recode condocup_ci .=3 if edad_ci>=7
-recode condocup_ci .=4 if edad_ci<7
-label define condocup_ci 1 "Ocupado" 2 "Desocupado" 3 "Inactivo" 4 "Menor que 7" 
-label value condocup_ci condocup_ci
+* 2. DESOCUPADOS: no trabajó, no tenía empleo, disponible y buscó trabajo
+replace condocup_ci = 2 if condocup_ci == . ///
+    & s04a_01 == 2 ///
+    & (s04a_03 == 10 | missing(s04a_03)) ///
+    & s04a_04 == 1 ///
+    & s04a_05 == 1
 
+* 3. INACTIVOS
+replace condocup_ci = 3 if condocup_ci == . & edad_ci >= 7
+
+* 4. MENORES DE LA EDAD DEL MÓDULO
+replace condocup_ci = 4 if edad_ci < 7
 
 *************
 *cesante_ci* 
@@ -520,7 +526,6 @@ label value condocup_ci condocup_ci
 gen cesante_ci = 1 if condocup_ci==2 & s04a_08==1
 replace cesante_ci = 0 if condocup_ci==2 & s04a_08==2
 label var cesante_ci "Desocupado - definicion oficial del pais"	
-
 
 *************
 *tamemp_ci
@@ -605,10 +610,9 @@ label var pea_ci "Población Económicamente Activa"
 *****************
 ***desalent_ci***
 *****************
-destring s04a_07, i("NA") replace
-gen desalent_ci=(emp_ci==0 & (s04a_07==3 | s04a_07==4))
-replace desalent_ci=. if emp_ci==.
-label var desalent_ci "Trabajadores desalentados"
+gen desalent_ci = .
+replace desalent_ci = 1 if condocup_ci == 3 & inlist(s04a_07, 3, 4)
+replace desalent_ci = 0 if condocup_ci == 3 & !inlist(s04a_07, 3, 4) & s04a_07 != .
 
 *****************
 ***horaspri_ci***
@@ -668,33 +672,60 @@ label var tiempoparc_c "Personas que trabajan medio tiempo"
 ******************
 ***categopri_ci***
 ******************
-destring s04b_12 s04e_29, i("NA") replace
+destring s04b_12, ignore("NA") replace
 
-gen categopri_ci=.
-replace categopri_ci=1 if s04b_12>=4 & s04b_12<=6
-replace categopri_ci=2 if s04b_12==3
-replace categopri_ci=3 if s04b_12==1 | s04b_12==2 
-replace categopri_ci=4 if s04b_12==7
-replace categopri_ci=0 if s04b_12==8
+gen byte categopri_ci = .
 
-replace categopri_ci=. if emp_ci~=1
-label define categopri_ci 0 "Otro" 1"Patron" 2"Cuenta propia" 
-label define categopri_ci 3"Empleado" 4" No remunerado", add
+* (1) PATRÓN / EMPLEADOR
+replace categopri_ci = 1 if inlist(s04b_12,4)  & emp_ci==1
+
+* (2) CUENTA PROPIA (incluye cooperativistas)
+replace categopri_ci = 2 if inlist(s04b_12,3,5) & emp_ci==1
+
+* (3) EMPLEADOS (incluye empleado doméstico)
+replace categopri_ci = 3 if inlist(s04b_12,1,2,8) & emp_ci==1
+
+* (4) NO REMUNERADO (trabajador familiar, aprendiz)
+replace categopri_ci = 4 if inlist(s04b_12,6,7) & emp_ci==1
+
+/*label define categopri_ci  ///
+    1 "Patrón" ///
+    2 "Cuenta propia" ///
+    3 "Empleado" ///
+    4 "No remunerado"
+
 label value categopri_ci categopri_ci
-label variable categopri_ci "Categoria ocupacional trabajo principal"
+label variable categopri_ci "Categoría ocupacional - trabajo principal"*/
 
 ******************
 ***categosec_ci***
 ******************
-gen categosec_ci=.
-replace categosec_ci=1 if s04e_27>=4 & s04e_27<=6
-replace categosec_ci=2 if s04e_27==3
-replace categosec_ci=3 if s04e_27==1 | s04e_27==2 
-replace categosec_ci=4 if s04e_27==7
-label define categosec_ci 1"Patron" 2"Cuenta propia" 
-label define categosec_ci 3"Empleado" 4 "No remunerado" , add
+destring s04e_27, ignore("NA") replace
+
+gen byte categosec_ci = .
+
+* (1) Patrón / empleador
+replace categosec_ci = 1 if s04e_27 == 4 & emp_ci==1
+
+* (2) Cuenta propia (incluye cooperativistas)
+replace categosec_ci = 2 if inlist(s04e_27,3,5) & emp_ci==1
+
+* (3) Empleado (incluye empleado doméstico)
+replace categosec_ci = 3 if inlist(s04e_27,1,2,8) & emp_ci==1
+
+* (4) No remunerado (familiar sin pago, aprendiz)
+replace categosec_ci = 4 if inlist(s04e_27,6,7) & emp_ci==1
+
+/*label define categosec_ci ///
+    1 "Patrón" ///
+    2 "Cuenta propia" ///
+    3 "Empleado" ///
+    4 "No remunerado"
+
 label value categosec_ci categosec_ci
-label variable categosec_ci "Categoria ocupacional trabajo secundario"
+label variable categosec_ci "Categoría ocupacional - trabajo secundario"
+*/
+
 
 *****************
 *tipocontrato_ci*
@@ -895,13 +926,26 @@ label var antiguedad_ci "Antiguedad en la actividad actual en anios"
 ***categoinac_ci***
 *******************
 *Modificacion MLO, 2015 m4 (se cambió s5_14 por s6_09)
+gen categoinac_ci = .
 
-gen categoinac_ci =1 	  if (s04a_06==3 & condocup_ci==3)
-replace categoinac_ci = 2 if  (s04a_06==1 & condocup_ci==3)
-replace categoinac_ci = 3 if  (s04a_06==2 & condocup_ci==3)
-replace categoinac_ci = 4 if  ((categoinac_ci ~=1 & categoinac_ci ~=2 & categoinac_ci ~=3) & condocup_ci==3)
-label var categoinac_ci "Categoría de inactividad"
-label define categoinac_ci 1 "jubilados o pensionados" 2 "Estudiantes" 3 "Quehaceres domésticos" 4 "Otros"
+* 1. Jubilados o beneméritos
+replace categoinac_ci = 1 if s04a_06 == 3 & condocup_ci == 3
+
+* 2. Estudiantes
+replace categoinac_ci = 2 if s04a_06 == 1 & condocup_ci == 3
+
+* 3. Quehaceres domésticos / ama de casa
+replace categoinac_ci = 3 if s04a_06 == 2 & condocup_ci == 3
+
+* 4. Otros inactivos (enfermo, edad avanzada, otros)
+replace categoinac_ci = 4 if condocup_ci == 3 & missing(categoinac_ci)
+
+label define categoinac_ci 1 "Jubilados o pensionados" ///
+                          2 "Estudiantes" ///
+                          3 "Quehaceres domésticos" ///
+                          4 "Otros"
+
+label values categoinac_ci categoinac_ci
 
 *******************
 ***formal***
@@ -1300,7 +1344,7 @@ gen yotro_bono2= .
 replace yotro_bono2= s05b_07ba	    	if s05b_07bb==4
 replace yotro_bono2= s05b_07ba/12		if s05b_07bb==8
 
-egen ytransmon=rsum(ydinero yotro_bono), missing
+egen ytransmon = rsum(ydinero yalimento yotro_bono yotro_bono2), missing
 
 /*
 replace ytransmon= s07b_05ba*4.3	if s07b_05bb==2
@@ -1331,12 +1375,11 @@ Al 4 DE ENERO DE 2021
 destring s05c_*, replace i("NA")
 gen s6_112= .
 replace s6_112 =  s05c_10a 			 if s05c_10b==1 /*bolivianos*/
-replace s6_112 =  s05c_10a*8.39668   if s05c_10b==2 /*euro*/
+replace s6_112 =  s05c_10a*7.75930  if s05c_10b==2 /*euro*/
 replace s6_112 =  s05c_10a*6.96		 if s05c_10b==3 /*dolar*/
 replace s6_112 =  s05c_10a*0.08152   if s05c_10b==4 /*peso argentino*/
-replace s6_112 =  s05c_10a*1.32060   if s05c_10b==5 /*real*/
+replace s6_112 =  s05c_10a*1.32060  if s05c_10b==5 /*real*/
 replace s6_112 =  s05c_10a*0.00966	 if s05c_10b==6 /*peso chileno*/
-* replace s6_112 =  s05c_10a*2.00961   if s05c_10b==7 /*soles*/ En la 201 es Otro
 
 * se suman remesas monetarias y en especie
 egen rem = rsum(s05c_10a s6_112), m

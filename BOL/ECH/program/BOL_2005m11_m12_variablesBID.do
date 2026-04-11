@@ -651,11 +651,16 @@ label var pea_ci "Población Económicamente Activa"
 *****************
 ***desalent_ci***
 *****************
+gen byte desalent_ci = 0
 
-gen desalent_ci=(emp_ci==0 & (s4_15==3 | s4_15==4))
-replace desalent_ci=. if emp_ci==.
+* Desánimo solo para INACTIVOS (condocup_ci==3) y razones 3 o 4
+replace desalent_ci = 1 if condocup_ci == 3 ///
+    & inlist(s4_15, 3, 4)
+
+* Missing cuando no aplica
+replace desalent_ci = . if condocup_ci != 3
+
 label var desalent_ci "Trabajadores desalentados"
-
 
 *****************
 ***horaspri_ci***
@@ -875,6 +880,7 @@ gen durades_ci=.
 replace durades_ci=s4_13a/4.3  if s4_13b==2
 replace durades_ci=s4_13a      if s4_13b==4
 replace durades_ci=s4_13a*12   if s4_13b==6
+replace durades_ci = . if condocup_ci != 2
 label variable durades_ci "Duracion del desempleo en meses"
 
 
@@ -895,7 +901,7 @@ label var antiguedad_ci "Antiguedad en la actividad actual en anios"
 gen categoinac_ci =1 if (s4_14==3 & condocup_ci==3)
 replace categoinac_ci = 2 if  (s4_14==1 & condocup_ci==3)
 replace categoinac_ci = 3 if  (s4_14==2 & condocup_ci==3)
-replace categoinac_ci = 4 if  ((categoinac_ci ~=1 & categoinac_ci ~=2 & categoinac_ci ~=3) & condocup_ci==3)
+replace categoinac_ci = 4 if  (missing(categoinac_ci) & condocup_ci==3)
 label var categoinac_ci "Categoría de inactividad"
 label define categoinac_ci 1 "jubilados o pensionados" 2 "Estudiantes" 3 "Quehaceres domésticos" 4 "Otros" 
 
