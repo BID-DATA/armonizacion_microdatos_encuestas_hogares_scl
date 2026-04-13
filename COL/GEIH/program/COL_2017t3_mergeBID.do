@@ -128,9 +128,6 @@ foreach v of varlist _all {
 	local lowname=lower("`v'")
 	cap: rename `v' `lowname'
 }
-replace directorio=Directorio if directorio==.
-replace secuencia_p=Secuencia_p if secuencia_p==.
-replace orden=Orden if orden==.
 egen id = concat(directorio secuencia_p orden)
 sort id
 saveold "`out'\COL_`anio't3migracion.dta", replace
