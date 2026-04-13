@@ -2001,6 +2001,6 @@ rename f72_2 codindustria
 rename f71_2 codocupa
 compress
 
-saveold "`base_out'", v(12) replace
+saveold "`base_out'", replace
 
 log close
