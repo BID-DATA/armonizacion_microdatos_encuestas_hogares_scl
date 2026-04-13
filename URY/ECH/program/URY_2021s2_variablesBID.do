@@ -24,7 +24,7 @@ local base_out = "$ruta\harmonized\\`PAIS'\\`ENCUESTA'\data_arm\\`PAIS'_`ANO'`ro
 
                                                 
 capture log close
-log using "`log_file'", replace 
+log using `log_file', replace 
 
 
 /***************************************************************************
@@ -1851,7 +1851,7 @@ lab val atencion_ci atencion_ci
 	*** migrante_ci ***
 	*******************
 	
-	gen migrante_ci =.
+	gen byte migrante_ci = (e37 == 4)
 	label var migrante_ci "=1 si es migrante"
 	
 	**********************
@@ -1860,7 +1860,8 @@ lab val atencion_ci atencion_ci
 	
 	gen migantiguo5_ci =.
 	label var migantiguo5_ci "=1 si es migrante antiguo (5 anos o mas)"
-		
+
+	
 	**********************
 	*** migrantelac_ci ***
 	**********************
@@ -1873,9 +1874,12 @@ lab val atencion_ci atencion_ci
 	*** migrantiguo5_ci ***
 	**********************
 	
-	gen migrantiguo5_ci =.
+	gen migrantiguo5_ci = .
+	replace migrantiguo5_ci = 1 if (migrante_ci == 1 & e38_1>=5)
+	replace migrantiguo5_ci = 1 if migrante_ci == 1 & (e37==1 | e37==2 | e37==3)
+	replace migrantiguo5_ci = 0 if migrante_ci == 1 & e236==4
 	label var migrantiguo5_ci "=1 si es migrante antiguo (5 anos o mas)"
-		
+	
 	**********************
 	*** miglac_ci ***
 	**********************

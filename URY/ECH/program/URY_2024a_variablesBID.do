@@ -43,7 +43,7 @@ Versión ...: v1
 Detalle de procesamientos o modificaciones anteriores:
 ****************************************************************************/
 
-use "`base_in'", clear
+use `base_in', clear
 
 **********************************
 ***VARIABLES DEL IDENTIFICACION***
@@ -530,9 +530,10 @@ label value region_c region_c
 	***************
 	***spublico_ci ***
 	***************	
-	gen  byte spublico_ci = .
-	replace spublico_ci  = 0 if (f73 != 2) & emp_ci==1
+
+	gen byte spublico_ci = 0
 	replace spublico_ci  = 1 if (f73 == 2) & emp_ci==1
+	replace spublico_ci  = 0 if (f73 != 2) & emp_ci==1
 	
 	***************
 	***tamemp_ci ***
@@ -1145,11 +1146,12 @@ label value region_c region_c
 	****************
 	 *migrantiguo5_ci*
 	****************	
-	gen byte migrantiguo5_ci=0
+	gen byte migrantiguo5_ci=.
 	replace migrantiguo5_ci=1 if migrante_ci == 1 & e38_1>=5
 	replace migrantiguo5_ci = 1 if migrante_ci == 1 & (e236==1| e236==2 |e236==3 )
 	replace migrantiguo5_ci = 0 if migrante_ci == 1 & e236==4
-
+	label var migrantiguo5_ci "=1 si es migrante antiguo (5 anos o mas)"
+	
 	****************
 	 *miglac_ci*
 	****************	
