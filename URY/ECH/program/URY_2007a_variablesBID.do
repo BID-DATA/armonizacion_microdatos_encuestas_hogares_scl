@@ -2205,8 +2205,8 @@ replace eduuc_ci=1 if e52_12 > 0
 ***eduui_ci***
 **************
 gen eduui_ci = 0
-replace eduuc_ci=1 if (e54_4_2==2 | e54_5_2==2 | e54_6_2==2)
-replace eduuc_ci=1 if (e52_9 > 0 | e52_10 > 0 | e52_11 > 0)
+replace eduui_ci=1 if (e54_4_2==2 | e54_5_2==2 | e54_6_2==2)
+replace eduui_ci=1 if (e52_9 > 0 | e52_10 > 0 | e52_11 > 0)
 
  
 ***************
