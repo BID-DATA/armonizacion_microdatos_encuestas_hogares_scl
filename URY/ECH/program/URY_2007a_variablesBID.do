@@ -42,7 +42,7 @@ Detalle de procesamientos o modificaciones anteriores:
 ****************************************************************************/
 
 
-use "`base_in'", clear
+use `base_in', clear
 
 /***************************************************************************************************************************
  							armonización 2007
@@ -483,11 +483,10 @@ ESTADO CIVIL ACTUAL	e40	1	Divorciado/a
 				5	Separado/a de unión libre
 */
 
-gen civil_ci=1 		if e40==4
-replace civil_ci=2 	if e40==2
-replace civil_ci=3 	if e40==1 | e40==5
-replace civil_ci=4 	if e40==3
-
+gen civil_ci=2 		if e37==1
+replace civil_ci=1  if e40==4 & e37==2
+replace civil_ci=3  if (e40==1 | e40==2) & e37==2
+replace civil_ci=4 	if (e40==3) & e37==2
 
 *************
 ***jefe_ci***
