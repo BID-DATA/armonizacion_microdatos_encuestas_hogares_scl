@@ -65,6 +65,14 @@ gen nhogas =	string(nhoga)
 replace upms   = substr("00000" + upms, -5, 5)   /*de acuerdo a documentación upm siempre tiene 5 caracteres */
 replace nvivis = substr("000" + nvivis, -3, 3)   /*de acuerdo a documentación upm siempre tiene 3 caracteres */
 
+quietly ds, has(vallabel)
+foreach v of varlist `r(varlist)' {
+    local oldlbl : value label `v'
+    if "`oldlbl'" != "" {
+        capture label copy `oldlbl' `v'_lbl, replace
+        capture label values `v' `v'_lbl
+    }
+}
 save "$ruta\vivienda_ephc2025.dta", replace
 *****************************************************************************************************
 
@@ -81,6 +89,15 @@ gen nhogas = string(nhoga)
 
 replace upms   = substr("00000" + upms, -5, 5) /*de acuerdo a documentación upm siempre tiene 5 caracteres */
 replace nvivis = substr("000" + nvivis, -3, 3) /*de acuerdo a documentación upm siempre tiene 3 caracteres */
+
+quietly ds, has(vallabel)
+foreach v of varlist `r(varlist)' {
+    local oldlbl : value label `v'
+    if "`oldlbl'" != "" {
+        capture label copy `oldlbl' `v'_lbl, replace
+        capture label values `v' `v'_lbl
+    }
+}
 
 save "$ruta\ingrefam_ephc2025.dta", replace
 *****************************************************************************************************
@@ -113,6 +130,14 @@ replace l02s   = substr("00" + l02s, -2, 2)        /*de acuerdo a documentación
 
 
 * Numero de observaciones totales de individuos: 57,744  
+quietly ds, has(vallabel)
+foreach v of varlist `r(varlist)' {
+    local oldlbl : value label `v'
+    if "`oldlbl'" != "" {
+        capture label copy `oldlbl' `v'_lbl, replace
+        capture label values `v' `v'_lbl
+    }
+}
 
 save "$ruta\poblacion_ephc2025.dta", replace
 *****************************************************************************************************
@@ -139,6 +164,15 @@ replace l02s = substr("00" + l02s, -2, 2)       /*de acuerdo a documentación up
 
 * Notar que no todas las preguntas son respondidas por el individuo - las puede responder el jefe o la esposa
 * la pregunta a01a - dice "Línea de  la persona que responde"
+
+quietly ds, has(vallabel)
+foreach v of varlist `r(varlist)' {
+    local oldlbl : value label `v'
+    if "`oldlbl'" != "" {
+        capture label copy `oldlbl' `v'_lbl, replace
+        capture label values `v' `v'_lbl
+    }
+}
 
 save "$ruta\reg02_ephc_t4_2025.dta", replace
 
@@ -187,3 +221,6 @@ erase "$ruta\reg02_ephc_t4_2025.dta"
 
 
 capture log close
+
+ 
+ 
