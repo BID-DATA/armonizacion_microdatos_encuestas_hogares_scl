@@ -1690,9 +1690,8 @@ use `base_in', clear
 	
 	gen aguadist_ch=.
 	replace aguadist_ch= 1 if V06==1 // Adentro de la vivienda
-	replace aguadist_ch= 2 if V06==2 | V06==3 //Fuera de la vivienda, pero adentro de la propiedad o a menos de 100 metros de la propiedad
-	replace aguadist_ch= 3 if V06==4 //Fuera de la propiedad
-	replace aguadist_ch= 0 if V06==. & aguadist_ch == . //No especifica
+	replace aguadist_ch= 2 if V06==2 //Fuera de la vivienda, pero adentro de la propiedad
+	replace aguadist_ch= 3 if V06==3 & V06==4 //Fuera de la propiedad
 	
 	label define aguadist_ch 		1 "Adentro de la vivienda" ///
 									2 "Afuera de la vivienda, pero adentro del terreno" ///
@@ -1726,7 +1725,7 @@ use `base_in', clear
 	** aguamejorada_ch: acceso a agua potable de fuente mejorada ** 
 	*****************
 	gen byte aguamejorada_ch = 2
-	replace aguamejorada_ch = 0 if aguafuente_ch>7 & aguafuente_ch!=10
+	replace aguamejorada_ch = 0 if aguafuente_ch>7 & aguafuente_ch!=10 & aguafuente_ch!=.
 	replace aguamejorada_ch = 1 if aguafuente_ch<=7
 	
 	******************
@@ -1797,7 +1796,7 @@ use `base_in', clear
 	*/
 	
 	gen sinbano_ch =3
-	replace sinbano_ch = 0 if bano_ch>0
+	replace sinbano_ch = 0 if bano_ch>0 & bano_ch!=.
 	label var sinbano_ch "hogares sin acceso a instalaciones propias."
 	
 		label define sinbano_ch 	0 "El hogar tiene baño propio" ///

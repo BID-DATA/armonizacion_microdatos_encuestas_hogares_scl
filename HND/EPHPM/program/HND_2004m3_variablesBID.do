@@ -1401,9 +1401,9 @@ replace aguafuente_ch = 10 if  v05b_hog==8 |v05b_hog==3 | v05b_hog==4
 *************
 gen aguadist_ch=.
 replace aguadist_ch= 1 if v05e_hog==1
-replace aguadist_ch= 2 if v05e_hog==2 | v05e_hog==3
-replace aguadist_ch= 3 if v05e_hog==4
-replace aguadist_ch= 0 if v05e_hog==. & aguadist_ch==. 
+replace aguadist_ch= 2 if v05e_hog==2
+replace aguadist_ch= 3 if v05e_hog==3|v05e_hog ==4
+replace aguadist_ch = 0 if aguadist_ch == . & aguafuente_ch!=.
 
 **************
 *aguadisp1_ch*
@@ -1411,7 +1411,7 @@ replace aguadist_ch= 0 if v05e_hog==. & aguadist_ch==.
 gen aguadisp1_ch =. 
 replace aguadisp1_ch = 1 if v05c_hog == 1
 replace aguadisp1_ch = 0 if v05c_hog == 2
-replace aguadisp1_ch = 9 if v05c_hog == . & inrange(v05b_hog, 3, 8)
+replace aguadisp1_ch = 0 if v05c_hog == . & inrange(v05b_hog, 3, 8)
 
 **************
 *aguadisp2_ch*
@@ -1420,7 +1420,7 @@ gen aguadisp2_ch =.
 replace aguadisp2_ch = 1 if v05d1_hog<=7.5 | v05d2_hog<12
 replace aguadisp2_ch = 2 if (v05d1_hog>7.5 & v05d1_hog<15) & (v05d2_hog>=12 & v05d2_hog<24)
 replace aguadisp2_ch = 3 if v05d1_hog==15 & v05d2_hog ==24
-replace aguadisp2_ch = 9 if v05c_hog==1 & (v05d1_hog ==. | v05d2_hog ==.)
+*replace aguadisp2_ch = 1 if v05c_hog==1 & (v05d1_hog ==. | v05d2_hog ==.)
 
 *************
 *aguamala_ch*  Altered

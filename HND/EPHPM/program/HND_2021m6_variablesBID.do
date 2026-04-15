@@ -418,7 +418,7 @@ gen categoinac_ci = .
 replace categoinac_ci = 1 if (!missing(oih02_lps) | !missing(oih01_lps)) & condocup_ci == 3
 replace categoinac_ci = 2 if (ed0412 == 1 | ed077 == 1 | ed086 == 1 | ed097 == 1 | ed109 == 1 | ed115 == 1) & condocup_ci == 3
 replace categoinac_ci = 3 if (cp526 == 4 | cp542 == 4) & condocup_ci == 3
-replace categoinac_ci = 4 if condocup_ci == 3
+replace categoinac_ci = 4 if ((categoinac_ci ~=1 & categoinac_ci ~=2 & categoinac_ci ~=3) & condocup_ci == 3)
 
 label var categoinac_ci "Categoría de inactividad"
 label define categoinac_ci 1 "jubilados o pensionados" 2 "Estudiantes" 3 "Quehaceres domésticos" 4 "Otros"
@@ -1125,7 +1125,7 @@ gen aguafuente_ch = .
 *************
 *aguadist_ch*
 *************
-gen aguadist_ch = 0  // No se especifica
+gen aguadist_ch = .
 
 **************
 *aguadisp1_ch*
@@ -1156,7 +1156,7 @@ gen aguamejorada_ch = 2
 *****************
 ***aguamide_ch***
 *****************
-gen aguamide_ch = (h04u == 1)
+gen aguamide_ch = . // Es una variable proxy sobre el servicio sanitario (h04u == 1)
 label var aguamide_ch "Usan medidor para pagar consumo de agua"
 
 *****************
@@ -1184,7 +1184,7 @@ la var banoex_ch "El servicio sanitario es exclusivo del hogar"
 **sinbano_ch***
 ***************
 generate sinbano_ch = 3
-replace sinbano_ch = 0 if bano_ch>0
+replace sinbano_ch = 0 if bano_ch>0 & bano_ch!=.
 
 *****************
 *banomejorado_ch*

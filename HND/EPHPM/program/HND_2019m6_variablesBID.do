@@ -1436,9 +1436,9 @@ replace aguafuente_ch = 10 if dv105_hog==9 | dv105_hog==2 | dv105_hog==3 |dv105_
 *************
 gen aguadist_ch=.
 replace aguadist_ch= 1 if dv106_hog==1
-replace aguadist_ch= 2 if dv106_hog==2 | dv106_hog==3
-replace aguadist_ch= 3 if dv106_hog ==4
-replace aguadist_ch = 0 if dv106_hog==. & aguadist_ch == .
+replace aguadist_ch= 2 if dv106_hog==2
+replace aguadist_ch= 3 if dv106_hog==3 | dv106_hog ==4
+replace aguadist_ch = 0 if aguadist_ch == . & aguafuente_ch!=.
 
 **************
 *aguadisp1_ch*
@@ -1504,7 +1504,7 @@ replace banomejorado_ch =0 if (bano_ch ==0 | bano_ch>=4) & bano_ch!=6 & bano_ch!
 *sinbano_ch*
 ************
 gen sinbano_ch = 3
-replace sinbano_ch = 0 if bano_ch>0 & bano_ch!=.
+replace sinbano_ch = 0 if dh204_hog == 1
 
 *label var sinbano_ch "= 0 si tiene baño en la vivienda o dentro del terreno"
 

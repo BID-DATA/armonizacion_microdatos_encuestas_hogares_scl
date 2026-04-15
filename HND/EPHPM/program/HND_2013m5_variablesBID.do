@@ -1373,11 +1373,10 @@ replace aguafuente_ch = 10 if  dv06==10 |dv06==3 | dv06==4 |dv06==9|(dv06==. & j
 *************
 *aguadist_ch*
 *************
-gen aguadist_ch=.
+gen aguadist_ch=0
 replace aguadist_ch= 1 if dv09==1
-replace aguadist_ch= 2 if dv09==2 | dv09==3
-replace aguadist_ch= 3 if dv09==4
-replace aguadist_ch= 0 if dv09==. & aguadist_ch==.
+replace aguadist_ch= 2 if dv09==2
+replace aguadist_ch= 3 if dv09==3|dv09 ==4
 
 **************
 *aguadisp1_ch*
@@ -1396,14 +1395,14 @@ gen aguadisp2_ch = 9
 *************
 gen aguamala_ch = 2
 replace aguamala_ch = 0 if aguafuente_ch<=7
-replace aguamala_ch = 1 if aguafuente_ch>7 & aguafuente_ch!=10
+replace aguamala_ch = 1 if aguafuente_ch>7 & aguafuente_ch!=10 & aguafuente_ch!= .
 
 
 *****************
 *aguamejorada_ch*  Altered
 *****************
 gen aguamejorada_ch = 2
-replace aguamejorada_ch = 0 if aguafuente_ch>7 & aguafuente_ch!=10
+replace aguamejorada_ch = 0 if aguafuente_ch>7 & aguafuente_ch!=10 & aguafuente_ch!=.
 replace aguamejorada_ch = 1 if aguafuente_ch<=7 
 
 
