@@ -1288,14 +1288,20 @@ use "`base_in'", clear
 	****************
 	* lpe_ci *
 	****************	
-	gen lpe_ci = . 
-	replace lpe_ci= li
+	gen lpe_ci = . //
+	*zona urbana 67.06
+	replace lpe_ci= li if zona_c == 1
+	*zona rural 43.30
+	replace lpe_ci= li if  zona_c == 0
 	
 	****************
 	 * ln_ci *
 	****************	
-	gen ln_ci = . 
-	replace ln_ci= li*2
+	gen ln_ci = . //
+	*zona urbana 67.06
+	replace ln_ci= li*2 if  zona_c == 1
+	*zona rural 43.30
+	replace ln_ci= li*2 if  zona_c == 0
 
 	
 	/*_____________________________________________________________________________________________________*/
