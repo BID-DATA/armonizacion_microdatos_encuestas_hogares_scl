@@ -1,4 +1,4 @@
-*(Versión stata 17)
+*(Versión Stata 19)
 
 clear
 set more off
@@ -57,8 +57,6 @@ use "`base_in'", clear
 	********************
 	*** region_c ****
 	********************
-	*NOTA: En 2024 no hay región, el ultimo año con esta variable fue 2023
-/*
 	gen byte region_c = r004
 	label define region_c   ///
 	1 "Ahuachapán" ///
@@ -76,7 +74,7 @@ use "`base_in'", clear
     13 "Morazán" ///
     14 "La Unión" 		
 	label value region_c region_c
-*/	    
+
 	*************
 	* pais_c    *
 	*************
@@ -95,15 +93,13 @@ use "`base_in'", clear
 	******
 	*zona*
 	******
-	*NOTA: En 2024 no hay zona (solo znorte), el ultimo año con esta variable fue 2023
-	
+	gen byte zona_c=area
+ 	
 	*********
 	*estrato*
 	*********
-	gen estrato_ci=.
-	*NOTA: En 2024 no hay estratoarea, el ultimo año con esta variable fue 2023
-	*Revisar lote tipo folio viv 
-	
+	gen estrato_ci=estratoarea
+
 	***************
 	***upm_ci***
 	***************
@@ -168,7 +164,7 @@ use "`base_in'", clear
 	*************
 	*miembros_one_ci*
 	*************
-	*gen miembros_one_ci=.
+	gen miembros_one_ci=.
 	*No hay metodología de la encuesta y en los anteriores años no se lo hizo 
 	
 	**************
@@ -283,6 +279,11 @@ use "`base_in'", clear
 	*noafroind_ci*
 	**************
 	gen byte noafroind_ci =.  
+	
+	**************
+	*afroind_ano_c*
+	**************
+	gen byte afroind_ano_c =.   
 	
 	************
 	*afroind_ci*
@@ -967,12 +968,27 @@ use "`base_in'", clear
 	replace internet_ch=1 if r3213a==1
 	
 	***********
+	*cel_ch*
+	***********
+	gen cel_ch=.
+	replace cel_ch=0 if r3212a==2
+	replace cel_ch=1 if r3212a==1
+	
+	***********
 	*vivi1_ch*
+	***********
 	gen vivi1_ch=.
 	replace vivi1_ch=1 if r301==1 
 	replace vivi1_ch=2 if r301==2
 	replace vivi1_ch=3 if r301>=3 & r301<=9
 
+	***********
+	*vivi2_ch*
+	***********
+	gen vivi2_ch=.
+	replace vivi2_ch=0 if vivi1_ch ==3
+	replace vivi2_ch=1 if vivi1_ch ==1 | vivi1_ch ==2
+	
 	***********
 	*viviprop_ch*
 	***********
@@ -1132,9 +1148,7 @@ use "`base_in'", clear
 	****************
 	 *tipo_bienestar*
 	****************
-	gen byte tipo_bienestar = . 
-	replace tipo_bienestar  = 1 
-	replace tipo_bienestar  = 2
+	gen byte tipo_bienestar =  1 
 
 	****************
 	 * pobre_ine_ci*
@@ -1150,17 +1164,67 @@ use "`base_in'", clear
 
 	****************
 	* lpe_ci *
-	****************	
-	gen lpe_ci = . 
-	replace lpe_ci= li
+	****************
+	gen lpe_ci = . //
+	*zona urbana 68.20
+	replace lpe_ci= li if zona_c == 1
+	*zona rural 42.17
+	replace lpe_ci= li if  zona_c == 0
 	
 	****************
 	 * ln_ci *
-	****************	
-	gen ln_ci = . 
-	replace ln_ci= li*2
+	****************
+	gen ln_ci = . //
+	*zona urbana 68.20 *2 
+	replace ln_ci= li*2 if  zona_c == 1
+	*zona rural 42.17 * 2
+	replace ln_ci= li*2 if  zona_c == 0
+		
 
 
-compress
-save "`base_out'", replace
+	/*_____________________________________________________________________________________________________*/
+
+	* Asignación de etiquetas e inserción de variables externas: tipo de cambio, Indice de Precios al 
+    * Consumidor (2011=100), Paridad de Poder Adquisitivo (PPA 2011),  líneas de pobreza
+
+	/*_____________________________________________________________________________________________________*/
+	
+
+	do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&ExternalVars_Harmonized_DataBank.do"
+
+	
+	/*_____________________________________________________________________________________________________*/
+	* Verificación de que se encuentren todas las variables armonizadas 
+	/*_____________________________________________________________________________________________________*/
+	
+	
+      order region_BID_c region_c pais_c anio_c mes_c zona_c idh_ch idp_ci factor_ci factor_ch estrato_ci upm_ci /// Identificación
+	  sexo_ci edad_ci relacion_ci civil_ci jefe_ci nconyuges_ch nhijos_ch notropari_ch notronopari_ch nempdom_ch /// Demográficas
+	  clasehog_ch nmiembros_ch miembros_ci nmayor21_ch nmenor21_ch nmayor65_ch nmenor6_ch nmenor1_ch /// Demográficas
+	  afroind_ci afroind_ch afroind_ano_c dis_ci dis_ch /// Género y diversidad 
+	  afro_ci ind_ci noafroind_ci afro_ch ind_ch noafroind_ch disWG_ci /// Género y diversidad
+	  /// Agregar aquí: ISO3pais_dis_ci (renombrar con código del país, ej. COL_dis_ci)
+          condocup_ci categoinac_ci emp_ci cesante_ci desemp_ci subemp_ci durades_ci pea_ci nempleos_ci antiguedad_ci desalent_ci  /// Empleo
+	  horaspri_ci horastot_ci tiempoparc_ci categopri_ci categosec_ci rama_ci spublico_ci tamemp_ci cotizando_ci instcot_ci	afiliado_ci /// Empleo
+	  formal_ci tipocontrato_ci ocupa_ci pension_ci	pensionsub_ci tipopen_ci instpen_ci	/// Empleo
+	  ylmpri_ci ylnmpri_ci ylmsec_ci ylnmsec_ci ylmotros_ci /// Ingresos individuo
+     ylnmotros_ci ylm_ci ylnm_ci ynlm_ci ynlnm_ci ytot_ci   /// Ingresos individuo
+	  ylm_ch ylnm_ch ynlm_ch ynlnm_ch   ytot_ch /// Ingresos del hogar
+	  ylmhopri_ci ylmho_ci /// ingreso por hora
+	  nrylmpri_ci nrylmpri_ch /// No respuesta de ingresos 
+	  remesas_ci remesas_ch ypen_ci ypensub_ci /// Remesas y pensiones
+          aedu_ci eduui_ci eduuc_ci edupre_ci eduac_ci asiste_ci edupub_ci razonesnoasis_ci asispre_ci /// Educación 
+	  luz_ch luzmide_ch combust_ch piso_ch pared_ch techo_ch resid_ch dorm_ch cuartos_ch cocina_ch telef_ch refrig_ch /// Vivienda 
+	  freez_ch auto_ch compu_ch internet_ch cel_ch vivi1_ch vivi2_ch viviprop_ch vivitit_ch vivialq_ch vivialqimp_ch /// Vivienda
+	  aguared_ch aguafconsumo_ch aguafuente_ch aguadist_ch aguadisp1_ch aguadisp2_ch /// Agua y saneamineto
+	  aguatrat_ch aguamala_ch aguamejorada_ch aguamide_ch bano_ch banoex_ch banomejorado_ch sinbano_ch  /// Agua y saneamineto
+	  migrante_ci migrantiguo5_ci miglac_ci /// Migración  
+	  miembros_one_ci tipo_bienestar pobre_ine_ci bienestar_agregado lpe_ci  ln_ci /// Pobreza  
+      lp19_2011 lp31_2011 lp5_2011  lp365_2017 lp685_2017 lp14_2017 lp81_2017 tc_c ratio_cpi2011 ratio_cpi2017 cpi_c cpi2011 cpi2017 ppp_c ppp_2011 ppp_2017, first /// Fuente externa
+
+
+
+
+saveold "`base_out'", version(12) replace
+
 cap log close
