@@ -1253,13 +1253,13 @@ gen pea_ci=(emp_ci==1 | desemp_ci==1)
 	*************
 	gen aguamala_ch = 2
 	replace aguamala_ch = 0 if aguafuente_ch<=7
-	replace aguamala_ch = 1 if aguafuente_ch>7 & aguafuente_ch!=10
+	replace aguamala_ch = 1 if aguafuente_ch>7 & aguafuente_ch!=10 & aguafuente_ch!= .
 
 	*****************
 	*aguamejorada_ch* 
 	*****************
 	gen aguamejorada_ch = 2
-	replace aguamejorada_ch = 0 if aguafuente_ch>7 & aguafuente_ch!=10
+	replace aguamejorada_ch = 0 if aguafuente_ch>7 & aguafuente_ch!=10 & aguafuente_ch!=.
 	replace aguamejorada_ch = 1 if aguafuente_ch<=7
 
 	*****************
@@ -1303,7 +1303,7 @@ gen pea_ci=(emp_ci==1 | desemp_ci==1)
 	*sinbano_ch*
 	************
     gen sinbano_ch =3
-	replace sinbano_ch = 0 if bano_ch>0
+	replace sinbano_ch = 0 if bano_ch>0 & bano_ch!=.
 	label var sinbano_ch "hogares sin acceso a instalaciones propias."
 
 	label define sinbano_ch 		0 "El hogar tiene baño" ///
