@@ -414,11 +414,11 @@ drop perd_trabajo cesantes
 *******************
 ***categoinac_ci***
 *******************
-gen categoinac_ci = .
-replace categoinac_ci = 1 if (!missing(oih02_lps) | !missing(oih01_lps)) & condocup_ci == 3
+gen categoinac_ci = . // El 2021 no se realizó la pregunta de razones de inactividad
+/*replace categoinac_ci = 1 if (!missing(oih02_lps) | !missing(oih01_lps)) & condocup_ci == 3
 replace categoinac_ci = 2 if (ed0412 == 1 | ed077 == 1 | ed086 == 1 | ed097 == 1 | ed109 == 1 | ed115 == 1) & condocup_ci == 3
 replace categoinac_ci = 3 if (cp526 == 4 | cp542 == 4) & condocup_ci == 3
-replace categoinac_ci = 4 if condocup_ci == 3
+replace categoinac_ci = 4 if ((categoinac_ci ~=1 & categoinac_ci ~=2 & categoinac_ci ~=3) & condocup_ci == 3)*/
 
 label var categoinac_ci "Categoría de inactividad"
 label define categoinac_ci 1 "jubilados o pensionados" 2 "Estudiantes" 3 "Quehaceres domésticos" 4 "Otros"

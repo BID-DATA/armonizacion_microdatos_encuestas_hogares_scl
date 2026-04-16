@@ -399,7 +399,7 @@ g condocup_ci=.
 replace condocup_ci=1 if condact==1
 replace condocup_ci=2 if condact==2
 replace condocup_ci=3 if condact==3
-replace condocup_ci=4 if edad_ci<15
+replace condocup_ci=4 if edad_ci<5
 
 label var condocup_ci "Condicion de ocupación de acuerdo a def de cada pais"
 label define condocup_ci  1 "Ocupado" 2 "Desocupado" 3 "Inactivo" 4 "Menor que 10" 
@@ -423,7 +423,8 @@ gen pea_ci=(emp_ci==1 | desemp_ci==1)
 	*******************
 	***categoinac_ci***
 	*******************
-	gen categoinac_ci =1 if ((ca514 ==1 | ca514==2) & condocup_ci==3)
+	gen categoinac_ci = .
+	replace categoinac_ci = 1 if ((ca514 ==1 | ca514==2) & condocup_ci==3)
 	replace categoinac_ci = 2 if  (ca514==4 & condocup_ci==3)
 	replace categoinac_ci = 3 if  (ca514==5 & condocup_ci==3)
 	replace categoinac_ci = 4 if  ((inlist(ca514,3,6,7,8,9,97)) & condocup_ci==3)

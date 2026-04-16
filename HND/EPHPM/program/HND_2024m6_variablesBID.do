@@ -558,7 +558,7 @@ use `base_in', clear
 	replace categoinac_ci = 2 if  (CA514 == 4 & condocup_ci == 3) //Estudiante
 	replace categoinac_ci = 3 if  (CA514 == 5 & condocup_ci == 3) //Quehaceres domesticos
 	replace categoinac_ci = 4 if  (!inlist(CA514,1,2,4,5) & condocup_ci == 3) //Otros Inactivos
-	replace categoinac_ci = . if condocup_ci==. | CA514==. //Missings
+	*replace categoinac_ci = . if condocup_ci==. | CA514==. //Missings
 	
 	**********
 	***emp_ci: Variable dicotómica que identifica con valor 1 a los ocupados y 0 a los no ocupados y mantiene con valores perdidos a los que se muestran en la encuesta con valores perdidos*
