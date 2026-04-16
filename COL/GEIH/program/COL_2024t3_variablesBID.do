@@ -401,9 +401,9 @@ replace condocup_ci=4 if edad_ci<10
 *******************
 gen byte categoinac_ci = .
 replace categoinac_ci=1 if p7450==5 & condocup_ci==3
-replace categoinac_ci=2 if p7450==2 | (p6240==3 & condocup_ci==3)
-replace categoinac_ci=3 if p7450==3 | (p6240==4 & condocup_ci==3)
-replace categoinac_ci=4 if ((categoinac_ci != 1 | categoinac_ci != 2 | categoinac_ci != 3) & condocup_ci == 3)
+replace categoinac_ci=2 if (p7450==2 | p6240==3) & condocup_ci==3
+replace categoinac_ci=3 if (p7450==3 | p6240==4) & condocup_ci==3
+replace categoinac_ci=4 if ((categoinac_ci != 1 & categoinac_ci != 2 & categoinac_ci != 3) & condocup_ci == 3)
 	
 **********
 ***emp_ci*
