@@ -37,7 +37,7 @@ Versión ...: Octubre 2025
 Detalle de procesamientos o modificaciones anteriores:
 ****************************************************************************/
 
-use "`base_in'", clear
+use `base_in', clear
 
 **********************************
 **** ARMONIZACIÓN PNAD_C 2024 **** 
@@ -952,10 +952,13 @@ rename *, lower
 		& v3014 != 1
 
 	* D. Quienes NO están en ningún caso → 0
-	replace eduuc_ci = 0 if eduuc_ci==. ///
-		& v3002 != .   ///
-		& v3009a != .
-
+	*** Considerar tres grupos de población en esta opción
+		*** Asiste actualmente a clases y tienen un nivel educativo y grado más alto inferior al tecnico superior
+		*** No asiste a clases y el nivel educativo más alto al que asistió es inferior al grado superior y completo el nivel
+		*** No asiste a clases y el nivel educativo más alto al que asistió es inferior al grado superior y no completo el nivel
+	replace eduuc_ci = 0 if ((v3002 == 1 & inlist(v3003a, 2, 3, 4, 5, 6, 7)) | (v3002 == 2 & inlist(v3009a, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11) & v3014 == 1) | (v3002 == 2 & inlist(v3009a, 1, 		2, 3, 4, 5, 6, 7, 8, 9, 10, 11) & v3014 == 2))
+	label variable eduuc_ci "Terciaria/universitaria completa o mas"	
+		
 	**********
 	*eduac_ci*
 	**********
