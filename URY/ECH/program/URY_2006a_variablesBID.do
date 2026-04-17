@@ -1163,17 +1163,14 @@ label define tamaño 1"Pequeña" 2"Mediana" 3"Grande"
 label values tamemp_ci tamaño
 tab tamemp_ci [iw=factor_ci]
 
-*Genera la variable para clasificar a los inactivos
-*Jubilados y pensionados
-*drop categoinac_ci
-gen categoinac_ci=1 if f119_1==1 | f119_2==1
-label var  categoinac_ci "Condición de Inactividad" 
-*Estudiantes
-replace categoinac_ci=2 if f119_4==1
-*Quehaceres del Hogar
-replace categoinac_ci=3 if f119_5==1
-*Otra razon
-replace categoinac_ci=4 if f119_3==1 
+*******************
+***categoinac_ci***
+*******************
+gen byte categoinac_ci = .
+replace categoinac_ci = 1 if (f119_1 == 1 | f119_2 == 1) & condocup_ci == 3 // Jubilados o pensionistas
+replace categoinac_ci = 2 if f119_4 == 1 & condocup_ci == 3 // Estudiantes
+replace categoinac_ci = 3 if f119_5 == 1 & condocup_ci == 3 // Quehaceres del hogar
+replace categoinac_ci = 4 if ((categoinac_ci != 1 & categoinac_ci != 2 & categoinac_ci != 3) & condocup_ci == 3) // Otros inactivos
 label define inactivo 1"Pensionado" 2"Estudiante" 3"Hogar" 4"Otros"
 label values categoinac_ci inactivo
 tab categoinac_ci [iw=factor_ci]

@@ -840,16 +840,14 @@ label define tamaño 1"Pequeña" 2"Mediana" 3"Grande"
 label values tamemp_ci tamaño
 
 
-*73. Condición de Inactividad
-
-* En 2021, dejaron de incluir la variable f124_4 (CONDICIÓN DE ACTIVIDAD == Estudiante). Por eso, se construye la información de acuerdo con la pregunta pobpcoac (Condición de actividad económica == 7 "Inactivo, estudiante")
-
-* Se construye la variable con la condición de inactivos en condocup_ci == 3.
-
-gen categoinac_ci = 1 if ((pobpcoac == 9 | pobpcoac == 10) & condocup_ci == 3) 
-replace categoinac_ci = 2 if  ((pobpcoac == 7) & condocup_ci == 3) & categoinac_ci ==.
-replace categoinac_ci = 3 if  ((pobpcoac == 6) & condocup_ci == 3) & categoinac_ci ==.
-replace categoinac_ci = 4 if  ((categoinac_ci != 1 & categoinac_ci != 2 & categoinac_ci != 3) & condocup_ci == 3) & categoinac_ci ==.
+*******************
+***categoinac_ci***
+*******************
+gen categoinac_ci = .
+replace categoinac_ci = 1 if ((pobpcoac == 9 | pobpcoac == 10) & condocup_ci == 3) // Jubilados o pensionistas
+replace categoinac_ci = 2 if  ((pobpcoac == 7) & condocup_ci == 3) // Estudiantes
+replace categoinac_ci = 3 if  ((pobpcoac == 6) & condocup_ci == 3) // Quehaceres del hogar
+replace categoinac_ci = 4 if  ((categoinac_ci != 1 & categoinac_ci != 2 & categoinac_ci != 3) & condocup_ci == 3) // Otros inactivos
 label var categoinac_ci "Categoría de inactividad"
 label define categoinac_ci 1 "jubilados o pensionados" 2 "Estudiantes" 3 "Quehaceres domésticos" 4 "Otros" 
 label values categoinac_ci categoinac_ci
