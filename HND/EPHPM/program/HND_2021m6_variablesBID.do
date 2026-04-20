@@ -1168,7 +1168,7 @@ replace bano_ch = 1 if h04u == 1
 replace bano_ch = 2 if h04u == 2
 replace bano_ch = 3 if  h04u == 6 | h04u == 7
 replace bano_ch = 4 if h04u == 3 | h04u == 4 
-replace bano_ch = 6 if h04u == 8 | h04u == 5  
+replace bano_ch = 6 if h04u == 8 | h04u == 5  | h04u ==.
 
 label var bano_ch "Tipo de instalación sanitaria del hogar"
 label def bano_ch 0 "Sin instalaciones" 1 "Inodoro a red de desague" 2 "Inodoro a fosa séptica" 3 "Letrina mejorada / otra instalación mejorada" 4 "Indoro/letrina a cuerpo de agua superficial o suelo" 5 "Instalación no mejorada" 6 "Instalación que no se puede clasificar"

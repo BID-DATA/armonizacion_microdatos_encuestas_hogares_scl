@@ -1761,7 +1761,7 @@ use `base_in', clear
 	replace bano_ch=2 if inlist(H07,2) //Inodoro a pozo séptico
 	replace bano_ch=3 if inlist(H07,6,7) // Letrina
 	replace bano_ch=4 if inlist(H07,3,4) // Inodoro con desague a río/laguna/mar
-	replace bano_ch=6 if inlist(H07,8,5) // Instalaciones no clasificada 
+	replace bano_ch=6 if inlist(H07,8,5,.) // Instalaciones no clasificada 
 
 	label define bano_ch 			0 "Sin instalaciones" ///
 									1 "Inodoro a red de desagüe" ///
