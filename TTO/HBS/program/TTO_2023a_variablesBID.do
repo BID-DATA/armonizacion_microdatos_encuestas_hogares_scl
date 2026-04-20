@@ -287,7 +287,9 @@ use "`base_in'", clear
 	*********
 	*afro_ci*
 	*********
-	gen byte afro_ci = . 	  // se queda como missing (.) si no existe la pregunta
+	gen byte afro_ci = .
+	replace afro_ci = 1 if p1_5 == 1
+	replace afro_ci = 0 if inrange(p1_5, 2, 9)
 	
 	*********
 	*indi_ci*
@@ -356,8 +358,10 @@ use "`base_in'", clear
 	******************
 	*ISOalpha3_dis_ci*
 	******************
-	gen byte tto_dis_ci = .
-	
+	gen byte TTO_dis_ci = .
+	replace TTO_dis_ci = 1 if p4_1__1 == 1 | p4_1__2 == 1 | p4_1__3 == 1 | p4_1__4 == 1 | p4_1__5 == 1 | p4_1__6 == 1 
+	replace TTO_dis_ci = 0 if p4_1__9 == 1  
+
 ****************************
 ***VARIABLES DE MERCADO LABORAL***
 ****************************
@@ -585,27 +589,43 @@ use "`base_in'", clear
 	*************
 	* ylmpri_ci *
 	*************
+	
+	egen temp=rowtotal(ps17_11 ps17_15) //ingresos de comisiones y horas extras, ...
+	
 	generate double ylmpri_ci =. if emp_ci==1
-	replace ylmpri_ci =(ps17_3*(52/12)) if emp_ci==1 & ps17_2==1 & ps17_2>0
-	replace ylmpri_ci =(ps17_3*2) if emp_ci==1 & ps17_2==2 & ps17_2>0
-	replace ylmpri_ci =ps17_3 if emp_ci==1 & ps17_2==3 & ps17_2>0
-	replace ylmpri_ci =(ps17_3/2) if emp_ci==1 & ps17_2==4 & ps17_2>0
-	replace ylmpri_ci =(ps17_3/12) if emp_ci==1 & ps17_2==5 & ps17_2>0
+	
+	replace ylmpri_ci =(ps17_3*(52/12))+temp if emp_ci==1 & ps17_2==1 & ps17_2>0
+	replace ylmpri_ci =(ps17_3*2)+temp if emp_ci==1 & ps17_2==2 & ps17_2>0
+	replace ylmpri_ci =ps17_3+temp if emp_ci==1 & ps17_2==3 & ps17_2>0
+	replace ylmpri_ci =(ps17_3/2)+temp if emp_ci==1 & ps17_2==4 & ps17_2>0
+	replace ylmpri_ci =(ps17_3/12)+temp if emp_ci==1 & ps17_2==5 & ps17_2>0
+	
+	replace ylmpri_ci =ps17_22/12 if emp_ci==1 & ps17_1__2==1 & ps17_22>0 & ylmpri==. //self employment
+	
+	drop temp
 
 	************
 	* ylmsec_ci *
 	************
+	
+	egen temp=rowtotal(ps17_40 ps17_36) //ingresos de comisiones y horas extras, ...
+	
 	generate double ylmsec_ci = . if emp_ci==1
-	replace ylmsec_ci =ps17_26*(52/12) if emp_ci==1 & ps17_25==1 & ps17_26>0
-	replace ylmsec_ci =ps17_26*(2) if emp_ci==1 & ps17_25==2 & ps17_26>0
-	replace ylmsec_ci =ps17_26 if emp_ci==1 & ps17_25==3 & ps17_26>0
-	replace ylmsec_ci =ps17_26/2 if emp_ci==1 & ps17_25==4 & ps17_26>0
-	replace ylmsec_ci =ps17_26/12 if emp_ci==1 & ps17_25==5 & ps17_26>0
+	replace ylmsec_ci =ps17_26*(52/12)+temp if emp_ci==1 & ps17_25==1 & ps17_26>0
+	replace ylmsec_ci =ps17_26*(2)+temp if emp_ci==1 & ps17_25==2 & ps17_26>0
+	replace ylmsec_ci =ps17_26+temp if emp_ci==1 & ps17_25==3 & ps17_26>0
+	replace ylmsec_ci =ps17_26/2+temp if emp_ci==1 & ps17_25==4 & ps17_26>0
+	replace ylmsec_ci =ps17_26/12+temp if emp_ci==1 & ps17_25==5 & ps17_26>0
+	replace ylmsec_ci =ps17_26/12+temp if emp_ci==1 & ps17_25==5 & ps17_26>0
+	 
+	replace ylmsec_ci =ps17_45/12+temp if emp_ci==1 & ps17_1__4==1 & ps17_45>0 //self employment
+	
+	drop temp
 
 	**************
 	* ylmotros_ci *
 	**************
-    generate double ylmotros_ci =ps17_11+ps17_15 if emp_ci==1
+    generate double ylmotros_ci =. if emp_ci==1
  
 	*********
 	* ylm_ci *
@@ -616,12 +636,14 @@ use "`base_in'", clear
 	* ylnmpri_ci *
 	**************
 	egen double ylnmpri_ci = rowtotal(ps17_13) if emp_ci==1, mi
+	replace ylnmpri_ci = s17_24 if emp_ci==1 & ps17_1__2==1 //self employment
 	replace ylnmpri_ci = . if ylnmpri_ci < 0 & ylnmpri_ci != .
 
 	**************
 	* ylnmsec_ci *
 	**************
-    egen double ylnmsec_ci = rowtotal(ps17_38 ps17_40) if emp_ci==1, mi
+    egen double ylnmsec_ci = rowtotal(ps17_38) if emp_ci==1, mi
+	replace double ylnmsec_ci = s17_47 if emp_ci==1 & ps17_1__4==1 //self employment
     replace ylnmsec_ci = . if ylnmsec_ci < 0 & ylnmsec_ci != .
 
 	****************
