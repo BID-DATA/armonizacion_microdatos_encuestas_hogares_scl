@@ -479,12 +479,11 @@ label value condocup_ci condocup_ci
 ***categoinac_ci***
 *******************
 *Modificacion MLO, 2015 m4 (se cambió s5_14 por s6_09)
-
 gen categoinac_ci = .
-replace categoinac_ci = 1 if s04a_06 == 3 & condocup_ci == 3  // Jubilados o pensionados
+replace categoinac_ci = 1 if s04a_06 == 2 & condocup_ci == 3  // Jubilados o pensionados
 replace categoinac_ci = 2 if s04a_06 == 1 & condocup_ci == 3  // Estudiantes
-replace categoinac_ci = 3 if s04a_06 == 2 & condocup_ci == 3  // Quehaceres domésticos
-replace categoinac_ci = 4 if missing(categoinac_ci) & condocup_ci == 3  // Otros
+replace categoinac_ci = 3 if s04a_06 == 4 & condocup_ci == 3  // Quehaceres domésticos
+replace categoinac_ci = 4 if ((categoinac_ci != 1 & categoinac_ci != 2 & categoinac_ci != 3) & condocup_ci == 3) // Otros
 
 label variable categoinac_ci "Categoría de inactividad"
 
