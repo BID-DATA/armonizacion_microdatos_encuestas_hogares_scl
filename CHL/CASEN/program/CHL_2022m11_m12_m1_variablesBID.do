@@ -310,8 +310,8 @@ gen afroind_ano_c=2020
 gen condocup_ci=.
 replace condocup_ci=1 if (o1==1 | o2==1 | o3==1)
 replace condocup_ci=2 if ((o1==2 | o2==2 | o3==2) & (o6==1))
-recode condocup_ci (.=3) if edad_ci>=12 
-replace condocup_ci=4 if edad<12
+recode condocup_ci (.=3) if edad_ci>=15
+replace condocup_ci=4 if edad<15
 label var condocup_ci "Condicion de ocupación de acuerdo a def de cada pais"
 label define condocup_ci 1 "Ocupado" 2 "Desocupado" 3 "Inactivo" 4 "Menor de PET" 
 label value condocup_ci condocup_ci
