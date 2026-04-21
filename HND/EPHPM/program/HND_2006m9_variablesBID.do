@@ -822,9 +822,9 @@ label var salmm_ci "Salario minimo legal"
 *******************
 gen categoinac_ci = .
 replace categoinac_ci = 1 if ((p044 ==1 | p044==2) & condocup_ci==3)
-replace categoinac_ci = 2 if  (p044==4 & condocup_ci==3)
-replace categoinac_ci = 3 if  (p044==5 & condocup_ci==3)
-replace categoinac_ci = 4 if  ((categoinac_ci ~=1 & categoinac_ci ~=2 & categoinac_ci ~=3) & condocup_ci==3 & p044 != 3) // Exclusión de rentistas
+replace categoinac_ci = 2 if (p044==4 & condocup_ci==3)
+replace categoinac_ci = 3 if (p044==5 & condocup_ci==3)
+replace categoinac_ci = 4 if (categoinac_ci != 1 & categoinac_ci != 2 & categoinac_ci != 3) & condocup_ci == 3
 label var categoinac_ci "Categoría de inactividad"
 label define categoinac_ci 1 "jubilados o pensionados" 2 "Estudiantes" 3 "Quehaceres domésticos" 4 "Otros" 
 

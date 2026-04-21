@@ -390,7 +390,7 @@ by idh_ch, sort: egen byte nmenor1_ch=sum((relacion_ci>0 & relacion_ci<=5) & (ed
 	replace condocup_ci=1 if condact==1
 	replace condocup_ci=2 if condact==2
 	replace condocup_ci=3 if condact==3
-	replace condocup_ci=4 if (edad_ci<5)
+	replace condocup_ci=4 if (edad_ci<15) // Las preguntas sobre ocupación se hacen a personas de 5 años en adelante. Pero en la BBDD sólo existe información disponible desde los 15 años.
 
 	label var condocup_ci "Condicion de ocupación de acuerdo a def de cada pais"
 	label define condocup_ci  1 "Ocupado" 2 "Desocupado" 3 "Inactivo" 4 "Menor que 10" 
@@ -416,9 +416,9 @@ by idh_ch, sort: egen byte nmenor1_ch=sum((relacion_ci>0 & relacion_ci<=5) & (ed
 	*******************
 	gen categoinac_ci = .
 	replace categoinac_ci = 1 if ((ca514 ==1 | ca514==2) & condocup_ci==3)
-	replace categoinac_ci = 2 if  (ca514==4 & condocup_ci==3)
-	replace categoinac_ci = 3 if  (ca514==5 & condocup_ci==3)
-	replace categoinac_ci = 4 if  ((inlist(ca514,3,6,7,8,9,97)) & condocup_ci==3)
+	replace categoinac_ci = 2 if (ca514==4 & condocup_ci==3)
+	replace categoinac_ci = 3 if (ca514==5 & condocup_ci==3)
+	replace categoinac_ci = 4 if (categoinac_ci != 1 & categoinac_ci != 2 & categoinac_ci != 3) & condocup_ci == 3
 	label var categoinac_ci "Categoría de inactividad"
 	label define categoinac_ci 1 "jubilados o pensionados" 2 "Estudiantes" 3 "Quehaceres domésticos" 4 "Otros" 
 	label value categoinac_ci categoinac_ci
