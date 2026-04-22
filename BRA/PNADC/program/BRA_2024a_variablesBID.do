@@ -1345,18 +1345,14 @@ rename *, lower
 	****************
 	* lpe_ci *
 	****************
-	* 2023: https://educa.ibge.gov.br/jovens/materias-especiais/22544-brasil-atinge-menor-nivel-de-pobreza-em-2023.html
-	gen lpe_ci= 209 
-	* Línea de pobreza extrema (Banco Mundial / IBGE).
-	* 2023 = R$209 → ajustada por inflación 2024 (4,83%) ≈ R$220 mensuales
-	*gen lpe_ci = 220
+	* 2024: https://agenciadenoticias.ibge.gov.br/en/agencia-news/2184-news-agency/news/45366-8-6-million-persons-got-out-of-poverty-between-2023-and-2024
+	gen lpe_ci= 218 
+
 
 	****************
 	* ln_ci *
 	****************
-	* Línea de pobreza nacional (½ salario mínimo per cápita).
-	* Salario mínimo 2024 = R$1412 → ½ = R$706
-	gen ln_ci = 706
+	gen ln_ci = 694 
 		
 		
 /*_____________________________________________________________________________________________________*/
