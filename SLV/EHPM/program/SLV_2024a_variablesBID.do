@@ -483,9 +483,9 @@ use "`base_in'", clear
 	***tamemp_ci***
 	***************
 	gen tamemp_ci = .
-	replace tamemp_ci = 1 if r421>=1 & r421<=5 | r421a==1
-	replace tamemp_ci = 2 if r421>=6 & r421<=50 | inlist(r421a,2,3)
-	replace tamemp_ci = 3 if r421>50 | r421a>3
+	replace tamemp_ci = 1 if ((r421>=1 & r421<=5) | r421a==1)
+	replace tamemp_ci = 2 if ((r421>=6 & r421<=50) | inlist(r421a,2,3))
+	replace tamemp_ci = 3 if (r421>50 | (r421a>3 & r421a != .))
 	replace tamemp_ci = . if condocup_ci!=1
 	
 	****************
