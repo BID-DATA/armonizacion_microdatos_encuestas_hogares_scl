@@ -41,7 +41,7 @@ MLO cambio del limite de edad de condocup_ci a 5+
 
 ****************************************************************************/
 
-use `base_in', clear
+use "`base_in'", clear
 
 		*************************
 		***VARIABLES DEL HOGAR***
@@ -1196,11 +1196,15 @@ replace banomejorado_ch =0 if (bano_ch ==0 | bano_ch>=4) & bano_ch!=6
 ************
 *sinbano_ch*
 ************
-gen sinbano_ch = 3
-replace sinbano_ch = 0 if vi13!=5
-replace sinbano_ch = 1 if vi13d==2
-replace sinbano_ch = 2 if vi13d==1
-*label var sinbano_ch "= 0 si tiene baño en la vivienda o dentro del terreno"
+/*** 0 Tiene baño si (Tiene algún tipo de servicio higiénico) ***.
+*** 1 Utiliza inst. pub. o vecino o amigo si (No tiene y utiliza instalacion cercana y/o prestada) ***.
+*** 2 Defecación al aire libre si (No tiene y van al monte, campo, bota la basura en paquete + descarga directa hacia el mar, rio, lago o quebrada) ***.
+*** 3 No tiene baño sin especificar ninguna alternativa de uso si (No tiene y no especifica que alternativa a usar) */
+gen sinbano_ch = .
+replace sinbano_ch = 0 if vi13 != 5
+replace sinbano_ch = 1 if (vi13 == 5 & vi13d == 2)
+replace sinbano_ch = 2 if (vi13 == 5 & vi13d == 1)
+replace sinbano_ch = 3 if (vi13 == 5 & vi13d == .)
 
 *************
 *aguatrat_ch*
