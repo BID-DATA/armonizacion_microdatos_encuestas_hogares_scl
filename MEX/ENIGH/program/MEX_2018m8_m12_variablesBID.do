@@ -441,7 +441,7 @@ gen mot_ausen=real(motivo_aus)
 generat condocup_ci=.
 replace condocup_ci=1 if (trabajon==1) | (mot_ausen <=6)
 replace condocup_ci=2 if act_pnea1=="1" | act_pnea2=="1" 
-replace condocup_ci=3 if condocup_ci!=1 & condocup_ci!=2
+replace condocup_ci=3 if condocup_ci!=1 & condocup_ci!=2 & trabajon!=.
 replace condocup_ci=4 if edad<12
 label define condocup_ci 1"ocupados" 2"desocupados" 3"inactivos" 4"menor que 12"
 label value condocup_ci condocup_ci
@@ -1088,7 +1088,8 @@ label var tamemp_o "Tamaño de empresa-OECD"
 *******************
 ***categoinac_ci***
 *******************
-gen categoinac_ci =1 if ((act_pnea1=="2" | act_pnea2=="2") & condocup_ci==3) 
+gen categoinac_ci = .
+replace categoinac_ci = 1 if ((act_pnea1=="2" | act_pnea2=="2") & condocup_ci==3) 
 replace categoinac_ci = 2 if  ((act_pnea1=="4" | act_pnea2=="4") & condocup_ci==3) & categoinac_ci ==.
 replace categoinac_ci = 3 if  ((act_pnea1=="3" | act_pnea2=="3") & condocup_ci==3) & categoinac_ci ==.
 replace categoinac_ci = 4 if  ((categoinac_ci ~=1 & categoinac_ci ~=2 & categoinac_ci ~=3) & condocup_ci==3) & categoinac_ci ==.

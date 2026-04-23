@@ -375,7 +375,7 @@ destring  bus_trab, replace
 generat condocup_ci=.
 replace condocup_ci=1 if (trabajon==1) | (verificn>=1 & verificn<=3) | (verificn==4 & mot_ausenn <=6)
 replace condocup_ci=2 if (bus_trab>=100 &  bus_trab<=170)
-replace condocup_ci=3 if condocup_ci!=1 & condocup_ci!=2
+replace condocup_ci=3 if condocup_ci!=1 & condocup_ci!=2 & trabajon!=.
 replace condocup_ci=4 if edad<12
 label define condocup_ci 1"ocupados" 2"desocupados" 3"inactivos" 4"menor que 12"
 label value condocup_ci condocup_ci
@@ -3331,12 +3331,13 @@ label var tamemp_ci "Tamaño de empresa"
 *******************
 ***categoinac_ci***
 *******************
-gen categoinac_ci =1 if ((bus_trab>=300 & bus_trab<=370) & condocup_ci==3)
+gen categoinac_ci = .
+replace categoinac_ci = 1 if ((bus_trab>=300 & bus_trab<=370) & condocup_ci==3)
 replace categoinac_ci = 2 if  ((bus_trab>=500 & bus_trab<=570) & condocup_ci==3)
 replace categoinac_ci = 3 if  ((bus_trab>=400 & bus_trab<=470) & condocup_ci==3)
 replace categoinac_ci = 4 if  ((categoinac_ci ~=1 & categoinac_ci ~=2 & categoinac_ci ~=3) & condocup_ci==3)
 label var categoinac_ci "Categoría de inactividad"
-label define categoinac_ci 1 "jubilados o pensionados" 2 "Estudiantes" 3 "Quehaceres domésticos" 4 "Otros" 
+label define categoinac_ci 1 "jubilados o pensionados" 2 "Estudiantes" 3 "Quehaceres domésticos" 4 "Otros"
 
 *******************
 ***formal***
