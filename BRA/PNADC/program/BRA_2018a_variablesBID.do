@@ -528,9 +528,9 @@ label var area "area del pais"
 *********
 
 *AJAM: En Brasil se consideran pobres aquellas familias con una renta familiar per capita mensual menor a la mitad de un salario mínimo
-
-gen lp_ci=.	
-gen lpe_ci=.
+* https://biblioteca.ibge.gov.br/visualizacao/livros/liv101678.pdf
+gen lpe_ci = 145
+gen ln_ci= 420
 
 /*
 gen lp_ci=.			
