@@ -12,7 +12,7 @@ set more off
  
 
 
-*global ruta = "${surveysFolder}"
+global ruta = "${surveysFolder}"
 
 local PAIS CHL
 local ENCUESTA CASEN
@@ -984,7 +984,6 @@ replace bano_ch=2 if v10==2
 replace bano_ch=3 if v10==3 | v10==4 
 replace bano_ch=4 if v10==5
 replace bano_ch=6 if v10==6
-replace bano_ch=6 if bano_ch ==. & jefe_ci==1
 
 ***************
 ***banoex_ch***
@@ -1151,7 +1150,6 @@ label var freez_ch "El hogar posee congelador"
 ***************
 bysort idh_ch: egen auto_ch=sum(r10a>=1 & r10a<9)
 replace auto_ch=1 if auto_ch>=1
-replace auto_ch=. if r10a==9
 label var auto_ch "El hogar posee automovil particular"
 
 ***************

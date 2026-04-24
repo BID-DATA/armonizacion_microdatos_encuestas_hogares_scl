@@ -1133,8 +1133,7 @@ replace bano_ch=2 if v23==2
 replace bano_ch=3 if v23==3 | v23==4
 replace bano_ch=4 if v23==5
 replace bano_ch=5 if v23==7 
-replace bano_ch=6 if v23==6
-replace bano_ch=6 if bano_ch ==. & jefe_ci==1
+replace bano_ch=6 if v23==6 | v23==9
 
 ***************
 ***banoex_ch***
@@ -1308,9 +1307,8 @@ label var freez_ch "El hogar posee congelador"
 ***************
 * auto_ch     * 
 ***************
-bysort idh_ch: egen auto_ch=sum(r15==1)
+bysort idh_ch: egen auto_ch=sum(r14==1) // r15 es cantidad de autos
 replace auto_ch=1 if auto_ch>=1 & auto_ch!=.
-replace auto_ch=. if r15==9
 label var auto_ch "El hogar posee automovil particular"
 
 ***************

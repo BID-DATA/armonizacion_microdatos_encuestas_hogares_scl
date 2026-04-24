@@ -24,7 +24,7 @@ local base_out = "$ruta\harmonized\\`PAIS'\\`ENCUESTA'\data_arm\\`PAIS'_`ANO'`ro
 
                                                 
 capture log close
-log using "`log_file'", replace 
+log using `log_file', replace 
 
 
 /***************************************************************************
@@ -1854,10 +1854,10 @@ lab val atencion_ci atencion_ci
 	*******************
 	*** migrante_ci ***
 	*******************
-	
+		
 	gen byte migrante_ci = (e37 == 4)
 	label var migrante_ci "=1 si es migrante"
-	
+		
 	**********************
 	*** migantiguo5_ci ***
 	**********************
@@ -1876,12 +1876,13 @@ lab val atencion_ci atencion_ci
 	**********************
 	*** migrantiguo5_ci ***
 	**********************
-	
-	gen migrantiguo5_ci =.
-	replace migrante_ci = 1 if (migantiguo5_ci == 1)
-	replace migrante_ci = 0 if (migantiguo5_ci == 0 & migrante_ci == 1)
+
+	gen migrantiguo5_ci = .
+	replace migrantiguo5_ci = 1 if (migrante_ci == 1 & e38_1>=5)
+	replace migrantiguo5_ci = 1 if migrante_ci == 1 & (e37==1 | e37==2 | e37==3)
+	replace migrantiguo5_ci = 0 if migrante_ci == 1 & e236==4
 	label var migrantiguo5_ci "=1 si es migrante antiguo (5 anos o mas)"
-		
+	
 	**********************
 	*** miglac_ci ***
 	**********************
@@ -1890,13 +1891,7 @@ lab val atencion_ci atencion_ci
 	replace miglac_ci = 0 if miglac_ci != 1 & migrante_ci == 1
 	replace miglac_ci = . if migrante_ci == 0
 	label var miglac_ci "=1 si es migrante proveniente de un pais LAC"
-	
-	
-	
-	drop e246_1  
-	drop f108_1
-	
-	
+		
 	
 ******************************
 * Variables SPH - PMTC y PNC *
@@ -2006,6 +2001,6 @@ rename f72_2 codindustria
 rename f71_2 codocupa
 compress
 
-saveold "`base_out'", v(12) replace
+saveold "`base_out'", replace
 
 log close

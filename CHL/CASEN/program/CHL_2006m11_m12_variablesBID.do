@@ -999,7 +999,6 @@ replace bano_ch=2 if v6==2
 replace bano_ch=3 if v6==3 | v6==4 
 replace bano_ch=4 if v6==5
 replace bano_ch=6 if v6==6 | v6==9
-replace bano_ch=6 if bano_ch ==. & jefe_ci==1
 
 ***************
 ***banoex_ch***
@@ -1154,9 +1153,8 @@ gen freez_ch=.
 *by idh_ch: egen auto_ch=sum(r9a>=1) /* for 2006  */
 *replace auto_ch=1 if auto_ch>=1
 
-gen auto_ch=0
-replace auto_ch=1 if r9a>=1 & r9a<9
-replace auto_ch=. if r9a==. | r9a==9
+bys idh_ch: egen byte auto_ch=sum(r9a>0 & r9a!=. & r9a!=9)
+replace auto_ch=1 if auto_ch>=1 & auto_ch!=.
 
 ***************
 * compu_ch    * 

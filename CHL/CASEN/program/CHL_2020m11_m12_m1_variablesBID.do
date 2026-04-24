@@ -1038,7 +1038,6 @@ replace bano_ch=3 if v23_sistema==3|v23_cajon==4
 replace bano_ch=4 if v23_cajon==5
 replace bano_ch=5 if v23_sistema==7 
 replace bano_ch=6 if v23_cajon==6
-replace bano_ch=6 if bano_ch ==. & jefe_ci==1
 
 ***************
 ***banoex_ch***
