@@ -1409,7 +1409,7 @@ replace bano_ch=1 if dh06==1
 replace bano_ch=2 if dh06==2
 replace bano_ch=3 if ( dh06==6 | dh06==7 )
 replace bano_ch=4 if (dh06==3 | dh06==4)
-replace bano_ch=6 if dh06==9 | dh06==5 | dh06==8
+replace bano_ch=6 if dh06==9 | dh06==5 | dh06==8 | dh06==.
 
 ***************
 ***banoex_ch***

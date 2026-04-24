@@ -1756,13 +1756,12 @@ use `base_in', clear
 	*/
 	
 	gen bano_ch=.
-	replace bano_ch=0 if inlist(h06,2) //No tiene acceso a servicios sanitarios
- 	replace bano_ch=1 if inlist(h07,1) //Inodoro conectado a alcantarilla
-	replace bano_ch=2 if inlist(h07,2) //Inodoro a pozo séptico
-	replace bano_ch=3 if inlist(h07,5) // Letrina
-	replace bano_ch=4 if inlist(h07,3) // Inodoro con desague a río/laguna/mar
-	replace bano_ch=5 if inlist(h07,4,6,7) // Instalaciones no mejoradas
-	replace bano_ch=6 if inlist(h07,8) // Instalaciones no clasificada
+	replace bano_ch=0 if inlist(H06,2) //No tiene acceso a servicios sanitarios
+ 	replace bano_ch=1 if inlist(H07,1) //Inodoro conectado a alcantarilla
+	replace bano_ch=2 if inlist(H07,2) //Inodoro a pozo séptico
+	replace bano_ch=3 if inlist(H07,6,7) // Letrina
+	replace bano_ch=4 if inlist(H07,3,4) // Inodoro con desague a río/laguna/mar
+	replace bano_ch=6 if inlist(H07,8,5,.) // Instalaciones no clasificada 
 
 	label define bano_ch 			0 "Sin instalaciones" ///
 									1 "Inodoro a red de desagüe" ///

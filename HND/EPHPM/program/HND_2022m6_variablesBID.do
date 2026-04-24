@@ -1196,10 +1196,9 @@ egen ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci)
 	replace bano_ch=0 if inlist(h06,2)
 	replace bano_ch=1 if inlist(h07,1)
 	replace bano_ch=2 if inlist(h07,2)
-	replace bano_ch=3 if inlist(h07,5)
-	replace bano_ch=4 if inlist(h07,3)
-	replace bano_ch=5 if inlist(h07,4,6,7)
-	replace bano_ch=6 if inlist(h07,8)
+	replace bano_ch=3 if inlist(h07,6,7)
+	replace bano_ch=4 if inlist(h07,3,4)
+	replace bano_ch=6 if inlist(h07,8,5,.) 
 
 	label define bano_ch 			0 "Sin instalaciones" ///
 									1 "Inodoro a red de desagüe" ///
