@@ -571,9 +571,8 @@ use "`base_in'", clear
 	replace categoinac_ci = 1 if (ra06ya09 == 7 & condocup_ci == 3) //Jubilado o Pensionado
 	replace categoinac_ci = 2 if  (ra06ya09 == 1 & condocup_ci == 3) //Estudiante
 	replace categoinac_ci = 3 if  (ra06ya09 == 2 & condocup_ci == 3) //Labores del Hogar
-	replace categoinac_ci = 4 if  !inlist(ra06ya09,1,2,7) & condocup_ci == 3 //Otros Inactivos
-	replace categoinac_ci = . if ra06ya09==. //Reemplazando Missings
-	
+	replace categoinac_ci = 4 if (categoinac_ci!=1 & categoinac_ci!=2 & categoinac_ci!=3) & condocup_ci == 3 //Otros Inactivos
+
 	**********
 	***emp_ci: Variable dicotómica que identifica con valor 1 a los ocupados y 0 a los no ocupados y mantiene con valores perdidos a los que se muestran en la encuesta con valores perdidos*
 	**********

@@ -873,10 +873,26 @@ label var tamemp_ci "Tamaño de empresa"
 
 *******************
 ***categoinac_ci*** 
-*******************
-gen categoinac_ci =1 if ((a09==14 | a09==15) & condocup_ci==3)
-replace categoinac_ci = 2 if  (a09==7 & condocup_ci==3)
-replace categoinac_ci = 3 if  (a09==6 & condocup_ci==3)
+******************* 
+ /* Variable de inactividad: Información obtenida del diccionario, en la base está con una etiqueta distinta
+a06: ¿Cuál es la razón principal por la que no habría podido empezar a trabajar? (a diferencia de a09, a06 la responden inactivos)
+           0 na                     
+           1 no quiso trabajar m�s  
+           2 demasiado joven        
+           3 labores del hogar      
+           4 estudiante             
+           5 enfermo                
+           6 anciano, discapacitado 
+           7 rentista               
+           8 jubilado               
+           9 pensionado             
+          10 motivos familiares     
+          11 otra raz�n             
+          99 nr  */     
+gen categoinac_ci = .
+replace categoinac_ci = 1 if ((a06==8 | a06==9) & condocup_ci==3)
+replace categoinac_ci = 2 if  (a06==4 & condocup_ci==3)
+replace categoinac_ci = 3 if  (a06==3 & condocup_ci==3)
 replace categoinac_ci = 4 if  ((categoinac_ci ~=1 & categoinac_ci ~=2 & categoinac_ci ~=3) & condocup_ci==3)
 label var categoinac_ci "Categoría de inactividad"
 label define categoinac_ci 1 "jubilados o pensionados" 2 "Estudiantes" 3 "Quehaceres domésticos" 4 "Otros" 
