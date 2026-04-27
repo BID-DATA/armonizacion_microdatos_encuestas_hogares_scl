@@ -487,6 +487,9 @@ use "`base_in'", clear
 	replace tamemp_ci = 2 if ((r421>=6 & r421<=50) | inlist(r421a,2,3))
 	replace tamemp_ci = 3 if (r421>50 | (r421a>3 & r421a != .))
 	replace tamemp_ci = . if condocup_ci!=1
+	label var tamemp_ci "# empleados en la empresa segun rangos"
+	label define tamemp_ci 1 "Pequena" 2 "Mediana" 3 "Grande" 
+	label value tamemp_ci tamemp_ci
 	
 	****************
 	**cotizando_ci**
@@ -526,11 +529,14 @@ use "`base_in'", clear
 	**tipocontrato_ci**
 	*******************
 	gen byte tipocontrato_ci = .
+	replace tipocontrato_ci = 0 if (r419==6 ) & categopri_ci==3
 	replace tipocontrato_ci = 1 if r419==1 & categopri_ci == 3
 	replace tipocontrato_ci = 2 if inlist(r419,2,3,4,5) & categopri_ci == 3
-	replace tipocontrato_ci = 3 if r419==6 & categopri_ci == 3
-	replace tipocontrato_ci = 0 if r419<7 & categopri_ci == 3 & tipocontrato_ci!=1 & tipocontrato_ci!=2 & tipocontrato_ci!=3
-
+	replace tipocontrato_ci = 3 if r419==7 & categopri_ci == 3
+	label var tipocontrato_ci "Tipo de contrato segun su duracion en act principal"
+	label define tipocontrato_ci 0 "Con contrato" 1 "Permanente/indefinido" 2 "Temporal" 3 "Sin contrato/verbal" 
+	label value tipocontrato_ci tipocontrato_ci
+	
 	**************
 	***ocupa_ci***
 	**************
