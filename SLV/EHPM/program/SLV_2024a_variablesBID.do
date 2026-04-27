@@ -363,9 +363,9 @@ use "`base_in'", clear
 	*******************
 	gen byte categoinac_ci = .
 	replace categoinac_ci = 1 if (r409==13 & condocup_ci == 3)
-	replace categoinac_ci = 2 if  (r409==8 & condocup_ci == 3)
-	replace categoinac_ci = 3 if  (r409==12 & condocup_ci == 3)
-	replace categoinac_ci = 4 if  ((categoinac_ci != 1 | categoinac_ci != 2 | categoinac_ci != 3) & condocup_ci == 3)
+	replace categoinac_ci = 2 if ((r409==8 | r409==15) & condocup_ci == 3)
+	replace categoinac_ci = 3 if (r409==12 & condocup_ci == 3)
+	replace categoinac_ci = 4 if ((categoinac_ci != 1 & categoinac_ci != 2 & categoinac_ci != 3) & condocup_ci == 3)
 
 	************
 	***emp_ci***
