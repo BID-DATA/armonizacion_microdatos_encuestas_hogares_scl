@@ -1377,16 +1377,17 @@ label var tipocontrato_ci "Tipo de contrato segun su duracion en act principal"
 label define tipocontrato_ci 0 "Con contrato" 1 "Permanente/indefinido" 2 "Temporal" 3 "Sin contrato/verbal" 
 label value tipocontrato_ci tipocontrato_ci
 
-
 *************
 *tamemp_ci***
 *************
-gen tamemp_ci=1 if r421>=1 & r421<=5
-replace tamemp_ci=2 if r421>=6 & r421<=50
-replace tamemp_ci=3 if r421>50 & r421!=.
+gen tamemp_ci = .
+replace tamemp_ci = 1 if (r421>=1 & r421<=5)
+replace tamemp_ci = 2 if (r421>=6 & r421<=50)
+replace tamemp_ci = 3 if (r421>50 & r421 != .)
+replace tamemp_ci = . if condocup_ci!=1
 label var tamemp_ci "# empleados en la empresa segun rangos"
-	label define tamemp_ci 1 "Pequena" 2 "Mediana" 3 "Grande" 
-	label value tamemp_ci tamemp1_ci
+label define tamemp_ci 1 "Pequena" 2 "Mediana" 3 "Grande" 
+label value tamemp_ci tamemp_ci
 
 *************
 **pension_ci*

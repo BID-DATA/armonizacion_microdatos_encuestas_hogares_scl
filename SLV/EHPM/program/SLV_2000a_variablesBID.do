@@ -2386,14 +2386,14 @@ label value tipocontrato_ci tipocontrato_ci
 *************
 *tamemp_ci***
 *************
-gen tamemp_ci=1 if tamest>=1 & tamest<=5
-replace tamemp_ci=2 if tamest>=6 & tamest<=50
-replace tamemp_ci=3 if tamest>50 & tamest!=.
+gen tamemp_ci = .
+replace tamemp_ci = 1 if tamest>=1 & tamest<=5
+replace tamemp_ci = 2 if tamest>=6 & tamest<=50
+replace tamemp_ci = 3 if tamest>50 & tamest!=.
+replace tamemp_ci = . if condocup_ci!=1
 label var tamemp_ci "# empleados en la empresa segun rangos"
-	label define tamemp_ci 1 "Pequena" 2 "Mediana" 3 "Grande" 
-	label value tamemp_ci tamemp1_ci
-
-
+label define tamemp_ci 1 "Pequena" 2 "Mediana" 3 "Grande" 
+label value tamemp_ci tamemp_ci
 
 *************
 **pension_ci*
