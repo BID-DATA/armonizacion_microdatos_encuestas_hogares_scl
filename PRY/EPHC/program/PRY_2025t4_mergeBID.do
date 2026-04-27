@@ -1,4 +1,4 @@
-* (Version Stata 18)
+* (Version Stata 19)
 
 clear all
 set more off
@@ -14,12 +14,12 @@ capture log close
 *________________________________________________________________________________________________________________*
 
  
-global ruta = "${surveysFolder}\\survey\PRY\EPHC\2025\t4\data_orig"
 
 local PAIS PRY
 local ENCUESTA EPHC
 local ANO "2025"
 local ronda t4
+global ruta = "${surveysFolder}\\survey\PRY\EPHC\\`ANO'\t4\data_orig"
 
 local log_file = "${surveysFolder}\harmonized\\`PAIS'\\`ENCUESTA'\\log\\`PAIS'_`ANO'`ronda'_mergeBID.log"
 local base_out = "${surveysFolder}\survey\\`PAIS'\\`ENCUESTA'\\`ANO'\\`ronda'\\data_merge\\`PAIS'_`ANO'`ronda'.dta"
@@ -43,7 +43,7 @@ Fecha de última modificación:
 *Convierto las bases descargadas a dta, les hago rename y las sorteo:
 
 /*Vivienda e inventario de bienes duraderos*/
-import spss "$ruta\REG01_EPHC_ANUAL_2025.sav", clear 
+import spss "$ruta\REG01_EPHC_ANUAL_`ANO'.sav", clear 
 
 * Creo que hubo problemas en levantar los "labels"
 * " invalid numeric value for value label labels22 
@@ -73,12 +73,13 @@ foreach v of varlist `r(varlist)' {
         capture label values `v' `v'_lbl
     }
 }
-save "$ruta\vivienda_ephc2025.dta", replace
+save "$ruta\vivienda_ephc`ANO'.dta", replace
+
 *****************************************************************************************************
 
 
 /*Ingreso familiar*/
-import spss "$ruta\INGREFAM_EPHC_ANUAL_2025.sav", clear
+import spss "$ruta\INGREFAM_EPHC_ANUAL_`ANO'.sav", clear
 rename *, lower
 cap sort upm nvivi nhoga // asegurando orden por upm nvivi nhoga
 isid upm nvivi nhoga   // aseguro uniqueness
@@ -99,12 +100,12 @@ foreach v of varlist `r(varlist)' {
     }
 }
 
-save "$ruta\ingrefam_ephc2025.dta", replace
+save "$ruta\ingrefam_ephc`ANO'.dta", replace
+
 *****************************************************************************************************
 
-
 /*Poblacion*/
-import spss "$ruta\REG02_EPHC_ANUAL_2025.sav", clear // Ingresos individuales
+import spss "$ruta\REG02_EPHC_ANUAL_`ANO'.sav", clear // Ingresos individuales
 * Creo que hubo problemas en levantar los "labels"
 * sale varias veces "invalid numeric value for value label"
 
@@ -139,12 +140,13 @@ foreach v of varlist `r(varlist)' {
     }
 }
 
-save "$ruta\poblacion_ephc2025.dta", replace
+save "$ruta\poblacion_ephc`ANO'.dta", replace
+
 *****************************************************************************************************
 
 /*4to trimestre - trabajo */
 *Solo responden personas de 10 años a más*/
-import spss "$ruta\75003-REG02_EPHC_4º Trim 2025.SAV", clear 
+import spss "$ruta\75003-REG02_EPHC_4º Trim `ANO'.SAV", clear 
 * Creo que hubo problemas en levantar los "labels"
 * sale varias veces "invalid numeric value for value label"
 rename *, lower
@@ -174,53 +176,36 @@ foreach v of varlist `r(varlist)' {
     }
 }
 
-save "$ruta\reg02_ephc_t4_2025.dta", replace
+save "$ruta\reg02_ephc_t4_`ANO'.dta", replace 
 
-*****************************************************************************************************
 
 
 *****************************************************************************************************
 /*Unifico los modulos de interes: vivienda, ingresos y personas*/
  
 
-use "$ruta\vivienda_ephc2025.dta", clear // vivienda
-cap sort upms nvivis nhogas
-merge 1:1 upms nvivis nhogas using "$ruta\ingrefam_ephc2025.dta" // merge ingreso familiar
-* todos  Matched  17,092  (_merge==3) --  17,092 observaciones de hogares
+use "$ruta\reg02_ephc_t4_`ANO'.dta", clear
 
-keep if _merge == 3 
-drop _merge
-sort upms nvivis nhogas 
- 
- 
-merge 1:m upms nvivis nhogas  using "$ruta\poblacion_ephc2025.dta" // poblacion + ingresos - base individual
-* todos Matched   55,934  (_merge==3) --  55,934 observaciones de individuos
-
+cap sort upms nvivis nhogas l02s
+merge m:1 upms nvivis nhogas using "$ruta\vivienda_ephc`ANO'.dta"
 keep if _merge == 3
 drop _merge
-sort upms nvivis nhogas l02s 
+sort upms nvivis nhogas l02s
  
-merge m:m upms nvivis nhogas l02s using "$ruta\reg02_ephc_t4_2025.dta" // + Base del 4to Trimestre
-* todos Matched  15,555    (_merge==3) --\observaciones de individuos
-* todos Matched   (_merge==3) --\observaciones de individuos
-
+ 
+merge m:1 upms nvivis nhogas using "$ruta\ingrefam_ephc`ANO'.dta"
 keep if _merge == 3
-*Al correr este codigo me paso de tener  55,934 observaciones a  15,555  que provienen de la base reg02_ephc_t4_2025.dta que es la del 4to trimestre. 40379 observaciones de la base master hasta este punto no hacen match con la del 4to trimeste.
 drop _merge
-sort upms nvivis nhogas l02s 
-
-save "`base_out'", replace 
-* 16,7382  observaciones de personas - nivel individual 
-
-/* Se puede limpiar la ruta de las bases recien creadas*/
-
-erase "$ruta\vivienda_ephc2025.dta"
-erase "$ruta\ingrefam_ephc2025.dta"
-erase "$ruta\poblacion_ephc2025.dta"
-erase "$ruta\reg02_ephc_t4_2025.dta"
-
-
-capture log close
-
+sort upms nvivis nhogas l02s
  
- 
+merge m:m upms nvivis nhogas l02s using "$ruta\poblacion_ephc`ANO'.dta"
+keep if _merge == 3 // 15,555 observaciones se mantienen
+drop _merge
+sort upms nvivis nhogas l02s
+
+save "`base_out'", replace
+
+log close
+
+
+
