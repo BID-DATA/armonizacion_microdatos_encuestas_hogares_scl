@@ -380,9 +380,9 @@ rename *, lower
 	*************
 	gen condocup_ci = .
 	replace condocup_ci = 1 if (v4001 == 1 | v4002 == 1 | v4003 == 1 | v4004 == 1 | v4005 == 1)
-	replace condocup_ci = 2 if  v4005 == 2 & (v4071 == 1 & v4072a! = 9) /*tomaron alguna providencia en la semana de referencia*/
-	replace condocup_ci = 3 if condocup_ci == .
-	replace condocup_ci = 4 if edad_ci < 10
+	replace condocup_ci = 2 if (v4001 == 2 | v4002 == 2 | v4003 == 2 | v4004 == 2 | v4005 == 2) & (v4071 == 1 & v4072a! = 9) /*tomaron alguna providencia en la semana de referencia*/
+	replace condocup_ci = 3 if condocup_ci != 1 & condocup_ci != 2 & edad >= 14
+	replace condocup_ci = 4 if edad_ci < 14 // Edad que aparece en el cuestionario
 
 	***********************
 	*** categoinac_ci   ***
@@ -391,17 +391,17 @@ rename *, lower
 	* Solo para inactivos
 	gen byte categoinac_ci = .  
 
-	* 1. Jubilados / pensionados (v5004a == 1)
+	* 1. Jubilados / pensionados: Recibe pension: V5004A == 1
 	replace categoinac_ci = 1 if condocup_ci == 3 & v5004a == 1
 
-	* 2. Estudiantes (asiste a la escuela)
-	replace categoinac_ci = 2 if condocup_ci == 3 & v3002 == 1
+	* 2. Estudiantes: motivo de inactividad VD4030 == 2
+	replace categoinac_ci = 2 if condocup_ci == 3 & vd4030 == 2
 
-	* 3. Quehaceres domésticos: motivo VD4030 == 1
+	* 3. Quehaceres domésticos: motivo de inactividad VD4030 == 1
 	replace categoinac_ci = 3 if condocup_ci == 3 & vd4030 == 1
 
 	* 4. Otros inactivos: todo el resto de inactivos sin categoría asignada
-	replace categoinac_ci = 4 if condocup_ci == 3 & missing(categoinac_ci)
+	replace categoinac_ci = 4 if condocup_ci == 3 & (categoinac_ci!=1 & categoinac_ci!=2 & categoinac_ci!=3)
 	
 	**********
 	***emp_ci*
