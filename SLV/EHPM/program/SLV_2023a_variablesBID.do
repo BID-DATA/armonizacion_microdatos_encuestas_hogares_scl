@@ -405,8 +405,8 @@ label variable miembros_ci "Miembro del hogar"
 gen condocup_ci=.
 replace condocup_ci=1 if r403==1 | r405==1 
 replace condocup_ci=2 if condocup_ci!=1 & r407==1
-replace condocup_ci=3 if (condocup_ci!=1 & condocup_ci!=2) & edad_ci>=15
-replace condocup_ci=4 if edad_ci<15
+replace condocup_ci=3 if (condocup_ci!=1 & condocup_ci!=2) & edad_ci>=5
+replace condocup_ci=4 if edad_ci<5  // Cuestionario realiza la pregunta desde los 5 años
 label define condocup_ci 1"ocupados" 2"desocupados" 3"inactivos" 4"menor de PET"
 label value condocup_ci condocup_ci
 label var condocup_ci "Condicion de ocupacion utilizando definicion del pais"

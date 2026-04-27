@@ -414,8 +414,8 @@ label var condocup_ci "Condicion de ocupacion utilizando definicion del pais"
 gen condocup_ci=.
 replace condocup_ci=1 if r403==1 | r405==1 
 replace condocup_ci=2 if condocup_ci!=1 & r407==1
-replace condocup_ci=3 if (condocup_ci!=1 & condocup_ci!=2) & edad_ci>=15
-replace condocup_ci=4 if edad_ci<15
+replace condocup_ci=3 if (condocup_ci!=1 & condocup_ci!=2) & edad_ci>=5
+replace condocup_ci=4 if edad_ci<5 // Cuestionario realiza la pregunta desde los 5 años
 
 /*gen condocup_ci=.
 replace condocup_ci=1 if r403==1 | r404<=9 | (r405==1 & r406<=11) | (r405b==1 & r406b<=2) 
