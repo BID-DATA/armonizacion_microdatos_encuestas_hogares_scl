@@ -20,8 +20,7 @@ local ANO "2001"
 local ronda a 
 
 local log_file = "$ruta\harmonized\\`PAIS'\\`ENCUESTA'\log\\`PAIS'_`ANO'`ronda'_variablesBID.log"
-local base_in  = "$ruta\survey\\`PAIS'\\`ENCUESTA'\\`ANO'\\`ronda'\data_merge\\`PAIS'_`ANO'`ronda'.dta"
-***local base_in  = "$ruta\survey\\`PAIS'\\`ENCUESTA'\\`ANO'\\`ronda'\data_orig\\`PAIS'_`ANO'`ronda'.dta"
+local base_in  = "$ruta\survey\\`PAIS'\\`ENCUESTA'\\`ANO'\\`ronda'\data_orig\\`PAIS'_`ANO'`ronda'.dta"
 local base_out = "$ruta\harmonized\\`PAIS'\\`ENCUESTA'\data_arm\\`PAIS'_`ANO'`ronda'_BID.dta"
    
 
@@ -1679,7 +1678,7 @@ replace tamemp_ci = 2 if tamest>=6 & tamest<=50
 replace tamemp_ci = 3 if tamest>50 & tamest!=.
 replace tamemp_ci = . if condocup_ci!=1
 label var tamemp_ci "# empleados en la empresa segun rangos"
-label define tamemp_ci  "Pequena" 2 "Mediana" 3 "Grande" 
+label define tamemp_ci 1 "Pequena" 2 "Mediana" 3 "Grande" 
 label value tamemp_ci tamemp_ci
 
 *************
