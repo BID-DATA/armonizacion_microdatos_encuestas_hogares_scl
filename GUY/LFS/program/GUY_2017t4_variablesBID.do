@@ -1409,10 +1409,11 @@ label var salmm_ci "Salario minimo legal"
 **categoinac_ci*
 **************
 
-gen categoinac_ci=1 if q2_20==4
-replace categoinac_ci=2 if q2_20==1
-replace categoinac_ci=3 if q2_20==2
-replace categoinac_ci=4 if (q2_20==3 | q2_20==5 | q2_20==6 | q2_20==7 | q2_20==8)
+gen categoinac_ci=.
+replace categoinac_ci=1 if q2_20==4 & condocup_ci==3
+replace categoinac_ci=2 if q2_20==1 & condocup_ci==3
+replace categoinac_ci=3 if q2_20==2 & condocup_ci==3
+replace categoinac_ci=4 if (categoinac_ci!=1 & categoinac_ci!=2 & categoinac_ci!=3)) & condocup_ci==3
 
 label var categoinac_ci "Condición de inactividad"
 label define categoinac_ci 1 "jubilado/pensionado" 2 "estudiante" 3 "quehaceres_domesticos" 4 "otros_inactivos" 
