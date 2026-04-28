@@ -1522,14 +1522,16 @@ tab tamemp_ci [iw= fac15_e]
 *************
 *categoinac_ci
 *************
-gen categoinac_ci=1 if p08_16==11 | p08_16==12
+gen categoinac_ci=.
 label var  categoinac_ci "Condición de Inactividad" 
+*Jubilados/pensionado
+replace categoinac_ci=1 if (p08_16==11 | p08_16==12) & condocup_ci==3
 *Estudiantes
-replace categoinac_ci=2 if p08_16==13
+replace categoinac_ci=2 if p08_16==13 & condocup_ci==3
 *Quehaceres del Hogar
-replace categoinac_ci=3 if p08_16==14
+replace categoinac_ci=3 if p08_16==14 & condocup_ci==3
 *Otra razon
-replace categoinac_ci=4 if p08_16==15 | p08_16==16 | p08_16==17
+replace categoinac_ci=4 if (categoinac_ci!=1 & categoinac_ci!=2 & categoinac_ci!=3) & condocup_ci==3
 label define inactivo 1"Pensionado y otros" 2"Estudiante" 3"Hogar" 4"Otros"
 label values categoinac_ci inactivo
 

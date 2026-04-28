@@ -456,7 +456,7 @@ label value condocup_ci condocup_ci
 * Alternativa 2: condicionado a la busqueda de empleo. MGD 06/06/2014
 gen condocup_ci=.
 replace condocup_ci=1 if p10_18>= 1 & p10_18<= 5 
-replace condocup_ci=2 if  (p10_18>=6 & p10_18<=8) | p10_18==16
+replace condocup_ci=2 if  (p10_18>=6 & p10_18<=8)  //| p10_18==1: Son otros inactivos
 recode condocup_ci .=3 if  edad_ci>=10
 recode condocup_ci .=4 if  edad_ci<10
 label var condocup_ci "Condicion de ocupación de acuerdo a def de cada pais"
@@ -1272,14 +1272,16 @@ tab tamemp_ci [iw= fac15_e]
 *categoinac_ci
 *************
 
-gen categoinac_ci=1 if p10_18==11 | p10_18==12
+gen categoinac_ci=.
 label var  categoinac_ci "Condición de Inactividad" 
+*Jubilados/pensionado
+replace categoinac_ci=1 if p10_18==11 & condocup_ci==3
 *Estudiantes
-replace categoinac_ci=2 if p10_18==13
+replace categoinac_ci=2 if p10_18==12 & condocup_ci==3
 *Quehaceres del Hogar
-replace categoinac_ci=3 if p10_18==14
+replace categoinac_ci=3 if p10_18==13 & condocup_ci==3
 *Otra razon
-replace categoinac_ci=4 if p10_18==15 | p10_18==16 | p10_18==17
+replace categoinac_ci=4 if (categoinac_ci!=1 & categoinac_ci!=2 & categoinac_ci!=3) & condocup_ci==3
 label define inactivo 1"Pensionado y otros" 2"Estudiante" 3"Hogar" 4"Otros"
 label values categoinac_ci inactivo
 

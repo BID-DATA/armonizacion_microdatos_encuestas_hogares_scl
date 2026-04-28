@@ -409,10 +409,11 @@ use `base_in', clear
 	*************
 	*categoinac_ci
 	*************
-	gen categoinac_ci=1 if p20==12
-	replace categoinac_ci=2 if p20==7
-	replace categoinac_ci=3 if p20==5 | p20==6 | p20==10
-	replace categoinac_ci=4 if p20==1 | p20==2 | p20==3 |p20==4 | p20==8 | p20==9 |p20==11 | p20==13 | p20==14
+	gen categoinac_ci= . 
+	replace categoinac_ci=1 if (p10_18==11 | p10_18==12) & condocup_ci==3
+	replace categoinac_ci=2 if p10_18==13 & condocup_ci==3
+	replace categoinac_ci=3 if p10_18==14 & condocup_ci==3
+	replace categoinac_ci=4 if (categoinac_ci!=1 & categoinac_ci!=2 & categoinac_ci!=3) & condocup_ci==3
 
 	label var  categoinac_ci "Condición de Inactividad" 
 	label define inactivo 1"Pensionado y otros" 2"Estudiante" 3"Hogar" 4"Otros"

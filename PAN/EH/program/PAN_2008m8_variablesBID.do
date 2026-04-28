@@ -585,15 +585,16 @@ label values tamemp_ci tamaño
 tab tamemp_ci [iw= fac15_e]
 
 *Genera la variable para clasificar a los inactivos
-*Jubilados, pensionados e incapacitados
-gen categoinac_ci=1 if p10_18==11 | p10_18==12
+gen categoinac_ci=.
 label var  categoinac_ci "Condición de Inactividad" 
+*Jubilados, pensionados e incapacitados
+replace categoinac_ci=1 if (p10_18==11 | p10_18==12) & condocup_ci==3
 *Estudiantes
-replace categoinac_ci=2 if p10_18==13
+replace categoinac_ci=2 if p10_18==13 & condocup_ci==3
 *Quehaceres del Hogar
-replace categoinac_ci=3 if p10_18==14
+replace categoinac_ci=3 if p10_18==14 & condocup_ci==3
 *Otra razon
-replace categoinac_ci=4 if p10_18==15 | p10_18==16 | p10_18==17
+replace categoinac_ci=4 if (categoinac_ci!=1 & categoinac_ci!=2 & categoinac_ci!=3) & condocup_ci==3
 label define inactivo 1"Pensionado y otros" 2"Estudiante" 3"Hogar" 4"Otros"
 label values categoinac_ci inactivo
 
