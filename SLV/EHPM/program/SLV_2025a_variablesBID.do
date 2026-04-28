@@ -501,8 +501,8 @@ use "`base_in'", clear
 	/* rama_ci solo llega a 9 en esta encuesta.
 	   Se usa r420 (sector) que existe en el dataset: 1=público, 2=privado */
 	gen byte spublico_ci = .
-	replace spublico_ci = 1 if emp_ci == 1 & r420 == 1
-	replace spublico_ci = 0 if emp_ci == 1 & r420 == 2
+	replace spublico_ci = 1 if emp_ci == 1 & r420 == 2
+	replace spublico_ci = 0 if emp_ci == 1 & r420 == 1
 
 	*************
 	**tamemp_ci**
