@@ -845,8 +845,8 @@ label values tamemp_ci tamaño
 
 gen categoinac_ci = .
 replace categoinac_ci = 1 if (q55 == 7 & condocup_ci==3)
-replace categoinac_ci = 2 if (q21a == 5 & condocup_ci==3)
-replace categoinac_ci = 3 if (q21a == 4 & condocup_ci==3)
+replace categoinac_ci = 2 if (q21a == 5 & condocup_ci==3 & categoinac_ci==.)
+replace categoinac_ci = 3 if (q21a == 4 & condocup_ci==3 & categoinac_ci==.)
 replace categoinac_ci = 4 if ((categoinac_ci ~=1 & categoinac_ci ~=2 & categoinac_ci ~=3) & condocup_ci==3)
 label var categoinac_ci "Categoría de inactividad"
 label define categoinac_ci 1 "jubilados o pensionados" 2 "Estudiantes" 3 "Quehaceres domésticos" 4 "Otros"
