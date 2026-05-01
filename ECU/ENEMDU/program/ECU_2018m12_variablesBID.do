@@ -381,8 +381,11 @@ use `base_in', clear
 	***emp_ci*
 	**********
 	gen byte emp_ci = .
-	replace emp_ci = (condocup_ci == 1) if condocup_ci != .
-
+	replace emp_ci = (condocup_ci == 1) if (condocup_ci != . & condocup_ci != 4)
+	label var emp_ci "Ocupado (empleado)"
+	label define emp_ci 0"No ocupado" 1"Ocupado", add
+	label value emp_ci emp_ci
+	
 	*************
 	**cesante_ci* 
 	*************
@@ -429,7 +432,11 @@ use `base_in', clear
 	*****************
 	***desalent_ci***
 	*****************
-	gen desalent_ci = (p32 < 11 & (p34 == 6 | p34 == 7))
+	gen byte desalent_ci = .
+	replace desalent_ci = (p32 == 11 & (p34 == 6 | p34 == 7) & condocup_ci == 3)
+	label var desalent_ci "Desalentados"
+	label define desalent_ci 0"No" 1"Si", add
+	label value desalent_ci desalent_ci
 	
 	*****************
 	***horaspri_ci***
@@ -1015,8 +1022,8 @@ use `base_in', clear
 	replace bano_ch = 1 if vi09 == 1
 	replace bano_ch = 2 if vi09 == 2
 	replace bano_ch = 3 if vi09 == 3
+	replace bano_ch = 4 if vi09 == 5
 	replace bano_ch = 6 if vi09 == 4
-	
 
 	***************
 	***banoex_ch***
