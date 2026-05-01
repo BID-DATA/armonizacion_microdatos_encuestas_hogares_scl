@@ -555,8 +555,11 @@ label var salmm_ci "Salario minimo legal"
 ************
 ***emp_ci***
 ************
-gen byte emp_ci=(condocup_ci==1)
+gen byte emp_ci = .
+replace emp_ci = (condocup_ci == 1) if (condocup_ci != . & condocup_ci != 4)
 label var emp_ci "Ocupado (empleado)"
+label define emp_ci 0"No ocupado" 1"Ocupado", add
+label value emp_ci emp_ci
 
 ****************
 ***desemp_ci***
@@ -571,11 +574,14 @@ gen pea_ci=0
 replace pea_ci=1 if emp_ci==1 |desemp_ci==1
 label var pea_ci "Población Económicamente Activa"
 
-	*****************
-	***desalent_ci***
-	*****************
-	gen desalent_ci=(p34==6 | p34==7)
-	label var desalent_ci "Trabajadores desalentados"
+*****************
+***desalent_ci***
+*****************
+gen byte desalent_ci = .
+replace desalent_ci = (p32 == 11 & (p34 == 6 | p34 == 7) & condocup_ci == 3)
+label var desalent_ci "Desalentados"
+label define desalent_ci 0"No" 1"Si", add
+label value desalent_ci desalent_ci
 	
 	*****************
 	***horaspri_ci***
