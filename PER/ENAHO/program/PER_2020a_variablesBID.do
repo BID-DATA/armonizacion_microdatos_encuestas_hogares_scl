@@ -478,14 +478,14 @@ label variable miembros_ci "Miembro del hogar"
 ****************
 ****condocup_ci*
 ****************
-
-gen condocup_ci = .
-replace condocup_ci = 1 if ocu500 == 1
-replace condocup_ci = 2 if ocu500 == 2 | ocu500 == 3
-replace condocup_ci = 3 if missing(condocup_ci)
-replace condocup_ci = 4 if ocu500 == 4
-label define condocup_ci 1 "ocupados" 2 "desocupados" 3 "inactivos" 4 "menor de PET"
-label values condocup_ci condocup_ci
+gen byte condocup_ci = .
+replace condocup_ci = 1 if p501==1 | p502==1 | p503==1    //Ocupados
+replace condocup_ci = 2 if p501==2 & p502==2 & p503==2    //Desocupados
+replace condocup_ci = 3 if condocup_ci == 2 & (p5041==2 & p5042==2 & p5043==2 & p5044==2 & p5045==2 & p5046==2 & p5047==2 & p5048==2 & p5049==2 & p50410==2 & p50411==2 ) //Inactivos
+replace condocup_ci = 4 if edad_ci<14 //Según la encuesta, las preguntas sobre ocupación se hacen a personas de 14 años y más de edad
+label var condocup_ci "Condicion de ocupacion utilizando definicion del pais"
+label define condocup_ci 1"ocupados" 2"desocupados" 3"inactivos" 4"menor de PET"
+label value condocup_ci condocup_ci
 
 * MGD 06/06/2014: Se conserva la generacion de condocup_ci con la variable creada ya que coincide con series externas, 
 * al hacerla considerando la definicion con variables originales, no coincide la serie.
@@ -506,8 +506,6 @@ recode condocup_ci1 .=4 if edad_ci<14
 gen afiliado_ci = (p558a1 == 1 | p558a2 == 1 | p558a3 == 1 | p558a4 == 1)
 label var afiliado_ci "Afiliado a la Seguridad Social"
 
-
-
 ****************
 *tipopen_ci*****
 ****************
@@ -525,6 +523,7 @@ label var instcot_ci "institución a la cual cotiza"
 gen cotizando_ci = ((p419a1 <= 2 | p419a2 <= 2 | p419a3 <= 2 | p419a4 <= 2 | p419a5 <= 2) & condocup_ci == 1)
 label var cotizando_ci "Cotizante a la Seguridad Social"
 
+
 * Formalidad sin restringir a PEA
 gen cotizando_ci1=0     if condocup_ci>=1 & condocup_ci<=3 
 replace cotizando_ci1=1 if ((p524b1>0 & p524b1!=.) | (p538b1>0 & p538b1!=.)) & cotizando_ci1==0 /*a ocupados subordinados: empleados u obreros*/
@@ -533,6 +532,7 @@ label var cotizando_ci1 "Cotizante a la Seguridad Social"
 gen cotizapri_ci=0     if condocup_ci==1 | condocup_ci==2 
 replace cotizapri_ci=1 if (p524b1>0 & p524b1!=.)  
 label var cotizapri_ci "Cotizante a la Seguridad Social por su trabajo principal"
+
 
 gen cotizasec_ci=0     if condocup_ci==1 | condocup_ci==2 
 replace cotizasec_ci=1 if (p538b1>0 & p538b1!=.)  
@@ -565,6 +565,7 @@ replace categoinac_ci = 4 if  ((categoinac_ci ~=1 & categoinac_ci ~=2 & categoin
 label var categoinac_ci "Categoría de inactividad"
 label define categoinac_ci 1 "jubilados o pensionados" 2 "Estudiantes" 3 "Quehaceres domésticos" 4 "Otros"
 label value categoinac_ci categoinac_ci
+
 
 *************
    *ypen_ci*
@@ -670,7 +671,11 @@ label var salmm_ci "Salario minimo legal"
 ************
 ***emp_ci***
 ************
-gen emp_ci=(condocup_ci==1)
+gen byte emp_ci = .
+replace emp_ci = (condocup_ci == 1) if (condocup_ci != . & condocup_ci != 4)
+label var emp_ci "Ocupado (empleado)"
+label define emp_ci 0"No ocupado" 1"Ocupado", add
+label value emp_ci emp_ci
 
 ****************
 ***desemp_ci***
@@ -690,15 +695,18 @@ gen formal_ci= (afiliado_ci == 1 | cotizando_ci == 1)
 *****************
 ***desalent_ci***
 *****************
-
-gen desalent_ci=(emp_ci==0 & p545==2 & (p549==1 | p549==2))
+gen byte desalent_ci = .
+replace desalent_ci = (p545 == 2 & (p549 == 1 | p549 == 2) & condocup_ci == 3)
+label var desalent_ci "Desalentados"
+label define desalent_ci 0"No" 1"Si", add
+label value desalent_ci desalent_ci
 
 *****************
 ***horaspri_ci***
 *****************
-
 gen horaspri_ci=p513t 
 replace horaspri_ci=. if emp_ci~=1
+
 
 *****************
 ***horastot_ci***
@@ -708,6 +716,7 @@ replace p518=. if p518==99
 egen horastot_ci=rsum(horaspri_ci p518)
 replace horastot_ci=. if horaspri_ci==. & p518==.
 replace horastot_ci=. if emp_ci~=1
+
 
 ***************
 ***subemp_ci***
@@ -799,7 +808,6 @@ label value tipocontrato_ci tipocontrato_ci
 *****************
 ***nempleos_ci***
 *****************
-
 gen nempleos_ci=.
 replace nempleos_ci=1 if emp_ci==1
 replace nempleos_ci=2 if emp_ci==1 & p514==1
@@ -810,19 +818,17 @@ replace nempleos_ci=2 if emp_ci==1 & p514==2 & (p5151==1 | p5152==1 | p5153==1 |
         p51511==1);
 #delimit cr
 
-
 *****************
 ***spublico_ci***
 *****************
-
 gen spublico_ci=(p510==1 | p510==2 | p510==3)
 replace spublico_ci=. if emp_ci~=1
+
 
 **************
 ***ocupa_ci***
 **************
 *CIOU-88
-
 gen ocupa_ci=.
 replace ocupa_ci=1 if (p505>=211 & p505<=396) & emp_ci==1
 replace ocupa_ci=2 if (p505>=111 & p505<=148) & emp_ci==1
@@ -832,7 +838,6 @@ replace ocupa_ci=5 if (p505>=511 & p505<=565) | (p505>=941 & p505<=961) & emp_ci
 replace ocupa_ci=6 if (p505>=611 & p505<=641) | (p505>=971 & p505<=973) & emp_ci==1
 replace ocupa_ci=7 if (p505>=711 & p505<=886) | (p505>=981 & p505<=987) & emp_ci==1
 replace ocupa_ci=8 if (p505>=11 & p505<=24) & emp_ci==1
-
 label variable ocupa_ci "Ocupacion laboral"
 label define ocupa_ci 1"profesional y tecnico" 2"director o funcionario sup" 3"administrativo y nivel intermedio"
 label define ocupa_ci  4 "comerciantes y vendedores" 5 "en servicios" 6 "trabajadores agricolas", add
@@ -859,6 +864,8 @@ label define ocupa_ci  7 "obreros no agricolas, conductores de maq y ss de trans
 label define ocupa_ci  8 "FFAA" 9 "Otras ", add
 label value ocupa_ci ocupa_ci
 */
+
+
 *************
 ***rama_ci***
 *************
@@ -873,7 +880,6 @@ replace rama_ci=6 if (p506>=5010 & p506<=5520) & emp_ci==1
 replace rama_ci=7 if (p506>=6010 & p506<=6420) & emp_ci==1
 replace rama_ci=8 if (p506>=6511 & p506<=7020) & emp_ci==1
 replace rama_ci=9 if (p506>=7111 & p506<=9900) & emp_ci==1
-
 label var rama_ci "Rama de actividad de la ocupación principal"
 label def rama_ci 1"Agricultura, caza, silvicultura y pesca" 2"Explotación de minas y canteras" 3"Industrias manufactureras"
 label def rama_ci 4"Electricidad, gas y agua" 5"Construcción" 6"Comercio, restaurantes y hoteles" 7"Transporte y almacenamiento", add
@@ -897,8 +903,6 @@ label def ramasec_ci 1"Agricultura, caza, silvicultura y pesca" 2"Explotación d
 label def ramasec_ci 4"Electricidad, gas y agua" 5"Construcción" 6"Comercio, restaurantes y hoteles" 7"Transporte y almacenamiento", add
 label def ramasec_ci 8"Establecimientos financieros, seguros e inmuebles" 9"Servicios sociales y comunales", add
 label val ramasec_ci ramasec_ci
-
-
 
 ****************
 ***durades_ci***
