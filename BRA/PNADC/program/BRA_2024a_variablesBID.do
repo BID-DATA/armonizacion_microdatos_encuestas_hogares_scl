@@ -37,7 +37,7 @@ Versión ...: Octubre 2025
 Detalle de procesamientos o modificaciones anteriores:
 ****************************************************************************/
 
-use "`base_in'", clear
+use `base_in', clear
 
 **********************************
 **** ARMONIZACIÓN PNAD_C 2024 **** 
@@ -952,10 +952,13 @@ rename *, lower
 		& v3014 != 1
 
 	* D. Quienes NO están en ningún caso → 0
-	replace eduuc_ci = 0 if eduuc_ci==. ///
-		& v3002 != .   ///
-		& v3009a != .
-
+	*** Considerar tres grupos de población en esta opción
+		*** Asiste actualmente a clases y tienen un nivel educativo y grado más alto inferior al tecnico superior
+		*** No asiste a clases y el nivel educativo más alto al que asistió es inferior al grado superior y completo el nivel
+		*** No asiste a clases y el nivel educativo más alto al que asistió es inferior al grado superior y no completo el nivel
+	replace eduuc_ci = 0 if ((v3002 == 1 & inlist(v3003a, 2, 3, 4, 5, 6, 7)) | (v3002 == 2 & inlist(v3009a, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11) & v3014 == 1) | (v3002 == 2 & inlist(v3009a, 1, 		2, 3, 4, 5, 6, 7, 8, 9, 10, 11) & v3014 == 2))
+	label variable eduuc_ci "Terciaria/universitaria completa o mas"	
+		
 	**********
 	*eduac_ci*
 	**********
@@ -1342,18 +1345,14 @@ rename *, lower
 	****************
 	* lpe_ci *
 	****************
-	* 2023: https://educa.ibge.gov.br/jovens/materias-especiais/22544-brasil-atinge-menor-nivel-de-pobreza-em-2023.html
-	gen lpe_ci= 209 
-	* Línea de pobreza extrema (Banco Mundial / IBGE).
-	* 2023 = R$209 → ajustada por inflación 2024 (4,83%) ≈ R$220 mensuales
-	*gen lpe_ci = 220
+	* 2024: https://agenciadenoticias.ibge.gov.br/en/agencia-news/2184-news-agency/news/45366-8-6-million-persons-got-out-of-poverty-between-2023-and-2024
+	gen lpe_ci= 218 
+
 
 	****************
 	* ln_ci *
 	****************
-	* Línea de pobreza nacional (½ salario mínimo per cápita).
-	* Salario mínimo 2024 = R$1412 → ½ = R$706
-	gen ln_ci = 706
+	gen ln_ci = 694 
 		
 		
 /*_____________________________________________________________________________________________________*/

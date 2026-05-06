@@ -17,7 +17,7 @@ capture log close
 
 local PAIS PRY
 local ENCUESTA EPHC
-local ANO "2020"
+local ANO "2025"
 local ronda t4
 global ruta = "${surveysFolder}\\survey\PRY\EPHC\\`ANO'\t4\data_orig"
 
@@ -43,7 +43,7 @@ Fecha de última modificación:
 *Convierto las bases descargadas a dta, les hago rename y las sorteo:
 
 /*Vivienda e inventario de bienes duraderos*/
-import spss "$ruta\reg01_ephc`ANO'.sav", clear 
+import spss "$ruta\REG01_EPHC_ANUAL_`ANO'.sav", clear 
 
 * Creo que hubo problemas en levantar los "labels"
 * " invalid numeric value for value label labels22 
@@ -79,7 +79,7 @@ save "$ruta\vivienda_ephc`ANO'.dta", replace
 
 
 /*Ingreso familiar*/
-import spss "$ruta\ingrefam_ephc`ANO'.sav", clear
+import spss "$ruta\INGREFAM_EPHC_ANUAL_`ANO'.sav", clear
 rename *, lower
 cap sort upm nvivi nhoga // asegurando orden por upm nvivi nhoga
 isid upm nvivi nhoga   // aseguro uniqueness
@@ -105,7 +105,7 @@ save "$ruta\ingrefam_ephc`ANO'.dta", replace
 *****************************************************************************************************
 
 /*Poblacion*/
-import spss "$ruta\reg02_ephc`ANO'.sav", clear // Ingresos individuales
+import spss "$ruta\REG02_EPHC_ANUAL_`ANO'.sav", clear // Ingresos individuales
 * Creo que hubo problemas en levantar los "labels"
 * sale varias veces "invalid numeric value for value label"
 
@@ -146,7 +146,7 @@ save "$ruta\poblacion_ephc`ANO'.dta", replace
 
 /*4to trimestre - trabajo */
 *Solo responden personas de 10 años a más*/
-import spss "$ruta\REG02_EPHC_T4-`ANO'.SAV", clear 
+import spss "$ruta\75003-REG02_EPHC_4º Trim `ANO'.SAV", clear 
 * Creo que hubo problemas en levantar los "labels"
 * sale varias veces "invalid numeric value for value label"
 rename *, lower
@@ -182,6 +182,8 @@ save "$ruta\reg02_ephc_t4_`ANO'.dta", replace
 
 *****************************************************************************************************
 /*Unifico los modulos de interes: vivienda, ingresos y personas*/
+ 
+
 use "$ruta\reg02_ephc_t4_`ANO'.dta", clear
 
 cap sort upms nvivis nhogas l02s
@@ -195,20 +197,15 @@ merge m:1 upms nvivis nhogas using "$ruta\ingrefam_ephc`ANO'.dta"
 keep if _merge == 3
 drop _merge
 sort upms nvivis nhogas l02s
-isid upms nvivis nhogas l02s 
-
+ 
 merge m:m upms nvivis nhogas l02s using "$ruta\poblacion_ephc`ANO'.dta"
-keep if _merge == 3 // 17,550   observaciones se mantienen
+keep if _merge == 3 // 15,555 observaciones se mantienen
 drop _merge
 sort upms nvivis nhogas l02s
-
 
 save "`base_out'", replace
 
 log close
-
-
-
 
 
 

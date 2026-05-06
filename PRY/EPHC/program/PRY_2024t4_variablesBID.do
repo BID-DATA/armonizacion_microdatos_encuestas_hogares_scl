@@ -813,11 +813,9 @@ use "`base_in'", clear
 	***************
 	***spublico_ci: Variable dicotómica que indica con valor 1 si la persona lleva a cabo su actividad laboral principal en el sector público y con valor 0 al resto de la población. Solo para los ocupados emp_ci=1.***
 	***************	
-	*Codigo extraído del manual
-	gen byte spublico_ci=.
-	replace spublico_ci = 1 if emp_ci == 1 & rama_ci == 10
-	replace spublico_ci = 0 if emp_ci == 1 & rama_ci != 10 & rama_ci != .
-
+	
+	gen spublico_ci=0 if emp_ci==1
+	replace spublico_ci=1 if cate_pea==1 & emp_ci==1
 	***************
 	***tamemp_ci: Indica la categoría del tamaño de la empresa donde el individuo realiza su actividad laboral principal. ***
 	***************	
@@ -1384,72 +1382,17 @@ e02tde	Ingreso mensual que recibe de ayuda familiar del exterior (deflactado)
 	gen byte edupre_ci=.
 	
 	**************
-	***eduui_ci: Variable dicotómica que indica con valor 1 si el mayor nivel educativo alcanzado corresponde a educación técnica o universitaria incompleta y con 0 el resto
+	***eduui_ci***
 	**************
-	/* ¿Asiste actualmente a una institución de enseñanza formal? - ed08:
-			1	Sí, Educ. Inicial
-			2	Sí, Educ. Escolar BáSíca
-			3	Sí, Educación Media Científica
-			4	Sí, Educación Media Técnica
-			5	Sí, Educación Media Abierta
-			6	Sí, Educ. Básíca Bilingüe para personas Jóvenes y Adultas
-			7	Sí, Educación Media para Jóvenes y Adultas
-			8	Sí, Formación Profesíonal no Bachillerato de la Media
-			9	Sí, Programas de Alfabetización
-			10	Sí, Educ. Especial
-			11	Sí, Grado Especial / Programas Especiales
-			12	Sí, Técnica Superior
-			13	Sí, Formación Docente
-			14	Sí, Profesionalización Docente
-			15	Sí, Formación Militar / Policial
-			16	Sí, Superior Universítario
-			17	Sí, Post Superior no Universítario
-			18	Sí, Post Superior Universítario
-			19	No asiste 
-			99	NR
-			.	NA
-	*/
-	gen eduui_ci=.
-	replace eduui_ci = 1 if inlist(ed08, 12, 13, 14, 15, 16, 17, 18) 
-	/* Se incluyen como educación técnica/superior no universitaria o universitaria incompleta lo siguiente
-		12	Sí, Técnica Superior
-		13	Sí, Formación Docente
-		14	Sí, Profesionalización Docente
-		15	Sí, Formación Militar / Policial
-		16	Sí, Superior Universitario
-		17	Sí, Post Superior no Universitario
-		18	Sí, Post Superior Universitario
-	*/
-	replace eduui_ci = 0 if eduui_ci==. //Se consideran todos los missings como cero
-	replace eduui_ci =.  if ed08==99 | ed08==. //Se reemplazan todos los missings
+	gen eduui_ci = (inrange(ed0504, 2001, 2406) & ed06c == 14)
+	replace eduui_ci = . if aedu_ci == .
 		
-	***************
-	***eduuc_ci: Variable dicotómica que indica con valor 1 si el mayor nivel educativo alcanzado corresponde a educación técnica, universitaria completa, o posgrado (completa o incompleta), y con 0 el resto. 
-	***************
-	/* Titulo o diploma más alto que obtuvo - ed06c:
-			1	Superior Universitario
-			2	Educación Inicial
-			3	EEB (1º y 2º ciclo)
-			4	EEB (3er ciclo)
-			5	Educación Media
-			6	Militar/Policial
-			7	Técnica Superior
-			8	Doctorado (Post universitario)
-			9	Maestría (Post universitario)
-			10	Especialización (Post universitario)
-			11	Formación Docente (Post no universitario)
-			12	Militar/Policial (Post no universitario)
-			13	Técnico Superior (Post no universitario)
-			14	No obtuvo
-			15	Otro (especificar)
-			99	No Responde
-			.	NA
-	*/
-	gen eduuc_ci = .
-	replace eduuc_ci= 1 if inlist(ed06c,6,7,11,12,13) // Individuos que tienen  como último nivel y grado más alto aprobado técnico superior, superior no universitario o superior universitaria y estudios finalizados
-	replace eduuc_ci = 1 if inlist(ed06c,8,9) | ed08==18 // Individuos que han declarado como nivel más alto alcanzado algún curso de posgrado.
-	replace eduuc_ci = 0 if eduuc_ci==. // Se reemplazan todos los missings por cero
-	replace eduuc_ci =. if ed06c==. | ed06c==99 | ed08==. | ed08==99 //Se reemplazan los missings y los que no responden 
+	**************
+	***eduuc_ci***
+	**************
+	gen eduuc_ci = (inrange(ed06c, 1, 13))
+	replace eduuc_ci = . if aedu_ci == .
+	lab var eduuc_ci "Superior Completo"
 	
 	**************
 	***eduac_ci: Variable dicotómica que indica con valor 1 si la persona tiene educación superior universitaria o posgrado (completa o incompleta), con 0 si tiene educación superior no universitaria o posgrado (completa o incompleta) y con missing el resto. 
@@ -1535,20 +1478,11 @@ e02tde	Ingreso mensual que recibe de ayuda familiar del exterior (deflactado)
 	replace edupub_ci = 0 if ed09==2 | ed09==3 //Institución Privada
 	replace edupub_ci =.  if ed09==9 //Missings 
 		
-	****************
-	***asispre_ci: Asistencia a preescolar. Variable dicotómica que indica con valor 1 si la persona asiste actualmente a educación preescolar, y con 0 al resto (no tiene valores perdidos). 
-	****************
-	/* ¿Asiste actualmente a una institución de enseñanza formal? - ed08:
-			1	Sí, Educ. Inicial
-			99	NR
-			.	NA
-		Hay más categorías, pero no son relevantes para la creación de la variable
-	*/	
-	gen asispre_ci=.
-	replace asispre_ci=1 if ed08==1 //Asiste actualmente a educación inicial/prescolar
-	replace asispre_ci=0 if asispre_ci==. //Se definen el resto de valores como cero
-	replace asispre_ci=. if ed08==99 | ed09==. //Se reemplazan los missings
-
+	***************
+	***asis_pre***
+	***************
+	gen byte asispre_ci=(ed08==1)
+	
 	*************
 	*razonesnoasis_ci: Variable categórica que indica las razones por las cuales un individuo no asiste a la escuela.*
 	**************
@@ -1712,7 +1646,7 @@ e02tde	Ingreso mensual que recibe de ayuda familiar del exterior (deflactado)
 	*		6	No
 	gen telef_ch=.
 	replace telef_ch=1 if v11a==1 //Sí cuentan con línea fija
-	replace telef_ch=1 if v11a==6 //No cuentan con línea fija
+	replace telef_ch=0 if v11a==6 //No cuentan con línea fija
 	
 	***************
 	***refrig_ch: si el hogar posee heladera o refrigerador ***

@@ -1015,8 +1015,8 @@ use `base_in', clear
 	replace bano_ch = 1 if vi09 == 1
 	replace bano_ch = 2 if vi09 == 2
 	replace bano_ch = 3 if vi09 == 3
-	replace bano_ch = 4 if vi09 == 5
 	replace bano_ch = 6 if vi09 == 4
+	
 
 	***************
 	***banoex_ch***

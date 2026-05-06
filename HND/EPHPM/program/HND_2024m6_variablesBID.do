@@ -65,7 +65,7 @@ use `base_in', clear
 	********************
 	*** region_c:  Identifica  primera división político-administrativa del país****
 	********************
-	gen byte region_c = DEPMUESTRA
+	gen byte region_c = depmuestra
 	label define region_c ///
 			   1 "Atlantida" ///
 			   2 "Colon" ///
@@ -122,8 +122,8 @@ use `base_in', clear
 			4 Ciudades Pequeñas
 			5 Rural
 	*/
-	gen zona_c=1 if DOMINIO==1 | DOMINIO==2 | DOMINIO==3 | DOMINIO==4 // Urbana
-	replace zona_c=0 if DOMINIO==5 // Rural
+	gen zona_c=1 if dominio==1 | dominio==2 | dominio==3 | dominio==4 // Urbana
+	replace zona_c=0 if dominio==5 // Rural
 	label define zona_c 0 "Rural" 1 "Urbana" 
 	label value zona_c zona_c
 	
@@ -137,13 +137,13 @@ use `base_in', clear
 	*upm_ci: unidad primaria de muestreo*
 	*****************************
 	*Así se hizo en el 2023, no me hace mucho sentido
-	gen upm_ci=DOMINIO
+	gen upm_ci=dominio
 	label variable upm_ci "Unidad Primaria de Muestreo"
 	
 	******************
 	*idh_ch: Identificador único de hogares *
 	******************
-	gen idh_ch=HOGAR // Indicador del Hogar	
+	gen idh_ch=hogar // Indicador del Hogar	
 	tostring idh_ch, replace
 	
 	***************
@@ -151,20 +151,20 @@ use `base_in', clear
 	***************
 	*Se concatena el indicador del hogar con el indicador de la persona //
 	*dentro del hogar (ORDEN). 
-	egen idp_ci = concat(HOGAR ORDEN)
+	egen idp_ci = concat(hogar orden)
 	tostring idp_ci, replace format ("%20.0f") 
 		
 	***********
 	*factor_ci: Factor de expansión del individuo* 
 	***********
-	gen factor_ci=FACTOR
+	gen factor_ci=factor
 	label var factor_ci "Factor de Expansion de los individuos"
 
 	
 	*******************************************
 	*factor_ch: Factor de expansion del hogar*
 	*******************************************
-	gen factor_ch=FACTOR
+	gen factor_ch=factor
 	label var factor_ch "Factor de Expansion del Hogar" // Es el mismo que el factor del individiuo
 
 
@@ -175,7 +175,7 @@ use `base_in', clear
 	*********
 	*sexo_ci: sexo del individuo*
 	*********
-	gen byte sexo_ci=SEXO	
+	gen byte sexo_ci=sexo	
 	label var sexo_ci "Sexo del Individuo"
 	label define sexo_ci 1 "Hombre" 2 "Mujer"
 	label value sexo_ci sexo_ci
@@ -183,7 +183,7 @@ use `base_in', clear
 	*********
 	*edad_ci: edad del individuo*
 	*********
-	gen int edad_ci=EDAD // Años cumplidos
+	gen int edad_ci=edad // Años cumplidos
 	label var edad_ci "Edad del Individuo" 
 	
 	**************
@@ -217,12 +217,12 @@ use `base_in', clear
 	*/
 	
 	gen byte relacion_ci=.
-	replace relacion_ci=1 if RELA_J==1 // Jefe del Hogar
-	replace relacion_ci=2 if RELA_J==2 // Cónyugue/Pareja
-	replace relacion_ci=3 if RELA_J==3 | RELA_J==4 // Hijo/a y Hijastro/a
-	replace relacion_ci=4 if 5<=RELA_J & RELA_J<=8 // Otros parientes
-	replace relacion_ci=5 if RELA_J==9 // No parientes
-	replace relacion_ci=6 if RELA_J==10 // Empleado/a
+	replace relacion_ci=1 if rela_j==1 // Jefe del Hogar
+	replace relacion_ci=2 if rela_j==2 // Cónyugue/Pareja
+	replace relacion_ci=3 if rela_j==3 | rela_j==4 // Hijo/a y Hijastro/a
+	replace relacion_ci=4 if 5<=rela_j & rela_j<=8 // Otros parientes
+	replace relacion_ci=5 if rela_j==9 // No parientes
+	replace relacion_ci=6 if rela_j==10 // Empleado/a
 	label var relacion_ci "Relacion con el Jefe de Hogar"
 	label define relacion_ci 1 "Jefe/a de Hogar" 2 "Cónyuge/Pareja" 3 "Hijo/a" ///
 	4 "Otros Parientes" 5 "No Parientes" 6 "Empleado/a domestico/a"
@@ -260,10 +260,10 @@ use `base_in', clear
 	*/
 	
 	gen civil_ci=.
-	replace civil_ci=1 if CIVIL==5 // Soltero
-	replace civil_ci=2 if CIVIL==1 | CIVIL==6 // Unión formal
-	replace civil_ci=3 if CIVIL==3 | CIVIL==4 // Divorciado/Separado
-	replace civil_ci=4 if CIVIL==2 // Viudo
+	replace civil_ci=1 if civil==5 // Soltero
+	replace civil_ci=2 if civil==1 | civil==6 // Unión formal
+	replace civil_ci=3 if civil==3 | civil==4 // Divorciado/Separado
+	replace civil_ci=4 if civil==2 // Viudo
 	label var civil_ci "Estado Civil"
 	label define civil_ci 1 "Soltero" 2 "Union Formal o Informal" ///
 	3 "Divorciado o Separado" 4 "Viudo"
@@ -407,12 +407,12 @@ use `base_in', clear
 			12	Otro (especifique)
 	*/
 	
-	gen afro_ci=(inlist(CH308,1,2)==1) if CH308!=. // 1 Garífuna y 2 Negro ingles
+	gen afro_ci=(inlist(ch308,1,2)==1) if ch308!=. // 1 Garífuna y 2 Negro ingles
 	
 	*********
 	*ind_ci: Identifica a los encuestados en función de su autoidentificación étnica o racial indígena*
 	*********	
-	gen ind_ci=(inlist(CH308,1,3,4,5,6,7,8,9)==1) if CH308!=.
+	gen ind_ci=(inlist(ch308,1,3,4,5,6,7,8,9)==1) if ch308!=.
 
 	**************
 	*noafroind_ci: Identificar encuestados que NO son afrodescendientes NI indígenas según autoidentificación étnico-racial*
@@ -483,8 +483,8 @@ use `base_in', clear
 *Pregunta CH307 se hace a personas de 5 años y mas	
 
 	gen byte dis_ci=.
-	replace  dis_ci = 1 if CH307 != 7 & CH307 != 8 & CH307 != 9  // Todas menos las dificultades piscologicas listadas en la variable CH037
-	replace  dis_ci = 0 if CH307 == 7 | CH307 == 8 | CH307 == 9  
+	replace  dis_ci = 1 if ch307 != 7 & ch307 != 8 & ch307 != 9  // Todas menos las dificultades piscologicas listadas en la variable CH037
+	replace  dis_ci = 0 if ch307 == 7 | ch307 == 8 | ch307 == 9  
 
 	**********
 	*disWG_ci: Identifica a individuos con discapacidad siguiendo de manera estricta el criterio del WG -- individuo como persona con discapacidad si reporta "mucha dificultad" o "no puede hacerlo.*
@@ -574,7 +574,7 @@ use `base_in', clear
 			2	No
 	*/
 	gen byte cesante_ci = .
-	replace cesante_ci = 1 if CA517 == 1 & condocup_ci == 2 //Ha trabajado antes (CA517==1) y ahora está desocupado (condocup_ci==2) 
+	replace cesante_ci = 1 if ca517 == 1 & condocup_ci == 2 //Ha trabajado antes (CA517==1) y ahora está desocupado (condocup_ci==2) 
 	replace cesante_ci = 0 if cesante_ci != 1 & condocup_ci ==2 //Se quedan con 0 las observaciones que son desocupados y no son cesantes 
 
 	***************
@@ -596,7 +596,7 @@ use `base_in', clear
 	***durades_ci: Indica la duración del desempleo en meses o el número de meses –no necesariamente consecutivos– que un individuo desempleado ha estado buscando empleo. Para los no desempleados la variable toma missing values.***
 	****************
 	*MESEST: Meses buscando trabajo
-	gen byte durades_ci=MESEST 
+	gen byte durades_ci=mesest 
 
 	***********
 	***pea_ci: Variable dicotómica que indica la población económicamente activa (PEA).***
@@ -632,20 +632,20 @@ use `base_in', clear
 			10	No quiere / no puede / no necesita trabajar
 	*/
 	gen byte desalent_ci=.
-	replace desalent_ci=1 if CA513==6 & condocup_ci==3 //Se consideran los que creen que no les darán trabajo como desanimados
-	replace desalent_ci=0 if CA513!=6 & condocup_ci==3 //Se pone como 0 al resto 
+	replace desalent_ci=1 if ca513==6 & condocup_ci==3 //Se consideran los que creen que no les darán trabajo como desanimados
+	replace desalent_ci=0 if ca513!=6 & condocup_ci==3 //Se pone como 0 al resto 
 	
 	***************
 	***horaspri_ci: Variable continua que indica el número de horas totales trabajadas en la actividad principal en la semana de referencia.***
 	***************
 	*TOTHRSOP: Total de horas laboradas en ocupación principal
-	gen  byte horaspri_ci = TOTHRSOP
+	gen  byte horaspri_ci = tothrsop
 	
 	***************
 	***horastot_ci: Variable continua que indica el número de horas totales trabajadas en todas las actividades económicas en una semana.***
 	***************	
 	*THORAS:Total de horas laboradas
-	gen  byte horastot_ci  = THORAS
+	gen  byte horastot_ci  = thoras
 	
 	
 	***************
@@ -656,7 +656,7 @@ use `base_in', clear
 	*		2	No
 	*		9	No sabe
 	gen  byte tiempoparc_ci = .
-	replace tiempoparc_ci=(horaspri_ci<=30 & CA522==2) if condocup_ci==1 //Si la  persona es ocupada (condocup_ci==1), trabaja menos de 30 horas (horaspri_ci<=30) y durante la semana pasada NO hubiese querido trabajar más (CA522) se asigna 1. Al resto de personas ocupadas se les asigna 0. La variable queda con missings para las personas no ocupadas (condocup_ci!=1).
+	replace tiempoparc_ci=(horaspri_ci<=30 & ca522==2) if condocup_ci==1 //Si la  persona es ocupada (condocup_ci==1), trabaja menos de 30 horas (horaspri_ci<=30) y durante la semana pasada NO hubiese querido trabajar más (CA522) se asigna 1. Al resto de personas ocupadas se les asigna 0. La variable queda con missings para las personas no ocupadas (condocup_ci!=1).
 	
 	***************
 	***categopri_ci: Indica la categoría ocupacional de la actividad principal para los ocupados. (Solo aplica para los trabajadores ocupados emp_ci=1) ***
@@ -683,10 +683,10 @@ use `base_in', clear
 			4	Trabajador no remunerado
 	*/
 	gen categopri_ci=.
-	replace categopri_ci=1 if inlist(OC609,6) & condocup_ci==1 //Patrón o Empleador
-	replace categopri_ci=2 if inlist(OC609,7) & condocup_ci==1 //Independiente
-	replace categopri_ci=3 if inlist(OC609,1,2,3,4,5,9,10,11) & condocup_ci==1 //Empleado o asalariado
-	replace categopri_ci=4 if inlist(OC609,8) & condocup_ci==1 //Trabajador Familiar - No remunerado
+	replace categopri_ci=1 if inlist(oc609,6) & condocup_ci==1 //Patrón o Empleador
+	replace categopri_ci=2 if inlist(oc609,7) & condocup_ci==1 //Independiente
+	replace categopri_ci=3 if inlist(oc609,1,2,3,4,5,9,10,11) & condocup_ci==1 //Empleado o asalariado
+	replace categopri_ci=4 if inlist(oc609,8) & condocup_ci==1 //Trabajador Familiar - No remunerado
 	label var categopri_ci "Categoria ocupacional actividad principal"
 	label define categopri_ci 1 "Patrón o Empleador" 2 "Cuenta Propia" 3 "Empleado" 4 "Trabajador no remunerado"
 	label value categopri_ci categopri_ci
@@ -742,15 +742,15 @@ use `base_in', clear
 			10	Gobierno
 	*/
 	gen rama_ci=.
-	replace  rama_ci=1 if RAMAOP==1 & emp_ci==1 
-	replace  rama_ci=2 if RAMAOP==2 & emp_ci==1 
-	replace  rama_ci=3 if RAMAOP==3 & emp_ci==1
-	replace  rama_ci=4 if RAMAOP==4 | RAMAOP==5  & emp_ci==1
-	replace  rama_ci=5 if RAMAOP==6 & emp_ci==1
-	replace  rama_ci=6 if RAMAOP==7 | RAMAOP==9  & emp_ci==1
-	replace  rama_ci=7 if RAMAOP==8 | RAMAOP==10 & emp_ci==1
-	replace  rama_ci=8 if inrange(RAMAOP,11,14)  & emp_ci==1
-	replace  rama_ci=9 if inrange(RAMAOP,15,21)  & emp_ci==1
+	replace  rama_ci=1 if ramaop==1 & emp_ci==1 
+	replace  rama_ci=2 if ramaop==2 & emp_ci==1 
+	replace  rama_ci=3 if ramaop==3 & emp_ci==1
+	replace  rama_ci=4 if ramaop==4 | ramaop==5  & emp_ci==1
+	replace  rama_ci=5 if ramaop==6 & emp_ci==1
+	replace  rama_ci=6 if ramaop==7 | ramaop==9  & emp_ci==1
+	replace  rama_ci=7 if ramaop==8 | ramaop==10 & emp_ci==1
+	replace  rama_ci=8 if inrange(ramaop,11,14)  & emp_ci==1
+	replace  rama_ci=9 if inrange(ramaop,15,21)  & emp_ci==1
 	label var rama_ci "Rama de actividad"
 	label def rama_ci 1"Agricultura, caza, silvicultura y pesca" 2"Explotación de minas y canteras" 3"Industrias manufactureras" 4"Electricidad, gas y agua" 5"Construcción" 6"Comercio, restaurantes y hoteles" 7"Transporte y almacenamiento" 8"Establecimientos financieros, seguros e inmuebles" 9"Servicios sociales y comunales", add
 	label val rama_ci rama_ci 
@@ -780,10 +780,10 @@ use `base_in', clear
 			6-50	Mediana Empresa
 			51-∞ 	Gran Empresa
 	*/
-	gen tamemp_ci = 1 if (OC_608_CUANTAS>=1 & OC_608_CUANTAS<=5) & emp_ci==1 //Pequeña
-	replace tamemp_ci = 2 if (OC_608_CUANTAS>=6 & OC_608_CUANTAS<=50) & emp_ci==1 //Mediana
-	replace tamemp_ci = 3 if (OC_608_CUANTAS>50) & OC_608_CUANTAS!=. & emp_ci==1 //Grande
-	replace tamemp_ci=. if  OC_608_CUANTAS>=99999 //Missings
+	gen tamemp_ci = 1 if (oc_608_cuantas>=1 & oc_608_cuantas<=5) & emp_ci==1 //Pequeña
+	replace tamemp_ci = 2 if (oc_608_cuantas>=6 & oc_608_cuantas<=50) & emp_ci==1 //Mediana
+	replace tamemp_ci = 3 if (oc_608_cuantas>50) & oc_608_cuantas!=. & emp_ci==1 //Grande
+	replace tamemp_ci=. if  oc_608_cuantas>=99999 //Missings
 	label define tamemp_ci 1 "Pequeña" 2 "Mediana" 3 "Grande"
 	label value tamemp_ci tamemp_ci
 	label var tamemp_ci "Tamaño de empresa"
@@ -846,15 +846,15 @@ use `base_in', clear
 			9	Otras ocupaciones no clasificadas en las anteriores.
 	*/
 	gen ocupa_ci=.
-	replace ocupa_ci=1 if OCUPAOP==2 & emp_ci==1
-	replace ocupa_ci=2 if OCUPAOP==1 & emp_ci==1
-	replace ocupa_ci=3 if (OCUPAOP==3 | OCUPAOP==4) & emp_ci==1
-	replace ocupa_ci=4 if OCUPAOP==5 & emp_ci==1
-	replace ocupa_ci=5 if OCUPAOP==7 & emp_ci==1
-	replace ocupa_ci=6 if OCUPAOP==6 & emp_ci==1
-	replace ocupa_ci=7 if OCUPAOP==8 & emp_ci==1
-	replace ocupa_ci=8 if OCUPAOP==10 & emp_ci==1
-	replace ocupa_ci=9 if OCUPAOP==9 & emp_ci==1
+	replace ocupa_ci=1 if ocupaop==2 & emp_ci==1
+	replace ocupa_ci=2 if ocupaop==1 & emp_ci==1
+	replace ocupa_ci=3 if (ocupaop==3 | ocupaop==4) & emp_ci==1
+	replace ocupa_ci=4 if ocupaop==5 & emp_ci==1
+	replace ocupa_ci=5 if ocupaop==7 & emp_ci==1
+	replace ocupa_ci=6 if ocupaop==6 & emp_ci==1
+	replace ocupa_ci=7 if ocupaop==8 & emp_ci==1
+	replace ocupa_ci=8 if ocupaop==10 & emp_ci==1
+	replace ocupa_ci=9 if ocupaop==9 & emp_ci==1
 
 	label variable ocupa_ci "Ocupacion laboral"
 	label define ocupa_ci 	1"Profesionales y técnicos" ///
@@ -890,7 +890,7 @@ use `base_in', clear
 /*			YSMOP	Ingreso salario monetario ocupación principal
 			YCMOP	Ingreso monetario por cuenta propia ocupación principal
 */
-	egen ylmpri_ci=rowtotal(YSMOP YCMOP) if emp_ci==1, missing //Se suman los ingresos principales solo para los individuos ocupados (emp_ci==1)
+	egen ylmpri_ci=rowtotal(ysmop ycmop) if emp_ci==1, missing //Se suman los ingresos principales solo para los individuos ocupados (emp_ci==1)
 	replace ylmpri_ci=0 if inlist(condocup_ci,2,3) //Inactivos o Desocupados registran ingresos de 0
 	replace ylmpri_ci=0 if categopri_ci==4 //Aquellos trabajadores con categoría ocupacional no remunerado (categopri_ci==4) registran ingresos de 0
 	replace ylmpri_ci=0 if ylmpri_ci<0 //Se reemplazan los valores negativos por 0
@@ -902,7 +902,7 @@ use `base_in', clear
 /*			YSMOS	Ingreso salario monetario ocupación secundaria
 			YCMOS	Ingreso monetario por cuenta propia ocupación secundaria
 */
-	egen ylmsec_ci=rowtotal(YSMOS YCMOS) if emp_ci==1, missing //Se suman los ingresos secundarios solo para los individuos ocupados (emp_ci==1)
+	egen ylmsec_ci=rowtotal(ysmos ycmos) if emp_ci==1, missing //Se suman los ingresos secundarios solo para los individuos ocupados (emp_ci==1)
 	replace ylmsec_ci=0 if inlist(condocup_ci,2,3) //Inactivos o Desocupados registran ingresos de 0
 	replace ylmsec_ci=0 if categopri_ci==4 //Aquellos trabajadores con categoría ocupacional no remunerado (categopri_ci==4) registran ingresos de 0
 	replace ylmsec_ci=0 if ylmsec_ci<0 //Se reemplazan los valores negativos por 0
@@ -925,7 +925,7 @@ use `base_in', clear
 /*			YCEOP	Ingreso en especies por cuenta propia ocupación principal
 			YSEOP	Ingreso salario en especies ocupación principal
 */	
-	egen ylnmpri_ci=rowtotal(YCEOP YSEOP) if emp_ci==1, missing //Se considera la suma de los ingresos PRINCIPALES en especies (YCEOP & YSEOP) de las personas ocupadas (emp_ci==1).
+	egen ylnmpri_ci=rowtotal(yceop yseop) if emp_ci==1, missing //Se considera la suma de los ingresos PRINCIPALES en especies (YCEOP & YSEOP) de las personas ocupadas (emp_ci==1).
 	replace ylnmpri_ci = . if ylnmpri_ci < 0 & ylnmpri_ci != .
 	label var ylnmpri_ci "Ingreso Laboral No Monetario de la Actividad Principal"
 	
@@ -935,7 +935,7 @@ use `base_in', clear
 /*			YSEOS	Ingreso salario en especies ocupación secundaria
 			YCEOS	Ingreso en especies por cuenta propia ocupación secundaria
 */
-   	egen ylnmsec_ci=rowtotal(YSEOS YCEOS) if emp_ci==1, missing //Se considera la suma de los ingresos SECUNDARIAS en especies (YSMOS & YCMOS) de las personas ocupadas (emp_ci==1).
+   	egen ylnmsec_ci=rowtotal(yseos yceos) if emp_ci==1, missing //Se considera la suma de los ingresos SECUNDARIAS en especies (YSMOS & YCMOS) de las personas ocupadas (emp_ci==1).
     replace ylnmsec_ci = . if ylnmsec_ci < 0 & ylnmsec_ci != .
 
 	****************
@@ -963,81 +963,81 @@ use `base_in', clear
 *https://www.google.com/finance/quote/HNL-USD?sa=X&sqi=2&ved=2ahUKEwjI_omd2b-QAxXGGbkGHRWoB2YQmY0JegQIDRAo&window=5Y
 	
 	*1  Pensión  yhpens 
-	gen jubi = OIH01_LPS/3
-	gen jubid = (OIH01_US*tc_c1)/3     
+	gen jubi = oih01_lps/3
+	gen jubid = (oih01_us*tc_c1)/3     
 
 	*2  Jubilación yhjubi 
-	gen pens = OIH02_LPS/3
-	gen pensd = (OIH02_US*tc_c1)/3  
+	gen pens = oih02_lps/3
+	gen pensd = (oih02_us*tc_c1)/3  
 
 	*3  Alquileres yhalqu  
-	gen alqui = OIH03_LPS/3   
-	gen alquid = (OIH03_US*tc_c1)/3
+	gen alqui = oih03_lps/3   
+	gen alquid = (oih03_us*tc_c1)/3
 
 	*4  Descuentos por la 3a edad 
-	gen desc3ed = OIH04/3                                    
+	gen desc3ed = oih04/3                                    
 
 	*5  Pensión por divorcio 
-	gen pendiv = OIH05_LPS/3 
-	gen pendivd = (OIH05_US*tc_c1)/3                                               
+	gen pendiv = oih05_lps/3 
+	gen pendivd = (oih05_us*tc_c1)/3                                               
 
 	*6  Ayudas familiares yhayuf  
-	gen ayuf = OIH06_LPS/3 
-	gen ayufd = (OIH06_US*tc_c1)/3 
+	gen ayuf = oih06_lps/3 
+	gen ayufd = (oih06_us*tc_c1)/3 
 	*especies
-	gen ayufes = OIH06_LPS_ESP/3
-	gen ayufesd = (OIH06_US_ESP*tc_c1)/3                                           
+	gen ayufes = oih06_lps_esp/3
+	gen ayufesd = (oih06_us_esp*tc_c1)/3                                           
 
 	*7  Ayudas particulares  yhayup
-	gen ayup = OIH07_LPS/3
-	gen ayupd = (OIH07_US*tc_c1)/3
+	gen ayup = oih07_lps/3
+	gen ayupd = (oih07_us*tc_c1)/3
 	*especies
-	gen ayupes = OIH07_LPS_ESP/3
-	gen ayupesd = (OIH07_US_ESP*tc_c1)/3    
+	gen ayupes = oih07_lps_esp/3
+	gen ayupesd = (oih07_us_esp*tc_c1)/3    
 
 	*8  Alimentacion escolar
-	gen alimes = OIH08/3
+	gen alimes = oih08/3
 
 	*9  Bolsón útiles escolares
-	gen bolspra = OIH09/3
+	gen bolspra = oih09/3
 
 	*10 Uniformes escolares
-	gen meresc = OIH10/3
+	gen meresc = oih10/3
 
 	*11 Becas  
-	gen beca = OIH11/3 
+	gen beca = oih11/3 
 
 	*12 Remesas del exterior yhreme 
-	gen remesa = OIH12_LPS/3 
-	gen remesad = (OIH12_US*tc_c1)/3
+	gen remesa = oih12_lps/3 
+	gen remesad = (oih12_us*tc_c1)/3
 	*especies
-	gen remesp = OIH12_LPS_ESP/3
-	gen remespd = (OIH12_US_ESP*tc_c1)/3
+	gen remesp = oih12_lps_esp/3
+	gen remespd = (oih12_us_esp*tc_c1)/3
 
 	*13 Bono esperanza - discapacidad
-	gen bondis = OIH13/3
+	gen bondis = oih13/3
 
 	*14 Bono oro
-	gen bonoro = OIH14/3 
+	gen bonoro = oih14/3 
 
 	*15 Bono tecnológico
-	gen bonotec = OIH15/3 
+	gen bonotec = oih15/3 
 
 	*16 Bono Rosa  
-	gen bonorosa = OIH16/3 
+	gen bonorosa = oih16/3 
 
 	*17 y 18: Subsidios de energía y combustible
-	egen subsidio_ = rowtotal(OIH17 OIH18), missing
+	egen subsidio_ = rowtotal(oih17 oih18), missing
 	gen subsidio = subsidio_/3
 	drop subsidio_
 
 	*19 Otros programas del gobierno  
-	gen otrospro = OIH19_LPS/3 
-	gen otrosproesp = OIH19_LPS_ESP/3                                             
+	gen otrospro = oih19_lps/3 
+	gen otrosproesp = oih19_lps_esp/3                                             
 
 	*20 Otros       
-	gen otros = OIH20_LPS/3 
-	gen otrosesp = OIH20_LPS_ESP/3
+	gen otros = oih20_lps/3 
+	gen otrosesp = oih20_lps_esp/3
 
 	*Se suman todas las variables for filas
 	egen ynlm_ci=rsum(jubi jubid pens pensd alqui alquid desc3ed pendiv pendivd ayuf ayufd ayup ayupd  beca remesa remesad bondis  bonoro bonotec bonorosa subsidio otrospro otros), missing
@@ -1189,22 +1189,22 @@ use `base_in', clear
 	*Variable ED08 - ¿Cuál es su último grado o año aprobado? 
 	*Variable ED05 - ¿Cuál es el nivel educativo más alto alcanzado?
 	gen aedu_ci=.
-	replace aedu_ci=0 if (ED05>=1 & ED05<=3) // Hasta educación pre-básica
-	replace aedu_ci=ED08 if ED05==4  & ED08<99 // Educación básica
-	replace aedu_ci=9+ED08 if ED05==5 & ED08<99 //9 años de basica - ciclo comun
-	replace aedu_ci=9+ED08 if ED05==6 & ED08<99 //9 años de basica - ciclo div
-	replace aedu_ci=11+ED08 if (ED05==7 |ED05==8 |ED05==9) & ED08<99 // Terciario 
-	replace aedu_ci=15+ED08 if (ED05==10) & ED08<99 //Post
+	replace aedu_ci=0 if (ed05>=1 & ed05<=3) // Hasta educación pre-básica
+	replace aedu_ci=ed08 if ed05==4  & ed08<99 // Educación básica
+	replace aedu_ci=9+ed08 if ed05==5 & ed08<99 //9 años de basica - ciclo comun
+	replace aedu_ci=9+ed08 if ed05==6 & ed08<99 //9 años de basica - ciclo div
+	replace aedu_ci=11+ed08 if (ed05==7 |ed05==8 |ed05==9) & ed08<99 // Terciario 
+	replace aedu_ci=15+ed08 if (ed05==10) & ed08<99 //Post
 
 	*Este grupo de variables es para quienes "sí siguen educando	actualmente"
 	*Variable ED13 - ¿Cuál es el año o grado que cursa actualmente 2024? 
 	*Variable ED10 - ¿Cuál es el nivel educativo en el que estudia actualmente?
-	replace aedu_ci=0 if (ED10>=1 & ED10<=3) // Hasta educación pre-básica
-	replace aedu_ci=ED13 - 1 if ED10==4 & ED13<99 // Educación básica
-	replace aedu_ci=9+ED13 - 1 if ED10==5 //9 años de basica - ciclo comun
-	replace aedu_ci=9+ED13 - 1 if ED10==6 //9 años de basica- ciclo div
-	replace aedu_ci=11+ED13 - 1 if (ED10==7 | ED10==8 | ED10==9) //Terciario
-	replace aedu_ci=15+ED13 - 1 if (ED10==10) & ED13<99 //Post
+	replace aedu_ci=0 if (ed10>=1 & ed10<=3) // Hasta educación pre-básica
+	replace aedu_ci=ed13 - 1 if ed10==4 & ed13<99 // Educación básica
+	replace aedu_ci=9+ed13 - 1 if ed10==5 //9 años de basica - ciclo comun
+	replace aedu_ci=9+ed13 - 1 if ed10==6 //9 años de basica- ciclo div
+	replace aedu_ci=11+ed13 - 1 if (ed10==7 | ed10==8 | ed10==9) //Terciario
+	replace aedu_ci=15+ed13 - 1 if (ed10==10) & ed13<99 //Post
 
 	label var aedu_ci "Años de educación aprobados"	
 
@@ -1219,8 +1219,8 @@ use `base_in', clear
 	**********
 	*eduui_ci: Variable dicotómica que indica con valor 1 si el mayor nivel educativo alcanzado corresponde a educación técnica o universitaria incompleta y con 0 el resto.*
 	**********
-	gen byte eduui_ci=(ED07==2 & inrange(ED05,6,8)) 
-	replace eduui_ci=1 if inrange(ED10,6,8) & eduui_ci==0
+	gen byte eduui_ci=(ed07==2 & inrange(ed05,6,8)) 
+	replace eduui_ci=1 if inrange(ed10,6,8) & eduui_ci==0
 	replace eduui_ci=. if aedu_ci==. 
 	la var eduui_ci "Universitaria o Terciaria Incompleta"
 	label var eduui_ci "Educación superior completa o en curso"
@@ -1228,9 +1228,9 @@ use `base_in', clear
 	**********
 	*eduuc_ci: Variable dicotómica que indica con valor 1 si el mayor nivel educativo alcanzado corresponde a educación técnica, universitaria completa, o posgrado (completa o incompleta), y con 0 el resto.*
 	**********
-	gen byte eduuc_ci=(ED07==1 & inrange(ED05,6,8)) 
-	replace eduuc_ci=1 if inrange(ED05,9,11) 
-	replace eduuc_ci=1 if inrange(ED10,9,10)  & eduuc_ci==0
+	gen byte eduuc_ci=(ed07==1 & inrange(ed05,6,8)) 
+	replace eduuc_ci=1 if inrange(ed05,9,11) 
+	replace eduuc_ci=1 if inrange(ed10,9,10)  & eduuc_ci==0
 	replace eduuc_ci=. if aedu_ci==.
 	label var eduuc_ci "Universitaria o Terciaria Completa"
 	
@@ -1246,8 +1246,8 @@ use `base_in', clear
 	*asiste_ci: Variable dicotómica que indica con valor 1 si la persona asiste a algún centro de enseñanza o institución de educación superior al momento de ser encuestado, con 0 si no asiste y con perdido el resto.*
 	***********
 	gen	asiste_ci=. 
-	replace asiste_ci=1 if ED03==1 //Asiste a centro de enseñanza
-	replace asiste_ci=0 if ED03==2 //No Asiste
+	replace asiste_ci=1 if ed03==1 //Asiste a centro de enseñanza
+	replace asiste_ci=0 if ed03==2 //No Asiste
 	label var asiste_ci "Personas que actualmente asisten a centros de enseñanza"
 	*  4.7% de missings
 	
@@ -1255,15 +1255,15 @@ use `base_in', clear
 	*edupub_ci: Variable dicotómica que indica con valor 1 si la persona asiste a algún centro de enseñanza pública al momento de la encuesta, con 0 si asiste a un centro de enseñanza privada, y con perdido si no asiste o no responde a la pregunta. *
 	***********
 	gen edupub_ci=.
-	replace edupub_ci=1 if inrange(ED14,1,3) & asiste_ci==1
-	replace edupub_ci=0 if inrange(ED14,4,9) & asiste_ci==1
+	replace edupub_ci=1 if inrange(ed14,1,3) & asiste_ci==1
+	replace edupub_ci=0 if inrange(ed14,4,9) & asiste_ci==1
 	label var edupub_ci "1 = personas que asisten a centros de enseñanza publicos"
 	* 74.7% missings
 	
 	************
 	*asispre_ci: Asistencia a preescolar. Variable dicotómica que indica con valor 1 si la persona asiste actualmente a educación preescolar, y con 0 al resto (no tiene valores perdidos).*
 	************
-	gen byte asispre_ci=(ED10==3) if asiste_ci==1   // Asiste a pre-básica - es dummy solo dentro de la población de referencia
+	gen byte asispre_ci=(ed10==3) if asiste_ci==1   // Asiste a pre-básica - es dummy solo dentro de la población de referencia
 	label var asispre_ci "Asiste a educacion prescolar"	
 
 	*************
@@ -1290,11 +1290,11 @@ use `base_in', clear
 	*/
 	
 	gen razonesnoasis_ci = .
-	replace razonesnoasis_ci = 1 if inlist(ED04,8,13) // Problemas Económicos - Trabajo
-	replace razonesnoasis_ci = 2 if inlist(ED04,3, 2) // Falta de Interés 
-	replace razonesnoasis_ci = 3 if inlist(ED04,4,6,7,11,12) // Problemas familiares o de salud
-	replace razonesnoasis_ci = 4 if inlist(ED04,5, 9, 10) // Problemas de acceso
-	replace razonesnoasis_ci = 5 if inlist(ED04, 14) //Otros problemas
+	replace razonesnoasis_ci = 1 if inlist(ed04,8,13) // Problemas Económicos - Trabajo
+	replace razonesnoasis_ci = 2 if inlist(ed04,3, 2) // Falta de Interés 
+	replace razonesnoasis_ci = 3 if inlist(ed04,4,6,7,11,12) // Problemas familiares o de salud
+	replace razonesnoasis_ci = 4 if inlist(ed04,5, 9, 10) // Problemas de acceso
+	replace razonesnoasis_ci = 5 if inlist(ed04, 14) //Otros problemas
 	
 	replace razonesnoasis_ci = . if asiste_ci==1 // Consistencia: No se debe contar con razones de no asistencia si la variable de asiste_ci==1. 
 
@@ -1320,8 +1320,8 @@ use `base_in', clear
 			8	Otro
 	*/
 	
-	gen luz_ch=1 if inrange(V07,1,4) 
-	replace luz_ch=0 if inrange(V07,5,8)
+	gen luz_ch=1 if inrange(v07,1,4) 
+	replace luz_ch=0 if inrange(v07,5,8)
 	label define luz_ch 0 "La principal fuente no es la electricidad" 1 "La principal fuente sí es la electricidad"
 	label values luz_ch luz_ch
 	* Missing si no responde -   0.77% 
@@ -1343,8 +1343,8 @@ use `base_in', clear
 			5	Otro	
 	*/
 	
-	gen     combust_ch=1 if inlist(H04,2,3,4) // Electricidad o Gas
-	replace combust_ch=0 if inlist(H04,1,5) // Leña u Otro 
+	gen     combust_ch=1 if inlist(h04,2,3,4) // Electricidad o Gas
+	replace combust_ch=0 if inlist(h04,1,5) // Leña u Otro 
 	* 0.51%  missings
 
 	***********
@@ -1426,10 +1426,10 @@ use `base_in', clear
 	*/	
 	
 	gen resid_ch=.
-	replace resid_ch=0 if inlist(V08,1,2,3) // Recolección pública o privada
-	replace resid_ch=1 if inlist(V08,4,6) // Quemados o enterrados
-	replace resid_ch=2 if inlist(V08,7) // Tirados a un espacio abierto
-	replace resid_ch=3 if inlist(V08,5,8) // Otros (prepara abono y otros)
+	replace resid_ch=0 if inlist(v08,1,2,3) // Recolección pública o privada
+	replace resid_ch=1 if inlist(v08,4,6) // Quemados o enterrados
+	replace resid_ch=2 if inlist(v08,7) // Tirados a un espacio abierto
+	replace resid_ch=3 if inlist(v08,5,8) // Otros (prepara abono y otros)
 	
 	label define resid_ch 		0 "Recoleccion publica o privada" ///
 								1 "Quemados o enterrados" ///
@@ -1442,7 +1442,7 @@ use `base_in', clear
 	***********
 	*dorm_ch: cantidad de habitación que se destinan exclusivamente para dormir*
 	***********
-	gen dorm_ch=H09 if 0<=H09 // Variable que menciona cuantas piezas se usan para dormir*
+	gen dorm_ch=h09 if 0<=h09 // Variable que menciona cuantas piezas se usan para dormir*
 	replace dorm_ch=0  if dorm_ch==. // 2 observaciones con missings
 	* Se restrige la variable para los valores positivos de H09 dado que la variable tiene valores de -1
 	
@@ -1463,20 +1463,20 @@ use `base_in', clear
 			5	No cocina
 	*/
 	gen cocina_ch=.
-	replace cocina_ch=1 if H02==1 // Tienen un cuarto solo para cocinar 
-	replace cocina_ch=0 if inrange(H02,2,5) //Cocinan en un cuarto compartido o no cocinan
+	replace cocina_ch=1 if h02==1 // Tienen un cuarto solo para cocinar 
+	replace cocina_ch=0 if inrange(h02,2,5) //Cocinan en un cuarto compartido o no cocinan
  	
 	***********
 	*telef_ch: el hogar tiene servicio telefónico fijo ***
 	***********
-	gen telef_ch2=(H01_7>=1 & H01_7!=.) //Tiene telefonos fijos y respondió la pregunta
-	replace telef_ch2=. if H01_7==.
+	gen telef_ch2=(h01_7>=1 & h01_7!=.) //Tiene telefonos fijos y respondió la pregunta
+	replace telef_ch2=. if h01_7==.
 	
 	***********
 	*refrig_ch: si el hogar posee heladera o refrigerador*
 	***********
-	gen refrig_ch=(H01_1>=1 & H01_1!=.) // Tiene al menos una refrigeradora y respondió la pregunta
-	replace refrig_ch=. if H01_1==.
+	gen refrig_ch=(h01_1>=1 & h01_1!=.) // Tiene al menos una refrigeradora y respondió la pregunta
+	replace refrig_ch=. if h01_1==.
 
 	***********
 	*freez_ch: si el hogar posee freezer o congelador*
@@ -1486,14 +1486,14 @@ use `base_in', clear
 	***********
 	*auto_ch: si el hogar posee (tiene propiedad) al menos un automóvil particular*
 	***********
-	gen auto_ch=(H01_8>=1 & H01_8!=.) // Tiene al menos un automóvil y respondió la pregunta
-	replace auto_ch=. if H01_8==. // Missing si no responden
+	gen auto_ch=(h01_8>=1 & h01_8!=.) // Tiene al menos un automóvil y respondió la pregunta
+	replace auto_ch=. if h01_8==. // Missing si no responden
 	
 	***********
 	*compu_ch: si el hogar posee computadora*
 	***********
-	gen compu_ch=(H01_11>=1 & H01_11!=.) // Tiene al menos una computadora y respondió la pregunta
-	replace compu_ch=. if H01_11==. // Missing si no responden
+	gen compu_ch=(h01_11>=1 & h01_11!=.) // Tiene al menos una computadora y respondió la pregunta
+	replace compu_ch=. if h01_11==. // Missing si no responden
 
 	***********
 	*internet_ch: si el hogar posee conexión a internet*
@@ -1515,14 +1515,14 @@ use `base_in', clear
 			8	Otro sitio
 	*/
 	
-	gen internet_ch=(TIC03==1 & AT05_1==1) // Tuvo acceso durante los últimos 3 meses a internet (TIC03)-- en su casa  (AT05_1)
- 	replace internet_ch=. if (TIC03==. | TIC03==3) & AT05_1==.
+	gen internet_ch=(tic03==1 & at05_1==1) // Tuvo acceso durante los últimos 3 meses a internet (TIC03)-- en su casa  (AT05_1)
+ 	replace internet_ch=. if (tic03==. | tic03==3) & at05_1==.
 	
 	***********
 	*cel_ch: si al menos un integrante del hogar tiene servicio telefónico celular activa*
 	***********
-	gen cel_ch=(TIC09==1)
-	replace cel_ch=. if TIC09==.
+	gen cel_ch=(tic09==1)
+	replace cel_ch=. if tic09==.
 
 	**************
 	***vivi1_ch: Tipo de vivienda en la que reside el hogar***
@@ -1539,9 +1539,9 @@ use `base_in', clear
 	*/	
 	
 	gen vivi1_ch=.
-	replace vivi1_ch=1 if inlist(V01,1,2,3) // Casa individual, rancho o improvisada
-	replace vivi1_ch=2 if inlist(V01,4) // Apartamento / Departamento
-	replace vivi1_ch=3 if inlist(V01,5,6,7) // Otros
+	replace vivi1_ch=1 if inlist(v01,1,2,3) // Casa individual, rancho o improvisada
+	replace vivi1_ch=2 if inlist(v01,4) // Apartamento / Departamento
+	replace vivi1_ch=3 if inlist(v01,5,6,7) // Otros
 	
 	label define vivi1_ch 		1 "Casa" ///
 								2 "Departamento" ///
@@ -1571,11 +1571,11 @@ use `base_in', clear
 	*/	
 	
 	gen viviprop_ch=.
-	replace viviprop_ch=0 if V10==1 // Alquilada
-	replace viviprop_ch=1 if V10==3 // Propia y totalmente pagada
-	replace viviprop_ch=2 if V10==2 // Propia y pagandola
-	replace viviprop_ch=3 if inlist(V10,4,5,6,7) // Ocupada
-	replace viviprop_ch=. if V10==.
+	replace viviprop_ch=0 if v10==1 // Alquilada
+	replace viviprop_ch=1 if v10==3 // Propia y totalmente pagada
+	replace viviprop_ch=2 if v10==2 // Propia y pagandola
+	replace viviprop_ch=3 if inlist(v10,4,5,6,7) // Ocupada
+	replace viviprop_ch=. if v10==.
 	
 	label define viviprop_ch 		0 "Alquilada" ///
 									1 "Propia y totalmente pagada" ///
@@ -1597,8 +1597,8 @@ use `base_in', clear
 	***********
 	*vivialqimp_ch: Monto mensual del valor que el informante cree que le pagarían por su vivienda propia que ocupa*
 	***********
-	gen vivialqimp_ch=V11 // Misma variable que en la encuesta 
-	replace vivialqimp_ch=. if V11==99999 // 99999 es la codificación para missings
+	gen vivialqimp_ch=v11 // Misma variable que en la encuesta 
+	replace vivialqimp_ch=. if v11==99999 // 99999 es la codificación para missings
 	
 	*No se cumple la regla de consistencia. Aparentemente, a todas las personas cuya vivienda es alquilada se le puso missing en esta sección. 
 
@@ -1624,8 +1624,8 @@ use `base_in', clear
 	*/
 	
 	generate  aguared_ch =.
-	replace   aguared_ch = 1 if inlist(V05,1,2)  // agua por red pública
-	replace   aguared_ch = 0 if inrange(V05,3,9) // agua por red privada o del vecino
+	replace   aguared_ch = 1 if inlist(v05,1,2)  // agua por red pública
+	replace   aguared_ch = 0 if inrange(v05,3,9) // agua por red privada o del vecino
 	la var    aguared_ch "Acceso a fuente de agua por red"
 
 	***********
@@ -1657,12 +1657,12 @@ use `base_in', clear
 	*/
 	
     gen aguafuente_ch =.
-	replace aguafuente_ch = 1 if inlist(V05,1,2) & V06<=2
-	replace aguafuente_ch = 2 if inlist(V05,5)  | (inlist(V05,1,2)  &V06>2) 
-	replace aguafuente_ch = 6 if inlist(V05,7) 
-	replace aguafuente_ch = 7 if inlist(V05,8)
-	replace aguafuente_ch = 8 if inlist(V05,6)
-	replace aguafuente_ch = 10 if inlist(V05, 3, 4, 9, 99) | missing(V05)
+	replace aguafuente_ch = 1 if inlist(v05,1,2) & v06<=2
+	replace aguafuente_ch = 2 if inlist(v05,5)  | (inlist(v05,1,2)  &v06>2) 
+	replace aguafuente_ch = 6 if inlist(v05,7) 
+	replace aguafuente_ch = 7 if inlist(v05,8)
+	replace aguafuente_ch = 8 if inlist(v05,6)
+	replace aguafuente_ch = 10 if inlist(v05, 3, 4, 9, 99) | missing(v05)
 
 	label define aguafuente_ch 		1 "Red de distribución, llave privada" ///
 									2 "Llave pública, standpipe" ///
@@ -1688,9 +1688,9 @@ use `base_in', clear
 	*/
 	
 	gen aguadist_ch=.
-	replace aguadist_ch= 1 if V06==1 // Adentro de la vivienda
-	replace aguadist_ch= 2 if V06==2 //Fuera de la vivienda, pero adentro de la propiedad
-	replace aguadist_ch= 3 if V06==3 & V06==4 //Fuera de la propiedad
+	replace aguadist_ch= 1 if v06==1 // Adentro de la vivienda
+	replace aguadist_ch= 2 if v06==2 //Fuera de la vivienda, pero adentro de la propiedad
+	replace aguadist_ch= 3 if v06==3 & v06==4 //Fuera de la propiedad
 	
 	label define aguadist_ch 		1 "Adentro de la vivienda" ///
 									2 "Afuera de la vivienda, pero adentro del terreno" ///
@@ -1724,7 +1724,7 @@ use `base_in', clear
 	** aguamejorada_ch: acceso a agua potable de fuente mejorada ** 
 	*****************
 	gen byte aguamejorada_ch = 2
-	replace aguamejorada_ch = 0 if aguafuente_ch>7 & aguafuente_ch!=10
+	replace aguamejorada_ch = 0 if aguafuente_ch>7 & aguafuente_ch!=10 & aguafuente_ch!=.
 	replace aguamejorada_ch = 1 if aguafuente_ch<=7
 	
 	******************
@@ -1758,10 +1758,9 @@ use `base_in', clear
 	replace bano_ch=0 if inlist(H06,2) //No tiene acceso a servicios sanitarios
  	replace bano_ch=1 if inlist(H07,1) //Inodoro conectado a alcantarilla
 	replace bano_ch=2 if inlist(H07,2) //Inodoro a pozo séptico
-	replace bano_ch=3 if inlist(H07,5) // Letrina
-	replace bano_ch=4 if inlist(H07,3) // Inodoro con desague a río/laguna/mar
-	replace bano_ch=5 if inlist(H07,4,6,7) // Instalaciones no mejoradas
-	replace bano_ch=6 if inlist(H07,8) // Instalaciones no clasificada
+	replace bano_ch=3 if inlist(H07,6,7) // Letrina
+	replace bano_ch=4 if inlist(H07,3,4) // Inodoro con desague a río/laguna/mar
+	replace bano_ch=6 if inlist(H07,8,5,.) // Instalaciones no clasificada 
 
 	label define bano_ch 			0 "Sin instalaciones" ///
 									1 "Inodoro a red de desagüe" ///
@@ -1777,8 +1776,8 @@ use `base_in', clear
 	** banoex_ch: Instalaciones del hogar son de uso exclusivo ** 
 	*****************
 	gen banoex_ch=.
-	replace banoex_ch = 1 if H08==1
-	replace banoex_ch = 0 if H08==2
+	replace banoex_ch = 1 if h08==1
+	replace banoex_ch = 0 if h08==2
 	la var banoex_ch "El servicio sanitario es exclusivo del hogar"
 
 	******************
@@ -1795,7 +1794,7 @@ use `base_in', clear
 	*/
 	
 	gen sinbano_ch =3
-	replace sinbano_ch = 0 if bano_ch>0
+	replace sinbano_ch = 0 if bano_ch>0 & bano_ch!=.
 	label var sinbano_ch "hogares sin acceso a instalaciones propias."
 	
 		label define sinbano_ch 	0 "El hogar tiene baño propio" ///
@@ -1854,8 +1853,8 @@ use `base_in', clear
 	*/
 		
 	gen byte pobre_ine_ci= . 
-	replace pobre_ine_ci= 1 if POBREZA==1 | POBREZA==2 //Pobres extremos y relativos
-	replace pobre_ine_ci= 0 if POBREZA==3 //No pobres
+	replace pobre_ine_ci= 1 if pobreza==1 | pobreza==2 //Pobres extremos y relativos
+	replace pobre_ine_ci= 0 if pobreza==3 //No pobres
 
 	****************
 	 * bienestar_agregado: Variable continua que indica los valores de bienestar que ocupa la encuesta en ingreso o consumo totales por individuo, usualmente esta variable contendrá valores imputados o limpiados por el instituto estadístico de cada país.*
@@ -1863,7 +1862,7 @@ use `base_in', clear
 	*YPERHG: Ingreso percapita de los hogares
 	* El valor del Ingreso percapita YPERHG, "solo se asigna al jefe del hogar" - el resto es missing *
 	* Al parecer se calcula la pobreza por hogar - no por individuos*
-	gen bienestar_agregado = YPERHG
+	gen bienestar_agregado = yperhg
 
 	****************
 	* lpe_ci: Linea de pobreza extrema*

@@ -366,30 +366,25 @@ label variable nmenor1_ch "Miembros menores a 1 año dentro del Hogar"
 *********
 *afro_ci*
 *********
-gen byte afro_ci = (q01_13==1 | q01_13==2) 	  
-
-* Incluye black y mixed
+gen byte afro_ci = . 
+replace afro_ci = 1 if q01_13 == 1 
+replace afro_ci = 0 if q01_13 != 1
 
 *********
 *ind_ci*
 *********	
-gen byte ind_ci =. 		  // se queda como missing (.) si no existe la pregunta
+gen byte ind_ci =. 		   // la pregunta de etnicidad no contempla opciones para población indígena.
 
 **************
 *noafroind_ci*
 **************
-gen byte noafroind_ci = (q01_13!=1 & q01_13!=2) 
+gen byte noafroind_ci = .
 
 
 ************
 *afroind_ci*
 ************
 gen byte afroind_ci=. 
-replace afroind_ci=2 if q01_13==1 | q01_13==2
-replace afroind_ci=3 if q01_13>=3 & q01_13<=97
-label define afroind_ci 1 "Indigenous" 2"African Descendant" 3"Other" 
-label values afroind_ci afroind_ci
-
 
 
 *********
@@ -442,23 +437,22 @@ q03_26: Does [NAME] have difficulty with self care such as washing all over or d
 ********
 *dis_ci*
 ********
-egen disab=rsum(q03_22 q03_23 q03_24 q03_25 q03_26)
-gen byte dis_ci=(disab>=6)
-replace dis_ci=. if q03_22==. & q03_23==. & q03_24==. & q03_25==. & q03_26==. 
-drop disab
+gen dis_ci = . 
+replace dis_ci = 1 if q03_22 > 1 | q03_23 > 1 |  q03_24 > 1 | q03_25 > 1 | q03_26  > 1 | q03_27  > 1 
+replace dis_ci = 0 if q03_22 == 1 & q03_23 == 1 &  q03_24 == 1 & q03_25 == 1 & q03_26  == 1 & q03_27  == 1 
+replace dis_ci = . if  q03_22 == . & q03_23 == . &  q03_24 == . & q03_25 == . & q03_26  == . & q03_27  == .
+
+
 **********
 *disWG_ci*
 **********
 
-foreach var in q03_22 q03_23 q03_24 q03_25 q03_26{
-	gen `var'_WG=(`var'==3 | `var'==4)
-}
-egen dis_WG=rsum(q03_22_WG q03_23_WG q03_24_WG q03_25_WG q03_26_WG)
+gen disWG_ci = . 
+replace disWG_ci = 1 if q03_22 > 2 | q03_23 > 2 |  q03_24 > 2 | q03_25 > 2 | q03_26  > 2 | q03_27  > 2 
+replace disWG_ci = 0 if q03_22 <= 2 & q03_23 <= 2 &  q03_24 <= 2 & q03_25 <= 2 & q03_26  <= 2 & q03_27  <= 2 
+replace disWG_ci = . if  q03_22 == . & q03_23 == . &  q03_24 == . & q03_25 == . & q03_26  == . & q03_27  == .
+tab disWG_ci
 
-
-gen byte disWG_ci=(dis_WG>=1)
-replace disWG_ci=. if q03_22==. & q03_23==. & q03_24==. & q03_25==. & q03_26==. 
-drop q03_22_WG q03_23_WG q03_24_WG q03_25_WG q03_26_WG dis_WG
 
 ********
 *dis_ch*

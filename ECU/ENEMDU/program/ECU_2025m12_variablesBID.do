@@ -37,7 +37,7 @@ capture log close
 log using "`log_file'", replace 
 */****************************************************************************/
 
-use `base_in', clear
+use "`base_in'", clear
 *destring *, replace
 	
 */****************************************************************************/
@@ -1028,10 +1028,15 @@ use `base_in', clear
 	************
 	*sinbano_ch*
 	************
-	gen sinbano_ch = 3
-	replace sinbano_ch = 0 if vi09! = 5 | vi09a == 1
-	replace sinbano_ch = 1 if vi09a == 3
-	replace sinbano_ch = 2 if vi09a == 2
+	/*** 0 Tiene baño si (Tiene algún tipo de servicio higiénico) ***.
+	*** 1 Utiliza inst. pub. o vecino o amigo si (No tiene y utiliza instalacion cercana y/o prestada) ***.
+	*** 2 Defecación al aire libre si (No tiene y van al monte, campo, bota la basura en paquete + descarga directa hacia el mar, rio, lago o quebrada) ***.
+	*** 3 No tiene baño sin especificar ninguna alternativa de uso si (No tiene y no especifica que alternativa a usar) */
+	gen sinbano_ch = .
+	replace sinbano_ch = 0 if vi09 != 5
+	replace sinbano_ch = 1 if (vi09 == 5 & vi09a == 3)
+	replace sinbano_ch = 2 if (vi09 == 5 & (vi09a == 2 | vi09a == 1))
+	replace sinbano_ch = 3 if (vi09 == 5 & vi09a == .)
 
 	*****************
 	*banomejorado_ch*

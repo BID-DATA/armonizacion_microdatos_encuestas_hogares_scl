@@ -1333,20 +1333,15 @@ label value tipocontrato_ci tipocontrato_ci
 *************
 *tamemp_ci***
 *************
-gen tamemp_ci=1 if r421>=1 & r421<=5
-replace tamemp_ci=2 if r421>=6 & r421<=50
-replace tamemp_ci=3 if r421>50 & r421!=.
+gen tamemp_ci = .
+replace tamemp_ci = 1 if (r421>=1 & r421<=5)
+replace tamemp_ci = 2 if (r421>=6 & r421<=50)
+replace tamemp_ci = 3 if (r421>50 & r421 != .)
+replace tamemp_ci = . if condocup_ci!=1
 label var tamemp_ci "# empleados en la empresa segun rangos"
-	label define tamemp_ci 1 "Pequena" 2 "Mediana" 3 "Grande" 
-	label value tamemp_ci tamemp1_ci
+label define tamemp_ci 1 "Pequena" 2 "Mediana" 3 "Grande" 
+label value tamemp_ci tamemp_ci
 
-	gen tamemp_o=1 if r421>=1 & r421<=9
-replace tamemp_o=2 if r421>=10 & r421<50
-replace tamemp_o=3 if r421>=50 & r421!=.
-label var tamemp_o "# empleados en la empresa segun rangos-OECD"
-	label define tamemp_o 1 "[1-9]" 2 "[10-49]" 3 "[50 y mas]" 
-	label value tamemp_o tamemp_o
-	
 *************
 **pension_ci*
 *************

@@ -1783,15 +1783,17 @@ label var tipocontrato_ci "Tipo de contrato segun su duracion en act principal"
 label define tipocontrato_ci 0 "Con contrato" 1 "Permanente/indefinido" 2 "Temporal" 3 "Sin contrato/verbal" 
 label value tipocontrato_ci tipocontrato_ci
 
-***********mp_ci***
+***********tamemp_ci***
 *************
-gen tamemp_ci=1 if r420>=1 & r420<=5
-replace tamemp_ci=2 if r420>=6 & r420<=50
-replace tamemp_ci=3 if r420>50 & r420!=.
+gen tamemp_ci = .
+replace tamemp_ci = 1 if (r420>=1 & r420<=5)
+replace tamemp_ci = 2 if (r420>=6 & r420<=50)
+replace tamemp_ci = 3 if (r420>50 & r420 != .)
+replace tamemp_ci = . if condocup_ci!=1
 label var tamemp_ci "# empleados en la empresa segun rangos"
-	label define tamemp_ci 1 "Pequena" 2 "Mediana" 3 "Grande" 
-	label value tamemp_ci tamemp1_ci
-
+label define tamemp_ci 1 "Pequena" 2 "Mediana" 3 "Grande" 
+label value tamemp_ci tamemp_ci
+	
 *************
 **pension_ci*
 *************
@@ -2064,11 +2066,11 @@ sum ylmpri_ci nrylmpri_ci tcylmpri_ci ylnmpri_ci ylmsec_ci ylnmsec_ci ylmotros_c
 
 
 do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&ExternalVars_Harmonized_DataBank.do"
-
-/*_____________________________________________________________________________________________________*/
-* Verificación de que se encuentren todas las variables armonizadas 
+ Verificación de que se encuentren todas las variables armonizadas 
 /*_____________________________________________________________________________________________________*/
 
+/*_____________________________________________________________________________________________________*/
+*
     order region_BID_c region_c pais_c anio_c mes_c zona_c factor_ch idh_ch	idp_ci factor_ci factor_ch /// Identificación 
   sexo_ci edad_ci relacion_ci civil_ci jefe_ci nconyuges_ch nhijos_ch notropari_ch notronopari_ch nempdom_ch /// Demográficas 
   clasehog_ch nmiembros_ch miembros_ci nmayor21_ch nmenor21_ch nmayor65_ch nmenor6_ch nmenor1_ch /// Demográficas 

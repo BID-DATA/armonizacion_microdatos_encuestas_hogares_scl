@@ -1,5 +1,5 @@
 ***********************
-***** MERGE 2024 ******
+***** MERGE 2025 ******
 ***********************
 * Matias Rodriguez, mrodriguezm@iadb.org
 
@@ -9,7 +9,7 @@ global ruta = "${surveysFolder}"
 
 local PAIS SLV
 local ENCUESTA EHPM
-local ANO "2024"
+local ANO "2025"
 local ronda a 
 
 local log_file = "$ruta\harmonized\\`PAIS'\\`ENCUESTA'\log\\`PAIS'_`ANO'`ronda'_mergeBID.log"
@@ -19,14 +19,13 @@ local base_out = "$ruta\survey\\`PAIS'\\`ENCUESTA'\\`ANO'\\`ronda'\data_merge\\`
 capture log close
 log using "`log_file'", replace 
 
-* ehpm_2024
-import spss using "`base_in'\Base de datos EHPM 2024 con área geográfica.sav", clear 
-*import spss using "`base_in'\EHPM 2024.sav", clear  // no incluye area region correlativo municauto estratoarea codigomunic autorrepresentado
-duplicates r  idboleta r101 //  57366
+* ehpm_2025
+import spss using "`base_in'\Base de datos EHPM 2025.sav", clear
+
+duplicates r  idboleta r101 //  56463
 
 * comprime y guarda base
 compress
 saveold "`base_out'", v(12) replace
 
 log close
-

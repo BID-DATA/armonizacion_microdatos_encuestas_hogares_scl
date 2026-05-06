@@ -1390,14 +1390,14 @@ gen aguadisp2_ch = 9
 *************
 gen aguamala_ch = 2
 replace aguamala_ch = 0 if aguafuente_ch<=7
-replace aguamala_ch = 1 if aguafuente_ch>7 & aguafuente_ch!=10
+replace aguamala_ch = 1 if aguafuente_ch>7 & aguafuente_ch!=10 & aguafuente_ch!= .
 
 
 *****************
 *aguamejorada_ch*  Altered
 *****************
 gen aguamejorada_ch = 2
-replace aguamejorada_ch = 0 if aguafuente_ch>7 & aguafuente_ch!=10
+replace aguamejorada_ch = 0 if aguafuente_ch>7 & aguafuente_ch!=10 & aguafuente_ch!=.
 replace aguamejorada_ch = 1 if aguafuente_ch<=7 
 
 
@@ -1418,7 +1418,7 @@ replace bano_ch=1 if dh205==1
 replace bano_ch=2 if dh205==2
 replace bano_ch=3 if dh205==6 | dh205==7
 replace bano_ch=4 if (dh205==3 | dh205==4)
-replace bano_ch=6 if dh205==8 | dh205==5 
+replace bano_ch=6 if dh205==8 | dh205==5  | dh205==. 
 
 ***************
 ***banoex_ch***
