@@ -534,7 +534,9 @@ use `base_in', clear
 	replace condocup_ci = 2 if p501==2 & p502==2 & p503==2    //Desocupados
 	replace condocup_ci = 3 if condocup_ci == 2 & ( p5041==2 & p5042==2 & p5043==2 & p5044==2 & p5045==2 & p5046==2 & p5047==2 & p5048==2 & p5049==2 & p50410==2 & p50411==2 ) //Inactivos
 	replace condocup_ci = 4 if edad_ci<14 //Según la encuesta, las preguntas sobre ocupación se hacen a personas de 14 años y más de edad
-	
+	label var condocup_ci "Condicion de ocupacion utilizando definicion del pais"
+	label define condocup_ci 1"ocupados" 2"desocupados" 3"inactivos" 4"menor de PET"
+	label value condocup_ci condocup_ci
 	
 	*******************
 	***categoinac_ci: Identifica la condición de inactividad de los individuos.***
@@ -564,7 +566,10 @@ use `base_in', clear
 	**********
 	*Codigo Extraido del Manual
 	gen byte emp_ci = .
-	replace emp_ci = (condocup_ci == 1) if condocup_ci != .	
+	replace emp_ci = (condocup_ci == 1) if (condocup_ci != . & condocup_ci != 4)
+	label var emp_ci "Ocupado (empleado)"
+	label define emp_ci 0"No ocupado" 1"Ocupado", add
+	label value emp_ci emp_ci
 	* Notar de la manera como está definido - niños menores tendrían cero de valor -- no missing -- sino cero
 
 
@@ -601,8 +606,6 @@ use `base_in', clear
 	gen byte subemp_ci = 0
 	replace  subemp_ci = 1 if horaspri_ci<=30 & p521==1 & p521a==1 & emp_ci==1 	
 	replace  subemp_ci = . if condocup_ci!=1	
-	
-	drop horaspri_ci
 	
 	
 	****************
@@ -649,8 +652,7 @@ use `base_in', clear
 	
 	drop anios_a meses_a
 	
-	
-	
+		
 	***************
 	***desalent_ci: Variable dicotómica que indica con el valor de 1 si las personas que se clasifican como inactivas declaran que no buscan trabajo por desanimo, cansancio o sentimiento de incapacidad. y con valor 0 al resto de los individuos de la población de referencia.***
 	***************
@@ -674,10 +676,12 @@ use `base_in', clear
 	*/
 	
 	* Recordar condocup_ci==3  -- Inactivo
-	
-	gen byte desalent_ci=.
-	replace desalent_ci=1 if condocup_ci==3 &  p545==2 &  (p549==1 | p549==2) //Se consideran los que creen que no les darán trabajo como desanimados
-	replace desalent_ci=0 if condocup_ci==3 & desalent_ci==.  //Se pone como 0 al resto 
+
+	gen byte desalent_ci = .
+	replace desalent_ci = (p545 == 2 & (p549 == 1 | p549 == 2) & condocup_ci == 3)
+	label var desalent_ci "Desalentados"
+	label define desalent_ci 0"No" 1"Si", add
+	label value desalent_ci desalent_ci
 	
 	
 	***************

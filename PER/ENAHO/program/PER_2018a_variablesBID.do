@@ -470,15 +470,14 @@ label variable miembros_ci "Miembro del hogar"
 ****************
 ****condocup_ci*
 ****************
-
-gen condocup_ci=.
-replace condocup_ci=1 if ocu500==1
-replace condocup_ci=2 if ocu500==2
-replace condocup_ci=3 if condocup_ci!=1 & condocup_ci!=2
-replace condocup_ci=4 if edad_ci<14
+gen byte condocup_ci = .
+replace condocup_ci = 1 if p501==1 | p502==1 | p503==1    //Ocupados
+replace condocup_ci = 2 if p501==2 & p502==2 & p503==2    //Desocupados
+replace condocup_ci = 3 if condocup_ci == 2 & (p5041==2 & p5042==2 & p5043==2 & p5044==2 & p5045==2 & p5046==2 & p5047==2 & p5048==2 & p5049==2 & p50410==2 & p50411==2 ) //Inactivos
+replace condocup_ci = 4 if edad_ci<14 //Según la encuesta, las preguntas sobre ocupación se hacen a personas de 14 años y más de edad
+label var condocup_ci "Condicion de ocupacion utilizando definicion del pais"
 label define condocup_ci 1"ocupados" 2"desocupados" 3"inactivos" 4"menor de PET"
 label value condocup_ci condocup_ci
-label var condocup_ci "Condicion de ocupacion utilizando definicion del pais"
 
 * MGD 06/06/2014: Se conserva la generacion de condocup_ci con la variable creada ya que coincide con series externas, 
 * al hacerla considerando la definicion con variables originales, no coincide la serie.
@@ -664,7 +663,11 @@ label var salmm_ci "Salario minimo legal"
 ************
 ***emp_ci***
 ************
-gen emp_ci=(condocup_ci==1)
+gen byte emp_ci = .
+replace emp_ci = (condocup_ci == 1) if (condocup_ci != . & condocup_ci != 4)
+label var emp_ci "Ocupado (empleado)"
+label define emp_ci 0"No ocupado" 1"Ocupado", add
+label value emp_ci emp_ci
 
 ****************
 ***desemp_ci***
@@ -686,8 +689,11 @@ gen formal_1=(cotizando_ci1==1)
 *****************
 ***desalent_ci***
 *****************
-
-gen desalent_ci=(emp_ci==0 & p545==2 & (p549==1 | p549==2))
+gen byte desalent_ci = .
+replace desalent_ci = (p545 == 2 & (p549 == 1 | p549 == 2) & condocup_ci == 3)
+label var desalent_ci "Desalentados"
+label define desalent_ci 0"No" 1"Si", add
+label value desalent_ci desalent_ci
 
 *****************
 ***horaspri_ci***
