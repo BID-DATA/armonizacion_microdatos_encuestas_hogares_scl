@@ -578,10 +578,11 @@ label var tecnica_ci "1=formacion terciaria tecnica"
 *categoinac_ci**
 ***************
 gen categoinac_ci=. 
-* Modificacion MLO 2015,abr (la p7450 pregunta a desocupados)
-replace categoinac_ci=2 if P6240==3 & condocup_ci==3
-replace categoinac_ci=3 if P6240==4 & condocup_ci==3
-recode categoinac_ci . =4 if condocup_ci==3
+* Modificacion MLO 2015,abr (la p7450 pregunta a desocupados -e inactivos-)
+replace categoinac_ci=1 if P7450==5 & condocup_ci==3
+replace categoinac_ci=2 if (P7450==2 | P6240==3) & condocup_ci==3
+replace categoinac_ci=3 if (P7450==3 | P6240==4) & condocup_ci==3
+recode categoinac_ci . =4 if (categoinac_ci != 1 & categoinac_ci != 2 & categoinac_ci != 3) & condocup_ci==3
 /*
 replace categoinac_ci=1 if P7450==5
 replace categoinac_ci=2 if P7450==2

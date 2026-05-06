@@ -373,10 +373,10 @@ use "`base_in'", clear
 	***categoinac_ci***
 	*******************
 	gen byte categoinac_ci = .
-	replace categoinac_ci = 1 if (s9q3== 17 & condocup_ci == 3)
-	replace categoinac_ci = 2 if  (s9q3==11 & condocup_ci == 3)
-	replace categoinac_ci = 3 if  (s9q3== 12 & condocup_ci == 3)
-	replace categoinac_ci = 4 if  ((categoinac_ci != 1 | categoinac_ci != 2 | categoinac_ci != 3) & condocup_ci == 3)
+	replace categoinac_ci = 1 if (s9q3 == 17 & condocup_ci == 3)
+	replace categoinac_ci = 2 if (s9q3 == 13 & condocup_ci == 3)
+	replace categoinac_ci = 3 if (s9q3 == 14 & condocup_ci == 3)
+	replace categoinac_ci = 4 if ((categoinac_ci != 1 & categoinac_ci != 2 & categoinac_ci != 3) & condocup_ci == 3)
 	
 	**********
 	***emp_ci*

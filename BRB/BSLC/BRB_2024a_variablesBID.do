@@ -492,9 +492,11 @@ label variable condocup_ci "Condición de ocupación"
 **************************
 * CATEGORIA DE INACTIVIDAD  *
 **************************
-*Jubilados, pensionados
-gen categoinac_ci =1 if (q04_37a==3 & condocup_ci==3)
+gen categoinac_ci = . 
 label var  categoinac_ci "Condición de Inactividad" 
+
+*Jubilados, pensionados
+replace categoinac_ci=1 if (q04_37a==3 & condocup_ci==3)
 
 *Estudiantes
 replace categoinac_ci=2 if (q04_37a==1 & condocup_ci==3)

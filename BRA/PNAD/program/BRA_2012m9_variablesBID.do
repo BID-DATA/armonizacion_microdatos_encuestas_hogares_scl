@@ -419,8 +419,8 @@ label variable nmenor1_ch "Numero de familiares menores a 1 anio"
 ****************
 gen condocup_ci=.
 replace condocup_ci=1 if (v9001==1 | v9002==2 | v9003==1 | v9004==2)
-replace condocup_ci=2 if  v9004==4 & (v9115==1 & (v9119>=1 & v9119<=8)) /*tomaron alguna providencia en la semana de referencia*/
-replace condocup_ci=3 if  condocup_ci!=1 & condocup_ci!=2
+replace condocup_ci=2 if (v9001==3 | v9002==4 | v9003==3 | v9004==4) & (v9115==1 & (v9119>=1 & v9119<=8)) /*tomaron alguna providencia en la semana de referencia*/
+replace condocup_ci=3 if condocup_ci!=1 & condocup_ci!=2 & edad_ci>=10
 replace condocup_ci=4 if edad_ci<10
 label define condocup_ci 1"ocupados" 2"desocupados" 3"inactivos" 4"menor 10 años"
 label value condocup_ci condocup_ci
@@ -1632,8 +1632,7 @@ gen categoinac_ci=.
 replace categoinac_ci=1 if (v9122==2 | v9123==1) & condocup_ci==3
 replace categoinac_ci=2 if v0602==2 & condocup_ci==3
 replace categoinac_ci=3 if v9121==1 & condocup_ci==3
-recode categoinac_ci .=4 if condocup_ci==3
-*replace categoinac_ci=4 if o7==1 | o7==2 | o7==3 | o7==4 | o7==5 | o7==6 | o7==7 | o7==8 | o7==9| o7== 13| o7==14 | o7==15 | o7==16 | o7==17
+replace categoinac_ci=4 if (categoinac_ci!=1 & categoinac_ci!=2 & categoinac_ci!=3) & condocup_ci==3
 label var  categoinac_ci "Condición de Inactividad" 
 label define inactivo 1"Pensionado" 2"Estudiante" 3"Hogar" 4"Otros"
 label values categoinac_ci inactivo

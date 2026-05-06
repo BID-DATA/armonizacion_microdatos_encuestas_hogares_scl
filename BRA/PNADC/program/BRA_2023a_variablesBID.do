@@ -397,9 +397,9 @@ label variable nmenor1_ch "Numero de familiares menores a 1 anio"
 *****************
 gen condocup_ci = .
 replace condocup_ci = 1 if (v4001 == 1 | v4002 == 1 | v4003 == 1 | v4004 == 1 | v4005 == 1)
-replace condocup_ci = 2 if  v4005 == 2 & (v4071 == 1 & v4072a! = 9) /*tomaron alguna providencia en la semana de referencia*/
-replace condocup_ci = 3 if condocup_ci == .
-replace condocup_ci = 4 if edad_ci < 10
+replace condocup_ci = 2 if (v4001 == 2 | v4002 == 2 | v4003 == 2 | v4004 == 2 | v4005 == 2) & (v4071 == 1 & v4072a! = 9) /*tomaron alguna providencia en la semana de referencia*/
+replace condocup_ci = 3 if condocup_ci != 1 & condocup_ci != 2 & edad >= 14
+replace condocup_ci = 4 if edad_ci < 14 // Edad que aparece en el cuestionario
 label define condocup_ci 1 "ocupados" 2 "desocupados" 3 "inactivos" 4 "menor 10 años"
 label value condocup_ci condocup_ci
 label var condocup_ci "Condicion de ocupacion utilizando definicion del pais"
@@ -422,12 +422,11 @@ PET: >= 10 años de edad
 *******************
 ***categoinac_ci***
 *******************
-*Variable no es comparable con bases anteriores porque no existe pregunta específica de quehaceres del hogar ni de pensionistas
 gen categoinac_ci = .
-replace categoinac_ci = 1 if v5004a == 1 & condocup_ci == 3 //recibió pensión-jubi y es inactivo 3
-replace categoinac_ci = 2 if v3002 == 1 & condocup_ci == 3   //va al colegio y es inactivo 3
+replace categoinac_ci = 1 if v5004a == 1 & condocup_ci == 3  //recibió pensión-jubi y es inactivo 3
+replace categoinac_ci = 2 if vd4030 == 2 & condocup_ci == 3  //motivo no buscó trabajo: estudiar
 replace categoinac_ci = 3 if vd4030 == 1 & condocup_ci == 3  //motivo no buscó trabajo: hacerse cargo tareashogar-hijo-otrofamiliar
-recode categoinac_ci . = 4 if condocup_ci == 3
+replace categoinac_ci = 4 if condocup_ci == 3 & (categoinac_ci!=1 & categoinac_ci!=2 & categoinac_ci!=3)
 label var  categoinac_ci "Condición de Inactividad" 
 label define inactivo 1 "Pensionado" 2 "Estudiante" 3 "Hogar" 4 "Otros"
 label values categoinac_ci inactivo

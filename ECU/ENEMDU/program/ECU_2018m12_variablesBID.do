@@ -366,8 +366,8 @@ use `base_in', clear
 	gen condocup_ci = .
 	replace condocup_ci = 1 if p20 == 1 | p21 < 12 | p22 == 1 
 	replace condocup_ci = 2 if (p20 == 2 | p21 == 12 | p22 == 2) & p32 < 11
-	replace condocup_ci = 3 if condocup_ci != 1 & condocup_ci != 2 & edad_ci >= 15
-	replace condocup_ci = 4 if edad_ci < 15
+	replace condocup_ci = 3 if condocup_ci != 1 & condocup_ci != 2 & edad_ci >= 5
+	replace condocup_ci = 4 if edad_ci < 5
 
 	*******************
 	***categoinac_ci***
@@ -375,7 +375,7 @@ use `base_in', clear
 	gen categoinac_ci = 1 if (p36 == 2 & condocup_ci == 3)
 	replace categoinac_ci = 2 if  (p36 == 3 & condocup_ci == 3)
 	replace categoinac_ci = 3 if  (p36 == 4 & condocup_ci == 3)
-	replace categoinac_ci = 4 if  ((categoinac_ci != 1 | categoinac_ci != 2 | categoinac_ci != 3) & condocup_ci == 3)
+	replace categoinac_ci = 4 if  ((categoinac_ci != 1 & categoinac_ci != 2 & categoinac_ci != 3) & condocup_ci == 3)
 
 	**********
 	***emp_ci*

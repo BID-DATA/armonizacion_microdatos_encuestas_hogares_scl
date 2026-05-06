@@ -426,7 +426,7 @@ replace condocup_ci=4 if edad_ci<10
 */
 gen condocup_ci=.
 replace condocup_ci=1 if p12_19 >= 1 & p12_19 <= 5
-replace condocup_ci=2 if (p12_19>=6 & p12_19<=8) | (((p12_19 >= 10 & p12_19 <= 12) | p12_19==15) & p20==1)
+replace condocup_ci=2 if (p12_19>=6 & p12_19<=8) | ((p12_19 >= 10 & p12_19 <= 12) & p20==1) // p12_19==15 Otros inactivos
 recode condocup_ci .=3 if edad>=10
 recode condocup_ci .=4 if edad<10
 label var condocup_ci "Condicion de ocupación de acuerdo a def de cada pais"
@@ -1192,14 +1192,16 @@ tab tamemp_ci [iw= fac15_e]
 *categoinac_ci
 *************
 
-gen categoinac_ci=1 if p12_19==10
+gen categoinac_ci=.
 label var  categoinac_ci "Condición de Inactividad" 
+*Jubilados/pensionado
+replace categoinac_ci=1 if p12_19==10 & condocup_ci==3
 *Estudiantes
-replace categoinac_ci=2 if p12_19==11
+replace categoinac_ci=2 if p12_19==11 & condocup_ci==3
 *Quehaceres del Hogar
-replace categoinac_ci=3 if p12_19==12
+replace categoinac_ci=3 if p12_19==12 & condocup_ci==3
 *Otra razon
-replace categoinac_ci=4 if p12_19==13 | p12_19==14 | p12_19==15
+replace categoinac_ci=4 if (categoinac_ci!=1 & categoinac_ci!=2 & categoinac_ci!=3) & condocup_ci==3
 label define inactivo 1"Pensionado y otros" 2"Estudiante" 3"Hogar" 4"Otros"
 label values categoinac_ci inactivo
 

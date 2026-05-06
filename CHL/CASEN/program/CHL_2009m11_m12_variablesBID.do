@@ -1413,10 +1413,11 @@ label var tecnica_ci "1=formacion terciaria tecnica"
 **categoinac_ci*
 ****************
 
-gen categoinac_ci=1 if o6==18
-replace categoinac_ci=2 if o6==17
-replace categoinac_ci=3 if o6==7
-replace categoinac_ci=4 if o6==1 | o6==2 | o6==3 | o6==4 | o6==5 | o6==6 | o6==8 | o6==9 | o6==10| o6==11| o6==12 | o6==13 | o6==14 | o6==15 | o6==16 | o6==19 | o6==20 | o6==21
+gen categoinac_ci=.
+replace categoinac_ci=1 if o6==18 & condocup_ci == 3
+replace categoinac_ci=2 if o6==17 & condocup_ci == 3
+replace categoinac_ci=3 if o6==7 & condocup_ci == 3
+replace categoinac_ci=4 if ((categoinac_ci != 1 & categoinac_ci != 2 & categoinac_ci != 3) & condocup_ci == 3)
 
 label var categoinac_ci "Condición de inactividad"
 	label define categoinac_ci 1 "jubilado/pensionado" 2 "estudiante" 3 "quehaceres_domesticos" 4 "otros_inactivos" 

@@ -825,7 +825,8 @@ raznoacteco:
 
 */
 
-gen categoinac_ci = 1 if (raznoacteco == 1 & condocup_ci==3)
+gen categoinac_ci = .
+replace categoinac_ci = 1 if (raznoacteco == 1 & condocup_ci==3)
 replace categoinac_ci = 2 if (raznoacteco == 3 & condocup_ci==3)
 replace categoinac_ci = 3 if (raznoacteco == 4 & condocup_ci==3)
 replace categoinac_ci = 4 if  ((categoinac_ci ~=1 & categoinac_ci ~=2 & categoinac_ci ~=3) & condocup_ci==3)

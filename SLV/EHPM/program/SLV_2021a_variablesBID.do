@@ -414,8 +414,8 @@ label var condocup_ci "Condicion de ocupacion utilizando definicion del pais"
 gen condocup_ci=.
 replace condocup_ci=1 if r403==1 | r405==1 
 replace condocup_ci=2 if condocup_ci!=1 & r407==1
-replace condocup_ci=3 if (condocup_ci!=1 & condocup_ci!=2) & edad_ci>=15
-replace condocup_ci=4 if edad_ci<15
+replace condocup_ci=3 if (condocup_ci!=1 & condocup_ci!=2) & edad_ci>=5
+replace condocup_ci=4 if edad_ci<5 // Cuestionario realiza la pregunta desde los 5 años
 
 /*gen condocup_ci=.
 replace condocup_ci=1 if r403==1 | r404<=9 | (r405==1 & r406<=11) | (r405b==1 & r406b<=2) 
@@ -1531,10 +1531,10 @@ label var salmm_ci "Salario minimo legal"
 **categoinac_ci**
 *****************	
 gen categoinac_ci=.	
-replace categoinac_ci=1 if r409==13
-replace categoinac_ci=2 if r409==8 | r409==15
-replace categoinac_ci=3 if r409==12
-recode categoinac_ci .=4 if condocup_ci==3 
+replace categoinac_ci=1 if r409==13 & condocup_ci == 3
+replace categoinac_ci=2 if (r409==8 | r409==15) & condocup_ci == 3
+replace categoinac_ci=3 if r409==12 & condocup_ci == 3
+replace categoinac_ci=4 if ((categoinac_ci != 1 & categoinac_ci != 2 & categoinac_ci != 3) & condocup_ci == 3)
 label var categoinac_ci "Condición de inactividad"
 	label define categoinac_ci 1 "jubilado/pensionado" 2 "estudiante" 3 "quehaceres_domesticos" 4 "otros_inactivos" 
 	label value categoinac_ci categoinac_ci

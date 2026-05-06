@@ -400,7 +400,8 @@ label value condocup_ci condocup_ci
 *******************
 ***categoinac_ci*** 
 *******************
-gen byte categoinac_ci =1 if ((motivo_no_busca_trabajo==10) & condocup_ci==3)
+gen byte categoinac_ci = .
+replace categoinac_ci = 1 if  (motivo_no_busca_trabajo==10 & condocup_ci==3)
 replace categoinac_ci = 2 if  (motivo_no_busca_trabajo==7 & condocup_ci==3)
 replace categoinac_ci = 3 if  (motivo_no_busca_trabajo==8 & condocup_ci==3)
 replace categoinac_ci = 4 if  ((categoinac_ci !=1 & categoinac_ci !=2 & categoinac_ci !=3) & condocup_ci==3)

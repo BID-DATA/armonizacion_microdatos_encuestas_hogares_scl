@@ -1661,7 +1661,8 @@ label var salmm_ci "Salario minimo legal"
 *******************
 ***categoinac_ci*** 
 *******************
-gen categoinac_ci =1 if ((motivo_no_busca_trabajo==10) & condocup_ci==3)
+gen categoinac_ci = .
+replace categoinac_ci = 1 if  (motivo_no_busca_trabajo==10 & condocup_ci==3)
 replace categoinac_ci = 2 if  (motivo_no_busca_trabajo==7 & condocup_ci==3)
 replace categoinac_ci = 3 if  (motivo_no_busca_trabajo==8 & condocup_ci==3)
 replace categoinac_ci = 4 if  ((categoinac_ci ~=1 & categoinac_ci ~=2 & categoinac_ci ~=3) & condocup_ci==3)

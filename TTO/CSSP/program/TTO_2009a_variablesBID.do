@@ -442,7 +442,7 @@ replace categoinac_ci=2 if (p21==5 | p25==1) & condocup_ci==3
 *Quehaceres del Hogar
 replace categoinac_ci=3 if p25==2 & condocup_ci==3
 *Otra razon
-replace categoinac_ci=4 if categoinac_ci==. & condocup_ci==3
+replace categoinac_ci=4 if (categoinac_ci!=1 & categoinac_ci!=2 & categoinac_ci!=3) & condocup_ci==3
 label define inactivo 1"Jubilados o Pensionado" 2"Estudiante" 3"Hogar" 4"Otros"
 label values categoinac_ci inactivo
 label var  categoinac_ci "Condición de Inactividad" 
