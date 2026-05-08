@@ -636,9 +636,10 @@ lo reeplazamos por missing*/
 ***spublico_ci***
 *****************
 
-	gen byte spublico_ci = .
-	replace spublico_ci = 1 if emp_ci == 1 & sectorp == 2
-	replace spublico_ci = 0 if emp_ci == 1 & sectorp == 1
+gen spublico_ci=.
+replace spublico_ci=1 if sectorp==2
+replace spublico_ci=0 if sectorp==1
+replace spublico_ci=. if categopri_ci==1 | categopri_ci==2 | categopri_ci==4 | categ==9 | categ==4
 /*Sólo se le hace esta pregunta a los asalariados, aprendices y otros*/
 
 

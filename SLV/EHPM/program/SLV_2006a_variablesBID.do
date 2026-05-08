@@ -516,14 +516,14 @@ replace nempleos_ci=. if emp_ci!=1
 gen firmapeq_ci=(r420<=5)
 replace firmapeq_ci=. if emp_ci!=1
 label var firmapeq_ci "1=5 o menos trabajadores"*/
+******************************
+*	spublico_ci
+******************************
+gen spublico_ci=(r419==2 & emp_ci==1)
+replace spublico_ci=. if categopri_ci==1 | categopri_ci==2 | categopri_ci==4 | r417==9 | emp_ci!=1
+label var spublico_ci "Trabaja en sector publico"
 
-	***************
-	**spublico_ci**
-	***************
-	gen byte spublico_ci = .
-	replace spublico_ci = 1 if emp_ci == 1 & r419 == 2
-	replace spublico_ci = 0 if emp_ci == 1 & r419 == 1
-	
+
 
 ******************************************************************************
 *		LABOR DEMAND
