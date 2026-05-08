@@ -24,9 +24,9 @@ local base_in  = "$ruta\survey\\`PAIS'\\`ENCUESTA'\\`ANO'\\`ronda'\data_merge\\`
 local base_out = "$ruta\harmonized\\`PAIS'\\`ENCUESTA'\data_arm\\`PAIS'_`ANO'`ronda'_BID.dta"
    
 capture log close
-log using "`log_file'", replace 
+*log using "`log_file'", replace 
 
-cap log off
+*cap log off
 
 /***************************************************************************
                  BASES DE DATOS DE ENCUESTA DE HOGARES - SOCIOMETRO 
@@ -1287,8 +1287,7 @@ use "`base_in'", clear
 	****************	
 	* Solo Honduras (3) disponible como país de origen LAC
 	gen byte miglac_ci = .
-	replace miglac_ci = 1 if hl7new == 3 & migrante_ci == 1
-	replace miglac_ci = . if migrante_ci != 1
+
 	
 
 ****************************
