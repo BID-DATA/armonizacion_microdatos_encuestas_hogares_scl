@@ -1195,13 +1195,13 @@ iv11: ¿El desagüe del baño es...
 	3 Sólo a pozo ciego?
 	4 A hoyo/excavación en la tierra?*/
 gen bano_ch = .
-replace bano_ch = 0 if iv9 == 3 | iv8 == 2  									// 0 Sin instalaciones
+replace bano_ch = 0 if iv9 == 3 | inlist(iv8, 0, 2, 9) | iv8 == . 				// 0 Sin instalaciones
 replace bano_ch = 1 if inlist(iv9, 1, 2) & inlist(iv10, 1, 2) & iv11 == 1		// 1 Inodoro a red de desagüe
 replace bano_ch = 2 if inlist(iv9, 1, 2) & inlist(iv10, 1, 2) & iv11 == 2		// 2 Inodoro a fosa séptica (y pozo ciego)
-replace bano_ch = 3 if inlist(iv9, 1, 2) & inlist(iv10, 1, 2, 3) & iv11 == 3	// 3 Letrina u otro mejorado
+replace bano_ch = 3 if inlist(iv9, 1, 2) & ((inlist(iv10, 1, 2, 3) & iv11 == 3) | (iv10 == 3 & inlist(iv11, 1, 2))) // 3 Letrina u otro mejorado
 replace bano_ch = 4 if inlist(iv9, 1, 2) & inlist(iv10, 1, 2, 3) & iv11 == 4	// 4 Inodoro o letrina a cuerpo de agua superficial o suelo
 *replace bano_ch = 5 if...														// 5 Instalación no mejorada
-replace bano_ch = 6 if iv8 == 1 & (inlist(iv9, 0, 9) | inlist(iv10, 0, 9) | inlist(iv11, 0, 9)) & bano_ch == .	// 6 Instalación sin clasificar
+replace bano_ch = 6 if inlist(iv8, 1) & (inlist(iv9, 0, 9) | inlist(iv10, 0, 9) | inlist(iv11, 0, 9)) & bano_ch == .	// 6 Instalación sin clasificar
 
 ************
 *sinbano_ch*
@@ -1209,7 +1209,7 @@ replace bano_ch = 6 if iv8 == 1 & (inlist(iv9, 0, 9) | inlist(iv10, 0, 9) | inli
 gen sinbano_ch = .
 replace sinbano_ch = 0 if bano_ch > 0 & bano_ch != .
 replace sinbano_ch = 1 if iv8 == 1 & iv9 == 3
-replace sinbano_ch = 3 if iv8 == 2
+replace sinbano_ch = 3 if inlist(iv8, 0, 2, 9) | iv8 == .
 *label var sinbano_ch "= 0 si tiene baño en la vivienda o dentro del terreno"
 
 *************
