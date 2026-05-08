@@ -644,11 +644,9 @@ Y estos son missings
 *****************
 ***spublico_ci***
 *****************
-
-gen spublico_ci=.
-replace spublico_ci=1 if r419==2
-replace spublico_ci=0 if r419==1
-replace spublico_ci=. if categopri_ci==1 | categopri_ci==2 | categopri_ci==4 | r417==9 | r417==4
+	gen byte spublico_ci = .
+	replace spublico_ci = 1 if emp_ci == 1 & r419 == 2
+	replace spublico_ci = 0 if emp_ci == 1 & r419 == 1
 /*Sólo se le hace esta pregunta a los asalariados, aprendices y otros*/
 
 
@@ -2066,7 +2064,7 @@ sum ylmpri_ci nrylmpri_ci tcylmpri_ci ylnmpri_ci ylmsec_ci ylnmsec_ci ylmotros_c
 
 
 do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&ExternalVars_Harmonized_DataBank.do"
- Verificación de que se encuentren todas las variables armonizadas 
+ *Verificación de que se encuentren todas las variables armonizadas 
 /*_____________________________________________________________________________________________________*/
 
 /*_____________________________________________________________________________________________________*/

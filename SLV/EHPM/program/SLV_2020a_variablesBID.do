@@ -413,11 +413,13 @@ label var condocup_ci "Condicion de ocupacion utilizando definicion del pais"
 * Se considera el limite inferior de la encuesta que es de 5 anios y mas. MGD 06/09/2014
 
 * MM en 2020 variables r404* estan solo estan reportados los NO
-gen condocup_ci=.
-replace condocup_ci=1 if r403==1
-replace condocup_ci=2 if condocup_ci!=1 & r407==1
-replace condocup_ci=3 if (condocup_ci!=1 & condocup_ci!=2) & edad_ci>=5
-replace condocup_ci=4 if edad_ci<5
+	gen byte condocup_ci = .
+	replace condocup_ci = 1 if inlist(1, r403, r4041, r4041_1, r4042, ///
+		r4043, r4044, r4045, r4046, r4047, r4048, r4049, r405, r405b) | r406 < 5
+	replace condocup_ci = 2 if condocup_ci != 1 & r407 == 1
+	replace condocup_ci = 3 if condocup_ci != 1 & condocup_ci != 2 & edad_ci >= 15
+	replace condocup_ci = 4 if edad_ci < 15
+
 
 /*gen condocup_ci=.
 replace condocup_ci=1 if r403==1 | r404<=9 | (r405==1 & r406<=11) | (r405b==1 & r406b<=2) 
@@ -431,8 +433,9 @@ label var condocup_ci "Condicion de ocupacion utilizando definicion del pais" */
 ************
 ***emp_ci***
 ************
-gen emp_ci=(condocup_ci==1)
-
+	gen emp_ci=.
+	replace emp_ci = (condocup_ci == 1) if (condocup_ci != . & condocup_ci != 4)
+	
 ****************
 ***desemp_ci***
 ****************
@@ -538,13 +541,13 @@ replace firmapeq_ci=0 if r421>5 & r421!=.
 replace firmapeq_ci=. if emp_ci==0
 label var firmapeq_ci "Trabajadores informales"*/
 
-*****************
-***spublico_ci***
-*****************
-gen spublico_ci=(r420==2 & emp_ci==1) 
-replace spublico_ci=. if emp_ci==0 
-label var spublico_ci "Personas que trabajan en el sector público"
-
+	***************
+	**spublico_ci**
+	***************
+	gen byte spublico_ci = .
+	replace spublico_ci = 1 if emp_ci == 1 & r420 == 2
+	replace spublico_ci = 0 if emp_ci == 1 & r420 == 1
+	
 **************
 ***ocupa_ci***
 **************
@@ -1438,17 +1441,14 @@ label var tipocontrato_ci "Tipo de contrato segun su duracion en act principal"
 label define tipocontrato_ci 0 "Con contrato" 1 "Permanente/indefinido" 2 "Temporal" 3 "Sin contrato/verbal" 
 label value tipocontrato_ci tipocontrato_ci
 
-*************
-*tamemp_ci***
-*************
-gen tamemp_ci = .
-replace tamemp_ci = 1 if ((r421>=1 & r421<=5) | r421a==1)
-replace tamemp_ci = 2 if ((r421>=6 & r421<=50) | inlist(r421a,2,3))
-replace tamemp_ci = 3 if (r421>50 | (r421a>3 & r421a != .))
-replace tamemp_ci = . if condocup_ci!=1
-label var tamemp_ci "# empleados en la empresa segun rangos"
-label define tamemp_ci 1 "Pequena" 2 "Mediana" 3 "Grande" 
-label value tamemp_ci tamemp_ci
+	*************
+	**tamemp_ci**
+	*************
+	gen byte tamemp_ci = .
+	replace tamemp_ci = 1 if (r421 >= 1  & r421 <= 5  & r421 != .)  | r421a == 1
+	replace tamemp_ci = 2 if (r421 >= 6  & r421 <= 50 & r421 != .)  | inlist(r421a, 2, 3)
+	replace tamemp_ci = 3 if (r421 > 50 & r421 != .) | (r421a > 3 & r421a != .)
+	replace tamemp_ci = . if condocup_ci != 1
 	
 *************
 **pension_ci*

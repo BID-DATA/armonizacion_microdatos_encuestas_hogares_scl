@@ -407,20 +407,17 @@ label var condocup_ci "Condicion de ocupacion utilizando definicion del pais"
 */
 
 * Se considera el limite inferior de la encuesta que es de 5 anios y mas. MGD 06/09/2014
-gen condocup_ci=.
-replace condocup_ci=1 if r403==1 | r404<=9 | (r405==1 & r406<=11) | (r405b==1 & r406b<=2) 
-replace condocup_ci=2 if condocup_ci!=1 & (r407==1 | r408<=8) & r409a==1
-replace condocup_ci=3 if (condocup_ci!=1 & condocup_ci!=2) & edad_ci>=5
-replace condocup_ci=4 if edad_ci<5
-label define condocup_ci 1"ocupados" 2"desocupados" 3"inactivos" 4"menor de PET"
-label value condocup_ci condocup_ci
-label var condocup_ci "Condicion de ocupacion utilizando definicion del pais"
-
+	gen condocup_ci=.
+	replace condocup_ci = 1 if inlist(1, r403, r405, r405b) | r406 < 5 | r404<=9
+	replace condocup_ci = 2 if condocup_ci != 1 & r407 == 1
+	replace condocup_ci = 3 if condocup_ci != 1 & condocup_ci != 2 & edad_ci >= 15
+	replace condocup_ci = 4 if edad_ci < 15
 ************
 ***emp_ci***
 ************
-gen emp_ci=(condocup_ci==1)
-
+	gen emp_ci=.
+	replace emp_ci = (condocup_ci == 1) if (condocup_ci != . & condocup_ci != 4)
+	
 ****************
 ***desemp_ci***
 ****************
@@ -567,12 +564,13 @@ replace firmapeq_ci=0 if r421>5 & r421!=.
 replace firmapeq_ci=. if emp_ci==0
 label var firmapeq_ci "Trabajadores informales"*/
 
-*****************
-***spublico_ci***
-*****************
-gen spublico_ci=(r420==2 & emp_ci==1) 
-replace spublico_ci=. if emp_ci==0 
-label var spublico_ci "Personas que trabajan en el sector público"
+	***************
+	**spublico_ci**
+	***************
+	gen byte spublico_ci = .
+	replace spublico_ci = 1 if emp_ci == 1 & r420 == 2
+	replace spublico_ci = 0 if emp_ci == 1 & r420 == 1
+	
 
 **************
 ***ocupa_ci***
