@@ -460,8 +460,7 @@ gen pea_ci=0
 replace pea_ci=1 if emp_ci==1 |desemp_ci==1
 
 *desalent_ci
-gen desalent_ci = 1 if f108==4 & condocup_ci==3
-replace desalent_ci=0 if f108!=4 & condocup_ci==3
+gen desalent_ci = (f108==4 & condocup_ci==3)
 replace desalent_ci =. if emp_ci ==.
 
 *horaspri_ci
@@ -618,13 +617,12 @@ label value ocupa_ci ocupa_ci
 *************
 **pension_ci*
 *************
-gen pension_ci=1 if g_it_1==1 |g_it_2==1
+gen pension_ci = (g_it_1==1 | g_it_2==1)
 
 ***************
 *pensionsub_ci*
 ***************
-destring f124_2, replace force
-gen pensionsub_ci= 1 if f124_2==1
+gen pensionsub_ci = ((f125==1) | (f125==3 & edad_ci>69))
 label var pensionsub_ci "1=recibe pension subsidiada / no contributiva"
 
 ****************
