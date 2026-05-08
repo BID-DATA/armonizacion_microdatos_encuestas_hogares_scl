@@ -680,10 +680,11 @@ label var antiguedad_ci "Antiguedad en la actividad actual en anios"
 *******************
 ***categoinac_ci***
 *******************
-gen categoinac_ci =1 if (i_q29 ==6 & condocup_ci==3)
+gen categoinac_ci = .
+replace categoinac_ci = 1 if  (i_q29 ==6 & condocup_ci==3)
 replace categoinac_ci = 2 if  (i_q29 ==5 & condocup_ci==3)
 replace categoinac_ci = 3 if  (i_q29 ==4 & condocup_ci==3)
-replace categoinac_ci = 4 if  (i_q29 ==7 | i_q29 ==3) & condocup_ci==3
+replace categoinac_ci = 4 if  (categoinac_ci!=1 & categoinac_ci!=2 & categoinac_ci!=3) & condocup_ci==3
 label var categoinac_ci "Categoría de inactividad"
 label define categoinac_ci 1 "jubilados o pensionados" 2 "Estudiantes" 3 "Quehaceres domésticos" 4 "Otros"
 

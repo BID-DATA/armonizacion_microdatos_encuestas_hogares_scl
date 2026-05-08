@@ -342,7 +342,7 @@ gen mot_ausen=(motivo)
 generat condocup_ci=.
 replace condocup_ci=1 if (trabajon==1) | (verificn>=1 & verificn<=4) | (verificn==5 & mot_ausen <=6)
 replace condocup_ci=2 if bustrab_1==1 
-replace condocup_ci=3 if condocup_ci!=1 & condocup_ci!=2
+replace condocup_ci=3 if condocup_ci!=1 & condocup_ci!=2 & trabajon!=.
 replace condocup_ci=4 if edad<12
 label define condocup_ci 1"ocupados" 2"desocupados" 3"inactivos" 4"menor que 12"
 label value condocup_ci condocup_ci
@@ -3313,7 +3313,8 @@ label var tamemp_ci "tamaño de empresa"
 ***categoinac_ci***
 *******************
 
-gen categoinac_ci =1 if (bustrab_3==3 & condocup_ci==3)
+gen categoinac_ci = .
+replace categoinac_ci = 1 if (bustrab_3==3 & condocup_ci==3)
 replace categoinac_ci = 2 if  (bustrab_5==5 & condocup_ci==3)
 replace categoinac_ci = 3 if  (bustrab_4==4 & condocup_ci==3)
 replace categoinac_ci = 4 if  ((categoinac_ci ~=1 & categoinac_ci ~=2 & categoinac_ci ~=3) & condocup_ci==3)

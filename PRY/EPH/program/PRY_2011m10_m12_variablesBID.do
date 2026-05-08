@@ -809,18 +809,17 @@ label var tamemp_ci "Tamaño de empresa"
 *******************
 ***categoinac_ci*** 
 *******************
-/*gen categoinac_ci =.
-*La variable es la a09, pero no consta en la base de datos.
-gen categoinac_ci =1 if ((a09==14 | a09==15) & condocup_ci==3)
-replace categoinac_ci = 2 if  (a09==7 & condocup_ci==3)
-replace categoinac_ci = 3 if  (a09==6 & condocup_ci==3)
-replace categoinac_ci = 4 if  ((categoinac_ci ~=1 & categoinac_ci ~=2 & categoinac_ci ~=3) & condocup_ci==3)
-label var categoinac_ci "Categoría de inactividad"
-label define categoinac_ci 1 "jubilados o pensionados" 2 "Estudiantes" 3 "Quehaceres domésticos" 4 "Otros" 
-*/
-
-*10/21/15 MGD:  Se usa la nueva variable para construir la variable categoinac
-gen categoinac_ci =1 if ((ra06ya09==7) & condocup_ci==3)
+/*Variable de inactividad: ra06ya09
+           1 estudiante
+           2 labores del hogar
+           3 no consigue trabajo
+           4 enfermo
+           5 anciano o discapacitado
+           6 jubilado o pensionado
+           7 motivos familiares
+           8 otra situacion */
+gen categoinac_ci = .
+replace categoinac_ci = 1 if  (ra06ya09==6 & condocup_ci==3)
 replace categoinac_ci = 2 if  (ra06ya09==1 & condocup_ci==3)
 replace categoinac_ci = 3 if  (ra06ya09==2 & condocup_ci==3)
 replace categoinac_ci = 4 if  ((categoinac_ci ~=1 & categoinac_ci ~=2 & categoinac_ci ~=3) & condocup_ci==3)

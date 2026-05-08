@@ -319,11 +319,11 @@ gen dis_ch=.
  mot_ausenn = mot_ausen
  */
  
-destring bus_trab, replace 
+destring bus_trab trabajo, replace 
 generat condocup_ci=.
-replace condocup_ci=1 if (trabajo=="1") | (verific>="1" & verific<="3") | (mot_ausen<="6")
+replace condocup_ci=1 if (trabajo==1) | (((verific>="1" & verific<="3") | (mot_ausen<="6")) & trabajo!=.)
 replace condocup_ci=2 if bus_trab==10 |  (bus_trab>=120 & bus_trab<=170) /*combina las opciones ej. 120 selecciono cat 1 y cat2*/
-replace condocup_ci=3 if condocup_ci!=1 & condocup_ci!=2
+replace condocup_ci=3 if condocup_ci!=1 & condocup_ci!=2 & trabajo!=.
 replace condocup_ci=4 if edad<12
 label define condocup_ci 1"ocupados" 2"desocupados" 3"inactivos" 4"menor que 12"
 label value condocup_ci condocup_ci
@@ -3606,10 +3606,11 @@ label var tamemp_ci "Tamaño de empresa"
 *******************
 ***categoinac_ci***
 *******************
-gen categoinac_ci =1 if ((bus_trab>=300 & bus_trab<=370) & condocup_ci==3)
-replace categoinac_ci = 2 if  ((bus_trab>=500 & bus_trab<=570) & condocup_ci==3)
-replace categoinac_ci = 3 if  ((bus_trab>=400 & bus_trab<=470) & condocup_ci==3)
-replace categoinac_ci = 4 if  ((categoinac_ci ~=1 & categoinac_ci ~=2 & categoinac_ci ~=3) & condocup_ci==3)
+gen categoinac_ci = .
+replace categoinac_ci = 1 if (bus_trab==30 | (bus_trab>=300 & bus_trab<=370)) & condocup_ci==3
+replace categoinac_ci = 2 if (bus_trab==50 | (bus_trab>=500 & bus_trab<=570)) & condocup_ci==3 & categoinac_ci == .
+replace categoinac_ci = 3 if (bus_trab==40 | (bus_trab>=400 & bus_trab<=470)) & condocup_ci==3 & categoinac_ci == .
+replace categoinac_ci = 4 if  ((categoinac_ci ~=1 & categoinac_ci ~=2 & categoinac_ci ~=3) & condocup_ci==3) & categoinac_ci == .
 label var categoinac_ci "Categoría de inactividad"
 label define categoinac_ci 1 "jubilados o pensionados" 2 "Estudiantes" 3 "Quehaceres domésticos" 4 "Otros"  
 

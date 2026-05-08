@@ -473,7 +473,7 @@ label variable miembros_ci "Miembro del hogar"
 gen condocup_ci=.
 replace condocup_ci=1 if ocu500==1
 replace condocup_ci=2 if ocu500==2
-replace condocup_ci=3 if condocup_ci!=1 & condocup_ci!=2
+replace condocup_ci=3 if condocup_ci!=1 & condocup_ci!=2 & ocu500!=. & ocu500!=0
 replace condocup_ci=4 if edad_ci<14
 label define condocup_ci 1"ocupados" 2"desocupados" 3"inactivos" 4"menor de PET"
 label value condocup_ci condocup_ci
@@ -556,10 +556,11 @@ label values tamemp_ci tamaño
 ****************
 **categoinac_ci*
 ****************
-gen categoinac_ci =1 if (p546==6 & condocup_ci==3)
-replace categoinac_ci = 2 if  (p546==4 & condocup_ci==3)
-replace categoinac_ci = 3 if  (p546==5 & condocup_ci==3)
-replace categoinac_ci = 4 if  ((categoinac_ci ~=1 & categoinac_ci ~=2 & categoinac_ci ~=3) & condocup_ci==3)
+gen categoinac_ci = .
+replace categoinac_ci = 1 if (p546==6 & condocup_ci==3) //Jubilado o Pensionado
+replace categoinac_ci = 2 if (p546==4 & condocup_ci==3) //Estudiante
+replace categoinac_ci = 3 if (p546==5 & condocup_ci==3) //Quehaceres domesticos
+replace categoinac_ci = 4 if ((categoinac_ci ~=1 & categoinac_ci ~=2 & categoinac_ci ~=3) & condocup_ci==3) // Otros
 label var categoinac_ci "Categoría de inactividad"
 label define categoinac_ci 1 "jubilados o pensionados" 2 "Estudiantes" 3 "Quehaceres domésticos" 4 "Otros"
 label value categoinac_ci categoinac_ci

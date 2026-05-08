@@ -700,7 +700,8 @@ label var tamemp_ci "# empleados en la empresa de la actividad principal"
 *******************
 ***categoinac_ci*** 
 *******************
-gen categoinac_ci =1 if ((s5p10==3 | s5p10==6) & condocup_ci==3)
+gen categoinac_ci = .
+replace categoinac_ci = 1 if ((s5p10==3 | s5p10==6) & condocup_ci==3)
 replace categoinac_ci = 2 if  (s5p10==1 & condocup_ci==3)
 replace categoinac_ci = 3 if  (s5p10==4 & condocup_ci==3)
 replace categoinac_ci = 4 if  ((categoinac_ci ~=1 & categoinac_ci ~=2 & categoinac_ci ~=3) & condocup_ci==3)

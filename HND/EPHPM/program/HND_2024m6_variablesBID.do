@@ -526,10 +526,10 @@ use `base_in', clear
 			4	Menor que la edad límite de los entrevistados
 	*/	
 	gen byte condocup_ci = .
-	replace condocup_ci = 1 if condact==1 //Ocupados
-	replace condocup_ci = 2 if condact==2 //Desocupados
-	replace condocup_ci = 3 if condact==3 & tipinac==3 //Inactivos
-	replace condocup_ci = 4 if edad_ci<5 //Según la encuesta, las preguntas sobre ocupación se hacen a personas de 5 años en adelante
+	replace condocup_ci = 1 if CONDACT==1 //Ocupados
+	replace condocup_ci = 2 if CONDACT==2 //Desocupados
+	replace condocup_ci = 3 if CONDACT==3 //Inactivos, la variable TIPINAC es respondida por todas las personas inactivas. Las clasifica como (1) Potencialmente activos, (2) Desalentados y (3) Inactivos
+	replace condocup_ci = 4 if edad_ci<15 //Según la encuesta, las preguntas sobre ocupación se hacen a personas de 5 años en adelante. Pero en la BBDD sólo existe información disponible desde los 15 años.
 
 	*******************
 	***categoinac_ci: Identifica la condición de inactividad de los individuos.***
@@ -554,11 +554,10 @@ use `base_in', clear
 			4	Otros inactivos
 	*/
 	gen byte categoinac_ci = .
-	replace categoinac_ci = 1 if (inlist(ca514,1,2) & condocup_ci == 3) //Jubilado o Pensionado
-	replace categoinac_ci = 2 if  (ca514 == 4 & condocup_ci == 3) //Estudiante
-	replace categoinac_ci = 3 if  (ca514 == 5 & condocup_ci == 3) //Quehaceres domesticos
-	replace categoinac_ci = 4 if  (!inlist(ca514,1,2,4,5) & condocup_ci == 3) //Otros Inactivos
-	replace categoinac_ci = . if condocup_ci==. | ca514==. //Missings
+	replace categoinac_ci = 1 if (inlist(CA514,1,2) & condocup_ci == 3) //Jubilado o Pensionado
+	replace categoinac_ci = 2 if (CA514 == 4 & condocup_ci == 3) //Estudiante
+	replace categoinac_ci = 3 if (CA514 == 5 & condocup_ci == 3) //Quehaceres domesticos
+	replace categoinac_ci = 4 if (categoinac_ci != 1 & categoinac_ci != 2 & categoinac_ci != 3) & condocup_ci == 3  // Otros
 	
 	**********
 	***emp_ci: Variable dicotómica que identifica con valor 1 a los ocupados y 0 a los no ocupados y mantiene con valores perdidos a los que se muestran en la encuesta con valores perdidos*

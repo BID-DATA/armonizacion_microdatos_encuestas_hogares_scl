@@ -746,7 +746,8 @@ label var tamemp_ci "Tamaño de empresa"
 *******************
 ***categoinac_ci*** 
 *******************
-gen categoinac_ci =1 if ((s11p12 ==3 | s11p12 ==6 ) & condocup_ci==3)
+gen categoinac_ci = .
+replace categoinac_ci = 1 if ((s11p12 ==3 | s11p12 ==6 ) & condocup_ci==3)
 replace categoinac_ci = 2 if  (s11p12 ==1 & condocup_ci==3)
 replace categoinac_ci = 3 if  (s11p12 ==4 & condocup_ci==3)
 replace categoinac_ci = 4 if  ((categoinac_ci ~=1 & categoinac_ci ~=2 & categoinac_ci ~=3) & condocup_ci==3)

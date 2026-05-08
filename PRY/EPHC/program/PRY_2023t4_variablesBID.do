@@ -678,20 +678,21 @@ replace tamemp_ci1 = 3 if (b08>=6 & b08<=8)
 *******************
 ***categoinac_ci*** 
 *******************
-
-/*
-gen categoinac_ci =1 if ((a09==14 | a09==15) & condocup_ci==3)
-replace categoinac_ci = 2 if  (a09==7 & condocup_ci==3)
-replace categoinac_ci = 3 if  (a09==6 & condocup_ci==3)
-replace categoinac_ci = 4 if  ((categoinac_ci ~=1 & categoinac_ci ~=2 & categoinac_ci ~=3) & condocup_ci==3)
-label var categoinac_ci "Categoría de inactividad"
-label define categoinac_ci 1 "jubilados o pensionados" 2 "Estudiantes" 3 "Quehaceres domésticos" 4 "Otros" 
-*/
-
-gen categoinac_ci =1 if ((a09==15 | a09==16) & condocup_ci==3)
-replace categoinac_ci = 2 if  (a09==7 & condocup_ci==3)
-replace categoinac_ci = 3 if  (a09==6 & condocup_ci==3)
-replace categoinac_ci = 4 if  ((categoinac_ci ~=1 & categoinac_ci ~=2 & categoinac_ci ~=3) & condocup_ci==3)
+/*Variable razon de inactividad: ra06ya09 
+           1 Estudiantes
+           2 Labores del Hogar
+           3 No consigue trabajo
+           4 Enfermo
+           5 Anciano
+           6 Discapacitado
+           7 Jubilado o Pensionado
+           8 Motivos Familiares
+           9 Otra situación */
+gen categoinac_ci = .
+replace categoinac_ci = 1 if (ra06ya09 == 7 & condocup_ci == 3)
+replace categoinac_ci = 2 if (ra06ya09 == 1 & condocup_ci == 3)
+replace categoinac_ci = 3 if (ra06ya09 == 2 & condocup_ci == 3)
+replace categoinac_ci = 4 if ((categoinac_ci ~=1 & categoinac_ci ~=2 & categoinac_ci ~=3) & condocup_ci==3)
 label var categoinac_ci "Categoría de inactividad"
 label define categoinac_ci 1 "jubilados o pensionados" 2 "Estudiantes" 3 "Quehaceres domésticos" 4 "Otros" 
 

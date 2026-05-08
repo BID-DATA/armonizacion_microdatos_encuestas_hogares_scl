@@ -405,10 +405,10 @@ label value region_c region_c
 	***categoinac_ci***
 	*******************
 	gen byte categoinac_ci = .
-	replace categoinac_ci = 1 if ((pobpcoac == 9 | pobpcoac == 10) & condocup_ci == 3) 
-	replace categoinac_ci = 2 if  ((pobpcoac == 7) & condocup_ci == 3) & categoinac_ci ==.
-	replace categoinac_ci = 3 if  ((pobpcoac == 6) & condocup_ci == 3) & categoinac_ci ==.
-	replace categoinac_ci = 4 if  ((categoinac_ci != 1 & categoinac_ci != 2 & categoinac_ci != 3) & condocup_ci == 3) & categoinac_ci ==.
+	replace categoinac_ci = 1 if ((pobpcoac == 9 | pobpcoac == 10) & condocup_ci == 3) // Jubilados o pensionistas
+	replace categoinac_ci = 2 if  (pobpcoac == 7 & condocup_ci == 3) // Estudiantes
+	replace categoinac_ci = 3 if  (pobpcoac == 6 & condocup_ci == 3) // Quehaceres del hogar
+	replace categoinac_ci = 4 if  ((categoinac_ci != 1 & categoinac_ci != 2 & categoinac_ci != 3) & condocup_ci == 3) // Otros inactivos
 
 	
 	**********

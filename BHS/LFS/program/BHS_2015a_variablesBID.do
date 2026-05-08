@@ -364,7 +364,7 @@ use `base_in', clear
 	replace categoinac_ci = 1 if condocup_ci==3 & i43_activity==6
 	replace categoinac_ci = 2 if condocup_ci==3 & i43_activity==5
 	replace categoinac_ci = 3 if condocup_ci==3 & i43_activity==4
-	replace categoinac_ci = 4 if condocup_ci==3 & inlist(i43_activity,3,7,9)
+	replace categoinac_ci = 4 if condocup_ci==3 & (categoinac_ci!=1 & categoinac_ci!=2 & categoinac_ci!=3)
 
 	****************
 	***emp_ci*******

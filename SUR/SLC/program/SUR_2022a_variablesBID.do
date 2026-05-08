@@ -662,7 +662,8 @@ Less than 1 year |        404       12.69       12.69
 *******************
 ***categoinac_ci***
 *******************
-gen categoinac_ci =1 if (q09_28==5 & condocup_ci==3)
+gen categoinac_ci = .
+replace categoinac_ci = 1 if  (q09_28==5 & condocup_ci==3)
 replace categoinac_ci = 2 if  (q09_28==3 & condocup_ci==3)
 replace categoinac_ci = 3 if  (q09_28==4 & condocup_ci==3)
 replace categoinac_ci = 4 if  ((categoinac_ci ~=1 & categoinac_ci ~=2 & categoinac_ci ~=3) & condocup_ci==3)

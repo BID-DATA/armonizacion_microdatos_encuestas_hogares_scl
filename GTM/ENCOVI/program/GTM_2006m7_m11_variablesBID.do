@@ -1391,7 +1391,7 @@ gen categoinac_ci=.
 replace categoinac_ci=1 if P10F01 ==4 & condocup_ci==3
 replace categoinac_ci=2 if P10F01 ==1 & condocup_ci==3
 replace categoinac_ci=3 if P10F01 ==2 & condocup_ci==3
-recode categoinac_ci .= 0 if condocup_ci==3
+replace categoinac_ci=4 if (categoinac_ci!=1 & categoinac_ci!=2 & categoinac_ci!=3) & condocup_ci==3
 
 label var categoinac_ci "Condición de inactividad"
 	label define categoinac_ci 1 "jubilado/pensionado" 2 "estudiante" 3 "quehaceres_domesticos" 4 "otros_inactivos" 
