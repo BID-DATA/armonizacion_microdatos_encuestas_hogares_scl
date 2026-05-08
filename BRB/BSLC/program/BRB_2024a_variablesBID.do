@@ -1748,7 +1748,7 @@ replace banomejorado_ch =0 if (bano_ch ==0 | bano_ch>=4) & bano_ch!=6
 *** migrante_ci ***
 *******************
 
-gen migrante_ci = .
+gen migrante_ci = (CNTRY_CD != 0)
 label var migrante_ci "=1 si es migrante"
 
 **********************
