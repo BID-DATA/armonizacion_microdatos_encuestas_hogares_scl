@@ -1387,7 +1387,10 @@ label var compu_ch "El hogar posee computador"
 ***internet_ch***
 *****************
 
-gen internet_ch=.
+/* ¿Tiene usted o algún miembro de su hogar... internet?: 1-Sí, 2-No */
+gen internet_ch = 0
+replace internet_ch = 1 if internet == 1
+replace internet_ch = . if internet == .
 label var internet_ch "El hogar posee conexión a Internet"
 
 
