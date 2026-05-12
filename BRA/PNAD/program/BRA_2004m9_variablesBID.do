@@ -402,7 +402,7 @@ label var aguared_ch "Acceso a fuente de agua por red"
 *****************
 *aguafconsumo_ch*
 *****************
-gen aguafconsumo_ch =9
+gen aguafconsumo_ch =0
 
 
 *****************
