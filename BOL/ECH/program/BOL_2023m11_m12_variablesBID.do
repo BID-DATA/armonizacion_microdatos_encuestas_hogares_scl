@@ -749,7 +749,11 @@ label value tamemp_ci tamemp_ci
 ****************
 *cotizando_ci***
 ****************
+destring s04f_35, ignore("NA") replace
+
 gen cotizando_ci = .
+replace cotizando_ci=1 if s04f_35==1 |  s02a_01a==2 | s02a_01b==2 
+recode cotizando_ci .=0 if s04f_35==2 & s02a_01a!=2 & s02a_01b!=2 & (condocup_ci==2)
 label var cotizando_ci "Cotizante a la Seguridad Social"
 
 ****************
@@ -760,12 +764,12 @@ gen instcot_ci = .
 ****************
 *afiliado_ci****
 ****************
-destring s04f_35, ignore("NA") replace
 
-gen afiliado_ci = (s04f_35 == 1)    // Afiliado a la Seguridad Social
+
+gen afiliado_ci = (s04f_35 == 1 |  s02a_01a==2 | s02a_01b==2 )    // Afiliado a la Seguridad Social
 
 * Asignar 0 a casos missing que corresponden a personas activas o aspirantes (condact 1–3)
-recode afiliado_ci .= 0 if inrange(condact, 1, 3)
+recode afiliado_ci .= 0 if inrange(condact, 1, 5)
 
 label variable afiliado_ci "Afiliado a la Seguridad Social"
 

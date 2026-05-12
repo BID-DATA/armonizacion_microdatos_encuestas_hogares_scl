@@ -603,8 +603,7 @@ replace ocupa_ci = 9 if oficio_c8_2 == 0  | oficio_c8_2 == 99 & emp_ci == 1
 gen byte pension_ci=. 
 replace pension_ci=(p7500s2a1>0 & p7500s2a1!=.)
 *replace pension_ci = . if
-replace cotizando_ci = 1 if pension_ci==1 // según el manual "Todos los pensionados contributivos necesariamente cotizan a algún sistema de seguridad social, es decir no puede darse el caso que pension_ci == 1 & cotizando_ci != 1"
-	
+
 *****************
 **pensionsub_ci**
 *****************

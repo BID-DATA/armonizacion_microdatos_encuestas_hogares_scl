@@ -487,15 +487,16 @@ label var salmm_ci "Salario minimo legal"
 ****************
 gen cotizando_ci=.
 replace cotizando_ci=1 if  a4_22a==1 | (a4_34a  >0 & a4_34a  !=.)
+replace cotizando_ci=1 if  a4_22c==1
 recode cotizando_ci .=0 if condact>=2 & condact<=4
 label var cotizando_ci "Cotizante a la Seguridad Social"
 
 ****************
 *afiliado_ci****
 ****************
-gen afiliado_ci= 1 if  a4_46b ==1	
+gen afiliado_ci= 1 if  a4_46b ==1 | a2_16==1 | a2_16==4
 *replace afiliado_ci =1 if s5_71b==1
-recode afiliado_ci .=0 if condact>=2 & condact<=4
+recode afiliado_ci .=0 if condact>=2 & condact<=6
 label var afiliado_ci "Afiliado a la Seguridad Social"
 
 ****************

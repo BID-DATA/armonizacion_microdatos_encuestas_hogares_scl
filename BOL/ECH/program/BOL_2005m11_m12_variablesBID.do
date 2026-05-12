@@ -531,6 +531,8 @@ label value condocup_ci condocup_ci
 *cotizando_ci***
 ****************
 gen cotizando_ci=.
+replace cotizando_ci=1 if s4_76b==1
+recode cotizando_ci .=0 if s4_76b==2 & (condocup_ci==2 )
 label var cotizando_ci "Cotizante a la Seguridad Social"
 
 ****************

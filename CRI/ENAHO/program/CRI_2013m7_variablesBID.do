@@ -390,6 +390,8 @@ label value cotizando_ci cotizando_ci
 ****************
 *
 gen afiliado_ci=.
+replace afiliado_ci = 0 if a11==0 | a11==9 | a11==10
+replace afiliado_ci =1 if a11>0 & a11<9
 label var afiliado_ci "Afiliado a la Seguridad Social"
 
 ****************

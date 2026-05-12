@@ -1551,8 +1551,15 @@ label var cotizando_ci "Cotizante a la Seguridad Social"
 ****************
 gen afiliado_ci=.	
 replace afiliado_ci =1 if afiliado_afp_princ==1 
-*replace afiliado_ci =1 if eft_afiliado_afp_princ==1 | (eft_afiliado_seguro_salud >=1 & eft_afiliado_seguro_salud <=3)
-recode afiliado_ci .=0
+replace afiliado_ci =0 if afiliado_afp_princ==2 
+replace afiliado_ci =. if afiliado_afp_princ==98 
+
+label var afiliado_ci "Afiliado a la Seguridad Social"
+
+gen afiliado_ci=.	
+replace afiliado_ci =1 if afiliado_afp_princ==1 
+replace afiliado_ci =0 if afiliado_afp_princ==2 
+replace afiliado_ci =. if afiliado_afp_princ==98 
 label var afiliado_ci "Afiliado a la Seguridad Social"
 
 ****************

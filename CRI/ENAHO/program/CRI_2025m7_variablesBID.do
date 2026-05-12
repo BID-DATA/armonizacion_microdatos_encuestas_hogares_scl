@@ -689,8 +689,8 @@ label var instcot_ci "Institucion a la que cotiza - variable original de cada pa
 ***************
 * esta variable no estaba creada en la armonización de años anteriores
 gen afiliado_ci =.
-replace afiliado_ci = 0 if a11==0
-replace afiliado_ci =1 if a11>0 & a11<99
+replace afiliado_ci = 0 if a11==0 | a11==11 | a11==12
+replace afiliado_ci =1 if ( a11>0 & a11<11)| a11==13 | a11==14 
 
 *************
 * formal_ci *

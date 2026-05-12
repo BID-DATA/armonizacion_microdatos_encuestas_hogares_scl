@@ -438,15 +438,17 @@ label var salmm_ci "Salario minimo legal"
 *cotizando_ci***
 ****************
 gen cotizando_ci=.
+replace cotizando_ci=1 if s06h_59==1 |  s04a_04a==2 | s04a_04b==2 
+recode cotizando_ci .=0 if s06h_59==2 & s04a_04a!=2 & s04a_04b!=2 & (condocup_ci==2)
 label var cotizando_ci "Cotizante a la Seguridad Social"
 
 ****************
 *afiliado_ci****
 ****************
-gen afiliado_ci= s06h_59==1	
+gen afiliado_ci= s06h_59==1	|  s04a_04a==2 | s04a_04b==2 
 *Solo eisten missing para los p_aspirantes condact==3 en la variable de afiliacón. Los condact>=3 son inactivos.
 *tab condact s06h_59, missing
-recode afiliado_ci .=0  if condact>=1 & condact<=3
+recode afiliado_ci .=0  if condact>=1 & condact<=5
 label var afiliado_ci "Afiliado a la Seguridad Social"
 
 ****************

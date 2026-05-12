@@ -435,6 +435,8 @@ label var salmm_ci "Salario minimo legal"
 *cotizando_ci***
 ****************
 gen cotizando_ci=.
+replace cotizando_ci=1 if s06g_54==1 |  s04a_04a==2 | s04a_04b==2 
+recode cotizando_ci .=0 if s06g_54==2 & s04a_04a!=2 & s04a_04b!=2 & (condocup_ci==2)
 label var cotizando_ci "Cotizante a la Seguridad Social"
 
 ****************
