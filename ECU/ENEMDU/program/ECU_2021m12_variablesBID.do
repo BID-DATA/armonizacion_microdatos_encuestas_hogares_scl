@@ -398,9 +398,13 @@ use `base_in', clear
 	***************
 	***desemp_ci***
 	***************
+	***** El código mantiene como missing values a la poblacion menor de la edad limite de la PET que no forman parte de la población de referencia de la sección laboral de la Encuesta *****.
 	gen byte desemp_ci = .
-	replace desemp_ci = (condocup_ci == 2) if condocup_ci! = .
-
+	replace desemp_ci = (condocup_ci == 2) if (condocup_ci != . & condocup_ci != 4)
+	label var desemp_ci "Desocupado (desempleado)"
+	label define desemp_ci 0"No " 1"Si", add
+	label value desemp_ci desemp_ci
+	
 	***************
 	***subemp_ci***
 	***************
@@ -511,8 +515,14 @@ use `base_in', clear
 	****************
 	*cotizando_ci***
 	****************
-	gen cotizando_ci = (p44f == 1 | p61b1 <= 4) //¿(…) recibe por parte de su patrono o empleador:
-
+	***** El código mantiene a la poblacion inactiva y a los menores de la edad límite de la PET como missing values en congruencia con la variable formal_ci *****.
+	gen byte cotizando_ci = .
+	replace cotizando_ci = 1 if ((p44f == 1 | p61b1 <= 4) & emp_ci==1)  //¿(…) recibe por parte de su patrono o empleador:
+	replace cotizando_ci = 0 if (cotizando_ci != 1 & inlist(condocup_ci, 1, 2))
+	label var cotizando_ci "Cotizante a la Seguridad Social"
+	label define cotizando_ci 0 "No"  1 "Si"
+	label value cotizando_ci cotizando_ci
+	
 	********************
 	*** instcot_ci *****
 	********************
@@ -523,10 +533,16 @@ use `base_in', clear
 	****************
 	***afiliado_ci**
 	****************
-	gen afiliado_ci = (p05a <= 4) /*IESS, ISSFA e ISSPOL requieren afiliación*/
+	***** El código mantiene a la poblacion inactiva y a los menores de la edad límite de la PET como missing values en congruencia con la variable formal_ci *****.
+	gen byte afiliado_ci = .
+	replace afiliado_ci = 1 if ((p05a <= 4) & emp_ci==1) /*IESS, ISSFA e ISSPOL requieren afiliación*/
+	replace afiliado_ci = 0 if (p05a > 4 & inlist(condocup_ci, 1, 2))
+	label var afiliado_ci "Afiliado a la Seguridad Social"
+	label define afiliado_ci 0 "No"  1 "Si"
+	label value afiliado_ci afiliado_ci
 	*Nota: seguridad social comprende solo los que en el futuro me ofrecen una pension.
 	* p05b incluye a los cubiertos no necesariamente estan afiliados
-
+	
 	***************
 	***formal_ci***
 	***************

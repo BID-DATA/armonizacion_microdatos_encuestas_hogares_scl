@@ -422,16 +422,62 @@ by idh_ch, sort: egen byte nmenor1_ch=sum((relacion_ci>0 & relacion_ci<=5) & (ed
 	label value condocup_ci condocup_ci
 	label var condocup_ci "Condicion de ocupacion utilizando definicion del pais"
 
+	************
+	***emp_ci***
+	************
+	gen byte emp_ci = .
+	replace emp_ci = (condocup_ci == 1) if (condocup_ci != . & condocup_ci != 4)
+	label var emp_ci "Ocupado (empleado)"
+	label define emp_ci 0"No ocupado" 1"Ocupado", add
+	label value emp_ci emp_ci
+	
+	*************
+	*cesante_ci* 
+	*************
+	cap clonevar trabant = p37
+	generat cesante_ci=0 if condocup_ci==2
+	replace cesante_ci=1 if trabant==1 & condocup_ci==2
+	label var cesante_ci "Desocupado - definicion oficial del pais"
+	
+	****************
+	***desemp_ci***
+	****************
+	***** El código mantiene como missing values a la poblacion menor de la edad limite de la PET que no forman parte de la población de referencia de la sección laboral de la Encuesta *****.
+	gen byte desemp_ci = .
+	replace desemp_ci = (condocup_ci == 2) if (condocup_ci != . & condocup_ci != 4)
+	label var desemp_ci "Desocupado (desempleado)"
+	label define desemp_ci 0"No " 1"Si", add
+	label value desemp_ci desemp_ci
+  
+	*************
+	***pea_ci***
+	*************
+	gen pea_ci=0
+	replace pea_ci=1 if emp_ci==1 | desemp_ci==1
+	label var pea_ci "Población Económicamente Activa"
+
+	*****************
+	***desalent_ci***
+	*****************
+	gen byte desalent_ci = .
+	replace desalent_ci = (p32 == 11 & (p34 == 6 | p34 == 7) & condocup_ci == 3)
+	label var desalent_ci "Desalentados"
+	label define desalent_ci 0"No" 1"Si", add
+	label value desalent_ci desalent_ci
 	
 	****************
 	*afiliado_ci****
 	****************
-	cap clonevar iess = p05a 
-	gen afiliado_ci=(iess>=1 & iess<=4) /*todas personas*/	
-	replace afiliado_ci=. if iess==.
+	***** El código mantiene a la poblacion inactiva y a los menores de la edad límite de la PET como missing values en congruencia con la variable formal_ci *****.
+	gen byte afiliado_ci = .
+	replace afiliado_ci = 1 if ((p05a <= 4) & emp_ci==1)
+	replace afiliado_ci = 0 if (p05a > 4 & inlist(condocup_ci, 1, 2))
 	label var afiliado_ci "Afiliado a la Seguridad Social"
+	label define afiliado_ci 0 "No"  1 "Si"
+	label value afiliado_ci afiliado_ci
 	*Nota: seguridad social comprende solo los que en el futuro me ofrecen una pension.
-
+	
+	
 	****************
 	*cotizando_ci***
 	****************
@@ -440,7 +486,6 @@ by idh_ch, sort: egen byte nmenor1_ch=sum((relacion_ci>0 & relacion_ci<=5) & (ed
 	replace cotizando_ci=1 if (p44f==1)  & cotizando_ci==0 /*solo a emplead@s y asalariad@s, difiere con los otros paises*/
     *replace cotizando_ci=1 if (p44f==1)  & p61b1<=4  & cotizando_ci==0
 	label var cotizando_ci "Cotizante a la Seguridad Social"
-	*/
 	
 	gen cotizando_ci=0     if condocup_ci==1 | condocup_ci==2 
 	replace cotizando_ci=1 if (p44f==1)  & cotizando_ci==0 /*solo a emplead@s y asalariad@s, difiere con los otros paises*/
@@ -453,7 +498,29 @@ by idh_ch, sort: egen byte nmenor1_ch=sum((relacion_ci>0 & relacion_ci<=5) & (ed
     *replace cotizando_ci=1 if (p44f==1)  & p61b1<=4  & cotizando_ci==0
 	replace cotizando_ci1=1 if (p61b1>=1 & p61b1<=4)  & cotizando_ci1==0
 	label var cotizando_ci1 "Cotizante a la Seguridad Social"  
+*/
+	
+	***** El código mantiene a la poblacion inactiva y a los menores de la edad límite de la PET como missing values en congruencia con la variable formal_ci *****.
+	gen byte cotizando_ci = .
+	replace cotizando_ci = 1 if ((p44f == 1 | p61b1 <= 4) & emp_ci==1)
+	replace cotizando_ci = 0 if (cotizando_ci != 1 & inlist(condocup_ci, 1, 2))
+	label var cotizando_ci "Cotizante a la Seguridad Social"
+	label define cotizando_ci 0 "No"  1 "Si"
+	label value cotizando_ci cotizando_ci
 
+		
+***** ASIGNANDO EL DISENO MUESTRAL
+***svyset _n, strata(estrato_ci) weight(factor_ci) vce(linearized) singleunit(missing)
+svyset	upm_ci,	strata(estrato_ci)	weight(factor_ci)	vce(linearized)	singleunit(missing)
+
+***** emp_ci y desalent_ci *****.
+svy : tab emp_ci, percent missing
+svy : tab desemp_ci, percent missing
+svy : tab desalent_ci, percent missing
+svy : tab cotizando_ci, percent missing
+svy : tab afiliado_ci, percent missing
+
+	
 	****************
 	*instpen_ci*****
 	****************
@@ -511,13 +578,7 @@ by idh_ch, sort: egen byte nmenor1_ch=sum((relacion_ci>0 & relacion_ci<=5) & (ed
 	replace ypensub_ci=. if ypensub_ci==999999
 	label var ypensub_ci "Valor de la pension subsidiada / no contributiva"
 
-	*************
-	*cesante_ci* 
-	*************
-	cap clonevar trabant = p37
-	generat cesante_ci=0 if condocup_ci==2
-	replace cesante_ci=1 if trabant==1 & condocup_ci==2
-	label var cesante_ci "Desocupado - definicion oficial del pais"
+
 
 	*********
 	*lp_ci***
@@ -546,37 +607,6 @@ by idh_ch, sort: egen byte nmenor1_ch=sum((relacion_ci>0 & relacion_ci<=5) & (ed
 	gen salmm_ci= 375
 	label var salmm_ci "Salario minimo legal"
 
-	************
-	***emp_ci***
-	************
-	gen byte emp_ci = .
-	replace emp_ci = (condocup_ci == 1) if (condocup_ci != . & condocup_ci != 4)
-	label var emp_ci "Ocupado (empleado)"
-	label define emp_ci 0"No ocupado" 1"Ocupado", add
-	label value emp_ci emp_ci
-	
-	****************
-	***desemp_ci***
-	****************
-	gen desemp_ci=(condocup_ci==2)
-	label var desemp_ci "Desempleado que buscó empleo en el periodo de referencia"
-  
-	*************
-	***pea_ci***
-	*************
-	gen pea_ci=0
-	replace pea_ci=1 if emp_ci==1 | desemp_ci==1
-	label var pea_ci "Población Económicamente Activa"
-
-	*****************
-	***desalent_ci***
-	*****************
-	gen byte desalent_ci = .
-	replace desalent_ci = (p32 == 11 & (p34 == 6 | p34 == 7) & condocup_ci == 3)
-	label var desalent_ci "Desalentados"
-	label define desalent_ci 0"No" 1"Si", add
-	label value desalent_ci desalent_ci
-	
 	*****************
 	***horaspri_ci***
 	*****************
