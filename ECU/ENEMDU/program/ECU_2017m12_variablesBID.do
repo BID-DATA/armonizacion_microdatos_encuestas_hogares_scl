@@ -426,9 +426,9 @@ by idh_ch, sort: egen byte nmenor1_ch=sum((relacion_ci>0 & relacion_ci<=5) & (ed
 	****************
 	*afiliado_ci****
 	****************
-	cap clonevar iess = p05a 
-	gen afiliado_ci=(iess>=1 & iess<=4) /*todas personas*/	
-	replace afiliado_ci=. if iess==.
+	gen byte afiliado_ci = .
+	replace afiliado_ci = 1 if (p05a>=1 & p05a<=4) & emp_ci==1
+	replace afiliado_ci = 0 if p05a>4 & inlist(condocup_ci, 1, 2)
 	label var afiliado_ci "Afiliado a la Seguridad Social"
 	*Nota: seguridad social comprende solo los que en el futuro me ofrecen una pension.
 
@@ -442,17 +442,13 @@ by idh_ch, sort: egen byte nmenor1_ch=sum((relacion_ci>0 & relacion_ci<=5) & (ed
 	label var cotizando_ci "Cotizante a la Seguridad Social"
 	*/
 	
-	gen cotizando_ci=0     if condocup_ci==1 | condocup_ci==2 
-	replace cotizando_ci=1 if (p44f==1)  & cotizando_ci==0 /*solo a emplead@s y asalariad@s, difiere con los otros paises*/
-    *replace cotizando_ci=1 if (p44f==1)  & p61b1<=4  & cotizando_ci==0
-	replace cotizando_ci=1 if (p61b1>=1 & p61b1<=4)  & cotizando_ci==0
+	gen byte cotizando_ci = .
+	replace cotizando_ci = 1 if(p44f==1 |(p61b1>=1 & p61b1<=4)) & emp_ci==1
+	replace cotizando_ci = 0 if(p44f==2 |  p61b1==5 | p61b1==6) & inlist(condocup_ci, 1, 2) 
+	
+
 	label var cotizando_ci "Cotizante a la Seguridad Social"
 	
-	gen cotizando_ci1=0     if (condocup_ci==1 | condocup_ci==2 | condocup_ci==3)
-	replace cotizando_ci1=1 if (p44f==1)  & cotizando_ci1==0 /*solo a emplead@s y asalariad@s, difiere con los otros paises*/
-    *replace cotizando_ci=1 if (p44f==1)  & p61b1<=4  & cotizando_ci==0
-	replace cotizando_ci1=1 if (p61b1>=1 & p61b1<=4)  & cotizando_ci1==0
-	label var cotizando_ci1 "Cotizante a la Seguridad Social"  
 
 	****************
 	*instpen_ci*****

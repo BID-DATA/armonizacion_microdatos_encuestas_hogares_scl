@@ -439,9 +439,11 @@ replace condocup_ci=4 if edad<5
 ****************
 *afiliado_ci****
 ****************
-cap clonevar iess = p05a 
-gen afiliado_ci=(iess>=1 & iess<=4) /*todas personas*/	
-replace afiliado_ci=. if iess==.
+
+gen byte afiliado_ci = .
+replace afiliado_ci = 1 if (p05a>=1 & p05a<=4) & emp_ci==1
+replace afiliado_ci = 0 if p05a>4 & inlist(condocup_ci, 1, 2)
+
 label var afiliado_ci "Afiliado a la Seguridad Social"
 *Nota: seguridad social comprende solo los que en el futuro me ofrecen una pension.
 
@@ -449,8 +451,9 @@ label var afiliado_ci "Afiliado a la Seguridad Social"
 ****************
 *cotizando_ci***
 ****************
-gen cotizando_ci=0     if condocup_ci==1 | condocup_ci==2 
-replace cotizando_ci=1 if (p44f==1) & cotizando_ci==0 /*solo a emplead@s y asalariad@s, difiere con los otros paises*/
+gen byte cotizando_ci = .
+replace cotizando_ci = 1 if(p44f==1) & emp_ci==1
+replace cotizando_ci = 0 if(p44f==2) & inlist(condocup_ci, 1, 2) 
 label var cotizando_ci "Cotizante a la Seguridad Social"
 
 ****************

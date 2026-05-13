@@ -776,25 +776,22 @@ label value condocup_ci condocup_ci
 * gen cotizando_ci=1 if p04c25a==1 & p04c25b>0 & p04c25a!=.
 * 2021: P04C25A(afiliado) y P04C25B(monto)
 
-gen cotizando_ci=1 if  p10c08a == 1 
-recode cotizando_ci .=0 if condocup_ci==1 | condocup_ci==2
-label var cotizando_ci "Cotizante a la Seguridad Social"
 
-* Formalidad sin restringir PEA
-* SGR 05/10/2017: se modifica line 1
-* gen cotizando_ci1=1 if p04c25a==1 & p04c25b>0 & p04c25a!=.
-gen cotizando_ci1=1 if p05c07a==1 & p05c07b>0 & p05c07b!=.
-recode cotizando_ci1 .=0 if condocup_ci>=1 & condocup_ci<=3
-label var cotizando_ci1 "Cotizante a la Seguridad Social"
+
+gen byte cotizando_ci = .
+replace cotizando_ci = 1 if p10c08a == 1  & emp_ci==1
+replace cotizando_ci = 0 if p10c08a != 1  & inlist(condocup_ci, 1, 2)
+
+
 	
 ****************
 *afiliado_ci****
 ****************
 
-gen afiliado_ci=.	
-replace afiliado_ci=1 if  p10c08a == 1
-replace afiliado_ci=0 if condocup_ci==2
-label var afiliado_ci "Afiliado a la Seguridad Social"
+gen byte afiliado_ci = .
+replace afiliado_ci = 1 if (p10c08a == 1 | p10c08a == 2 | p10c08a == 3) & emp_ci==1
+replace afiliado_ci = 0 if p10c08a == 4 & inlist(condocup_ci, 1, 2)
+
 
 ****************
 *tipopen_ci*****

@@ -504,7 +504,9 @@ use `base_in', clear
 	****************
 	*cotizando_ci***
 	****************
-	gen cotizando_ci = (p44f == 1 | p61b1 <= 4) //¿(…) recibe por parte de su patrono o empleador:
+	gen byte cotizando_ci = .
+	replace cotizando_ci = 1 if(p44f==1 |(p61b1>=1 & p61b1<=4)) & emp_ci==1
+	replace cotizando_ci = 0 if(p44f==2 |  p61b1==5 | p61b1==6) & inlist(condocup_ci, 1, 2)
 
 	********************
 	*** instcot_ci *****
@@ -516,7 +518,9 @@ use `base_in', clear
 	****************
 	***afiliado_ci**
 	****************
-	gen afiliado_ci = (p05a <= 4) /*IESS, ISSFA e ISSPOL requieren afiliación*/
+	gen byte afiliado_ci = .
+	replace afiliado_ci = 1 if (p05a>=1 & p05a<=4) & emp_ci==1
+	replace afiliado_ci = 0 if p05a>4 & inlist(condocup_ci, 1, 2)  /*IESS, ISSFA e ISSPOL requieren afiliación*/
 	*Nota: seguridad social comprende solo los que en el futuro me ofrecen una pension.
 	* p05b incluye a los cubiertos no necesariamente estan afiliados
 

@@ -486,16 +486,20 @@ replace condocup_ci=4 if edad<5
 ****************
 *afiliado_ci****
 ****************
-gen afiliado_ci=(iess>=2 & iess<=4) /*todas personas*/	
-replace afiliado_ci=. if iess==.
+gen byte afiliado_ci = .
+replace afiliado_ci = 1 if (iess>=2 & iess<=4) & emp_ci==1
+replace afiliado_ci = 0 if ies>4 & inlist(condocup_ci, 1, 2)
 label var afiliado_ci "Afiliado a la Seguridad Social"
 *Nota: seguridad social comprende solo los que en el futuro me ofrecen una pension.
 
 ****************
 *cotizando_ci***
 ****************
-gen cotizando_ci=0     if condocup_ci==1 | condocup_ci==2 
-replace cotizando_ci=1 if (pe42f==1) & cotizando_ci==0 /*Emplead@s y asalariad@s, ocupados y desoc*/
+
+gen byte cotizando_ci = .
+replace cotizando_ci = 1 if(pe42f==1) & emp_ci==1
+replace cotizando_ci = 0 if(pe42f==2) & inlist(condocup_ci, 1, 2)
+
 label var cotizando_ci "Cotizante a la Seguridad Social"
 *Nota: solo seguro social publico, con el cual tenga derecho a pensiones en el futuro.
 
