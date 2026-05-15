@@ -1362,7 +1362,7 @@ gen aguatrat_ch = 9
 ************
 ***luz_ch***
 ************
-gen luz_ch=.
+gen luz_ch=(s01014==1)
 label var luz_ch  "La principal fuente de iluminación es electricidad"
 
 ****************
@@ -1374,7 +1374,7 @@ label var luzmide_ch "Usan medidor para pagar consumo de electricidad"
 ****************
 ***combust_ch***
 ****************
-gen combust_ch=.
+gen combust_ch=(s01016a1==1 | s01016a2==1 | s01016a4==1)
 label var combust_ch "Principal combustible gas o electricidad" 
 
 
@@ -1382,51 +1382,86 @@ label var combust_ch "Principal combustible gas o electricidad"
 ***des1_ch***
 *************
 *En esta base no existe opción de fossa rudimentar, la cuál se clasificaba como 2"Letrina o conectado a pozo ciego"
-gen des1_ch=.
+gen des1_ch=1 if s01012==1 | s01012==2 | s01012==3
+replace des1_ch=2 if s01012==4
+replace des1_ch=3 if s01012>=5 & s01012<=6
+replace des1_ch=. if s01012==.
+replace des1_ch=0 if bano_ch==0
 label var des1_ch "Tipo de desague según unimproved de MDG"
+label def des1_ch 0"No tiene servicio sanitario" 1"Conectado a red general o cámara séptica"
+label def des1_ch 2"Letrina o conectado a pozo ciego" 3"Desemboca en río o calle", add
+label val des1_ch des1_ch
 
 *************
 ***des2_ch***
 *************
 *El indicador debería ser una reclasificación de des1_ch, por ello se cambia aquí: 
-gen des2_ch=.
+gen des2_ch=0 if des1_ch==0
+replace des2_ch=1 if des1_ch==1 | des1_ch==2 
+replace des2_ch=2 if des1_ch==3
 label var des2_ch "Tipo de desague sin incluir definición MDG"
+label def des2_ch 0"No tiene servicio sanitario" 1"Conectado a red general, cámara séptica, pozo o letrina"
+label def des2_ch 2"Cualquier otro caso", add
+label val des2_ch des2_ch
 
 *************
 ***piso_ch***
 *************
-gen piso_ch=.
+gen piso_ch= 0 	if s01004==4
+replace piso_ch=1	if s01004>=1 & s01004<=3
+replace piso_ch=. 	if s01004==.
 label var piso_ch "Materiales de construcción del piso"  
+label def piso_ch 0"Piso de tierra" 1"Materiales permanentes" 2"Otros materiales"
+label val piso_ch piso_ch 
 
 **************
 ***pared_ch***
 **************
-gen pared_ch=.
+gen pared_ch=0 if s01002==5
+replace pared_ch=1 if s01002==1 | s01002==2 |s01002==4
+replace pared_ch=2 if s01002==6 | s01002==3
+replace pared_ch=. if s01002==.
 label var pared_ch "Materiales de construcción de las paredes"
+label def pared_ch 0"No permanentes" 1"Permanentes" 2"Otros materiales:otros"
+label val pared_ch pared_ch
 
 **************
 ***techo_ch***
 **************
 *No existe más opción de paja
-gen techo_ch=.
+gen techo_ch=0 if s01003==6
+replace techo_ch=1 if s01003<=5
+replace techo_ch=2 if s01003==6
+replace techo_ch=. if s01003==.
 label var techo_ch "Materiales de construcción del techo"
+label def techo_ch 0"No permanentes" 1"Permanentes" 2"Otros materiales:otros"
+label val techo_ch techo_ch
 
 **************
 ***resid_ch***
 **************
-gen resid_ch=.
+gen resid_ch=0 if s01013==1 | s01013==2
+replace resid_ch=1 if s01013==3 | s01013==4
+replace resid_ch=2 if s01013==5
+replace resid_ch=3 if s01013==6
+replace resid_ch=. if s01013==.
 label var resid_ch "Método de eliminación de residuos"
+label def resid_ch 0"Recolección pública o privada" 1"Quemados o enterrados"
+label def resid_ch 2"Tirados a un espacio abierto" 3"Otros", add
+label val resid_ch resid_ch
 		
 *************
 ***dorm_ch***
 *************
-gen dorm_ch=.
+gen dorm_ch=s01006
+replace dorm_ch=. if s01006==99 
 label var dorm_ch "Habitaciones para dormir"
 
 ****************
 ***cuartos_ch***
 ****************
-gen cuartos_ch=.
+gen cuartos_ch=s01005
+replace cuartos_ch=. if s01005==99 
 label var cuartos_ch "Habitaciones en el hogar"
 
 ***************
@@ -1438,13 +1473,15 @@ label var cocina_ch "Cuarto separado y exclusivo para cocinar"
 **************
 ***telef_ch***
 **************
-gen telef_ch=.
+gen telef_ch=(s01022==1)
+replace telef_ch=. if s01022==.
 label var telef_ch "El hogar tiene servicio telefónico fijo"
 
 ***************
 ***refrig_ch***
 ***************
-gen refrig_ch=.
+gen refrig_ch=(s01023==1 |s01023==2)
+replace refrig_ch=. if s01023==.
 label var refrig_ch "El hogar posee refrigerador o heladera"
 
 **************
@@ -1456,44 +1493,57 @@ label var freez_ch "El hogar posee congelador"
 *************
 ***auto_ch***
 *************
-gen auto_ch=.
+gen auto_ch=(s01031==1)
+replace auto_ch=. if s01031==.
 label var auto_ch "El hogar posee automovil particular"
 
 **************
 ***compu_ch***
 **************
-gen compu_ch=.
+gen compu_ch=(s01028==1)
 label var compu_ch "El hogar posee computador"
 
 *****************
 ***internet_ch***
 *****************
-gen internet_ch=.
+gen internet_ch=(s01029==1)
 label var internet_ch "El hogar posee conexión a Internet"
 
 ************
 ***cel_ch***
 ************
-gen cel_ch=.
+gen cel_ch=(s01021>=1)
 label var cel_ch "El hogar tiene servicio telefonico celular"
 
 **************
 ***vivi1_ch***
 **************
-gen viv1_ch=.
+gen viv1_ch=1 if s01001==1
+replace viv1_ch=2 if s01001==2
+replace viv1_ch=3 if s01001==3
 label var viv1_ch "Tipo de vivienda en la que reside el hogar"
+label def viv1_ch 1"Casa" 2"Departamento" 3"Otros"
+label val viv1_ch viv1_ch
 
 **************
 ***vivi2_ch***
 **************
-gen viv2_ch=.
+gen viv2_ch=(viv1_ch==1 | viv1_ch==2)
+replace viv2_ch=. if viv1_ch==.
 label var viv2_ch "La vivienda es casa o departamento"
 
 *****************
 ***viviprop_ch***
 *****************
-gen viviprop_ch=.
+gen viviprop_ch=0 if s01017==3
+replace viviprop_ch=1 if s01017==1
+replace viviprop_ch=2 if s01017==2
+replace viviprop_ch=3 if s01017>=4 /*corrigo =3 no =4, revisar en anios anteriores */
+replace viviprop_ch=. if s01017==.
 label var viviprop_ch "Propiedad de la vivienda"
+label def viviprop_ch 0"Alquilada" 1"Propia y totalmente pagada" 2"Propia y en proceso de pago"
+label def viviprop_ch 3"Ocupada (propia de facto)", add
+label val viviprop_ch viviprop_ch
 
 ****************
 ***vivitit_ch***
@@ -1504,13 +1554,14 @@ label var vivitit_ch "El hogar posee un título de propiedad"
 ****************
 ***vivialq_ch***
 ****************
-gen vivialq_ch=.
+gen vivialq_ch=s01019
+replace vivialq_ch=. if s01019>=999999999 | vivialq_ch<0
 label var vivialq_ch "Alquiler mensual"
 
 *******************
 ***vivialqimp_ch***
 *******************
-gen vivialqimp_ch=.
+gen vivialqimp_ch=s01019 if s01017==3
 label var vivialqimp_ch "Alquiler mensual imputado"
 
 ****************************************************

@@ -666,7 +666,7 @@ label var compu_ch "El hogar posee computador"
  ***internet_ch*
  *************** 
 capture gen internet_ch=(v0232==2)
-replace internet_ch = . if v0232 == . | v0232 == 9
+*replace internet_ch = . if v0232 == . | v0232 == 9
 label var internet_ch "El hogar posee conexión a Internet"
 
  ************
