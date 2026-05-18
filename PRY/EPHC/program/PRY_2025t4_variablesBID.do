@@ -374,7 +374,7 @@ use "`base_in'", clear
 	*** emp_ci ***
 	********************
 	gen byte emp_ci = .
-	replace emp_ci = (condocup_ci == 1) if condocup_ci != .
+	replace emp_ci = (condocup_ci == 1) if (condocup_ci != . & condocup_ci != 4)
 
 	********************
 	*** cesante_ci ***
@@ -388,7 +388,7 @@ use "`base_in'", clear
 	*** desemp_ci ***
 	********************
 	gen byte desemp_ci = .
-	replace desemp_ci = (condocup_ci == 2) if condocup_ci != .
+	replace desemp_ci = (condocup_ci == 2) if (condocup_ci != . & condocup_ci != 4)
 
 	********************
 	*** subemp_ci ***
@@ -512,8 +512,8 @@ use "`base_in'", clear
 	********************
 	/* b10: aporta caja principal, c07: aporta caja secundaria */
 	gen byte cotizando_ci = .
-	replace cotizando_ci = 1 if b10 == 1 | c07 == 1
-	replace cotizando_ci = 0 if inlist(b10, 6, 9, .) & inlist(c07, 6, .)
+	replace cotizando_ci = 1 if (b10 == 1 | c07 == 1 ) & emp_ci==1
+	replace cotizando_ci = 0 if inlist(b10, 6, 9, .) & inlist(c07, 6, .) & inlist(conodocup_ci 1, 2)
 	replace cotizando_ci = 0 if peaa == 2
 
 	********************
