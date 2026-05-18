@@ -589,27 +589,27 @@ label value region_c region_c
 	replace ocupa_ci=7 if ((f71_2>=7111 & f71_2<=8350) | (f71_2>=9311 & f71_2<=9412)) & emp_ci==1 /*Incluye artesanos y operarios en hilanderias*/
 	replace ocupa_ci=8 if (f71_2>=110 & f71_2<=310) & emp_ci==1
 	replace ocupa_ci=9 if (f71_2==9629) & emp_ci==1
-
-	**************
-	**pension_ci***
-	**************
-	gen byte pension_ci=. 
-	replace pension_ci=1 if g_it_1==1 |g_it_2==1
-	replace pension_ci=0 if  g_it_1==2 |g_it_2==2
 	
+	*************
+	**pension_ci*
+	*************
+	gen pension_ci=1 if g_it_1==1 |g_it_2==1
+
 	***************
-	**pensionsub_ci**
+	*pensionsub_ci*
 	***************
-	/*DZ Octubre 2017- Se crea variable pension subsidiada* Dado que la pregunta es excluyente y el programa de pensión subsidiada en Uruguay es para Adultos mayores y/o discapacitados se pone la condicion de mayor de 70 años (edad para recibir el beneficio) en las personas que afirmaron tener pension por invalidez*/
-	gen pensionsub_ci= ((f125==1) | (f125==3 & edad_ci>69))
+	destring f124_2, replace force
+	gen pensionsub_ci= 1 if f124_2==1
 	label var pensionsub_ci "1=recibe pension subsidiada / no contributiva"
 
-	
-	***************
-	**tipopen_ci**
-	***************
-	gen byte tipopen_ci = f125
+	****************
+	*tipopen_ci*****
+	****************
+	gen tipopen_ci = f125
 	replace tipopen_ci =. if f125 == 0
+	label define tipopen_ci 1"vejez" 2"fallecimiento" 3"invalidez" 4"extranjero" 5"victima" 6"hijos de fallecidos por violencia doméstica" 7"pensión especial reparatoria" 8"pensión reparatoria personas trans"
+	label var tipopen_ci "Tipo de pension - variable original de cada pais" 
+	label value tipopen_ci tipopen_ci
 	
 	***************
 	**instpen_ci **
@@ -691,11 +691,40 @@ label value region_c region_c
 	egen double ylnm_ci = rowtotal(ylnmpri_ci ylnmsec_ci ylnmotros_ci), mi
 	replace ylnm_ci = . if ylnm_ci < 0 & ylnm_ci != .
 
-	**********
-	* ynlm_ci *
-	**********
-	gen double ynlm_ci =.
-	replace ynlm_ci = 0 if ynlm_ci < 0 & ynlm_ci != .
+	***********************
+	* ynlm_ci 
+	***********************
+
+	foreach i in h160_1 h160_2 h163_1 h163_2 h164 h165 h166 ///
+	             h167_1_3 h167_2_3 h167_3_3 h167_4_3 ///
+	             h170_3 h171_1 h172_1 h173_1 {
+		capture gen `i'm = `i'/12
+	}
+	bys idh_ch: egen numper = sum(miembros_ci)
+	bys idh_ch: egen npermax = max(numper)
+	drop numper
+
+	capture egen inghog1 = rsum(h155_1 h160_1m h160_2m h163_1m h163_2m h164m ///
+	    h165m h166m h167_1_3m h167_2_3m h167_3_3m h167_4_3m ///
+	    h170_3m h171_1m h172_1m h173_1m), missing
+	capture gen inghog = inghog1 / npermax
+	capture confirm variable inghog
+	if _rc gen inghog = .
+
+	capture gen canasta_2 = (e247 * indaceliac) if e246 == 7
+	capture gen canasta_3 = (e247 * indaemer)   if e246 == 14
+	capture gen hogcosnt  = mto_hogcon if g149 == 1 & g149_1 == 2
+	capture egen transf   = rsum(canasta_2 canasta_3 hogcosnt), missing
+	capture confirm variable transf
+	if _rc gen transf = .
+
+	egen double ynlm_ci = rsum(inghog transf ///
+		g148_1_1 g148_1_2 g148_1_3 g148_1_5 g148_1_6 g148_1_7 ///
+		g148_1_8 g148_1_9 g148_1_12 g148_1_10 g148_1_11 ///
+		g148_2_1 g148_2_2 g148_2_3 g148_2_5 g148_2_6 g148_2_7 ///
+		g148_2_8 g148_2_9 g148_2_12 g148_2_10 g148_2_11 ///
+		g148_3 g148_4 g148_5_1 g148_5_2 g153_1 g153_2 g154_1)
+	replace ynlm_ci = . if ynlm_ci < 0
 
 	***********
 	* ynlnm_ci *
@@ -763,16 +792,28 @@ label value region_c region_c
 	*************
     generate double remesas_ch =h172_1
 
-	**********
-	* ypen_ci *
-	**********
-	egen double ypen_ci =rowtotal(g148_1_1 g148_1_2 g148_1_3 g148_1_5 g148_1_6 g148_1_7 g148_1_8 g148_1_9 g148_1_12 g148_1_10 ///
-	g148_2_1 g148_2_2 g148_2_3 g148_2_5 g148_2_6 g148_2_7 g148_2_8 g148_2_9 g148_2_12 g148_2_10) if pension_ci==1
+	*************
+	*ypen_ci*
+	*************
+	* Jubilaciones
+	egen aux1 = rowtotal(g148_1_1 g148_1_2 g148_1_3 g148_1_5 g148_1_6 g148_1_7 g148_1_8 g148_1_9 g148_1_12 g148_1_10), mis /*Se excluyen pensiones recibidas del exterior (g148_1_11)*/
+	* Missing g148_1_4 *
+
+	* Pensiones
+	egen aux2 = rowtotal(g148_2_1 g148_2_2 g148_2_3 g148_2_5 g148_2_6 g148_2_7 g148_2_8 g148_2_9 g148_2_12 g148_2_10), mis /*Se excluyen pensiones recibidas del exterior (g148_2_11)*/
+	* Missing g148_2_4 *
+
+	* MGR, Aug 2015: correción en sintáxis, se generaba como el 100%
+	egen 	ypen_ci=rsum(aux1 aux2),m
+	replace ypen_ci=. if pension_ci==0
+	label var ypen_ci "Valor de la pension contributiva"
+
 
 	*************
 	* ypensub_ci *
 	*************
-	generate double ypensub_ci =. if pensionsub_ci==1
+	generate double ypensub_ci =.
+	
 	
 ****************************
 ***VARIABLES DE EDUCACION***
