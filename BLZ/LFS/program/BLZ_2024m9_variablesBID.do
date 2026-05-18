@@ -170,7 +170,7 @@ use "`base_in'", clear
 	*************
 	*miembros_one_ci*
 	*************
-	gen miembros_one_ci=.
+	gen miembros_one_ci=1
 	
 	**************
 	*Estado Civil*
