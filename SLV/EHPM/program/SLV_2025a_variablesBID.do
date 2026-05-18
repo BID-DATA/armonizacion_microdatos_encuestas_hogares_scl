@@ -387,7 +387,7 @@ use "`base_in'", clear
 	**desemp_ci***
 	*************
 	gen byte desemp_ci = .
-	replace desemp_ci = (condocup_ci == 2) if condocup_ci != .
+	replace desemp_ci = (condocup_ci == 2) if (condocup_ci != . & condocup_ci != 4)
 
 	***************
 	**horaspri_ci**
@@ -544,8 +544,8 @@ use "`base_in'", clear
 	*************
 	/* r501: 1=ISSS retirado/jubilado, 2=BM retirado - afiliado sin cotizar */
 	gen byte afiliado_ci = .
-	replace afiliado_ci = 1 if r501 >= 1 & r501 <= 2
-	replace afiliado_ci = 0 if r501 > 2
+	replace afiliado_ci = 1 if r501 >= 1 & r501 <= 2 & emp_ci==1
+	replace afiliado_ci = 0 if r501 > 2 & inlist(conodocup_ci 1, 2)
 
 	***********
 	**formal_ci**
