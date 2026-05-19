@@ -390,7 +390,7 @@ by idh_ch, sort: egen byte nmenor1_ch=sum((relacion_ci>0 & relacion_ci<=5) & (ed
 	replace condocup_ci=1 if condact==1
 	replace condocup_ci=2 if condact==2
 	replace condocup_ci=3 if condact==3
-	replace condocup_ci=4 if (edad_ci<15)
+	replace condocup_ci=4 if (edad_ci<15) // Las preguntas sobre ocupación se hacen a personas de 5 años en adelante. Pero en la BBDD sólo existe información disponible desde los 15 años.
 
 	label var condocup_ci "Condicion de ocupación de acuerdo a def de cada pais"
 	label define condocup_ci  1 "Ocupado" 2 "Desocupado" 3 "Inactivo" 4 "Menor que 10" 
@@ -414,10 +414,11 @@ by idh_ch, sort: egen byte nmenor1_ch=sum((relacion_ci>0 & relacion_ci<=5) & (ed
 	*******************
 	***categoinac_ci***
 	*******************
-	gen categoinac_ci =1 if ((ca514 ==1 | ca514==2) & condocup_ci==3)
-	replace categoinac_ci = 2 if  (ca514==4 & condocup_ci==3)
-	replace categoinac_ci = 3 if  (ca514==5 & condocup_ci==3)
-	replace categoinac_ci = 4 if  ((inlist(ca514,3,6,7,8,9,97)) & condocup_ci==3)
+	gen categoinac_ci = .
+	replace categoinac_ci = 1 if ((ca514 ==1 | ca514==2) & condocup_ci==3)
+	replace categoinac_ci = 2 if (ca514==4 & condocup_ci==3)
+	replace categoinac_ci = 3 if (ca514==5 & condocup_ci==3)
+	replace categoinac_ci = 4 if (categoinac_ci != 1 & categoinac_ci != 2 & categoinac_ci != 3) & condocup_ci == 3
 	label var categoinac_ci "Categoría de inactividad"
 	label define categoinac_ci 1 "jubilados o pensionados" 2 "Estudiantes" 3 "Quehaceres domésticos" 4 "Otros" 
 	label value categoinac_ci categoinac_ci
@@ -978,14 +979,25 @@ egen ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci)
 	**************
 	** resid_ch **
 	**************
+	/*  V08. ¿Cómo eliminan la basura en esta vivienda?
+           1 Recolección domiciliaria pública
+           2 La deposita en contenedores
+           3 Recolección domiciliaria privada
+           4 La entierra
+           5 La prepara para abono
+           6 La quema
+           7 La tira en cualquier lugar
+           8 Otro */
 	gen resid_ch=.
-	replace resid_ch=0 if inlist(v08,1,2,3)
-	replace resid_ch=1 if inlist(v08,4,5,6)
-	replace resid_ch=2 if inlist(v08,7)
+	replace resid_ch=0 if inlist(v08,1,2,3)   // Recolección pública o privada
+	replace resid_ch=1 if inlist(v08,4,6)	  // Quemados o enterrados
+	replace resid_ch=2 if inlist(v08,7)		  // Tirados a un espacio abierto
+	replace resid_ch=3 if inlist(v08,5,8)     // Otros (prepara abono y otros)
 	
 	label define resid_ch 		0 "Recoleccion publica o privada" ///
 								1 "Quemados o enterrados" ///
-								2 "Tirados en un espacio abierto"
+								2 "Tirados en un espacio abierto" ///
+								3 "Otros"
 	
 	label value resid_ch resid_ch
 	
@@ -1003,9 +1015,15 @@ egen ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci)
 	**************
 	** cocina_ch **
 	**************
+	/*H02. En qué pieza ó sitio de la vivienda cocina los alimentos este hogar:
+	       1 En una pieza dedicada solo para cocinar
+           2 En una pieza utilizada también para dormir
+           3 En la sala, comedor
+           4 En el patio, corredor u otro sitio
+           5 No cocina 	*/
 	gen cocina_ch=.
-	replace cocina_ch=1 if h02==1
-	replace cocina_ch=0 if inrange(h02,2,5)
+	replace cocina_ch=1 if h02==1				// Tiene un cuarto separado y exclusivo para cocinar
+	replace cocina_ch=0 if inrange(h02,2,5)		// Cocinan en un cuarto compartido
 	
 
 	**************
@@ -1036,22 +1054,44 @@ egen ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci)
 	**************
 	** internet_ch **
 	**************
-	gen internet_ch=(tic03==1 & at05_1==1)
-	replace internet_ch=. if (tic03==.|tic03==9) & at05_1==.
-
+	/* La respuesta es a nivel de persona, por lo que un mismo hogar puede tener diferentes respuestas. Por lo que se utiliza la jefatura de hogar.
+	TIC03. Durante los últimos 3 meses, ¿tuvo acceso a internet?   	
+	       1 Si
+           2 No
+           9 No sabe/No responde
+	   TIC05.  ¿En qué sitios tuvo acceso a internet? En su casa
+		   1 Si
+		   . missing 	*/
+	gen internet_jh = (tic03==1 & at05_1==1) & relacion_ci==1	// Posee conexión a internet
+	replace internet_jh = . if (tic03==. | tic03==9) & at05_1==. & relacion_ci==1					// No tiene
+	bys idh_ch: egen internet_ch = max(internet_jh)
+	drop internet_jh
+	
 	**************
 	** cel_ch **
 	**************
-	by idh_ch : egen cel_ch=max(tic09) if miembros_ci==1
-	replace cel_ch = 0 if cel_ch==.
-	
+	/* La respuesta es a nivel de persona, según el manual cel_ch = 1 si al menos un integrante tiene celular.
+	TIC09 (Nombre...) ¿Tiene teléfono celular? 
+           1 Si
+           . Missing */
+	bys idh_ch: egen cel_ch = min(tic09)
+	replace cel_ch = 0 if cel_ch == .
+
 	**************
 	** vivi1_ch **
 	**************
+	/* V01- Tipo de vivenda
+           1 Casa individual
+           2 Casa de material natural (rancho)
+           3 Casa improvisada
+           4 Apartamento
+           5 Cuarto en meson o cuarteria
+           6 Barracon
+           7 Local no construido para habitacion pero usado como vivienda */
 	gen vivi1_ch=.
-	replace vivi1_ch=1 if inlist(v01,1,2,3)
-	replace vivi1_ch=2 if inlist(v01,4)
-	replace vivi1_ch=3 if inlist(v01,5,6,7)
+	replace vivi1_ch=1 if inlist(v01,1)		// Casa
+	replace vivi1_ch=2 if inlist(v01,4)		// Departamento
+	replace vivi1_ch=3 if inlist(v01,2,3,5,6,7) // Otros
 	
 	label define vivi1_ch 		1 "Casa" ///
 								2 "Departamento" ///
@@ -1068,16 +1108,24 @@ egen ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci)
 	**************
 	** viviprop_ch **
 	**************
+	/* V10. Su vivienda es:
+	       1 Alquilada?
+           2 Propietario y la está pagando?
+           3 Propietario y completamente pagada?
+           4 Invasión (propia recuperada legalizada)?
+           5 Invasion (propia recuperada sin legalizar)?
+           6 Prestada (cedida sin pago)?
+           7 Recibida por servicios de trabajo? */
 	gen viviprop_ch=.
-	replace viviprop_ch=1 if inlist(v10,1,6,7)
-	replace viviprop_ch=2 if inlist(v10,3)
-	replace viviprop_ch=3 if inlist(v10,2)
-	replace viviprop_ch=4 if inlist(v10,4,5)
+	replace viviprop_ch=0 if inlist(v10,1)			// Alquilada
+	replace viviprop_ch=1 if inlist(v10,3)			// Propia y totalmente pagada
+	replace viviprop_ch=2 if inlist(v10,2)			// Propia y pagandola
+	replace viviprop_ch=3 if inlist(v10,4,5,6,7)	// Ocupada (propia de facto)
 	
-	label define viviprop_ch 		1 "Alquilada" ///
-									2 "Propia y totalmente pagada" ///
-									3 "Propia y en proceso de pago" ///
-									4 "Ocupada (propia de facto)"
+	label define viviprop_ch 		0 "Alquilada" ///
+									1 "Propia y totalmente pagada" ///
+									2 "Propia y en proceso de pago" ///
+									3 "Ocupada (propia de facto)"
 	
 	label value viviprop_ch viviprop_ch
 	

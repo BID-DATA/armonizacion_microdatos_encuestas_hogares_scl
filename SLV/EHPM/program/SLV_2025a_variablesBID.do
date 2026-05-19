@@ -387,7 +387,7 @@ use "`base_in'", clear
 	**desemp_ci***
 	*************
 	gen byte desemp_ci = .
-	replace desemp_ci = (condocup_ci == 2) if condocup_ci != .
+	replace desemp_ci = (condocup_ci == 2) if (condocup_ci != . & condocup_ci != 4)
 
 	***************
 	**horaspri_ci**
@@ -544,8 +544,8 @@ use "`base_in'", clear
 	*************
 	/* r501: 1=ISSS retirado/jubilado, 2=BM retirado - afiliado sin cotizar */
 	gen byte afiliado_ci = .
-	replace afiliado_ci = 1 if r501 >= 1 & r501 <= 2
-	replace afiliado_ci = 0 if r501 > 2
+	replace afiliado_ci = 1 if r501 >= 1 & r501 <= 2 & emp_ci==1
+	replace afiliado_ci = 0 if r501 > 2 & inlist(conodocup_ci 1, 2)
 
 	***********
 	**formal_ci**
@@ -1127,24 +1127,16 @@ use "`base_in'", clear
 	*aguafuente_ch*
 	***************
 	gen byte aguafuente_ch = .
-	/* Cañería (piped) de cualquier tipo - todos son aguafuente=1 */
-	replace aguafuente_ch = 1 if inlist(r312, 1, 2, 3, 4)
-	/* r312==6: tiene cañería pero sin servicio - tratamos como piped */
-	replace aguafuente_ch = 1 if r312 == 6
-
-	/* r313: forma alternativa cuando no hay cañería */
-	replace aguafuente_ch = 2  if r313 == 2    /* Pila/chorro público/cantarera  - pilón  */
-	replace aguafuente_ch = 2  if r313 == 12   /* Chorro común                   - pilón  */
-	replace aguafuente_ch = 4  if r313 == 4    /* Pozo con tubería privado        - pozo protegido */
-	replace aguafuente_ch = 4  if r313 == 5    /* Pozo protegido privado          - pozo protegido */
-	replace aguafuente_ch = 5  if r313 == 8    /* Manantial protegido             - manantial prot. */
-	replace aguafuente_ch = 6  if r313 == 3    /* Camión, carreta o pipa          - cisterna/camión */
-	replace aguafuente_ch = 7  if inlist(r313, 1, 11) /* Cañería vecino/acarreo vecino - otra mejorada */
-	replace aguafuente_ch = 7  if r313 == 10   /* Colecta agua lluvia             - lluvia */
-	replace aguafuente_ch = 8  if r313 == 6    /* Pozo no protegido privado       - pozo no prot. */
-	replace aguafuente_ch = 8  if r313 == 9    /* Manantial no protegido          - fuente no prot. */
-	replace aguafuente_ch = 9  if r313 == 7    /* Ojo de agua, río o quebrada     - superficial */
-	replace aguafuente_ch = 10 if r313 == 13   /* Otros medios                    - sin info */
+	replace aguafuente_ch = 1 if inlist(r312, 1, 3)
+	replace aguafuente_ch = 2 if !missing(r313) & inlist(r313, 2, 12)
+	replace aguafuente_ch = 4 if !missing(r313) & inlist(r313, 4, 4.1, 5, 5.1)
+	replace aguafuente_ch = 5 if !missing(r313) & r313 == 8
+	replace aguafuente_ch = 6 if !missing(r313) & r313 == 3
+	replace aguafuente_ch = 7 if !missing(r313) & inlist(r313, 1, 11)
+	replace aguafuente_ch = 7 if !missing(r313) & r313 == 10
+	replace aguafuente_ch = 8 if !missing(r313) & inlist(r313, 6, 6.1, 9)
+	replace aguafuente_ch = 9 if !missing(r313) & r313 == 7
+	replace aguafuente_ch = 10 if inlist(r312, 2, 4) | (!missing(r313) & r313 == 13)
 
 	*************
 	*aguadist_ch*
@@ -1212,12 +1204,11 @@ use "`base_in'", clear
 	     8=Letrina abonera común         - bano_ch=3 (mejorado per JMP)
 	     9=Letrina solar privada         - bano_ch=3 (mejorado per JMP) */
 	gen byte bano_ch = .
-	replace bano_ch = 1 if inlist(r316, 1, 3)                          /* inodoro alcantarillado */
-	replace bano_ch = 2 if inlist(r316, 2, 4)                          /* inodoro fosa séptica   */
-	replace bano_ch = 3 if inlist(r316, 7, 8, 9)                       /* letrina mejorada (JMP) */
-	replace bano_ch = 4 if (inlist(r314, 1, 2)) & inlist(r317a, 3, 4) /* tiene pero defecación abierta */
+	replace bano_ch = 1 if inlist(r316, 1, 3) & inlist(r314,1,2)  /* inodoro alcantarillado */
+	replace bano_ch = 2 if inlist(r316, 2, 4)& inlist(r314,1,2)  /* inodoro fosa séptica   */
+	replace bano_ch = 3 if inlist(r316, 7, 8, 9,10)& inlist(r314,1,2) /* letrina mejorada (JMP) */
 	replace bano_ch = 6 if inlist(r316, 5, 6)                          /* letrina sin piso/común */
-	replace bano_ch = 0 if inlist(r314, 3, 4)                          /* sin instalación        */
+	replace bano_ch = 0 if inlist(r314, 3, 4)  
 
 	*******
 	*banoex_ch*
@@ -1229,9 +1220,10 @@ use "`base_in'", clear
 	**********
 	gen byte sinbano_ch = 3
 	replace sinbano_ch = 0 if bano_ch > 0 & bano_ch != .
-	replace sinbano_ch = 1 if r314 == 4 & r315 == 1
-	replace sinbano_ch = 1 if r314 == 4 & r315 == 2 & inlist(r317a, 1, 2)
-	replace sinbano_ch = 2 if r314 == 4 & r315 == 2 & inlist(r317a, 3, 4)
+	replace sinbano_ch = 1 if inlist(r314,3,4) & r315 == 1
+	replace sinbano_ch = 1 if inlist(r314,3,4) & r315 == 2 & inlist(r317a, 1, 2)
+	replace sinbano_ch = 2 if inlist(r314,3,4) & r315 == 2 & inlist(r317a, 3, 4)
+	replace sinbano_ch =3 if inlist(r314,3,4) & r315 == 2 & r317a == 5
 
 	**************
 	*banomejorado_ch*

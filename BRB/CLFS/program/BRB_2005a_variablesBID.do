@@ -371,9 +371,11 @@ label var condocup_ci "Condición de ocupación"
 ****************************
 * CATEGORIA DE INACTIVIDAD *
 ****************************
-*Jubilados, pensionados
-gen categoinac_ci=1 if majactv==3 & condocup_ci==3
+gen categoinac_ci=.
 label var  categoinac_ci "Condición de Inactividad" 
+
+*Jubilados, pensionados
+replace categoinac_ci=1 if majactv==3 & condocup_ci==3
 
 *Estudiantes
 replace categoinac_ci=2 if majactv==2 & condocup_ci==3
@@ -382,7 +384,7 @@ replace categoinac_ci=2 if majactv==2 & condocup_ci==3
 replace categoinac_ci=3 if majactv==1 & condocup_ci==3
 
 *Otra razon
-replace categoinac_ci=4 if (majactv==4 | majactv==6 | majactv==9) & condocup_ci==3
+replace categoinac_ci=4 if (categoinac_ci != 1 & categoinac_ci !=2 & categoinac_ci != 3) & condocup_ci==3
 
 label define inactivo 1 "Jubilados o Pensionado" 2 "Estudiante" 3 "Hogar" 4 "Otros"
 label values categoinac_ci inactivo

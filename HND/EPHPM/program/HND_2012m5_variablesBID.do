@@ -786,10 +786,11 @@ label var lpe_ci "Linea de indigencia oficial del pais"
 ***categoinac_ci***
 *******************
 
-gen categoinac_ci =1 if ((ce407 ==2 | ce407==3) & condocup_ci==3)
-replace categoinac_ci = 2 if  (ce407==5 & condocup_ci==3)
-replace categoinac_ci = 3 if  (ce407==6 & condocup_ci==3)
-replace categoinac_ci = 4 if  ((categoinac_ci ~=1 & categoinac_ci ~=2 & categoinac_ci ~=3) & condocup_ci==3)
+gen categoinac_ci = .
+replace categoinac_ci = 1 if ((ce407 ==2 | ce407==3) & condocup_ci==3)
+replace categoinac_ci = 2 if (ce407==5 & condocup_ci==3)
+replace categoinac_ci = 3 if (ce407==6 & condocup_ci==3)
+replace categoinac_ci = 4 if (categoinac_ci != 1 & categoinac_ci != 2 & categoinac_ci != 3) & condocup_ci == 3
 label var categoinac_ci "Categoría de ince407ad"
 label define categoinac_ci 1 "jubilados o pensionados" 2 "Estudiantes" 3 "Quehaceres domésticos" 4 "Otros" 
 
@@ -1448,6 +1449,7 @@ replace sinbano_ch = 0 if dh05==1
 *************
 gen aguatrat_ch = 9
 *label var aguatrat_ch "= 9 la encuesta no pregunta de si se trata el agua antes de consumirla"
+
 ********
 *luz_ch*
 ********
@@ -1465,7 +1467,9 @@ gen luzmide_ch=.
 gen combust_ch=1 if dh04==3 | dh04==2 | dh04==4
 replace combust_ch=0 if dh04==5 | dh04==1
 
-
+***************
+**des1_ch     *
+***************
 gen des1_ch=.
 replace des1_ch=0 if dh05==2
 replace des1_ch=1 if (dh06==1|dh06==2)
@@ -1476,6 +1480,9 @@ label def des1_ch 0"No tiene servicio sanitario" 1"Conectado a red general o cá
 label def des1_ch 2"Letrina o conectado a pozo ciego" 3"Desemboca en río o calle", add
 label val des1_ch des1_ch
 
+***************
+**des2_ch     *
+***************
 /*
 gen des2_ch=.
 replace des2_ch=1 if (dh06==1|dh06==2|dh06==3)
@@ -1495,17 +1502,26 @@ label var des2_ch "Tipo de desague sin incluir definición MDG"
 label def des2_ch 0"No tiene servicio sanitario" 1"Conectado a red general, cámara séptica, pozo o letrina"
 label def des2_ch 2"Cualquier otro caso", add
 label val des2_ch des2_ch
-	
+
+************
+**piso_ch***
+************
 gen piso_ch=.
 replace piso_ch=0 if dv03==7
 replace piso_ch=1 if dv03>=1 & dv03<=6 
 replace piso_ch=2 if dv03==8 
 
+***************
+**techo_ch    *
+***************
 gen techo_ch=.
 replace techo_ch=0 if dv04==6 | dv04==7
 replace techo_ch=1 if dv04>=1 & dv04<=5
 replace techo_ch=2 if dv04==8| dv04==9 | dv04==10
 
+************
+**pared_ch**
+************
 gen pared_ch=.
 replace pared_ch=0 if dv02>=5 & dv02<=6
 replace pared_ch=1 if dv02>=1 & dv02<=4
@@ -1515,15 +1531,33 @@ label var pared_ch "Materiales de construcción de las paredes"
 label def pared_ch 0"No permanentes" 1"Permanentes" 2 "Otros"
 label val pared_ch pared_ch
 	
+************
+*resid_ch*
+************
+/* dv09 ¿como elimina la basura en esta vivienda?
+		   1 Recolección Domiciliaria publica
+           2 La Deposita en Contenedores
+           3 Recolección Domiciliaria privada
+           4 La Entierra
+           5 La Prepara Para abono
+           6 La Quema
+           7 La Tira en Cualquier lugar
+           8 Otro */
 gen resid_ch=.
-replace resid_ch=0 if ( dv09==1| dv09==3)
-replace resid_ch=1 if ( dv09==4| dv09==6)
-replace resid_ch=2 if ( dv09==2| dv09==7)
-replace resid_ch=3 if ( dv09==5| dv09==8)
+replace resid_ch=0 if inlist(dv09, 1,2,3) 		 	// Recolección pública o privada
+replace resid_ch=1 if dv09==4 | dv09==6				// Quemados o enterrados
+replace resid_ch=2 if dv09==7 						// Tirados a un espacio abierto
+replace resid_ch=3 if dv09==5 | dv09==8				// Otros
 
+************
+***dorm_ch**
+************
 gen dorm_ch=.
 replace dorm_ch=dh01 if dh01>=0 
 
+***************
+**cuartos_ch  *
+***************
 gen cuartos_ch=.
 replace cuartos_ch=dv13 if dv13>=0 
 
@@ -1562,22 +1596,44 @@ gen compu_ch=(dh08_14==1)
 *************
 *internet_ch*
 *************
-gen internet_ch=(at302==1)
-replace internet_ch=. if at302==. | at302==9
+/* La respuesta es a nivel de persona, por lo que un mismo hogar puede tener diferentes respuestas. Por lo que se utiliza la jefatura de hogar.
+	at304. Durante los últimos 3 meses, ¿tuvo acceso a internet?
+           1 Si
+           2 No
+           9 No sabe
+    at306_1. En su casa
+           1 Si
+           2 No */
+gen internet_jh = (at306_1==1 & at304==1) & relacion_ci==1						  // Posee conexión a internet
+replace internet_jh = . if  at306_1==. & (at304==. | at304==9) & relacion_ci==1	  // No tiene
+bys idh_ch: egen internet_ch = max(internet_jh)
+drop internet_jh
 
 ********
 *cel_ch*
 ********
-gen cel_ch=(at308==1)
-replace cel_ch=. if at308==.
+/* La respuesta es a nivel de persona, según el manual cel_ch = 1 si al menos un integrante tiene celular.
+	AT308 ¿Tiene teléfono celular? 
+         1 Si
+         2 No */
+bys idh_ch: egen cel_ch = min(at308)
+replace cel_ch = 0 if cel_ch == 2
 
 **********
 *vivi1_ch*
 **********
+/* V01. Tipo de vivienda:
+	       1 Casa individual
+           2 Casa de material natural (Rancho)
+           3 Casa improvisada (Desechos)
+           4 Apartamento
+           5 Cuarto en meson o cuarteria
+           6 Barracon
+           7 Local no construido para habitacion pero usado como vivienda */
 gen vivi1_ch=.
-replace vivi1_ch=1 if dv01==1 | dv01==2
-replace vivi1_ch=2 if dv01==4
-replace vivi1_ch=3 if (dv01>=5 & dv01<=7) | dv01==3 
+replace vivi1_ch=1 if dv01==1		// Casa
+replace vivi1_ch=2 if dv01==4		// Apartamento
+replace vivi1_ch=3 if inlist(dv01,2,3,5,6,7)		// Otros
 label var vivi1_ch "Tipo de vivienda en la que reside el hogar"
 label def vivi1_ch 1"Casa" 2"Departamento" 3"Otros"
 label val vivi1_ch vivi1_ch
@@ -1592,19 +1648,32 @@ replace vivi2_ch=0 if vivi1_ch==3
 *************
 *viviprop_ch*
 *************
+/* dv11. Su vivienda es:
+	       1 Alquilada?
+           2 Propietario y la está pagando?
+           3 Propietario y completamente pagada?
+           4 Invasión (propia recuperada legalizada)?
+           5 Invasion (propia recuperada sin legalizar)?
+           6 Prestada (cedida sin pago)?
+           7 Recibida por servicios de trabajo? */
 gen viviprop_ch=.
-replace viviprop_ch=0 if dv11==1
-replace viviprop_ch=1 if dv11==3
-replace viviprop_ch=2 if dv11==2
-replace viviprop_ch=3 if (dv11==4 | dv11==5 | dv11==6 | dv11==7)
+replace viviprop_ch=0 if dv11==1			// Alquilada
+replace viviprop_ch=1 if dv11==3			// Propia y totalmente pagada
+replace viviprop_ch=2 if dv11==2			// Propia y pagandola
+replace viviprop_ch=3 if inlist(dv11,4,5,6,7)	// Ocupada (propia de facto)
 label var viviprop_ch "Propiedad de la vivienda"
 label def viviprop_ch 0"Alquilada" 1"Propia y totalmente pagada" 2"Propia y en proceso de pago"
 label def viviprop_ch 3"Ocupada (propia de facto)", add
 label val viviprop_ch viviprop_ch
-	
+
+***************
+**vivitit_ch  *
+***************
 gen vivitit_ch=.
 
-
+****************
+***vivialq_ch***
+****************
 gen vivialq_ch=.
 replace vivialq_ch=dv12       if dv12moneda==1 /*solo hay lempiras*/
 replace vivialq_ch=dv12*cambio if dv12moneda==2

@@ -787,10 +787,11 @@ label var salmm_ci "Salario minimo legal"
 ***categoinac_ci***
 *******************
 
-gen categoinac_ci =1 if ((p16 ==1 | p16==2) & condocup_ci==3)
-replace categoinac_ci = 2 if  (p16==4 & condocup_ci==3)
-replace categoinac_ci = 3 if  (p16==5 & condocup_ci==3)
-replace categoinac_ci = 4 if  ((categoinac_ci ~=1 & categoinac_ci ~=2 & categoinac_ci ~=3) & condocup_ci==3)
+gen categoinac_ci = .
+replace categoinac_ci = 1 if ((p16 ==1 | p16==2) & condocup_ci==3)
+replace categoinac_ci = 2 if (p16==4 & condocup_ci==3)
+replace categoinac_ci = 3 if (p16==5 & condocup_ci==3)
+replace categoinac_ci = 4 if (categoinac_ci != 1 & categoinac_ci != 2 & categoinac_ci != 3) & condocup_ci == 3
 label var categoinac_ci "Categoría de inactividad"
 label define categoinac_ci 1 "jubilados o pensionados" 2 "Estudiantes" 3 "Quehaceres domésticos" 4 "Otros" 
 
@@ -1572,12 +1573,21 @@ replace techo_ch=2 if v04==8
 ***************
 **resid_ch    *
 ***************
-
+/*v08-elimancion de basura
+           1 recoleccion domicilaria publica
+           2 la deposita en contenedores
+           3 recoleccion domicilaria privada
+           4 la entierra
+           5 la prepara para abono
+           6 la quema
+           7 la tira en cualquier lugar
+           8 otro
+           9 ignorado */
 gen resid_ch=.
-replace resid_ch=0 if v08a==1 | v08a==3 /* v08a for 2005 */
-replace resid_ch=1 if v08a==4 | v08a==6
-replace resid_ch=2 if v08a==7
-replace resid_ch=3 if v08a==2 | v08a==5 | v08a==8
+replace resid_ch=0 if inlist(v08a, 1,2,3) 		 	// Recolección pública o privada
+replace resid_ch=1 if v08a==4 | v08a==6				// Quemados o enterrados
+replace resid_ch=2 if v08a==7 						// Tirados a un espacio abierto
+replace resid_ch=3 if v08a==5 | v08a==8				// Otros
 
 ***************
 **dorm_ch     *
@@ -1586,6 +1596,7 @@ replace resid_ch=3 if v08a==2 | v08a==5 | v08a==8
 gen dorm_ch=.
 replace dorm_ch=v16b if v16b>=0 
 replace dorm_ch=. if v16b==99
+
 ***************
 **cuartos_ch  *
 ***************
@@ -1593,6 +1604,7 @@ replace dorm_ch=. if v16b==99
 gen cuartos_ch=.
 replace cuartos_ch=v16a if v16a>=0 /* v16a for 2005 */ 
 replace cuartos_ch =. if v16a ==99 
+
 ***************
 **cocina_ch   *
 ***************
@@ -1646,19 +1658,28 @@ gen internet_ch=.
 ***************
 **cel_ch      *
 ***************
-
-gen cel_ch=.
-replace cel_ch=1 if v13g==1 /* v13g for 2005 */
-replace cel_ch=0 if v13g==2
+/* La respuesta es a nivel de persona, según el manual cel_ch = 1 si al menos un integrante tiene celular.
+	v13g teléfono celular
+           1 Si
+           2 No */
+bys idh_ch: egen cel_ch = min(v13g)
+replace cel_ch = 0 if cel_ch == 2
 
 ***************
 **vivi1_ch    *
 ***************
-
+/* V01. Tipo de vivienda:
+	       1 Casa individual
+           2 Casa de material natural (Rancho)
+           3 Casa improvisada (Desechos)
+           4 Apartamento
+           5 Cuarto en meson o cuarteria
+           6 Barracon
+           7 Local no construido para habitacion pero usado como vivienda */
 gen vivi1_ch=.
-replace vivi1_ch=1 if v01==1
-replace vivi1_ch=2 if v01==4
-replace vivi1_ch=3 if (v01>=5 & v01<=8) | v01==2 | v01==3
+replace vivi1_ch=1 if v01==1		// Casa
+replace vivi1_ch=2 if v01==4		// Apartamento
+replace vivi1_ch=3 if inlist(v01,2,3,5,6,7)		// Otros
 
 ***************
 **vivi2_ch    *
@@ -1671,12 +1692,18 @@ replace vivi2_ch=0 if vivi1_ch==3
 ***************
 **viviprop_ch *
 ***************
-
+/* v14. Tenencia de la vivienda:
+	       1 propietario y completamente pagada
+           2 propietario recuperada legalizada
+           3 propietario recuperada sin legalizar
+           4 propietario y la esta pagando
+           5 alquilada
+           6 cedida sin pago */
 gen viviprop_ch=.
-replace viviprop_ch=0 if v14==5 /* v14 for 2005 */
-replace viviprop_ch=1 if v14==1
-replace viviprop_ch=2 if v14==4
-replace viviprop_ch=3 if v14==6 | v14==2 | v14==3 | v14==7 /* v14==7 included for 2005 */
+replace viviprop_ch=0 if v14==5 /* v14 for 2005 */			// Alquilada
+replace viviprop_ch=1 if v14==1								// Propia y totalmente pagada
+replace viviprop_ch=2 if v14==4								// Propia y pagandola
+replace viviprop_ch=3 if inlist(v14,2,3,6,7)  /* v14==7 included for 2005 */ 	// Ocupada (propia de facto)
 
 ***************
 **vivitit_ch  *

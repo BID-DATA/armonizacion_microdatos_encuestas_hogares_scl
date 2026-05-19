@@ -345,13 +345,14 @@ use "`base_in'", clear
 	replace condocup_ci=4 if edad<12
 	replace condocup_ci=1 if (trabajon==1) | (mot_ausen <=6) & edad_ci>=12
 	replace condocup_ci=2 if (act_pnea1=="1" | act_pnea2=="1" ) & edad_ci>=12
-	replace condocup_ci=3 if condocup_ci==.
+	replace condocup_ci=3 if trabajon!=. & condocup_ci==.
 	
 	*******************
 	***categoinac_ci***
 	*******************
 	* Solo para inactivos
-	gen categoinac_ci =1 if ((act_pnea1=="2" | act_pnea2=="2") & condocup_ci==3) 
+	gen categoinac_ci = .
+	replace categoinac_ci = 1 if ((act_pnea1=="2" | act_pnea2=="2") & condocup_ci==3) 
 	replace categoinac_ci = 2 if  ((act_pnea1=="4" | act_pnea2=="4") & condocup_ci==3) & categoinac_ci ==.
 	replace categoinac_ci = 3 if  ((act_pnea1=="3" | act_pnea2=="3") & condocup_ci==3) & categoinac_ci ==.
 	replace categoinac_ci = 4 if  ((categoinac_ci ~=1 & categoinac_ci ~=2 & categoinac_ci ~=3) & condocup_ci==3) & categoinac_ci ==.

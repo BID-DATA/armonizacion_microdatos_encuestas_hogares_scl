@@ -836,10 +836,11 @@ label var lpe_ci "Linea de indigencia oficial del pais"
 ***categoinac_ci***
 *******************
 
-gen categoinac_ci =1 if ((p407 ==2 | p407==3) & condocup_ci==3)
-replace categoinac_ci = 2 if  (p407==5 & condocup_ci==3)
-replace categoinac_ci = 3 if  (p407==6 & condocup_ci==3)
-replace categoinac_ci = 4 if  ((categoinac_ci ~=1 & categoinac_ci ~=2 & categoinac_ci ~=3) & condocup_ci==3)
+gen categoinac_ci = .
+replace categoinac_ci = 1 if ((p407 ==2 | p407==3) & condocup_ci==3)
+replace categoinac_ci = 2 if (p407==5 & condocup_ci==3)
+replace categoinac_ci = 3 if (p407==6 & condocup_ci==3)
+replace categoinac_ci = 4 if (categoinac_ci != 1 & categoinac_ci != 2 & categoinac_ci != 3) & condocup_ci == 3
 label var categoinac_ci "Categoría de inactividad"
 label define categoinac_ci 1 "jubilados o pensionados" 2 "Estudiantes" 3 "Quehaceres domésticos" 4 "Otros" 
 
@@ -1438,10 +1439,10 @@ replace sinbano_ch = 0 if h05==1
 gen aguatrat_ch = 9
 *label var aguatrat_ch "= 9 la encuesta no pregunta de si se trata el agua antes de consumirla"
 
+
 ********
 *luz_ch*
 ********
-
 
 gen luz_ch=1 if v10==1 |v10==2 |v10==3 
 replace luz_ch=0 if v10>=4 & v10<=8
@@ -1460,17 +1461,19 @@ gen luzmide_ch=.
 gen combust_ch=1 if h04==3 | h04==2 | h04==4
 replace combust_ch=0 if h04==5 | h04==1
 
-
-
-
+***************
+**des1_ch     *
+***************
 gen des1_ch=.
 replace des1_ch=0 if h05==2
 replace des1_ch=1 if (h06==1|h06==2)
 replace des1_ch=2 if (h06==5|h06==6|h06==7)
 replace des1_ch=3 if (h06==3|h06==4)
 
+***************
+**des2_ch     *
+***************
 * MGR Jul, 2015: corrección en sintáxis 
-
 /*
 gen des2_ch=.
 replace des2_ch=1 if (h06==1|h06==2|h06==3)
@@ -1482,30 +1485,57 @@ replace des2_ch=1 if (h06==1|h06==2|h06==5|h06==6|h06==7)
 replace des2_ch=2 if (h06==4|h06==3|h06==8)
 replace des2_ch=0 if h05==2
 
+************
+**piso_ch***
+************
 gen piso_ch=.
 replace piso_ch=0 if v03==7
 replace piso_ch=1 if v03>=1 & v03<=6 
 replace piso_ch=2 if v03==8 
 
+***************
+**techo_ch    *
+***************
 gen techo_ch=.
 replace techo_ch=0 if v04==6 | v04==7
 replace techo_ch=1 if v04>=1 & v04<=5
 replace techo_ch=2 if v04==8| v04==9 | v04==10
 
+************
+**pared_ch**
+************
 gen pared_ch=.
 replace pared_ch=0 if v02>=5 & v02<=6
 replace pared_ch=1 if v02>=1 & v02<=4
 replace pared_ch=2 if v02==7
 
+***************
+**resid_ch    *
+***************
+/*v11-elimancion de basura
+           1 Recoleccion domicilaria publica
+           2 La deposita en contenedores
+           3 Recoleccion domicilaria privada
+           4 La entierra
+           5 La prepara para abono
+           6 La quema
+           7 La tira en cualquier lugar
+           8 Otro */
 gen resid_ch=.
-replace resid_ch=0 if (v11==1|v11==3)
-replace resid_ch=1 if (v11==4|v11==6)
-replace resid_ch=2 if (v11==2|v11==7)
-replace resid_ch=3 if (v11==5|v11==8)
+replace resid_ch=0 if inlist(v11, 1,2,3) 		 	// Recolección pública o privada
+replace resid_ch=1 if v11==4 | v11==6				// Quemados o enterrados
+replace resid_ch=2 if v11==7 						// Tirados a un espacio abierto
+replace resid_ch=3 if v11==5 | v11==8				// Otros
 
+************
+***dorm_ch**
+************
 gen dorm_ch=.
 replace dorm_ch=h01 if h01>=0 
 
+***************
+**cuartos_ch  *
+***************
 gen cuartos_ch=.
 replace cuartos_ch=v16 if v16>=0 
 
@@ -1514,11 +1544,14 @@ replace cuartos_ch=v16 if v16>=0
 ***********
 *cocina_ch*
 ***********
-
-gen cocina_ch=.
-
-
-*Las variables de bienes durables constan en el formulario pero no están en la base de datos.
+/*H02. En que pieza o sitio de la vivienda cocina los alimnentos:
+           1 En una pieza dedicada solo para cocinar
+           2 En una pieza utilizada tambien para dormir
+           3 En el patio, corredor u otro sitio
+           4 En la sala, comedor
+           5 No cocina */
+gen cocina_ch=(h02==1)				// Tiene un cuarto separado y exclusivo para cocinar
+replace cocina_ch=. if h02==.
 
 **********
 *telef_ch*
@@ -1553,30 +1586,49 @@ gen compu_ch=.
 *************
 *internet_ch*
 *************
-
-gen internet_ch=(p306_1==1)
+/* La respuesta es a nivel de persona, por lo que un mismo hogar puede tener diferentes respuestas. Por lo que se utiliza la jefatura de hogar.
+	p304. Durante los últimos 3 meses, ¿tuvo acceso a internet?
+           1 Si
+           2 No
+           9 No sabe
+    p306_1. (Acceso Internet) En su casa
+           1 Si
+           2 No */
+gen internet_jh = (p306_1==1 & p304==1) & relacion_ci==1						  // Posee conexión a internet
+replace internet_jh = . if  p306_1==. & (p304==. | p304==9) & relacion_ci==1	  // No tiene
+bys idh_ch: egen internet_ch = max(internet_jh)
+drop internet_jh
 
 ********
 *cel_ch*
 ********
-
-gen cel_ch=(p308==1)
+/* La respuesta es a nivel de persona, según el manual cel_ch = 1 si al menos un integrante tiene celular.
+	P308 ¿Tiene teléfono celular? 
+         1 Si
+         2 No */
+bys idh_ch: egen cel_ch = min(p308)
+replace cel_ch = 0 if cel_ch == 2
 
 **********
 *vivi1_ch*
 **********
-
-
+/* V01. Tipo de vivienda:
+	       1 Casa individual
+           2 Casa de material natural (Rancho)
+           3 Casa improvisada (Desechos)
+           4 Apartamento
+           5 Cuarto en meson o cuarteria
+           6 Barracon
+           7 Local no construido para habitacion pero usado como vivienda */
 gen vivi1_ch=.
-replace vivi1_ch=1 if v01==1 | v01==2
-replace vivi1_ch=2 if v01==4
-replace vivi1_ch=3 if (v01>=5 & v01<=7) | v01==3 
+replace vivi1_ch=1 if v01==1		// Casa
+replace vivi1_ch=2 if v01==4		// Apartamento
+replace vivi1_ch=3 if inlist(v01,2,3,5,6,7)		// Otros		   
 
 
 **********
 *vivi2_ch*
 **********
-
 
 gen vivi2_ch=.
 replace vivi2_ch=1 if vivi1_ch==1 | vivi1_ch==2
@@ -1586,23 +1638,37 @@ replace vivi2_ch=0 if vivi1_ch==3
 *************
 *viviprop_ch*
 *************
-
+/* v14. Su vivienda es:
+	       1 Alquilada?
+           2 Propietario y la está pagando?
+           3 Propietario y completamente pagada?
+           4 Invasión (propia recuperada legalizada)?
+           5 Invasion (propia recuperada sin legalizar)?
+           6 Prestada (cedida sin pago)?
+           7 Recibida por servicios de trabajo? */
 gen viviprop_ch=.
-replace viviprop_ch=0 if v14==1
-replace viviprop_ch=1 if v14==3
-replace viviprop_ch=2 if v14==2
-replace viviprop_ch=3 if (v14==4 | v14==5 | v14==6 | v14==7)
+replace viviprop_ch=0 if v14==1			// Alquilada
+replace viviprop_ch=1 if v14==3			// Propia y totalmente pagada
+replace viviprop_ch=2 if v14==2			// Propia y pagandola
+replace viviprop_ch=3 if inlist(v14,4,5,6,7) 	// Ocupada (propia de facto)
 
+***************
+**vivitit_ch  *
+***************
 gen vivitit_ch=.
 replace vivitit_ch=1 if v17==1
 replace vivitit_ch=0 if v17==2
 
+****************
+***vivialq_ch***
+****************
 /* Tipo de cambio lempiras por dolares = 19.92
    Variable cambio en la Base de otros Ingresos */
 
 gen vivialq_ch=.
 replace vivialq_ch=v15 if v15m==1
 replace vivialq_ch=v15*19.92 if v15m==2
+
 *******************
 ***vivialqimp_ch***
 *******************

@@ -871,11 +871,11 @@ label var antiguedad_ci "Antiguedad en la actividad actual en anios"
 ***categoinac_ci***
 *******************
 *Modificacion MLO, 2015 m4 (se cambió s5_14 por s6_09)
-
-gen categoinac_ci =1 	  if (s04a_06==3 & condocup_ci==3)
-replace categoinac_ci = 2 if  (s04a_06==1 & condocup_ci==3)
-replace categoinac_ci = 3 if  (s04a_06==2 & condocup_ci==3)
-replace categoinac_ci = 4 if  ((categoinac_ci ~=1 & categoinac_ci ~=2 & categoinac_ci ~=3) & condocup_ci==3)
+gen categoinac_ci = .
+replace categoinac_ci = 1 if (s04a_06==3 & condocup_ci==3)  // Jubilados o pensionados
+replace categoinac_ci = 2 if (s04a_06==1 & condocup_ci==3) // Estudiantes
+replace categoinac_ci = 3 if (s04a_06==2 & condocup_ci==3) // Quehaceres domésticos
+replace categoinac_ci = 4 if ((categoinac_ci ~=1 & categoinac_ci ~=2 & categoinac_ci ~=3) & condocup_ci==3) // Otros
 label var categoinac_ci "Categoría de inactividad"
 label define categoinac_ci 1 "jubilados o pensionados" 2 "Estudiantes" 3 "Quehaceres domésticos" 4 "Otros"
 
@@ -1940,9 +1940,9 @@ gen aguadisp1_ch =9
 **************
 *aguadisp2_ch*
 **************
-gen aguadisp2_ch = 1 if (s06a_08a<=3 | s06a_08a <12)
-replace aguadisp2_ch = 2 if (s06a_08a>=4 & s06a_08a >= 12)
-replace aguadisp2_ch = 3 if (s06a_08a==7 & s06a_08a == 24)
+gen aguadisp2_ch = 1 if (s06a_08a<=3 | s06a_08b <12)
+replace aguadisp2_ch = 2 if (s06a_08a>=4 & s06a_08b >= 12)
+replace aguadisp2_ch = 3 if (s06a_08a==7 & s06a_08b == 24)
 
 
 *************

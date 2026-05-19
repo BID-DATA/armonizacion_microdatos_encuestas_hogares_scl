@@ -397,9 +397,9 @@ label variable nmenor1_ch "Numero de familiares menores a 1 anio"
 *****************
 gen condocup_ci = .
 replace condocup_ci = 1 if (v4001 == 1 | v4002 == 1 | v4003 == 1 | v4004 == 1 | v4005 == 1)
-replace condocup_ci = 2 if  v4005 == 2 & (v4071 == 1 & v4072a! = 9) /*tomaron alguna providencia en la semana de referencia*/
-replace condocup_ci = 3 if condocup_ci == .
-replace condocup_ci = 4 if edad_ci < 10
+replace condocup_ci = 2 if (v4001 == 2 | v4002 == 2 | v4003 == 2 | v4004 == 2 | v4005 == 2) & (v4071 == 1 & v4072a! = 9) /*tomaron alguna providencia en la semana de referencia*/
+replace condocup_ci = 3 if condocup_ci != 1 & condocup_ci != 2 & edad >= 14
+replace condocup_ci = 4 if edad_ci < 14 // Edad que aparece en el cuestionario
 label define condocup_ci 1 "ocupados" 2 "desocupados" 3 "inactivos" 4 "menor 10 años"
 label value condocup_ci condocup_ci
 label var condocup_ci "Condicion de ocupacion utilizando definicion del pais"
@@ -422,12 +422,11 @@ PET: >= 10 años de edad
 *******************
 ***categoinac_ci***
 *******************
-*Variable no es comparable con bases anteriores porque no existe pregunta específica de quehaceres del hogar ni de pensionistas
 gen categoinac_ci = .
-replace categoinac_ci = 1 if v5004a == 1 & condocup_ci == 3 //recibió pensión-jubi y es inactivo 3
-replace categoinac_ci = 2 if v3002 == 1 & condocup_ci == 3   //va al colegio y es inactivo 3
+replace categoinac_ci = 1 if v5004a == 1 & condocup_ci == 3  //recibió pensión-jubi y es inactivo 3
+replace categoinac_ci = 2 if vd4030 == 2 & condocup_ci == 3  //motivo no buscó trabajo: estudiar
 replace categoinac_ci = 3 if vd4030 == 1 & condocup_ci == 3  //motivo no buscó trabajo: hacerse cargo tareashogar-hijo-otrofamiliar
-recode categoinac_ci . = 4 if condocup_ci == 3
+replace categoinac_ci = 4 if condocup_ci == 3 & (categoinac_ci!=1 & categoinac_ci!=2 & categoinac_ci!=3)
 label var  categoinac_ci "Condición de Inactividad" 
 label define inactivo 1 "Pensionado" 2 "Estudiante" 3 "Hogar" 4 "Otros"
 label values categoinac_ci inactivo
@@ -1086,16 +1085,14 @@ label variable edupre_ci "Educacion preescolar"
 **************
 ***eduui_ci***
 **************
-gen byte eduui_ci = aedu_ci >= 13 & aedu_ci <= 14 // entre 13 y 14 anios
-replace eduui_ci = 1 if (aedu_ci >= 15 & aedu_ci < 16 & v3007 != 1 & v3014 != 1) // 15 anios de educacion, sin completar nivel
+gen byte eduui_ci = (v3003a == 08 | (v3009a == 12 & v3014 == 2))
 replace eduui_ci = . if aedu_ci == .
 label variable eduui_ci "Terciaria/universitaria incompleta"
  
 **************
 ***eduuc_ci***
 **************
-gen byte eduuc_ci = (aedu >= 15) // 15 anios o mas, que es la duracion de tecnica
-replace eduuc_ci = 1 if (aedu_ci >= 15 & aedu_ci < 16 & (v3007 == 1 | v3014 == 1)) // entre 15 y 16 anios si completaron el curso
+gen byte eduuc_ci = ((v3009a == 12 & v3014 == 1) | inlist(v3003a, 09, 10, 11, 13) | inlist(v3009a, 13, 14, 15)) 
 replace eduuc_ci = . if aedu_ci == .
 label variable eduuc_ci "Terciaria/universitaria completa o mas"
 
@@ -1109,6 +1106,7 @@ label variable eduac_ci "Superior universitario vs superior no universitario"
 **asiste_ci***
 **************
 gen asiste_ci = (v3002 == 1)
+replace asiste_ci =. if v3002 ==. 	// Integrantes entre 0-4 años que no responden el modulo de educación
 label var asiste_ci "Personas que actualmente asisten a un centro de enseñanza"
 
 ***************
@@ -1386,7 +1384,7 @@ label var compu_ch "El hogar posee computador"
 ***internet_ch***
 *****************
 gen internet_ch=(s01029==1)
-label var internet_ch "El hogar posee conexión a Interne
+label var internet_ch "El hogar posee conexión a Internet"
 ************
 ***cel_ch***
 ************

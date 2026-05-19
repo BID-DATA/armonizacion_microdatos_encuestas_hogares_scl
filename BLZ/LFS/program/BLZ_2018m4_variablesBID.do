@@ -418,9 +418,9 @@ replace categoinac_ci=1 if (EA8==5) & condocup_ci==3
 *Estudiantes
 replace categoinac_ci=2 if (EA8==4) & condocup_ci==3
 *Quehaceres del Hogar
-replace categoinac_ci=3 if (EA8==3)& condocup_ci==3
+replace categoinac_ci=3 if (EA8==3) & condocup_ci==3
 *Otra razon
-recode categoinac_ci (.=4) if categoinac_ci!=1 & categoinac_ci!=2 & categoinac_ci!=3 & condocup_ci==3 & EA8!=.
+replace categoinac_ci=4 if (categoinac_ci!=1 & categoinac_ci!=2 & categoinac_ci!=3) & condocup_ci==3
 label define inactivo 1 "Jubilados o Pensionado" 2 "Estudiante" 3 "Hogar" 4 "Otros", replace
 label values categoinac_ci inactivo
 

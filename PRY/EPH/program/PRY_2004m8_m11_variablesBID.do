@@ -792,10 +792,31 @@ label var tamemp_ci "Tamaño de empresa"
 *******************
 ***categoinac_ci*** 
 *******************
-gen categoinac_ci =1 if (a05==14 & condocup_ci==3)
-replace categoinac_ci = 2 if  (a05==10 & condocup_ci==3)
-replace categoinac_ci = 3 if  (a05==5 & condocup_ci==3)
-replace categoinac_ci = 4 if  ((categoinac_ci ~=1 & categoinac_ci ~=2 & categoinac_ci ~=3) & condocup_ci==3)
+/*Variable de inactividad: 
+a05: Por que no trabajo en ult. 7 dias
+           0 na                    
+           1 despido               
+           2 busc� habiendo trabaj.
+           3 busc� trabajo 1� vez  
+           4 demasiado joven       
+           5 labores del hogar     
+           6 espera comenz. trabajo
+           7 inclemencia del tiempo
+           8 trabajo temporal      
+           9 no consigue trabajo   
+          10 estudiante            
+          11 enfermo               
+          12 anciano, discapacitado
+          13 rentista              
+          14 jubilado o pensionado 
+          15 motivo familiar       
+          16 otra situaci�n        
+          99 nr */
+gen categoinac_ci = .
+replace categoinac_ci = 1 if (a05==14 & condocup_ci==3)
+replace categoinac_ci = 2 if (a05==10 & condocup_ci==3)
+replace categoinac_ci = 3 if (a05==5  & condocup_ci==3)
+replace categoinac_ci = 4 if ((categoinac_ci ~=1 & categoinac_ci ~=2 & categoinac_ci ~=3) & condocup_ci==3)
 label var categoinac_ci "Categoría de inactividad"
 label define categoinac_ci 1 "jubilados o pensionados" 2 "Estudiantes" 3 "Quehaceres domésticos" 4 "Otros" 
 

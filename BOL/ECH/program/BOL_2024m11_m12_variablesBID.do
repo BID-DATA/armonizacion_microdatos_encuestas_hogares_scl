@@ -1774,7 +1774,7 @@ label val techo_ch techo_ch
 	**************
 	gen aguadisp2_ch = 1 if (s06a_08a <= 3 | s06a_08b < 12)
 	replace aguadisp2_ch = 2 if (s06a_08a >= 4 & s06a_08b >= 12)
-	replace aguadisp2_ch = 3 if (s06a_08a == 7 & s06a_08a == 24)
+	replace aguadisp2_ch = 3 if (s06a_08a == 7 & s06a_08b == 24)
 
 	*************
 	*aguatrat_ch*

@@ -1793,7 +1793,8 @@ label var tecnica_ci "1=formacion terciaria tecnica"
 *******************
 ***categoinac_ci*** 
 *******************
-gen categoinac_ci =1 if ((motivo_no_busca_trab==14) & condocup_ci==3)
+gen categoinac_ci = .
+replace categoinac_ci = 1 if  (motivo_no_busca_trab==14 & condocup_ci==3)
 replace categoinac_ci = 2 if  (motivo_no_busca_trab==6 & condocup_ci==3)
 replace categoinac_ci = 3 if  (motivo_no_busca_trab==7 & condocup_ci==3)
 replace categoinac_ci = 4 if  ((categoinac_ci ~=1 & categoinac_ci ~=2 & categoinac_ci ~=3) & condocup_ci==3)

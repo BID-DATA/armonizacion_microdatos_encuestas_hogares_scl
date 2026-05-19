@@ -754,10 +754,11 @@ label var salmm_ci "Salario minimo legal"
 ***categoinac_ci***
 *******************
 
-gen categoinac_ci =1 if ((p18 ==1 | p18==2) & condocup_ci==3)
-replace categoinac_ci = 2 if  (p18==4 & condocup_ci==3)
-replace categoinac_ci = 3 if  (p18==5 & condocup_ci==3)
-replace categoinac_ci = 4 if  ((categoinac_ci ~=1 & categoinac_ci ~=2 & categoinac_ci ~=3) & condocup_ci==3)
+gen categoinac_ci = .
+replace categoinac_ci = 1 if ((p18 ==1 | p18==2) & condocup_ci==3)
+replace categoinac_ci = 2 if (p18==4 & condocup_ci==3)
+replace categoinac_ci = 3 if (p18==5 & condocup_ci==3)
+replace categoinac_ci = 4 if (categoinac_ci != 1 & categoinac_ci != 2 & categoinac_ci != 3) & condocup_ci == 3
 label var categoinac_ci "Categoría de inactividad"
 label define categoinac_ci 1 "jubilados o pensionados" 2 "Estudiantes" 3 "Quehaceres domésticos" 4 "Otros" 
 
@@ -1513,8 +1514,9 @@ gen luzmide_ch=.
 
 gen combust_ch=.
 
-
-
+***************
+**des1_ch     *
+***************
 /*
 gen des1_ch=.
 replace des1_ch=0 if v06a==2
@@ -1529,6 +1531,9 @@ replace des1_ch=1 if ( v06b_hog==1| v06b_hog==2)
 replace des1_ch=2 if ( v06b_hog==5| v06b_hog==6| v06b_hog==7)
 replace des1_ch=3 if ( v06b_hog==3| v06b_hog==4)
 
+***************
+**des2_ch     *
+***************
 /*
 gen des2_ch=.
 replace des2_ch=1 if (v06b==1|v06b==2|v06b==3)
@@ -1541,18 +1546,23 @@ replace des2_ch=1 if des1_ch==1 | des1_ch==2
 replace des2_ch=2 if des1_ch==3
 replace des2_ch=0 if v06a_hog==2
 
+************
+**piso_ch***
+************
 /*
 gen piso_ch=.
 replace piso_ch=0 if v03==7
 replace piso_ch=1 if v03>=1 & v03<=6 
 replace piso_ch=2 if v03==8 
 */
-
 gen piso_ch=.
 replace piso_ch=0 if v03_hog==7
 replace piso_ch=1 if v03_hog>=1 & v03_hog<=6 
 replace piso_ch=2 if v03_hog==8 
 
+************
+**pared_ch**
+************
 /*
 gen pared_ch=.
 replace pared_ch=0 if v02==5 | v02==6
@@ -1565,6 +1575,9 @@ replace pared_ch=0 if v02_hog==5 | v02_hog==6
 replace pared_ch=1 if v02_hog>=1 & v02_hog<=4
 replace pared_ch=2 if v02_hog==7
 
+***************
+**techo_ch    *
+***************
 /*
 gen techo_ch=.
 replace techo_ch=0 if v04==6 | v04==7
@@ -1577,20 +1590,26 @@ replace techo_ch=0 if v04_hog==6 | v04_hog==7
 replace techo_ch=1 if v04_hog>=1 & v04_hog<=5
 replace techo_ch=2 if v04_hog==8
 
-/*
+************
+*resid_ch*
+************
+/*v08 ¿como eliminan la basura en esta vivienda?
+           1 recoleccion domicilaria publica
+           2 la deposita en contenedores
+           3 la entierra
+           4 la prepara para abono
+           5 la quema
+           6 la tira en cualquier lugar
+           7 otro */
 gen resid_ch=.
-replace resid_ch=0 if (v08==1|v08==3)
-replace resid_ch=1 if (v08==4|v08==6)
-replace resid_ch=2 if (v08==2|v08==7)
-replace resid_ch=3 if (v08==5|v08==8)
-*/
+replace resid_ch=0 if v08_hog==1 | v08_hog==2 		// Recolección pública o privada
+replace resid_ch=1 if v08_hog==3 | v08_hog==5		// Quemados o enterrados
+replace resid_ch=2 if v08_hog==6					// Tirados a un espacio abierto
+replace resid_ch=3 if v08_hog==4 | v08_hog==7		// Otros
 
-gen resid_ch=.
-replace resid_ch=0 if (v08_hog==1|v08_hog==3)
-replace resid_ch=1 if (v08_hog==4|v08_hog==6)
-replace resid_ch=2 if (v08_hog==2|v08_hog==7)
-replace resid_ch=3 if (v08_hog==5|v08_hog==8)
-
+************
+***dorm_ch**
+************
 /*
 gen dorm_ch=.
 replace dorm_ch=v12b if v12b<99 
@@ -1599,6 +1618,9 @@ replace dorm_ch=v12b if v12b<99
 gen dorm_ch=.
 replace dorm_ch=v12b_hog if v12b_hog<99 
 
+***************
+**cuartos_ch  *
+***************
 /*
 gen cuartos_ch=.
 replace cuartos_ch=v12a if v12a<99 
@@ -1611,15 +1633,9 @@ replace cuartos_ch=v12a_hog if v12a_hog<99
 *cocina_ch*
 ***********
 
-/*
-gen cocina_ch=.
-replace cocina_ch = 1 if v11b ==1
-replace cocina_ch = 0 if v11b ==2
-*/
-
-gen cocina_ch=.
-replace cocina_ch = 1 if v11b_hog ==1
-replace cocina_ch = 0 if v11b_hog ==2
+gen cocina_ch=.  /* La variable utilizada era v11b. tiene en esta vivienda: b) estufa de 4 hornillas */
+*replace cocina_ch = 1 if v11b_hog ==1
+*replace cocina_ch = 0 if v11b_hog ==2
 
 **********
 *telef_ch*
@@ -1686,80 +1702,72 @@ replace compu_ch=0 if v11i_hog ==2
 *************
 *internet_ch*
 *************
-
-/*
-gen internet_ch=.
-replace internet_ch=1 if p10 ==1
-replace internet_ch=0 if p10 ==2
-*/
-
-gen internet_ch=.
-replace internet_ch=1 if p10_hog ==1
-replace internet_ch=0 if p10_hog ==2
+/* La respuesta es a nivel de persona, por lo que un mismo hogar puede tener diferentes respuestas. Por lo que se utiliza la jefatura de hogar.
+	p10. Durante los últimos 3 meses, ¿tuvo acceso a internet?
+		   1 Si
+           2 No
+           9 Ns/Nr
+    p11a. En su casa
+           1 Si
+           . missing */
+gen internet_jh = (p11a==1 & p10==1) & relacion_ci==1						  // Posee conexión a internet
+replace internet_jh = . if  p11a==. & (p10==0 | p10==9 | p10==.) & relacion_ci==1	  // No tiene
+bys idh_ch: egen internet_ch = max(internet_jh)
+drop internet_jh
 
 ********
 *cel_ch*
 ********
-
-/*
-gen cel_ch=.
-replace cel_ch=1 if v11g ==1
-replace cel_ch=0 if v11g ==2
-*/
-
-gen cel_ch=.
-replace cel_ch=1 if v11g_hog ==1
-replace cel_ch=0 if v11g_hog ==2
+/* La respuesta es a nivel de persona, según el manual cel_ch = 1 si al menos un integrante tiene celular.
+	v11g teléfono celular
+           1 Si
+           2 No */
+bys idh_ch: egen cel_ch = min(v11g)
+replace cel_ch = 0 if cel_ch == 2
 
 **********
 *vivi1_ch*
 **********
-
-/*
+/* V01. Tipo de vivienda:
+	       1 Casa individual
+           2 Casa de material natural (Rancho)
+           3 Casa improvisada (Desechos)
+           4 Apartamento
+           5 Cuarto en meson o cuarteria
+           6 Barracon
+           7 Local no construido para habitacion pero usado como vivienda */
 gen vivi1_ch=.
-replace vivi1_ch=1 if v01==1 | v01==2
-replace vivi1_ch=2 if v01==4
-replace vivi1_ch=3 if (v01>=5 & v01<=8) | v01==3 
-*/
+replace vivi1_ch=1 if v01_hog==1		// Casa
+replace vivi1_ch=2 if v01_hog==4		// Apartamento
+replace vivi1_ch=3 if inlist(v01_hog,2,3,5,6,7)		// Otros
 
-gen vivi1_ch=.
-replace vivi1_ch=1 if v01_hog==1 | v01_hog==2
-replace vivi1_ch=2 if v01_hog==4
-replace vivi1_ch=3 if (v01_hog>=5 & v01_hog<=8) | v01_hog==3 
 
 **********
 *vivi2_ch*
 **********
-
-/*
-gen vivi2_ch=.
-replace vivi2_ch=1 if vivi1_ch==1 | vivi1_ch==2
-replace vivi2_ch=0 if vivi1_ch==3
-*/
-
 gen vivi2_ch=.
 replace vivi2_ch=1 if vivi1_ch==1 | vivi1_ch==2
 replace vivi2_ch=0 if vivi1_ch==3
 
-*************
-*viviprop_ch*
-*************
-
-/*
+***************
+**viviprop_ch *
+***************
+/* v10a. Tenencia de la vivienda:
+	       1 propietario y completamente pagada
+           2 propietario recuperada legalizada
+           3 propietario recuperada sin legalizar
+           4 propietario y la esta pagando
+           5 alquilada
+           6 cedida sin pago */
 gen viviprop_ch=.
-replace viviprop_ch=0 if v10a==5
+replace viviprop_ch=0 if v10a_hog==5			// Alquilada
+replace viviprop_ch=1 if v10a_hog==1			// Propia y totalmente pagada
+replace viviprop_ch=2 if v10a_hog==4			// Propia y pagandola
+replace viviprop_ch=3 if inlist(v10a_hog,2,3,6)	// Ocupada (propia de facto)
 
-replace viviprop_ch=1 if v10a==1
-replace viviprop_ch=2 if v10a==4
-replace viviprop_ch=3 if (v10a==2 | v10a==3 | v10a==6)
-*/
-
-gen viviprop_ch=.
-replace viviprop_ch=0 if v10a_hog==5
-replace viviprop_ch=1 if v10a_hog==1
-replace viviprop_ch=2 if v10a_hog==4
-replace viviprop_ch=3 if (v10a_hog==2 | v10a_hog==3 | v10a_hog==6)
-
+***************
+**vivitit_ch  *
+***************
 /*
 gen vivitit_ch=.
 replace vivitit_ch=1 if v13a==1
@@ -1770,7 +1778,9 @@ gen vivitit_ch=.
 replace vivitit_ch=1 if v13a_hog==1
 replace vivitit_ch=0 if v13a_hog==2
 
-
+****************
+***vivialq_ch***
+****************
 /*
 gen vivialq_ch=.
 replace vivialq_ch=v10c if v10b==1 & viviprop_ch==0
@@ -1781,6 +1791,9 @@ gen vivialq_ch=.
 replace vivialq_ch=v10c_hog if v10b_hog==1 & viviprop_ch==0
 replace vivialq_ch=v10c_hog*18.24 if v10b_hog==2 & viviprop_ch==0
 
+*******************
+***vivialqimp_ch***
+*******************
 gen vivialqimp_ch=.
 
 

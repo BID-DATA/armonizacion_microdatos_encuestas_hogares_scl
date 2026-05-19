@@ -350,8 +350,8 @@ use "`base_in'", clear
 	replace condocup_ci = 1 if inlist(1, r403, r4041, r4041_1, r4042, ///
 		r4043, r4044, r4045, r4046, r4047, r4048, r4049, r405, r405b)| r406<5
 	replace condocup_ci=2 if condocup_ci!=1 & r407==1
-	replace condocup_ci=3 if (condocup_ci!=1 & condocup_ci!=2) & edad_ci>=15
-	replace condocup_ci=4 if edad_ci<15
+	replace condocup_ci=3 if (condocup_ci!=1 & condocup_ci!=2) & edad_ci>=5
+	replace condocup_ci=4 if edad_ci<5 // Cuestionario realiza la pregunta desde los 5 años
 	*r403 Realizó algún trabajo la semana anterior para generar ingresos
 	*r404 LA SEMANA ANTERIOR (…), REALIZÓ ALGUNA ACTIVIDAD PARA OBTENER INGRESOS EN DINERO
 	*r405 Tiene algún empleo fijo al que próximamente volverá
@@ -364,9 +364,9 @@ use "`base_in'", clear
 	*******************
 	gen byte categoinac_ci = .
 	replace categoinac_ci = 1 if (r409==13 & condocup_ci == 3)
-	replace categoinac_ci = 2 if  (r409==8 & condocup_ci == 3)
-	replace categoinac_ci = 3 if  (r409==12 & condocup_ci == 3)
-	replace categoinac_ci = 4 if  ((categoinac_ci != 1 | categoinac_ci != 2 | categoinac_ci != 3) & condocup_ci == 3)
+	replace categoinac_ci = 2 if ((r409==8 | r409==15) & condocup_ci == 3)
+	replace categoinac_ci = 3 if (r409==12 & condocup_ci == 3)
+	replace categoinac_ci = 4 if ((categoinac_ci != 1 & categoinac_ci != 2 & categoinac_ci != 3) & condocup_ci == 3)
 
 	************
 	***emp_ci***
