@@ -1474,7 +1474,9 @@ gen combust_ch=1 if dh203==3 | dh203==2 | dh203==4
 replace combust_ch=0 if dh203==5 | dh203==1
 
 
-
+***************
+**des1_ch     *
+***************
 * DZ Jul 2017: corrección nueva categoría respecto al anio anterior**
 gen des1_ch=.
 replace des1_ch=0 if dh204==2
@@ -1486,6 +1488,9 @@ label def des1_ch 0"No tiene servicio sanitario" 1"Conectado a red general o cá
 label def des1_ch 2"Letrina o conectado a pozo ciego" 3"Desemboca en río o calle", add
 label val des1_ch des1_ch
 
+***************
+**des2_ch     *
+***************
 * MGR Jul 2015: corrección sintáxis
 
 /*	
@@ -1508,17 +1513,26 @@ label var des2_ch "Tipo de desague sin incluir definición MDG"
 label def des2_ch 0"No tiene servicio sanitario" 1"Conectado a red general, cámara séptica, pozo o letrina"
 label def des2_ch 2"Cualquier otro caso", add
 label val des2_ch des2_ch
-	
+
+************
+**piso_ch***
+************
 gen piso_ch=.
 replace piso_ch=0 if dv103==7
 replace piso_ch=1 if dv103>=1 & dv103<=6 
 replace piso_ch=2 if dv103==8 
 
+***************
+**techo_ch    *
+***************
 gen techo_ch=.
 replace techo_ch=0 if dv104==6 | dv104==7
 replace techo_ch=1 if dv104>=1 & dv104<=5
 replace techo_ch=2 if dv104==8| dv104==9 | dv104==10
 
+************
+**pared_ch**
+************
 * DZ Jul 2017: corrección nueva categoría respecto al anio anterior**
 gen pared_ch=.
 replace pared_ch=0 if dv102>=6 & dv102<=7
@@ -1529,22 +1543,45 @@ label var pared_ch "Materiales de construcción de las paredes"
 label def pared_ch 0"No permanentes" 1"Permanentes" 2 "Otros"
 label val pared_ch pared_ch
 	
+************
+*resid_ch*
+************
+/* dv108. ¿Cómo eliminan la basura en esta vivienda?
+           1 Recolección domiciliaria pública
+           2 La deposita en contenedores
+           3 Recolección domiciliaria privada
+           4 La entierra
+           5 La prepara para abono
+           6 La quema
+           7 La tira en cualquier lugar
+           8 Otro */
 gen resid_ch=.
-replace resid_ch=0 if ( dv108 ==1| dv108 ==3)
-replace resid_ch=1 if ( dv108 ==4| dv108 ==6)
-replace resid_ch=2 if ( dv108 ==2| dv108 ==7)
-replace resid_ch=3 if ( dv108 ==5| dv108 ==8)
+replace resid_ch=0 if inlist(dv108, 1,2,3) 		 		// Recolección pública o privada
+replace resid_ch=1 if dv108==4 | dv108==6				// Quemados o enterrados
+replace resid_ch=2 if dv108==7 							// Tirados a un espacio abierto
+replace resid_ch=3 if dv108==5 | dv108==8				// Otros
 
+************
+***dorm_ch**
+************
 gen dorm_ch=.
 replace dorm_ch=dv112
 
+***************
+**cuartos_ch  *
+***************
 gen cuartos_ch=.
-replace cuartos_ch=dv111
 
 ***********
 *cocina_ch*
 ***********
-gen cocina_ch=(dh201==1)
+/*DH201. En que pieza o sitio de la vivienda cocina los alimnentos:
+           1 En una pieza dedicada solo para cocinar
+           2 En una pieza utilizada tambien para dormir
+           3 En el patio, corredor u otro sitio
+           4 En la sala, comedor
+           5 No cocina */
+gen cocina_ch=(dh201==1)				// Tiene un cuarto separado y exclusivo para cocinar
 replace cocina_ch=. if dh201==.
 
 **********
@@ -1578,23 +1615,44 @@ gen compu_ch=(dh207_12>=1 & dh207_12<=6)
 *************
 *internet_ch*
 *************
-
-gen internet_ch=(at03==1 & at05_1==1)
-replace internet_ch=. if at03==. & at05_2==.
+/* La respuesta es a nivel de persona, por lo que un mismo hogar puede tener diferentes respuestas. Por lo que se utiliza la jefatura de hogar.
+   AT3. Durante los últimos 3 meses, ¿tuvo acceso a internet?
+           1 Si
+           2 No
+           9 No sabe
+   AT05_1. En su casa
+           1 Si
+           2 No */
+gen internet_jh = (at03==1 & at05_1==1) & relacion_ci==1						// Posee conexión a internet
+replace internet_jh = . if (at03==. | at03==9) & at05_2==. & relacion_ci==1		// No tiene
+bys idh_ch: egen internet_ch = max(internet_jh)
+drop internet_jh
 
 ********
 *cel_ch*
 ********
-gen cel_ch=(at09)
-replace cel_ch=. if at09==.
+/* La respuesta es a nivel de persona, según el manual cel_ch = 1 si al menos un integrante tiene celular.
+	AT09 ¿Tiene teléfono celular? 
+         1 Si
+         2 No */
+bys idh_ch: egen cel_ch = min(at09)
+replace cel_ch = 0 if cel_ch == 2
 
 **********
 *vivi1_ch*
-**********
+***********
+/* V01. Tipo de vivienda:
+	       1 Casa individual
+           2 Casa de material natural (Rancho)
+           3 Casa improvisada (Desechos)
+           4 Apartamento
+           5 Cuarto en meson o cuarteria
+           6 Barracon
+           7 Local no construido para habitacion pero usado como vivienda */
 gen vivi1_ch=.
-replace vivi1_ch=1 if dv101==1 | dv101==2
-replace vivi1_ch=2 if dv101==4
-replace vivi1_ch=3 if dv101==5 | dv101==3 | dv101==7
+replace vivi1_ch=1 if dv101==1		// Casa
+replace vivi1_ch=2 if dv101==4		// Apartamento
+replace vivi1_ch=3 if inlist(dv101,2,3,5,6,7)		// Otros
 label var vivi1_ch "Tipo de vivienda en la que reside el hogar"
 label def vivi1_ch 1"Casa" 2"Departamento" 3"Otros"
 label val vivi1_ch vivi1_ch
@@ -1609,11 +1667,19 @@ replace vivi2_ch=0 if vivi1_ch==3
 *************
 *viviprop_ch*
 *************
+/* dv109. Su vivienda es:
+	       1 Alquilada?
+           2 Propietario y la está pagando?
+           3 Propietario y completamente pagada?
+           4 Invasión (propia recuperada legalizada)?
+           5 Invasion (propia recuperada sin legalizar)?
+           6 Prestada (cedida sin pago)?
+           7 Recibida por servicios de trabajo? */
 gen viviprop_ch=.
-replace viviprop_ch=0 if dv109==1
-replace viviprop_ch=1 if dv109==3
-replace viviprop_ch=2 if dv109==2
-replace viviprop_ch=3 if (dv109==4 | dv109==5 | dv109==6 | dv109==7)
+replace viviprop_ch=0 if dv109==1			// Alquilada
+replace viviprop_ch=1 if dv109==3			// Propia y totalmente pagada
+replace viviprop_ch=2 if dv109==2			// Propia y pagandola
+replace viviprop_ch=3 if inlist(dv109,4,5,6,7)	// Ocupada (propia de facto)
 label var viviprop_ch "Propiedad de la vivienda"
 label def viviprop_ch 0"Alquilada" 1"Propia y totalmente pagada" 2"Propia y en proceso de pago"
 label def viviprop_ch 3"Ocupada (propia de facto)", add

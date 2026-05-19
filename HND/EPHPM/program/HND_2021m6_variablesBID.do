@@ -961,7 +961,7 @@ gen luz_ch = (oi02 > 0)
 ************
 *luzmide_ch*
 ************
-gen luzmide_ch = (oi02 > 0)
+gen luzmide_ch = .
 
 ************
 *combust_ch*
@@ -1003,11 +1003,10 @@ destring h03r, replace
 replace dorm_ch = h03r
 
 ************
-***dorm_ch**
+***cuartos_ch**
 ************
 * Solo existe la variable sin incluir baños y cocina
 gen cuartos_ch = .
-replace cuartos_ch = h03u
 
 ***********
 *cocina_ch*
@@ -1044,12 +1043,29 @@ gen compu_ch = (h0111 > 0)
 *************
 *internet_ch*
 *************
-gen internet_ch = (tic03 == 1)
-
+/* La respuesta es a nivel de persona, por lo que un mismo hogar puede tener diferentes respuestas. Por lo que se utiliza la jefatura de hogar.
+   TIC03. Durante los últimos 3 meses, ¿tuvo acceso a internet?   	
+       1 Si
+       2 No
+       9 Ns/Nr
+   TIC051.  ¿En qué sitios tuvo acceso a internet? En su casa
+	   0 No
+	   1 Si
+	   . missing 	*/
+gen internet_jh = (tic03==1 & tic051==1) & relacion_ci==1	// Posee conexión a internet
+replace internet_jh = . if (tic03==. | tic03==9) & tic051==. & relacion_ci==1					// No tiene
+bys idh_ch: egen internet_ch = max(internet_jh)
+drop internet_jh
+	
 ********
 *cel_ch*
 ********
-gen cel_ch = (tic09 == 1)
+/* La respuesta es a nivel de persona, según el manual cel_ch = 1 si al menos un integrante tiene celular.
+TIC09 ¿Tiene teléfono celular? 
+         1 Si
+         2 No */
+bys idh_ch: egen cel_ch = min(tic09)
+replace cel_ch = 0 if cel_ch == 2
 
 **********
 *vivi1_ch*
@@ -1067,19 +1083,26 @@ gen vivi2_ch = .
 *************
 *viviprop_ch*
 *************
-* Solo es posible identificar dos categorías
-gen viviprop_ch = .
-replace viviprop_ch = 0 if oi03 == 1
-replace viviprop_ch = 1 if oi03 == 2
+* Solo es posible identificar una categoría
+	/* oi03. Su vivienda es alquilada:
+	       1 Si
+           2 No */
+	gen viviprop_ch=.
+	replace viviprop_ch=0 if inlist(oi03,1)
+	
+	label define viviprop_ch 		0 "Alquilada" ///
+									1 "Propia y totalmente pagada" ///
+									2 "Propia y en proceso de pago" ///
+									3 "Ocupada (propia de facto)"
+	
+	label value viviprop_ch viviprop_ch
 
-label var viviprop_ch "Propiedad de la vivienda"
-label def viviprop_ch 0 "Alquilada" 1 "Propia"
-label val viviprop_ch viviprop_ch
 	
 ****************
 ***vivitit_ch***
 ****************
 gen vivitit_ch = (ed111 == 1)
+replace vivitit_ch = . if ed111 == .
 label var vivitit_ch "El hogar posee un titulo de propiedad"
 
 

@@ -842,11 +842,20 @@ use "`base_in'", clear
 	***********
 	*resid_ch*
 	***********
+	/*  V08. ¿Cómo eliminan la basura en esta vivienda?
+           1 Recolección domiciliaria pública
+           2 La deposita en contenedores
+           3 Recolección domiciliaria privada
+           4 La entierra
+           5 La prepara para abono
+           6 La quema
+           7 La tira en cualquier lugar
+           8 Otro */
 	gen resid_ch=.
-	replace resid_ch=0 if V08<4
-	replace resid_ch=1 if V08==4 | V08==6		
-	replace resid_ch=2 if V08==7	
-	replace resid_ch=3 if V08==8	
+	replace resid_ch=0 if inlist(V08,1,2,3) 	  // Recolección pública o privada
+	replace resid_ch=1 if inlist(V08,4,6)		  // Quemados o enterrados
+	replace resid_ch=2 if inlist(V08,7)			  // Tirados a un espacio abierto
+	replace resid_ch=3 if inlist(V08,5,8)		  // Otros (prepara abono y otros)
 	
 	***********
 	*dorm_ch*
@@ -863,20 +872,30 @@ use "`base_in'", clear
 	***********
 	*cocina_ch*
 	***********
+	/* H02: En que pieza o sitio de la vivienda cocina los alimentos este hogar:
+	       1 En una pieza dedicada solo para cocinar
+           2 En una pieza utilizada también para dormir
+           3 En la sala, comedor
+           4 En el patio, corredor u otro sitio
+           5 No cocina */
 	gen cocina_ch=.
-	replace cocina_ch=0 if H03==2	
-	replace cocina_ch=1 if H03==1	
+	replace cocina_ch=0 if inrange(H02, 2,5) & H02!=.	// Cocinan en un cuarto compartido
+	replace cocina_ch=1 if H02==1		                // Tiene un cuarto separado y exclusivo para cocinar
 	
 	***********
 	*telef_ch*
 	***********
+	/* H01_7. Teléfono fijo o residencial 
+			1 Si
+			. missing */
 	gen telef_ch=.
-	replace telef_ch=0 if H01_7==0	
-	replace telef_ch=1 if (H01_7>=1 & H01_7!=.) 	
+	replace telef_ch=0 if H01_7==.
+	replace telef_ch=1 if H01_7>=1 & H01_7!=.
 	
 	***********
 	*refrig_ch*
 	***********
+	/* H01_1. Refrigeradoras (Cantidad) */
 	gen refrig_ch=.
 	replace refrig_ch=0 if H01_1==0
 	replace refrig_ch=1 if (H01_1>=1 & H01_1!=.)
@@ -889,6 +908,7 @@ use "`base_in'", clear
 	***********
 	*auto_ch*
 	***********
+	/* H01_8. Carro (Cantidad) */
 	gen auto_ch=.
 	replace auto_ch=0 if H01_8==0
 	replace auto_ch=1 if  (H01_8>=1 & H01_8!=.)
@@ -896,34 +916,74 @@ use "`base_in'", clear
 	***********
 	*compu_ch*
 	***********
+	/* H01_11. Computadora (Cantidad)
+			1 Si
+			. missing */
 	gen compu_ch=.
-	replace compu_ch=0 if  H01_11==0
+	replace compu_ch=0 if  H01_11==.
 	replace compu_ch=1 if (H01_11>=1 & H01_11!=.)
 		
 	***********
 	*internet_ch*
 	***********
-	gen internet_ch=.
-	replace internet_ch=0 if TIC03==0
-	replace internet_ch=1 if (TIC03==1 & AT05_1==1) 
+	/* La respuesta es a nivel de persona, por lo que un mismo hogar puede tener diferentes respuestas. Por lo que se utiliza la jefatura de hogar.
+	   TIC03 Durante los últimos 3 meses, ¿tuvo acceso a internet?
+		   1 Si
+           2 No
+           9 No sabe/No responde
+	   AT05_1 En su casa
+		   1 Si
+		   . missing */
+	gen internet_jh = (TIC03==1 & AT05_1==1) & relacion_ci == 1	// Posee conexión a internet
+	replace internet_jh = . if (TIC03 == . | TIC03 == 9) & AT05_1 == . & relacion_ci == 1					// No tiene
+	bys idh_ch: egen internet_ch = max(internet_jh)
+	drop internet_jh
 	
 	***********
 	*cel_ch
 	***********
-	gen cel_ch=(TIC09==1)
-	replace cel_ch=. if TIC09==.
+	/* La respuesta es a nivel de persona, según el manual cel_ch = 1 si al menos un integrante tiene celular.
+	TIC09 ¿Tiene teléfono celular? 
+           1 Si
+           2 No */
+	bys idh_ch: egen cel_ch = min(TIC09)
+	replace cel_ch = 0 if cel_ch == 2
 	
 	***********
 	*vivi1_ch*
 	***********
+	/* V01. Tipo de vivienda:
+	       1 Casa individual
+           2 Casa de material natural (Rancho)
+           3 Casa improvisada (Desechos)
+           4 Apartamento
+           5 Cuarto en meson o cuarteria
+           6 Barracon
+           7 Local no construido para habitacion pero usado como vivienda */
 	gen vivi1_ch=.
-	replace vivi1_ch=1 if inlist(V01,1,3) // Casa individual, rancho o improvisada
+	replace vivi1_ch=1 if inlist(V01,1) // Casa individual
 	replace vivi1_ch=2 if inlist(V01,4) // Apartamento / Departamento
-	replace vivi1_ch=3 if inlist(V01,5,7) // Otros
+	replace vivi1_ch=3 if inlist(V01,2,3,5,6,7) // Otros
+	
+	**************
+	***vivi2_ch: vivienda en la que reside el hogar es una casa o un departamento***
+	**************
+	*Se construye a partir de vivi1_ch creada antes de esta variable.	
+	
+	gen vivi2_ch=1 if inlist(vivi1_ch,1,2) // Casa o Departamento 
+	replace vivi2_ch=0 if vivi1_ch==3 // Otros
 	
 	***********
 	*viviprop_ch*
 	***********
+	/*V10: Su vivienda es: 
+			1	Alquilada?
+			2	Propietario y la está pagando?
+			3	Propietario y completamente pagada?
+			4	Invasión (propia recuperada legalizada)?
+			5	Invasion (propia recuperada sin legalizar)?
+			6	Prestada (cedida sin pago)?
+			7	Recibida por servicios de trabajo?	*/	
 	gen viviprop_ch=.
 	replace viviprop_ch=0 if V10==1 // Alquilada
 	replace viviprop_ch=1 if V10==3 // Propia y totalmente pagada
