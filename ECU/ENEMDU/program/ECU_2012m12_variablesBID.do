@@ -662,6 +662,8 @@ by idh_ch, sort: egen byte nmenor1_ch=sum((relacion_ci>0 & relacion_ci<=5) & (ed
 	****************
 	*afiliado_ci****
 	****************
+	cap clonevar iess = p05a
+	
 	***** El código mantiene a la poblacion inactiva y a los menores de la edad límite de la PET como missing values en congruencia con la variable formal_ci *****.
 	gen byte afiliado_ci = .
 	replace afiliado_ci = 1 if (p05a <= 4 & emp_ci==1)

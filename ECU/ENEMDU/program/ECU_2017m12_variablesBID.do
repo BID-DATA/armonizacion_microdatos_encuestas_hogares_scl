@@ -468,6 +468,8 @@ by idh_ch, sort: egen byte nmenor1_ch=sum((relacion_ci>0 & relacion_ci<=5) & (ed
 	****************
 	*afiliado_ci****
 	****************
+	cap clonevar iess = p05a
+	
 	***** El código mantiene a la poblacion inactiva y a los menores de la edad límite de la PET como missing values en congruencia con la variable formal_ci *****.
 	gen byte afiliado_ci = .
 	replace afiliado_ci = 1 if ((p05a <= 4) & emp_ci==1)
@@ -507,19 +509,6 @@ by idh_ch, sort: egen byte nmenor1_ch=sum((relacion_ci>0 & relacion_ci<=5) & (ed
 	label var cotizando_ci "Cotizante a la Seguridad Social"
 	label define cotizando_ci 0 "No"  1 "Si"
 	label value cotizando_ci cotizando_ci
-
-		
-***** ASIGNANDO EL DISENO MUESTRAL
-***svyset _n, strata(estrato_ci) weight(factor_ci) vce(linearized) singleunit(missing)
-svyset	upm_ci,	strata(estrato_ci)	weight(factor_ci)	vce(linearized)	singleunit(missing)
-
-***** emp_ci y desalent_ci *****.
-svy : tab emp_ci, percent missing
-svy : tab desemp_ci, percent missing
-svy : tab desalent_ci, percent missing
-svy : tab cotizando_ci, percent missing
-svy : tab afiliado_ci, percent missing
-
 	
 	****************
 	*instpen_ci*****
@@ -797,7 +786,7 @@ gen byte formal_ci=1 if cotizando_ci==1 & (condocup_ci==1 | condocup_ci==2)
 recode formal_ci .=0 if (condocup_ci==1 | condocup_ci==2)
 label var formal_ci "1=afiliado o cotizante / PEA"
 
-g formal_1=cotizando_ci1
+g formal_1=cotizando_ci
 
 
 /* MGD 04/2016; se cambia por afiliado ya que usa la pregunta que abarca a todos los ocupados.
@@ -1554,7 +1543,6 @@ lab val ptmc_ch ptmc_ch
 
 
 do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&ExternalVars_Harmonized_DataBank.do"
-
 
 *_____________________________________________________________________________________________________*
 
