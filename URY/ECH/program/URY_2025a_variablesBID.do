@@ -1148,6 +1148,6 @@ gen byte _e581a_n = real(e581a)
 
 
 
-saveold "`base_out'", version(12) replace
+save "`base_out'", replace
 
 cap log close
