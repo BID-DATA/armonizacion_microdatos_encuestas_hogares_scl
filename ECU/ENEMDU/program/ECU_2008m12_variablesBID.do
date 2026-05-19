@@ -436,115 +436,9 @@ replace condocup_ci=4 if edad<5
 	label value condocup_ci condocup_ci
 	label var condocup_ci "Condicion de ocupacion utilizando definicion del pais"
 
-****************
-*afiliado_ci****
-****************
-cap clonevar iess = p05a 
-gen afiliado_ci=(iess>=1 & iess<=4) /*todas personas*/	
-replace afiliado_ci=. if iess==.
-label var afiliado_ci "Afiliado a la Seguridad Social"
-*Nota: seguridad social comprende solo los que en el futuro me ofrecen una pension.
 
-
-****************
-*cotizando_ci***
-****************
-gen cotizando_ci=0     if condocup_ci==1 | condocup_ci==2 
-replace cotizando_ci=1 if (p44f==1) & cotizando_ci==0 /*solo a emplead@s y asalariad@s, difiere con los otros paises*/
-label var cotizando_ci "Cotizante a la Seguridad Social"
-
-****************
-*instpen_ci*****
-****************
-gen instpen_ci=.
-label var instpen_ci "Institucion proveedora de la pension - variable original de cada pais" 
-gen tipopen_ci=.
-********************
-*** instcot_ci *****
-********************
-gen instcot_ci=iess /* a todas las personas*/
-label var instcot_ci "institución a la cual cotiza"
-
-*************
-*tamemp_ci***
-*************
-/*
-gen tamemp_ci=p47b
-replace tamemp_ci=. if (p47b>=99 & p47b!=.)
-replace tamemp_ci=100 if p47a==2
-label define tamemp_ci 100 "100 y más empleados"
-label value tamemp_ci tamemp_ci 
-label var tamemp_ci "# empleados en la empresa de la actividad principal"*/
-*************
-*tamemp_ci
-*************
-*Ecuador Pequeña 1 a 5 Mediana 6 a 50 Grande Más de 50
-*1 = menos de 100
-*2 = más de 100
-
-gen tamemp_ci=.
-replace tamemp_ci=1 if p47a==1 & (p47b>=1 & p47b<=5)
-replace tamemp_ci=2 if p47b>=6 & p47b<=50
-replace tamemp_ci=3 if p47a==2 | (p47b>50 & p47b!=.)
-*2014, 01 modificacion MLO
-*replace tamemp_ci=. if (p47a>=99)
-label var tamemp_ci "# empleados en la empresa segun rangos"
-label define tamemp_ci 1 "Pequeña" 2 "Mediana" 3 "Grande"
-label value tamemp_ci tamemp_ci
-
-*************
-**pension_ci*
-*************
-gen pension_ci=0 
-replace pension_ci=1 if (p72a==1) /* A todas las per mayores de cinco*/
-replace pension_ci=. if p72a==.
-label var pension_ci "1=Recibe pension contributiva"
-
-*************
-*ypen_ci*
-*************
-gen ypen_ci=p72b if pension_ci==1
-replace ypen_ci=. if ypen_ci==999999 
-label var ypen_ci "Valor de la pension contributiva"
-
-***************
-*pensionsub_ci*
-***************
-gen pensionsub_ci=0 
-replace pensionsub_ci=1 if p75==1
-label var pensionsub_ci "1=recibe pension subsidiada / no contributiva"
-
-*****************
-**  ypensub_ci  *
-*****************
-gen ypensub_ci=p76 if pensionsub_ci==1
-replace ypensub_ci=. if ypensub_ci==999999
-label var ypensub_ci "Valor de la pension subsidiada / no contributiva"
-
-*************
-*cesante_ci* 
-*************
-cap clonevar trabant = p37
-generat cesante_ci=0 if condocup_ci==2
-replace cesante_ci=1 if trabant==1 & condocup_ci==2
-label var cesante_ci "Desocupado - definicion oficial del pais"
-
-
-*********
-*lp_ci***
-*********
-gen lp_ci =64.206612
-label var lp_ci "Linea de pobreza oficial del pais"
-
-***********
-*lpe_ci ***
-***********
-
-gen lpe_ci =  36.183281
-label var lpe_ci "Linea de indigencia oficial del pais"
-
-
-	/************************************************************************************************************
+	
+/************************************************************************************************************
 * 3. Creación de nuevas variables de SS and LMK a incorporar en Armonizadas
 ************************************************************************************************************/
 
@@ -558,15 +452,22 @@ label var salmm_ci "Salario minimo legal"
 ************
 ***emp_ci***
 ************
-gen byte emp_ci=(condocup_ci==1)
+gen byte emp_ci = .
+replace emp_ci = (condocup_ci == 1) if (condocup_ci != . & condocup_ci != 4)
 label var emp_ci "Ocupado (empleado)"
+label define emp_ci 0"No ocupado" 1"Ocupado", add
+label value emp_ci emp_ci
 
 ****************
 ***desemp_ci***
 ****************
-gen desemp_ci=(condocup_ci==2)
-label var desemp_ci "Desempleado que buscó empleo en el periodo de referencia"
-  
+***** El código mantiene como missing values a la poblacion menor de la edad limite de la PET que no forman parte de la población de referencia de la sección laboral de la Encuesta *****.
+gen byte desemp_ci = .
+replace desemp_ci = (condocup_ci == 2) if (condocup_ci != . & condocup_ci != 4)
+label var desemp_ci "Desocupado (desempleado)"
+label define desemp_ci 0"No " 1"Si", add
+label value desemp_ci desemp_ci
+
 *************
 ***pea_ci***
 *************
@@ -577,8 +478,11 @@ label var pea_ci "Población Económicamente Activa"
 	*****************
 	***desalent_ci***
 	*****************
-	gen desalent_ci=(motnobus==6 | motnobus==7)
-	label var desalent_ci "Trabajadores desalentados"
+	gen byte desalent_ci = .
+	replace desalent_ci = (bustrama == 11 & (motnobus == 6 | motnobus == 7) & condocup_ci == 3)
+	label var desalent_ci "Desalentados"
+	label define desalent_ci 0"No" 1"Si", add
+	label value desalent_ci desalent_ci
 	
 	*****************
 	***horaspri_ci***
@@ -770,6 +674,29 @@ replace categoinac_ci = 3 if  ( condina==4 & condocup_ci==3)
 replace categoinac_ci = 4 if  ((categoinac_ci ~=1 & categoinac_ci ~=2 & categoinac_ci ~=3) & condocup_ci==3)
 label var categoinac_ci "Categoría de inactividad"
 label define categoinac_ci 1 "jubilados o pensionados" 2 "Estudiantes" 3 "Quehaceres domésticos" 4 "Otros"
+	
+****************
+*afiliado_ci****
+****************
+***** El código mantiene a la poblacion inactiva y a los menores de la edad límite de la PET como missing values en congruencia con la variable formal_ci *****.
+gen byte afiliado_ci = .
+replace afiliado_ci = 1 if (iess <= 4 & emp_ci==1)
+replace afiliado_ci = 0 if (iess > 4 & inlist(condocup_ci, 1, 2))
+label var afiliado_ci "Afiliado a la Seguridad Social"
+label define afiliado_ci 0 "No"  1 "Si"
+label value afiliado_ci afiliado_ci
+*Nota: seguridad social comprende solo los que en el futuro me ofrecen una pension.
+
+****************
+*cotizando_ci***
+****************
+***** El código mantiene a la poblacion inactiva y a los menores de la edad límite de la PET como missing values en congruencia con la variable formal_ci *****.
+gen byte cotizando_ci = .
+replace cotizando_ci = 1 if (p44f == 1 & emp_ci==1)  /*solo a emplead@s y asalariad@s, difiere con los otros paises*/
+replace cotizando_ci = 0 if (cotizando_ci != 1 & inlist(condocup_ci, 1, 2))
+label var cotizando_ci "Cotizante a la Seguridad Social"
+label define cotizando_ci 0 "No"  1 "Si"
+label value cotizando_ci cotizando_ci
 
 *******************
 ***formal***
@@ -793,6 +720,96 @@ label var formal_ci "1=afiliado o cotizante / PEA"*/
 g formal_ci=(afiliado_ci==1)
 *gen formal_ci=(cotizando_ci==1)
 label var formal_ci "1=afiliado o cotizante / PEA"
+
+****************
+*instpen_ci*****
+****************
+gen instpen_ci=.
+label var instpen_ci "Institucion proveedora de la pension - variable original de cada pais" 
+gen tipopen_ci=.
+********************
+*** instcot_ci *****
+********************
+gen instcot_ci=iess /* a todas las personas*/
+label var instcot_ci "institución a la cual cotiza"
+
+*************
+*tamemp_ci***
+*************
+/*
+gen tamemp_ci=p47b
+replace tamemp_ci=. if (p47b>=99 & p47b!=.)
+replace tamemp_ci=100 if p47a==2
+label define tamemp_ci 100 "100 y más empleados"
+label value tamemp_ci tamemp_ci 
+label var tamemp_ci "# empleados en la empresa de la actividad principal"*/
+*************
+*tamemp_ci
+*************
+*Ecuador Pequeña 1 a 5 Mediana 6 a 50 Grande Más de 50
+*1 = menos de 100
+*2 = más de 100
+
+gen tamemp_ci=.
+replace tamemp_ci=1 if p47a==1 & (p47b>=1 & p47b<=5)
+replace tamemp_ci=2 if p47b>=6 & p47b<=50
+replace tamemp_ci=3 if p47a==2 | (p47b>50 & p47b!=.)
+*2014, 01 modificacion MLO
+*replace tamemp_ci=. if (p47a>=99)
+label var tamemp_ci "# empleados en la empresa segun rangos"
+label define tamemp_ci 1 "Pequeña" 2 "Mediana" 3 "Grande"
+label value tamemp_ci tamemp_ci
+
+*************
+**pension_ci*
+*************
+gen pension_ci=0 
+replace pension_ci=1 if (p72a==1) /* A todas las per mayores de cinco*/
+replace pension_ci=. if p72a==.
+label var pension_ci "1=Recibe pension contributiva"
+
+*************
+*ypen_ci*
+*************
+gen ypen_ci=p72b if pension_ci==1
+replace ypen_ci=. if ypen_ci==999999 
+label var ypen_ci "Valor de la pension contributiva"
+
+***************
+*pensionsub_ci*
+***************
+gen pensionsub_ci=0 
+replace pensionsub_ci=1 if p75==1
+label var pensionsub_ci "1=recibe pension subsidiada / no contributiva"
+
+*****************
+**  ypensub_ci  *
+*****************
+gen ypensub_ci=p76 if pensionsub_ci==1
+replace ypensub_ci=. if ypensub_ci==999999
+label var ypensub_ci "Valor de la pension subsidiada / no contributiva"
+
+*************
+*cesante_ci* 
+*************
+cap clonevar trabant = p37
+generat cesante_ci=0 if condocup_ci==2
+replace cesante_ci=1 if trabant==1 & condocup_ci==2
+label var cesante_ci "Desocupado - definicion oficial del pais"
+
+
+*********
+*lp_ci***
+*********
+gen lp_ci =64.206612
+label var lp_ci "Linea de pobreza oficial del pais"
+
+***********
+*lpe_ci ***
+***********
+
+gen lpe_ci =  36.183281
+label var lpe_ci "Linea de indigencia oficial del pais"
 
 
 			**************************
