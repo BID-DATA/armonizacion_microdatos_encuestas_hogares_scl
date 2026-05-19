@@ -1426,31 +1426,45 @@ replace sinbano_ch = 0 if h5==1
 gen aguatrat_ch = 9
 *label var aguatrat_ch "= 9 la encuesta no pregunta de si se trata el agua antes de consumirla"
 
+***************
+**luz_ch      *
+***************
 gen luz_ch=.
 replace luz_ch=1 if (v10==1|v10==2|v10==3)
 replace luz_ch=0 if (v10>=4 & v10<=8)
 
-
+************
+*luzmide_ch*
+************
 gen luzmide_ch=.
 
-
+************
+*combust_ch*
+************
 * La base no dispone de la pregunta h4
 gen combust_ch=.
 
+************
+**pared_ch**
+************
 gen pared_ch=.
 replace pared_ch=0 if v02>=5 & v02<=6
 replace pared_ch=1 if v02>=1 & v02<=4
 replace pared_ch=2 if v02==7
 
-
+***************
+**des1_ch     *
+***************
 gen des1_ch=.
 replace des1_ch=0 if h5==2
 replace des1_ch=1 if (h6==1|h6==2)
 replace des1_ch=2 if (h6==5|h6==6|h6==7)
 replace des1_ch=3 if (h6==3|h6==4)
 
+***************
+**des2_ch     *
+***************
 * MGR Jul, 2015: corrección en sintáxis
-
 /*
 gen des2_ch=.
 replace des2_ch=1 if (h6==1|h6==2|h6==3)
@@ -1463,11 +1477,17 @@ replace des2_ch=1 if (h6==1|h6==2|h6==5|h6==6|h6==7|h6==8)
 replace des2_ch=2 if (h6==4|h6==3)
 replace des2_ch=0 if h5==2
 
+************
+**piso_ch***
+************
 gen piso_ch=.
 replace piso_ch=0 if v03==7
 replace piso_ch=1 if v03>=1 & v03<=6 
 replace piso_ch=2 if v03==8
 
+***************
+**techo_ch    *
+***************
 gen techo_ch=.
 replace techo_ch=0 if v04==6 | v04==7
 replace techo_ch=1 if v04>=1 & v04<=5
@@ -1491,9 +1511,15 @@ replace resid_ch=1 if v11==4 | v11==6				// Quemados o enterrados
 replace resid_ch=2 if v11==7 						// Tirados a un espacio abierto
 replace resid_ch=3 if v11==5 | v11==8				// Otros
 
+************
+***dorm_ch**
+************
 gen dorm_ch=.
 replace dorm_ch=h1 if h1>=0 
 
+***************
+**cuartos_ch  *
+***************
 gen cuartos_ch=.
 replace cuartos_ch=v16 if v16>=0 
 
@@ -1509,22 +1535,35 @@ replace cuartos_ch=v16 if v16>=0
 gen cocina_ch=(h2==1)				// Tiene un cuarto separado y exclusivo para cocinar
 replace cocina_ch=. if h2==.
 
-*********************************
-
+**********
+*telef_ch*
+**********
 gen telef_ch=.
 replace telef_ch=1 if (h8_07==1 | h8_08==1)
 replace telef_ch=0 if (h8_07==2 & h8_08==2)
 
+***************
+**refrig_ch   *
+***************
 gen refrig_ch=.
 replace refrig_ch=1 if h8_01==1
 replace refrig_ch=0 if h8_01==2
 
+**********
+*freez_ch*
+**********
 gen freez_ch=.
 
+***************
+**auto_ch     *
+***************
 gen auto_ch=.
 replace auto_ch=1 if (h8_09==1 | h8_10==1)
 replace auto_ch=0 if (h8_09==2 & h8_10==2)
 
+**********
+*compu_ch*
+**********
 gen compu_ch=.
 replace compu_ch=1 if h8_14==1
 replace compu_ch=0 if h8_14==2
@@ -1614,10 +1653,16 @@ replace viviprop_ch=1 if v14==3			// Propia y totalmente pagada
 replace viviprop_ch=2 if v14==2			// Propia y pagandola
 replace viviprop_ch=3 if inlist(v14,4,5,6,7) 	// Ocupada (propia de facto)
 
+***************
+**vivitit_ch  *
+***************
 gen vivitit_ch=.
 replace vivitit_ch=1 if v17==1
 replace vivitit_ch=0 if v17==2
 
+****************
+***vivialq_ch***
+****************
 /* Tipo de cambio lempiras por dolares = 19.03 
    Variable cambio en la Base de otros Ingresos */
 
@@ -1625,7 +1670,9 @@ gen vivialq_ch=.
 replace vivialq_ch=v15 if v15m==1
 replace vivialq_ch=v15*19.03 if v15m==2
 
-****  ****
+*******************
+***vivialqimp_ch***
+*******************
 gen vivialqimp_ch=.
 
 

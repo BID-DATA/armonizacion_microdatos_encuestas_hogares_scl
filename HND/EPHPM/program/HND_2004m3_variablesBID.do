@@ -1514,8 +1514,9 @@ gen luzmide_ch=.
 
 gen combust_ch=.
 
-
-
+***************
+**des1_ch     *
+***************
 /*
 gen des1_ch=.
 replace des1_ch=0 if v06a==2
@@ -1530,6 +1531,9 @@ replace des1_ch=1 if ( v06b_hog==1| v06b_hog==2)
 replace des1_ch=2 if ( v06b_hog==5| v06b_hog==6| v06b_hog==7)
 replace des1_ch=3 if ( v06b_hog==3| v06b_hog==4)
 
+***************
+**des2_ch     *
+***************
 /*
 gen des2_ch=.
 replace des2_ch=1 if (v06b==1|v06b==2|v06b==3)
@@ -1542,18 +1546,23 @@ replace des2_ch=1 if des1_ch==1 | des1_ch==2
 replace des2_ch=2 if des1_ch==3
 replace des2_ch=0 if v06a_hog==2
 
+************
+**piso_ch***
+************
 /*
 gen piso_ch=.
 replace piso_ch=0 if v03==7
 replace piso_ch=1 if v03>=1 & v03<=6 
 replace piso_ch=2 if v03==8 
 */
-
 gen piso_ch=.
 replace piso_ch=0 if v03_hog==7
 replace piso_ch=1 if v03_hog>=1 & v03_hog<=6 
 replace piso_ch=2 if v03_hog==8 
 
+************
+**pared_ch**
+************
 /*
 gen pared_ch=.
 replace pared_ch=0 if v02==5 | v02==6
@@ -1566,6 +1575,9 @@ replace pared_ch=0 if v02_hog==5 | v02_hog==6
 replace pared_ch=1 if v02_hog>=1 & v02_hog<=4
 replace pared_ch=2 if v02_hog==7
 
+***************
+**techo_ch    *
+***************
 /*
 gen techo_ch=.
 replace techo_ch=0 if v04==6 | v04==7
@@ -1595,6 +1607,9 @@ replace resid_ch=1 if v08_hog==3 | v08_hog==5		// Quemados o enterrados
 replace resid_ch=2 if v08_hog==6					// Tirados a un espacio abierto
 replace resid_ch=3 if v08_hog==4 | v08_hog==7		// Otros
 
+************
+***dorm_ch**
+************
 /*
 gen dorm_ch=.
 replace dorm_ch=v12b if v12b<99 
@@ -1603,6 +1618,9 @@ replace dorm_ch=v12b if v12b<99
 gen dorm_ch=.
 replace dorm_ch=v12b_hog if v12b_hog<99 
 
+***************
+**cuartos_ch  *
+***************
 /*
 gen cuartos_ch=.
 replace cuartos_ch=v12a if v12a<99 
@@ -1747,6 +1765,9 @@ replace viviprop_ch=1 if v10a_hog==1			// Propia y totalmente pagada
 replace viviprop_ch=2 if v10a_hog==4			// Propia y pagandola
 replace viviprop_ch=3 if inlist(v10a_hog,2,3,6)	// Ocupada (propia de facto)
 
+***************
+**vivitit_ch  *
+***************
 /*
 gen vivitit_ch=.
 replace vivitit_ch=1 if v13a==1
@@ -1757,7 +1778,9 @@ gen vivitit_ch=.
 replace vivitit_ch=1 if v13a_hog==1
 replace vivitit_ch=0 if v13a_hog==2
 
-
+****************
+***vivialq_ch***
+****************
 /*
 gen vivialq_ch=.
 replace vivialq_ch=v10c if v10b==1 & viviprop_ch==0
@@ -1768,6 +1791,9 @@ gen vivialq_ch=.
 replace vivialq_ch=v10c_hog if v10b_hog==1 & viviprop_ch==0
 replace vivialq_ch=v10c_hog*18.24 if v10b_hog==2 & viviprop_ch==0
 
+*******************
+***vivialqimp_ch***
+*******************
 gen vivialqimp_ch=.
 
 

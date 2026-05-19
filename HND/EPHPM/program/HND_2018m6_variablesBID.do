@@ -1474,7 +1474,9 @@ gen combust_ch=1 if dh203==3 | dh203==2 | dh203==4
 replace combust_ch=0 if dh203==5 | dh203==1
 
 
-
+***************
+**des1_ch     *
+***************
 * DZ Jul 2017: corrección nueva categoría respecto al anio anterior**
 gen des1_ch=.
 replace des1_ch=0 if dh204==2
@@ -1486,6 +1488,9 @@ label def des1_ch 0"No tiene servicio sanitario" 1"Conectado a red general o cá
 label def des1_ch 2"Letrina o conectado a pozo ciego" 3"Desemboca en río o calle", add
 label val des1_ch des1_ch
 
+***************
+**des2_ch     *
+***************
 * MGR Jul 2015: corrección sintáxis
 
 /*	
@@ -1508,17 +1513,26 @@ label var des2_ch "Tipo de desague sin incluir definición MDG"
 label def des2_ch 0"No tiene servicio sanitario" 1"Conectado a red general, cámara séptica, pozo o letrina"
 label def des2_ch 2"Cualquier otro caso", add
 label val des2_ch des2_ch
-	
+
+************
+**piso_ch***
+************
 gen piso_ch=.
 replace piso_ch=0 if dv103==7
 replace piso_ch=1 if dv103>=1 & dv103<=6 
 replace piso_ch=2 if dv103==8 
 
+***************
+**techo_ch    *
+***************
 gen techo_ch=.
 replace techo_ch=0 if dv104==6 | dv104==7
 replace techo_ch=1 if dv104>=1 & dv104<=5
 replace techo_ch=2 if dv104==8| dv104==9 | dv104==10
 
+************
+**pared_ch**
+************
 * DZ Jul 2017: corrección nueva categoría respecto al anio anterior**
 gen pared_ch=.
 replace pared_ch=0 if dv102>=6 & dv102<=7
@@ -1547,9 +1561,15 @@ replace resid_ch=1 if dv108==4 | dv108==6				// Quemados o enterrados
 replace resid_ch=2 if dv108==7 							// Tirados a un espacio abierto
 replace resid_ch=3 if dv108==5 | dv108==8				// Otros
 
+************
+***dorm_ch**
+************
 gen dorm_ch=.
 replace dorm_ch=dv112
 
+***************
+**cuartos_ch  *
+***************
 gen cuartos_ch=.
 
 ***********

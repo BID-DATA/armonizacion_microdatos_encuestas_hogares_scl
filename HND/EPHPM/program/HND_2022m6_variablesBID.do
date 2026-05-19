@@ -1073,7 +1073,7 @@ egen ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci)
 	/* La respuesta es a nivel de persona, según el manual cel_ch = 1 si al menos un integrante tiene celular.
 	TIC09 (Nombre...) ¿Tiene teléfono celular? 
            1 Si
-           2 No */
+           . Missing */
 	bys idh_ch: egen cel_ch = min(tic09)
 	replace cel_ch = 0 if cel_ch == .
 

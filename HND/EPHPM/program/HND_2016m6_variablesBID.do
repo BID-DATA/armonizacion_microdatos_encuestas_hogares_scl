@@ -1498,7 +1498,9 @@ gen luzmide_ch=.
 gen combust_ch=1 if dh04==3 | dh04==2 | dh04==4
 replace combust_ch=0 if dh04==5 | dh04==1
 
-
+***************
+**des1_ch     *
+***************
 * DZ Jul 2017: corrección nueva categoría respecto al anio anterior**
 gen des1_ch=.
 replace des1_ch=0 if dh05==2
@@ -1510,6 +1512,9 @@ label def des1_ch 0"No tiene servicio sanitario" 1"Conectado a red general o cá
 label def des1_ch 2"Letrina o conectado a pozo ciego" 3"Desemboca en río o calle", add
 label val des1_ch des1_ch
 
+***************
+**des2_ch     *
+***************
 * MGR Jul 2015: corrección sintáxis
 
 /*	
@@ -1532,17 +1537,26 @@ label var des2_ch "Tipo de desague sin incluir definición MDG"
 label def des2_ch 0"No tiene servicio sanitario" 1"Conectado a red general, cámara séptica, pozo o letrina"
 label def des2_ch 2"Cualquier otro caso", add
 label val des2_ch des2_ch
-	
+
+************
+**piso_ch***
+************
 gen piso_ch=.
 replace piso_ch=0 if dv03==7
 replace piso_ch=1 if dv03>=1 & dv03<=6 
 replace piso_ch=2 if dv03==8 
 
+***************
+**techo_ch    *
+***************
 gen techo_ch=.
 replace techo_ch=0 if dv04==6 | dv04==7
 replace techo_ch=1 if dv04>=1 & dv04<=5
 replace techo_ch=2 if dv04==8| dv04==9 | dv04==10
 
+************
+**pared_ch**
+************
 * DZ Jul 2017: corrección nueva categoría respecto al anio anterior**
 gen pared_ch=.
 replace pared_ch=0 if dv02>=6 & dv02<=7
@@ -1571,9 +1585,15 @@ replace resid_ch=1 if dv09==4 | dv09==6				// Quemados o enterrados
 replace resid_ch=2 if dv09==7 						// Tirados a un espacio abierto
 replace resid_ch=3 if dv09==5 | dv09==8				// Otros
 
+************
+***dorm_ch**
+************
 gen dorm_ch=.
 replace dorm_ch=dh01 
 
+***************
+**cuartos_ch  *
+***************
 gen cuartos_ch=.
 replace cuartos_ch=dv13
 
@@ -1689,9 +1709,15 @@ label var viviprop_ch "Propiedad de la vivienda"
 label def viviprop_ch 0"Alquilada" 1"Propia y totalmente pagada" 2"Propia y en proceso de pago"
 label def viviprop_ch 3"Ocupada (propia de facto)", add
 label val viviprop_ch viviprop_ch
-	
+
+***************
+**vivitit_ch  *
+***************
 gen vivitit_ch=.
 
+****************
+***vivialq_ch***
+****************
 gen vivialq_ch=.
 replace vivialq_ch=dv12       if dv12moneda==1 
 replace vivialq_ch=dv12*cambio if dv12moneda==2

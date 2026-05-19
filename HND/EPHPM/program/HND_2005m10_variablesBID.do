@@ -1690,7 +1690,8 @@ replace vivi2_ch=1 if vivi1_ch==1 | vivi1_ch==2
 replace vivi2_ch=0 if vivi1_ch==3
 
 ***************
-**viviprop_ch * REVISAR
+**viviprop_ch *
+***************
 /* v14. Tenencia de la vivienda:
 	       1 propietario y completamente pagada
            2 propietario recuperada legalizada

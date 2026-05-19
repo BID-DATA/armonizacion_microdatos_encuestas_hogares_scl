@@ -1407,7 +1407,9 @@ gen luzmide_ch=.
 gen combust_ch=1 if dh04==3 | dh04==2 | dh04==4
 replace combust_ch=0 if dh04==5 | dh04==1
 
-
+***************
+**des1_ch     *
+***************
 gen des1_ch=.
 replace des1_ch=0 if dh05==2
 replace des1_ch=1 if (dh06==1|dh06==2)
@@ -1418,9 +1420,10 @@ label def des1_ch 0"No tiene servicio sanitario" 1"Conectado a red general o cá
 label def des1_ch 2"Letrina o conectado a pozo ciego" 3"Desemboca en río o calle", add
 label val des1_ch des1_ch
 
-
+***************
+**des2_ch     *
+***************
 * MGR Jul, 2015: corrección en sintáxis 
-
 /*	
 gen des2_ch=.
 replace des2_ch=1 if (dh06==1|dh06==2|dh06==3)
@@ -1440,17 +1443,25 @@ label def des2_ch 0"No tiene servicio sanitario" 1"Conectado a red general, cám
 label def des2_ch 2"Cualquier otro caso", add
 label val des2_ch des2_ch
 
-	
+************
+**piso_ch***
+************
 gen piso_ch=.
 replace piso_ch=0 if dv03==7
 replace piso_ch=1 if dv03>=1 & dv03<=6 
 replace piso_ch=2 if dv03==8 
 
+***************
+**techo_ch    *
+***************
 gen techo_ch=.
 replace techo_ch=0 if dv04==6 | dv04==7
 replace techo_ch=1 if dv04>=1 & dv04<=5
 replace techo_ch=2 if dv04==8| dv04==9 | dv04==10
 
+************
+**pared_ch**
+************
 gen pared_ch=.
 replace pared_ch=0 if dv02>=5 & dv02<=6
 replace pared_ch=1 if dv02>=1 & dv02<=4
@@ -1478,9 +1489,15 @@ replace resid_ch=1 if dv11==4 | dv11==6				// Quemados o enterrados
 replace resid_ch=2 if dv11==7 						// Tirados a un espacio abierto
 replace resid_ch=3 if dv11==5 | dv11==8				// Otros
 
+************
+***dorm_ch**
+************
 gen dorm_ch=.
 replace dorm_ch=dh01 if dh01>=0 
 
+***************
+**cuartos_ch  *
+***************
 gen cuartos_ch=.
 replace cuartos_ch=dv16 if dv16>=0 
 
@@ -1586,11 +1603,17 @@ label var viviprop_ch "Propiedad de la vivienda"
 label def viviprop_ch 0"Alquilada" 1"Propia y totalmente pagada" 2"Propia y en proceso de pago"
 label def viviprop_ch 3"Ocupada (propia de facto)", add
 label val viviprop_ch viviprop_ch
-	
+
+***************
+**vivitit_ch  *
+***************
 gen vivitit_ch=.
 replace vivitit_ch=1 if dv17==1
 replace vivitit_ch=0 if dv17==2
 
+****************
+***vivialq_ch***
+****************
 gen vivialq_ch=.
 replace vivialq_ch=dv15       if dv15moneda==1 /*solo hay lempiras*/
 replace vivialq_ch=dv15*19.92 if dv15moneda==2

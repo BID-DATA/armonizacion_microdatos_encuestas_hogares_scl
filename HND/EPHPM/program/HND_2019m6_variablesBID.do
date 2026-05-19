@@ -1545,7 +1545,9 @@ gen combust_ch=.
 replace combust_ch=1 if dh203_hog==3 | dh203_hog==2 | dh203_hog==4
 replace combust_ch=0 if dh203_hog==5 | dh203_hog==1
 
-
+***************
+**des1_ch     *
+***************
 * DZ Jul 2017: corrección nueva categoría respecto al anio anterior**
 gen des1_ch=.
 replace des1_ch=0 if dh204_hog==2
@@ -1557,6 +1559,9 @@ label def des1_ch 0"No tiene servicio sanitario" 1"Conectado a red general o cá
 label def des1_ch 2"Letrina o conectado a pozo ciego" 3"Desemboca en río o calle", add
 label val des1_ch des1_ch
 
+***************
+**des2_ch     *
+***************
 * MGR Jul 2015: corrección sintáxis
 
 /*	
