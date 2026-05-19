@@ -332,6 +332,14 @@ label variable miembros_ci "Miembro del hogar"
 	*******************
 gen afroind_ano_c=.		
 
+
+***************
+***afroind_ch***
+***************
+gen afroind_jefe = afroind_ci if relacion_ci == 1
+egen afroind_ch = min(afroind_jefe), by(idh_ch) 
+drop afroind_jefe
+
 	********
 	*dis_ci*
 	********
