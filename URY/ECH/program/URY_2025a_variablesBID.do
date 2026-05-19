@@ -360,7 +360,7 @@ gen byte _e581a_n = real(e581a)
 	*** emp_ci ***
 	**************
 	gen byte emp_ci = .
-	replace emp_ci = (condocup_ci == 1) if condocup_ci != .
+	replace emp_ci = (condocup_ci == 1) if (condocup_ci != . & condocup_ci != 4)
 
 	******************
 	*** cesante_ci ***
@@ -373,7 +373,7 @@ gen byte _e581a_n = real(e581a)
 	*** desemp_ci ***
 	*****************
 	gen byte desemp_ci = .
-	replace desemp_ci = (condocup_ci == 2) if condocup_ci != .
+	replace desemp_ci = (condocup_ci == 2) if (condocup_ci != . & condocup_ci != 4)
 
 	**********
 	*** subemp_ci ***
@@ -493,15 +493,14 @@ gen byte _e581a_n = real(e581a)
 	***************
 	gen byte cotizando_ci = .
 	replace cotizando_ci = 0 if (f82 == 2 | f96 == 2) & emp_ci == 1
-	replace cotizando_ci = 1 if (f82 == 1 | f96 == 1) & emp_ci == 1
+	replace cotizando_ci = 1 if (f82 == 1 | f96 == 1) & inlist(condocup_ci,1,2)
 
 	***********
 	*** afiliado_ci ***
 	***********
 	gen byte afiliado_ci = .
 	replace afiliado_ci = 0 if (f82 == 2 | f96 == 2) & emp_ci == 1
-	replace afiliado_ci = 1 if (f82 == 1 | f96 == 1) & emp_ci == 1
-
+	replace afiliado_ci = 1 if (f82 == 1 | f96 == 1) & inlist(condocup_ci,1,2)
 	**********
 	*** instcot_ci ***
 	**********
