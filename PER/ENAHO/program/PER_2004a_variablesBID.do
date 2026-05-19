@@ -452,12 +452,52 @@ label var condocup_ci "Condicion de ocupacion utilizando definicion del pais"
 label define condocup_ci 1"ocupados" 2"desocupados" 3"inactivos" 4"menor de PET"
 label value condocup_ci condocup_ci
 
+
+************
+***emp_ci***
+************
+***** El código mantiene como missing values a la poblacion menor de la edad limite de la PET que no forman parte de la población de referencia de la sección laboral de la Encuesta *****.
+gen byte emp_ci = .
+replace emp_ci = (condocup_ci == 1) if (condocup_ci != . & condocup_ci != 4)
+label var emp_ci "Ocupado (empleado)"
+label define emp_ci 0"No ocupado" 1"Ocupado", add
+label value emp_ci emp_ci
+
+****************
+***desemp_ci***
+****************
+***** El código mantiene como missing values a la poblacion menor de la edad limite de la PET que no forman parte de la población de referencia de la sección laboral de la Encuesta *****.
+gen byte desemp_ci = .
+replace desemp_ci = (condocup_ci == 2) if (condocup_ci != . & condocup_ci != 4)
+label var desemp_ci "Desocupado (desempleado)"
+label define desemp_ci 0"No " 1"Si", add
+label value desemp_ci desemp_ci
+
+*************
+***pea_ci***
+*************
+gen pea_ci=(emp_ci==1 | desemp_ci==1)
+
+*****************
+***desalent_ci***
+*****************
+***** El código mantiene como población de referencia a las personas inactivas (condocup_ci == 3) *****.
+gen byte desalent_ci = .
+replace desalent_ci = (p545 == 2 & (p549 == 1 | p549 == 2) & condocup_ci == 3)
+label var desalent_ci "Desalentados"
+label define desalent_ci 0"No" 1"Si", add
+label value desalent_ci desalent_ci
+
 ****************
 *afiliado_ci****
 ****************
-gen afiliado_ci=0     if condocup_ci==1 | condocup_ci==2 
-replace afiliado_ci=1 if (p558a1==1 | p558a2==2 | p558a3==3 | p558a4==4) & afiliado_ci==0 
+***** El código mantiene a la poblacion inactiva y a los menores de la edad límite de la PET como missing values en congruencia con la variable formal_ci *****.
+gen byte afiliado_ci = .
+replace afiliado_ci = 1 if(p558a1==1 | p558a2==2 | p558a3==3 | p558a4==4) & emp_ci==1
+replace afiliado_ci = 0 if (afiliado_ci != 1 & inlist(condocup_ci, 1, 2))
 label var afiliado_ci "Afiliado a la Seguridad Social"
+label define afiliado_ci 0 "No"  1 "Si"
+label value afiliado_ci afiliado_ci
 
 ****************
 *tipopen_ci*****
@@ -473,9 +513,13 @@ label var instcot_ci "institución a la cual cotiza"
 ****************
 *cotizando_ci***
 ****************
-gen cotizando_ci=0     if condocup_ci==1 | condocup_ci==2 
-replace cotizando_ci=1 if ((p524b1>0 & p524b1!=.) | (p538b1>0 & p538b1!=.)) & cotizando_ci==0 /*a ocupados subordinados: empleados u obreros*/
+***** El código mantiene a la poblacion inactiva y a los menores de la edad límite de la PET como missing values en congruencia con la variable formal_ci *****.
+gen byte cotizando_ci = .
+replace cotizando_ci = 1 if ((p524b1>0 & p524b1!=.) | (p538b1>0 & p538b1!=.) & emp_ci==1)
+replace cotizando_ci = 0 if (cotizando_ci != 1 & inlist(condocup_ci, 1, 2))
 label var cotizando_ci "Cotizante a la Seguridad Social"
+label define cotizando_ci 0 "No"  1 "Si"
+label value cotizando_ci cotizando_ci
 
 gen cotizapri_ci=0     if condocup_ci==1 | condocup_ci==2 
 replace cotizapri_ci=1 if (p524b1>0 & p524b1!=.) 
@@ -485,6 +529,10 @@ gen cotizasec_ci=0     if condocup_ci==1 | condocup_ci==2
 replace cotizasec_ci=1 if (p538b1>0 & p538b1!=.) 
 label var cotizasec_ci "Cotizante a la Seguridad Social por su trabajo secundario"
 
+*************
+***formal_ci***
+*************
+gen formal_ci=(cotizando_ci==1)
 
 *************
 *tamemp_ci***
@@ -617,39 +665,6 @@ label var salmm_ci "Salario minimo legal"
 *************
 gen tecnica_ci=(p301a==7 | p301a==8 | p304a==4 | p308a==4)
 label var tecnica_ci "=1 formacion terciaria tecnica"	
-
-************
-***emp_ci***
-************
-gen byte emp_ci = .
-replace emp_ci = (condocup_ci == 1) if (condocup_ci != . & condocup_ci != 4)
-label var emp_ci "Ocupado (empleado)"
-label define emp_ci 0"No ocupado" 1"Ocupado", add
-label value emp_ci emp_ci
-
-****************
-***desemp_ci***
-****************
-gen desemp_ci=(condocup_ci==2)
-
-*************
-***pea_ci***
-*************
-gen pea_ci=(emp_ci==1 | desemp_ci==1)
-
-*************
-***formal_ci***
-*************
-gen formal_ci=(cotizando_ci==1)
-
-*****************
-***desalent_ci***
-*****************
-gen byte desalent_ci = .
-replace desalent_ci = (p545 == 2 & (p549 == 1 | p549 == 2) & condocup_ci == 3)
-label var desalent_ci "Desalentados"
-label define desalent_ci 0"No" 1"Si", add
-label value desalent_ci desalent_ci
 
 *****************
 ***horaspri_ci***

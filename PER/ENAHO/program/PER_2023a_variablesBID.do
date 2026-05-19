@@ -475,6 +475,7 @@ by idh_ch, sort: egen byte nmenor1_ch=sum((relacion_ci>0 & relacion_ci<=5) & (ed
 	************/
 	***emp_ci***
 	************
+	***** El código mantiene como missing values a la poblacion menor de la edad limite de la PET que no forman parte de la población de referencia de la sección laboral de la Encuesta *****.
 	gen byte emp_ci = .
 	replace emp_ci = (condocup_ci == 1) if (condocup_ci != . & condocup_ci != 4)
 	label var emp_ci "Ocupado (empleado)"
@@ -491,7 +492,12 @@ by idh_ch, sort: egen byte nmenor1_ch=sum((relacion_ci>0 & relacion_ci<=5) & (ed
 	****************
 	***desemp_ci***
 	****************
-		gen desemp_ci=(condocup_ci==2)
+	***** El código mantiene como missing values a la poblacion menor de la edad limite de la PET que no forman parte de la población de referencia de 		la sección laboral de la Encuesta *****.
+	gen byte desemp_ci = .
+	replace desemp_ci = (condocup_ci == 2) if (condocup_ci != . & condocup_ci != 4)
+	label var desemp_ci "Desocupado (desempleado)"
+	label define desemp_ci 0"No " 1"Si", add
+	label value desemp_ci desemp_ci
 
 	*****************
 	***horaspri_ci***
@@ -539,6 +545,7 @@ by idh_ch, sort: egen byte nmenor1_ch=sum((relacion_ci>0 & relacion_ci<=5) & (ed
 	*****************
 	***desalent_ci***
 	*****************
+	***** El código mantiene como población de referencia a las personas inactivas (condocup_ci == 3) *****.
 	gen byte desalent_ci = .
 	replace desalent_ci = (p545 == 2 & (p549 == 1 | p549 == 2) & condocup_ci == 3)
 	label var desalent_ci "Desalentados"
@@ -631,10 +638,15 @@ by idh_ch, sort: egen byte nmenor1_ch=sum((relacion_ci>0 & relacion_ci<=5) & (ed
 	****************
 	*cotizando_ci***
 	****************
-		gen cotizando_ci=0     if condocup_ci==1 | condocup_ci==2
-		replace cotizando_ci=1 if ((p524b1>0 & p524b1!=.) | (p538b1>0 & p538b1!=.)) & cotizando_ci==0
-		label var cotizando_ci "Cotizante a la Seguridad Social"
+	***** El código mantiene a la poblacion inactiva y a los menores de la edad límite de la PET como missing values en congruencia con la variable formal_ci *****.
+	gen byte cotizando_ci = .
+	replace cotizando_ci = 1 if (((p524b1>0 & p524b1!=.) | (p538b1>0 & p538b1!=.)) & emp_ci==1)
+	replace cotizando_ci = 0 if (cotizando_ci != 1 & inlist(condocup_ci, 1, 2))
+	label var cotizando_ci "Cotizante a la Seguridad Social"
+	label define cotizando_ci 0 "No"  1 "Si"
+	label value cotizando_ci cotizando_ci
 
+	
 	********************
 	*** instcot_ci *****
 	********************
@@ -645,9 +657,13 @@ by idh_ch, sort: egen byte nmenor1_ch=sum((relacion_ci>0 & relacion_ci<=5) & (ed
 	****************
 	*afiliado_ci****
 	****************
-		gen afiliado_ci=0
-		replace afiliado_ci=1 if (p558a1==1 | p558a2==2 | p558a3==3 | p558a4==4) 
-		label var afiliado_ci "Afiliado a la Seguridad Social"
+	***** El código mantiene a la poblacion inactiva y a los menores de la edad límite de la PET como missing values en congruencia con la variable formal_ci *****.
+	gen byte afiliado_ci = .
+	replace afiliado_ci = 1 if(p558a1==1 | p558a2==2 | p558a3==3 | p558a4==4) & emp_ci==1
+	replace afiliado_ci = 0 if (afiliado_ci != 1 & inlist(condocup_ci, 1, 2))
+	label var afiliado_ci "Afiliado a la Seguridad Social"
+	label define afiliado_ci 0 "No"  1 "Si"
+	label value afiliado_ci afiliado_ci
 		
 
 	***************
