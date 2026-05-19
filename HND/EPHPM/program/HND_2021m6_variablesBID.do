@@ -1102,6 +1102,7 @@ gen vivi2_ch = .
 ***vivitit_ch***
 ****************
 gen vivitit_ch = (ed111 == 1)
+replace vivitit_ch = . if ed111 == .
 label var vivitit_ch "El hogar posee un titulo de propiedad"
 
 
