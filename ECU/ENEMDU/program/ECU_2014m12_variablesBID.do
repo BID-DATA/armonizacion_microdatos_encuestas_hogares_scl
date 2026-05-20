@@ -788,12 +788,12 @@ by idh_ch, sort: egen byte nmenor1_ch=sum((relacion_ci>0 & relacion_ci<=5) & (ed
 	label var cesante_ci "Desocupado - definicion oficial del pais"
 
 	*********
-	*lp_ci***
+	*ln_ci***
 	*********
 	
 	* MGR: http://www.ecuadorencifras.gob.ec/documentos/web-inec/POBREZA/2014/Diciembre-2014/Reporte%20pobreza%20y%20desigualdad.pdf
-	gen lp_ci = 81.04
-	label var lp_ci "Linea de pobreza oficial del pais"
+	gen ln_ci = 81.04
+	label var ln_ci "Linea de pobreza oficial del pais"
 
 	***********
 	*lpe_ci ***
@@ -1636,7 +1636,7 @@ lab val grupo_int grupo_int
   aguared_ch aguafconsumo_ch aguafuente_ch aguadist_ch aguadisp1_ch aguadisp2_ch /// Agua y saneamineto
   aguatrat_ch aguamala_ch aguamejorada_ch aguamide_ch bano_ch banoex_ch banomejorado_ch sinbano_ch  /// Agua y saneamineto
   migrante_ci migrantiguo5_ci miglac_ci /// Migración
-  salmm_ci lp19_2011 lp31_2011 lp5_2011 lp_ci lpe_ci lp365_2017 lp685_2017 lp14_2017 lp81_2017 tc_c cpi_c cpi2011 cpi2017 ratio_cpi2011 ratio_cpi2017 /// Fuente externa
+  salmm_ci lp19_2011 lp31_2011 lp5_2011 ln_ci lpe_ci lp365_2017 lp685_2017 lp14_2017 lp81_2017 tc_c cpi_c cpi2011 cpi2017 ratio_cpi2011 ratio_cpi2017 /// Fuente externa
   ppp_c ppp_2011 ppp_2017 , first /// Fuente externa 
   /// the order was created by regex functions, sph variables are excluded /// Fuente externa 
   /// the order was created by regex functions, sph variables are excluded

@@ -102,9 +102,6 @@ label variable factor_ch "Factor de expansion del hogar"
 ************
 ***idh_ch***
 ************
-gen upms=string(upm)
-gen nvivis=string(nvivi)
-gen nhogas=string(nhoga)
 gen idh_ch=upms+nvivis+nhogas
 destring idh_ch, replace
 sort idh_ch

@@ -842,10 +842,10 @@ replace cesante_ci=1 if trabant==1 & condocup_ci==2
 label var cesante_ci "Desocupado - definicion oficial del pais"
 
 *********
-*lp_ci***
+*ln_ci***
 *********
-gen lp_ci =52.971935
-label var lp_ci "Linea de pobreza oficial del pais"
+gen ln_ci =52.971935
+label var ln_ci "Linea de pobreza oficial del pais"
 
 ***********
 *lpe_ci ***
@@ -1605,7 +1605,7 @@ do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&Exter
   aedu_ci eduui_ci eduuc_ci edupre_ci eduac_ci asiste_ci pqnoasis1_ci /// Educación
   luz_ch luzmide_ch combust_ch piso_ch pared_ch techo_ch resid_ch dorm_ch cuartos_ch cocina_ch telef_ch refrig_ch /// Vivienda
   freez_ch auto_ch compu_ch internet_ch cel_ch vivi1_ch vivi2_ch viviprop_ch vivitit_ch vivialq_ch vivialqimp_ch /// Vivienda
-  salmm_ci lp19_2011 lp31_2011 lp5_2011 lp_ci lpe_ci lp365_2017 lp685_2017 lp14_2017 lp81_2017 tc_c cpi_c cpi2011 cpi2017 ratio_cpi2011 ratio_cpi2017 /// Fuente externa
+  salmm_ci lp19_2011 lp31_2011 lp5_2011 ln_ci lpe_ci lp365_2017 lp685_2017 lp14_2017 lp81_2017 tc_c cpi_c cpi2011 cpi2017 ratio_cpi2011 ratio_cpi2017 /// Fuente externa
   ppp_c ppp_2011 ppp_2017 , first /// Fuente externa 
   /// the order was created by regex functions, sph variables are excluded /// Fuente externa 
   /// the order was created by regex functions, sph variables are excluded
