@@ -104,9 +104,6 @@ label variable factor_ch "Factor de expansion del hogar"
 ***************
 ****idh_ch*****
 ***************
-gen upms=string(upm)
-gen nvivis=string(nvivi)
-gen nhogas=string(nhoga)
 gen idh_ch=upms+nvivis+nhogas
 destring idh_ch, replace
 sort idh_ch
@@ -190,7 +187,6 @@ label value relacion_ci relacion_ci
 ***************
 ***factor_ci***
 ***************
-
 gen factor_ci=fex 
 label variable factor_ci "Factor de expansion del individuo"
 
@@ -1836,6 +1832,7 @@ local longlabel: var label `i'
 local shortlabel = substr(`"`longlabel'"',1,79)
 label var `i' `"`shortlabel'"'
 }
+drop área
 
 saveold "`base_out'", version(12) replace
 

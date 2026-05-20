@@ -600,14 +600,14 @@ replace ylnmpri_ci=. if emp_ci!=1
 ******************************
 *	ylmsec_ci & ylmsec1_ci
 ******************************
-if emp_ci==1{
-g ylmsec_ci=r434 
-g hrsextras=r43501a*r43501b/12
-g vacaciones=r43502a*r43502b/12
-g aguinaldo=r43503a*r43503b/12 
-g bonificaciones=r43504a*r43504b/12
-}
-egen ylmsec1_ci=rsum(ylmsec_ci hrsextras vacaciones aguinaldo bonificaciones), missing
+gen ylmsec_ci = r434 if emp_ci == 1
+gen hrsextras = r43501a * r43501b / 12  if emp_ci == 1
+gen vacaciones = r43502a * r43502b / 12  if emp_ci == 1
+gen aguinaldo = r43503a * r43503b / 12  if emp_ci == 1
+gen bonificaciones = r43504a * r43504b / 12  if emp_ci == 1
+
+egen ylmsec1_ci = rsum(ylmsec_ci hrsextras vacaciones aguinaldo bonificaciones), missing
+
 replace ylmsec1_ci=. if emp_ci!=1 | r432!=1
 
 ******************************
