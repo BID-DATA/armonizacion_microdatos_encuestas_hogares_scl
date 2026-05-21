@@ -1114,31 +1114,31 @@ label values edupub_ci edupub
 *********************
 gen aguared_ch=.
 /*
-replace aguared_ch= 1 if h8==1 | h8==2 | h71==1 | h72==1
-replace aguared_ch= 0 if h8>2 | h73==1 | h74==1 | h75==1 | h76==1 | h77==1 | h78==1 
+replace aguared_ch= 1 if h8==1 | h7 ==1
 */
 *********************
 gen aguafconsumo_ch = 0
 /*
-replace aguafconsumo_ch= 1 if h8==1 | h8==2
-replace aguafconsumo_ch= 3 if h8==6
-replace aguafconsumo_ch= 4 if h8==4
-replace aguafconsumo_ch= 7 if h8==3
-replace aguafconsumo_ch= 8 if h8==7
-replace aguafconsumo_ch= 9 if h8==5
-replace aguafconsumo_ch= 10 if h8==8
+replace aguafconsumo_ch= 1 if h8==2 |h8==3 	// distribution network, private tap or point of access
+replace aguafconsumo_ch= 2 if h8==4 		// distribution network, public point of access (standpipe or public tap)
+replace aguafconsumo_ch= 3 if h8==1 		// Bottled water 
+replace aguafconsumo_ch= 4 if h8==5		// Protected well
+replace aguafconsumo_ch= 7 if h8==		// Another improved water source		
+replace aguafconsumo_ch= 8 if h8==8		// Directly from surface water body
+replace aguafconsumo_ch= 9 if h8==6		// Another non-improved source
+replace aguafconsumo_ch= 10 if inlist(h8,7,9,10) // Unclassifiable 
 */
 
 *********************
 gen aguafuente_ch =.
 /*
-replace aguafuente_ch= 1 if h8==1 | h8==2 | h71==1 | h72==1
-replace aguafuente_ch= 3 if h8==6 | h76==1
-replace aguafuente_ch= 4 if h8==4 | h74==1
-replace aguafuente_ch= 7 if h8==3 | h73==1
-replace aguafuente_ch= 8 if h8==7 | h77==1
-replace aguafuente_ch= 9 if h8==5 | h75==1
-replace aguafuente_ch= 10 if h8==8 | h78==1
+replace aguafuente_ch= 1 if h7==1 |h7==2		 	// Distribution network, private tap or point of access
+replace aguafuente_ch= 2 if h7==4				// Distribution network, public tap or point of access
+replace aguafuente_ch= 4 if h7==5 				// Protected well
+replace aguafuente_ch= 7 if h7==3 				// Another improved
+replace aguafuente_ch= 8 if h7==8 				// Surface water
+replace aguafuente_ch= 9 if h7==6 				// Another unimproved
+replace aguafuente_ch= 10 if h7==7 | h7==9			// Unclassifiable
 replace aguafuente_ch = 10 if aguafuente_ch ==. & jefe_ci==1
 */
 
