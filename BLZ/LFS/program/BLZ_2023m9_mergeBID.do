@@ -2,8 +2,8 @@
 /*==============================================================================
 						Armonización de encuestas
 			Script de merge - Unión de módulos en una sola base 
-País: Ecuador
-Año: 2021-2025
+País: BLZ
+Año: 2023
 Autores:Lina Arias - PEC SCL
 Última versión: 05/19/2026
 División: SCL/SCL - IADB
@@ -32,7 +32,7 @@ log using "`log_file'", replace
 /****************************************************************************
    II. Importar spss
 *****************************************************************************/
-import spss "`base_in'\Sept_2021 - Microdata.sav", clear // 7480 obs
+import spss "`base_in'\Sept_2023 - Microdata.sav", clear // 7480 obs
 rename *, lower
 duplicates report _v1 hl3 hl4new hl5
 drop if ind_weight==. //847 obs
