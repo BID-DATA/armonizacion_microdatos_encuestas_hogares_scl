@@ -37,7 +37,7 @@ capture log close
 log using "`log_file'", replace 
 */****************************************************************************/
 
-use "`base_in'", clear
+use `base_in', clear
 *destring *, replace
 	
 */****************************************************************************/
@@ -383,8 +383,11 @@ use "`base_in'", clear
 	***emp_ci*
 	**********
 	gen byte emp_ci = .
-	replace emp_ci = (condocup_ci == 1) if condocup_ci != .
-
+	replace emp_ci = (condocup_ci == 1) if (condocup_ci != . & condocup_ci != 4)
+	label var emp_ci "Ocupado (empleado)"
+	label define emp_ci 0"No ocupado" 1"Ocupado", add
+	label value emp_ci emp_ci
+	
 	*************
 	**cesante_ci* 
 	*************
@@ -395,9 +398,13 @@ use "`base_in'", clear
 	***************
 	***desemp_ci***
 	***************
+	***** El código mantiene como missing values a la poblacion menor de la edad limite de la PET que no forman parte de la población de referencia de la sección laboral de la Encuesta *****.
 	gen byte desemp_ci = .
-	replace desemp_ci = (condocup_ci == 2) if condocup_ci! = .
-
+	replace desemp_ci = (condocup_ci == 2) if (condocup_ci != . & condocup_ci != 4)
+	label var desemp_ci "Desocupado (desempleado)"
+	label define desemp_ci 0"No " 1"Si", add
+	label value desemp_ci desemp_ci
+	
 	***************
 	***subemp_ci***
 	***************
@@ -431,8 +438,12 @@ use "`base_in'", clear
 	*****************
 	***desalent_ci***
 	*****************
-	gen desalent_ci = (p32 < 11 & (p34 == 6 | p34 == 7))
-	
+	gen byte desalent_ci = .
+	replace desalent_ci = (p32 == 11 & (p34 == 6 | p34 == 7) & condocup_ci == 3)
+	label var desalent_ci "Desalentados"
+	label define desalent_ci 0"No" 1"Si", add
+	label value desalent_ci desalent_ci
+		
 	*****************
 	***horaspri_ci***
 	*****************
@@ -504,8 +515,14 @@ use "`base_in'", clear
 	****************
 	*cotizando_ci***
 	****************
-	gen cotizando_ci = (p44f == 1 | p61b1 <= 4) //¿(…) recibe por parte de su patrono o empleador:
-
+	***** El código mantiene a la poblacion inactiva y a los menores de la edad límite de la PET como missing values en congruencia con la variable formal_ci *****.
+	gen byte cotizando_ci = .
+	replace cotizando_ci = 1 if ((p44f == 1 | p61b1 <= 4) & emp_ci==1)  //¿(…) recibe por parte de su patrono o empleador:
+	replace cotizando_ci = 0 if (cotizando_ci != 1 & inlist(condocup_ci, 1, 2))
+	label var cotizando_ci "Cotizante a la Seguridad Social"
+	label define cotizando_ci 0 "No"  1 "Si"
+	label value cotizando_ci cotizando_ci
+	
 	********************
 	*** instcot_ci *****
 	********************
@@ -516,7 +533,13 @@ use "`base_in'", clear
 	****************
 	***afiliado_ci**
 	****************
-	gen afiliado_ci = (p05a <= 4) /*IESS, ISSFA e ISSPOL requieren afiliación*/
+	***** El código mantiene a la poblacion inactiva y a los menores de la edad límite de la PET como missing values en congruencia con la variable formal_ci *****.
+	gen byte afiliado_ci = .
+	replace afiliado_ci = 1 if ((p05a <= 4) & emp_ci==1)  /*IESS, ISSFA e ISSPOL requieren afiliación*/
+	replace afiliado_ci = 0 if (p05a > 4 & inlist(condocup_ci, 1, 2))
+	label var afiliado_ci "Afiliado a la Seguridad Social"
+	label define afiliado_ci 0 "No"  1 "Si"
+	label value afiliado_ci afiliado_ci
 	*Nota: seguridad social comprende solo los que en el futuro me ofrecen una pension.
 	* p05b incluye a los cubiertos no necesariamente estan afiliados
 
@@ -1028,16 +1051,11 @@ use "`base_in'", clear
 	************
 	*sinbano_ch*
 	************
-	/*** 0 Tiene baño si (Tiene algún tipo de servicio higiénico) ***.
-	*** 1 Utiliza inst. pub. o vecino o amigo si (No tiene y utiliza instalacion cercana y/o prestada) ***.
-	*** 2 Defecación al aire libre si (No tiene y van al monte, campo, bota la basura en paquete + descarga directa hacia el mar, rio, lago o quebrada) ***.
-	*** 3 No tiene baño sin especificar ninguna alternativa de uso si (No tiene y no especifica que alternativa a usar) */
-	gen sinbano_ch = .
-	replace sinbano_ch = 0 if vi09 != 5
-	replace sinbano_ch = 1 if (vi09 == 5 & vi09a == 3)
-	replace sinbano_ch = 2 if (vi09 == 5 & (vi09a == 2 | vi09a == 1))
-	replace sinbano_ch = 3 if (vi09 == 5 & vi09a == .)
-	
+	gen sinbano_ch = 3
+	replace sinbano_ch = 0 if vi09! = 5 | vi09a == 1
+	replace sinbano_ch = 1 if vi09a == 3
+	replace sinbano_ch = 2 if vi09a == 2
+
 	*****************
 	*banomejorado_ch*
 	*****************

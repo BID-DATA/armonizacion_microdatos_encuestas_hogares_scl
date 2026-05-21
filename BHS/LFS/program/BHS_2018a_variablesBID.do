@@ -11,7 +11,7 @@ set more off
  * El servidor contiene las bases de datos MECOVI.
  *________________________________________________________________________________________________________________*
 
-global ruta = "${surveysFolder}"
+global ruta = "${surveysFolderRestricted}"
 
 local PAIS BHS
 local ENCUESTA LFS

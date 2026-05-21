@@ -1885,7 +1885,11 @@ replace edupub_ci = 0 if (e49 == 2 & e48 == 1)
 	gen migrantelac_ci=.
 	label var migrantelac_ci "=1 si es migrante proveniente de un pais LAC"
 
-
+	**********************
+	*** migrantiguo5_ci ***
+	**********************
+	gen migrantiguo5_ci=. 
+	
 	**********************
 	*** miglac_ci ***
 	**********************

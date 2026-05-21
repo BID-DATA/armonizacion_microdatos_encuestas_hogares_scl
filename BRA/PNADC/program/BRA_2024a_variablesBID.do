@@ -920,24 +920,24 @@ rename *, lower
 
 	* A. Estudia actualmente educación superior → incompleta
 	replace eduui_ci = 1 if v3002 == 1 ///
-		& inlist(v3003a, 8, 9, 10, 11)
+		& inlist(v3003a, 8)
 
 	* B. No estudia pero el máximo nivel es superior y NO concluyó
 	replace eduui_ci = 1 if v3002 == 2 ///
-		& inlist(v3009a, 12, 13, 14, 15) ///
-		& v3014 != 1
+		& inlist(v3009a, 12) ///
+		& v3014 == 2
 
 	* Missing si no hay información
-	replace eduui_ci = . if v3002 == . | v3003a == . & v3009a == .
+	replace eduui_ci = . if (v3002 == . | v3003a == .) & v3009a == .
 
 	**************
 	*** eduuc_ci ***
 	**************
-	gen byte eduuc_ci = .   
+	gen byte eduuc_ci = 0   
 
 	* A. Estudia actualmente educación superior → cuenta (incompleta)
 	replace eduuc_ci = 1 if v3002 == 1 ///
-		& inlist(v3003a, 8, 9, 10, 11)
+		& inlist(v3003a, 9, 10, 11, 13)
 
 	* B. Último nivel alcanzado es superior (graduação ou pós)
 	*    y CONCLUYÓ → completa
@@ -948,9 +948,9 @@ rename *, lower
 	* C. Último nivel alcanzado es superior (graduação ou pós)
 	*    y NO CONCLUYÓ → igualmente cuenta según CIMA
 	replace eduuc_ci = 1 if v3002 == 2 ///
-		& inlist(v3009a, 12, 13, 14, 15) ///
-		& v3014 != 1
-
+		& inlist(v3009a, 13, 14, 15) ///
+		& v3014 == 2
+		
 	* D. Quienes NO están en ningún caso → 0
 	*** Considerar tres grupos de población en esta opción
 		*** Asiste actualmente a clases y tienen un nivel educativo y grado más alto inferior al tecnico superior
@@ -958,7 +958,10 @@ rename *, lower
 		*** No asiste a clases y el nivel educativo más alto al que asistió es inferior al grado superior y no completo el nivel
 	replace eduuc_ci = 0 if ((v3002 == 1 & inlist(v3003a, 2, 3, 4, 5, 6, 7)) | (v3002 == 2 & inlist(v3009a, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11) & v3014 == 1) | (v3002 == 2 & inlist(v3009a, 1, 		2, 3, 4, 5, 6, 7, 8, 9, 10, 11) & v3014 == 2))
 	label variable eduuc_ci "Terciaria/universitaria completa o mas"	
-		
+	
+	* Missing si no hay información
+	replace eduuc_ci = . if (v3002 == . | v3003a == .) & v3009a == .
+
 	**********
 	*eduac_ci*
 	**********
@@ -968,7 +971,7 @@ rename *, lower
 	*asiste_ci*
 	***********
 	gen byte asiste_ci = (v3002 == 1)
-	replace asiste_ci = . if v3002 == .
+	replace asiste_ci = . if v3002 == .  // Integrantes entre 0-4 años que no responden el modulo de educación
 
 	***********
 	*edupub_ci*
@@ -1120,7 +1123,7 @@ rename *, lower
 	***internet_ch***
 	*****************
 	gen internet_ch=(s01029==1)
-	label var internet_ch "El hogar posee conexión a Interne
+	label var internet_ch "El hogar posee conexión a Internet"
 	************
 	***cel_ch***
 	************

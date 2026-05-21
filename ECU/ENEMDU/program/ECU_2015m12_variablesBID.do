@@ -425,108 +425,9 @@ by idh_ch, sort: egen byte nmenor1_ch=sum((relacion_ci>0 & relacion_ci<=5) & (ed
 	label value condocup_ci condocup_ci
 	label var condocup_ci "Condicion de ocupacion utilizando definicion del pais"
 
-	
-	****************
-	*afiliado_ci****
-	****************
-	cap clonevar iess = p05a 
-	gen afiliado_ci=(iess>=1 & iess<=4) /*todas personas*/	
-	replace afiliado_ci=. if iess==.
-	label var afiliado_ci "Afiliado a la Seguridad Social"
-	*Nota: seguridad social comprende solo los que en el futuro me ofrecen una pension.
-
-	****************
-	*cotizando_ci***
-	****************
-	gen cotizando_ci=0     if condocup_ci==1 | condocup_ci==2 
-	replace cotizando_ci=1 if (p44f==1) & cotizando_ci==0 /*solo a emplead@s y asalariad@s, difiere con los otros paises*/
-	label var cotizando_ci "Cotizante a la Seguridad Social"
-
-	****************
-	*instpen_ci*****
-	****************
-	gen instpen_ci=.
-	label var instpen_ci "Institucion proveedora de la pension - variable original de cada pais" 
-	gen tipopen_ci=.
-	
-	********************
-	*** instcot_ci *****
-	********************
-	gen instcot_ci=iess /* a todas las personas*/
-	label var instcot_ci "institución a la cual cotiza"
-
-
-	*************
-	*tamemp_ci
-	*************
-	*Ecuador Pequeña 1 a 5 Mediana 6 a 50 Grande Más de 50
-	*1 = menos de 100
-	*2 = más de 100
-
-	gen tamemp_ci=.
-	replace tamemp_ci=1 if p47a==1 & (p47b>=1 & p47b<=5)
-	replace tamemp_ci=2 if p47b>=6 & p47b<=50
-	replace tamemp_ci=3 if (p47a==2) | (p47b>50 & p47b!=.)
-	label var tamemp_ci "# empleados en la empresa segun rangos"
-	label define tamemp_ci 1 "Pequeña" 2 "Mediana" 3 "Grande"
-	label value tamemp_ci tamemp_ci
-	
-	*************
-	**pension_ci*
-	*************
-	gen pension_ci=0 
-	replace pension_ci=1 if (p72a==1) /* A todas las per mayores de cinco*/
-	replace pension_ci=. if p72a==.
-	label var pension_ci "1=Recibe pension contributiva"
-
-	*************
-	*ypen_ci*
-	*************
-	gen ypen_ci=p72b if pension_ci==1
-	replace ypen_ci=. if ypen_ci==999999 
-	label var ypen_ci "Valor de la pension contributiva"
-
-	***************
-	*pensionsub_ci*
-	***************
-	gen pensionsub_ci=0 
-	replace pensionsub_ci=1 if p75==1
-	label var pensionsub_ci "1=recibe pension subsidiada / no contributiva"
-
-	*****************
-	**  ypensub_ci  *
-	*****************
-	gen ypensub_ci=p76 if pensionsub_ci==1
-	replace ypensub_ci=. if ypensub_ci==999999
-	label var ypensub_ci "Valor de la pension subsidiada / no contributiva"
-
-	*************
-	*cesante_ci* 
-	*************
-	cap clonevar trabant = p37
-	generat cesante_ci=0 if condocup_ci==2
-	replace cesante_ci=1 if trabant==1 & condocup_ci==2
-	label var cesante_ci "Desocupado - definicion oficial del pais"
-
-	*********
-	*lp_ci***
-	*********
-	
-	* MGR: http://www.ecuadorencifras.gob.ec/documentos/web-inec/POBREZA/2015/Septiembre2015/Informe%20pobreza%20y%20desigualdad%20sep_15.pdf
-	gen lp_ci = 83.79
-	label var lp_ci "Linea de pobreza oficial del pais"
-
-	***********
-	*lpe_ci ***
-	***********
-	
-	* MGR: http://www.ecuadorencifras.gob.ec/documentos/web-inec/POBREZA/2015/Septiembre2015/Informe%20pobreza%20y%20desigualdad%20sep_15.pdf
-	gen lpe_ci = 47.22
-	label var lpe_ci "Linea de indigencia oficial del pais"
-
-		/************************************************************************************************************
-* 3. Creación de nuevas variables de SS and LMK a incorporar en Armonizadas
-************************************************************************************************************/
+	/************************************************************************************************************
+	* 3. Creación de nuevas variables de SS and LMK a incorporar en Armonizadas
+	************************************************************************************************************/
 
 	*************
 	**salmm_ci***
@@ -538,14 +439,21 @@ by idh_ch, sort: egen byte nmenor1_ch=sum((relacion_ci>0 & relacion_ci<=5) & (ed
 	************
 	***emp_ci***
 	************
-	gen byte emp_ci=(condocup_ci==1)
+	gen byte emp_ci = .
+	replace emp_ci = (condocup_ci == 1) if (condocup_ci != . & condocup_ci != 4)
 	label var emp_ci "Ocupado (empleado)"
-
+	label define emp_ci 0"No ocupado" 1"Ocupado", add
+	label value emp_ci emp_ci
+	
 	****************
 	***desemp_ci***
 	****************
-	gen desemp_ci=(condocup_ci==2)
-	label var desemp_ci "Desempleado que buscó empleo en el periodo de referencia"
+	***** El código mantiene como missing values a la poblacion menor de la edad limite de la PET que no forman parte de la población de referencia de la sección laboral de la Encuesta *****.
+	gen byte desemp_ci = .
+	replace desemp_ci = (condocup_ci == 2) if (condocup_ci != . & condocup_ci != 4)
+	label var desemp_ci "Desocupado (desempleado)"
+	label define desemp_ci 0"No " 1"Si", add
+	label value desemp_ci desemp_ci
   
 	*************
 	***pea_ci***
@@ -557,10 +465,11 @@ by idh_ch, sort: egen byte nmenor1_ch=sum((relacion_ci>0 & relacion_ci<=5) & (ed
 	*****************
 	***desalent_ci***
 	*****************
-	cap clonevar bustrama=p32
-	cap clonevar motnobus = p34
-	gen desalent_ci=(motnobus==6 | motnobus==7)
-	label var desalent_ci "Trabajadores desalentados"
+	gen byte desalent_ci = .
+	replace desalent_ci = (p32 == 11 & (p34 == 6 | p34 == 7) & condocup_ci == 3)
+	label var desalent_ci "Desalentados"
+	label define desalent_ci 0"No" 1"Si", add
+	label value desalent_ci desalent_ci
 	
 	*****************
 	***horaspri_ci***
@@ -679,8 +588,7 @@ by idh_ch, sort: egen byte nmenor1_ch=sum((relacion_ci>0 & relacion_ci<=5) & (ed
 	label define ocupa_ci  8 "FFAA" 9 "Otras ", add
 	label value ocupa_ci ocupa_ci
 	label variable ocupa_ci "Ocupacion laboral" 
-	
-	
+		
 	*************
 	***rama_ci***
 	*************
@@ -719,7 +627,7 @@ by idh_ch, sort: egen byte nmenor1_ch=sum((relacion_ci>0 & relacion_ci<=5) & (ed
 	label def rama_ci 8"Establecimientos financieros, seguros e inmuebles" 9"Servicios sociales y comunales", add
 	label val rama_ci rama_ci
 
-		****************
+	****************
 	***durades_ci***
 	****************
 	gen durades_ci=p33/4.33
@@ -732,23 +640,130 @@ by idh_ch, sort: egen byte nmenor1_ch=sum((relacion_ci>0 & relacion_ci<=5) & (ed
 	gen antiguedad_ci=p45
 	label var antiguedad_ci "antiguedad laboral (anios) - aproximacion"	
 
-*******************
-***categoinac_ci***
-*******************
-gen categoinac_ci =1 if (p36==2 & condocup_ci==3)
-replace categoinac_ci = 2 if  ( p36==3 & condocup_ci==3)
-replace categoinac_ci = 3 if  ( p36==4 & condocup_ci==3)
-replace categoinac_ci = 4 if  ((categoinac_ci ~=1 & categoinac_ci ~=2 & categoinac_ci ~=3) & condocup_ci==3)
-label var categoinac_ci "Categoría de inactividad"
-label define categoinac_ci 1 "jubilados o pensionados" 2 "Estudiantes" 3 "Quehaceres domésticos" 4 "Otros"
+	*******************
+	***categoinac_ci***
+	*******************
+	gen categoinac_ci =1 if (p36==2 & condocup_ci==3)
+	replace categoinac_ci = 2 if  ( p36==3 & condocup_ci==3)
+	replace categoinac_ci = 3 if  ( p36==4 & condocup_ci==3)
+	replace categoinac_ci = 4 if  ((categoinac_ci ~=1 & categoinac_ci ~=2 & categoinac_ci ~=3) & condocup_ci==3)
+	label var categoinac_ci "Categoría de inactividad"
+	label define categoinac_ci 1 "jubilados o pensionados" 2 "Estudiantes" 3 "Quehaceres domésticos" 4 "Otros"
 
-*******************
-***formal***
-*******************
-* MGD 04/2016; se cambia por afiliado ya que usa la pregunta que abarca a todos los ocupados.
-g formal_ci=(afiliado_ci==1)
-*gen formal_ci=(cotizando_ci==1)
-label var formal_ci "1=afiliado o cotizante / PEA"
+	****************
+	*afiliado_ci****
+	****************
+	cap clonevar iess = p05a
+	
+	***** El código mantiene a la poblacion inactiva y a los menores de la edad límite de la PET como missing values en congruencia con la variable formal_ci *****.
+	gen byte afiliado_ci = .
+	replace afiliado_ci = 1 if (p05a <= 4 & emp_ci==1)
+	replace afiliado_ci = 0 if (p05a > 4 & inlist(condocup_ci, 1, 2))
+	label var afiliado_ci "Afiliado a la Seguridad Social"
+	label define afiliado_ci 0 "No"  1 "Si"
+	label value afiliado_ci afiliado_ci
+	*Nota: seguridad social comprende solo los que en el futuro me ofrecen una pension.
+	
+	****************
+	*cotizando_ci***
+	****************
+	***** El código mantiene a la poblacion inactiva y a los menores de la edad límite de la PET como missing values en congruencia con la variable formal_ci *****.
+	gen byte cotizando_ci = .
+	replace cotizando_ci = 1 if (p44f == 1 & emp_ci==1)  /*solo a emplead@s y asalariad@s, difiere con los otros paises*/
+	replace cotizando_ci = 0 if (cotizando_ci != 1 & inlist(condocup_ci, 1, 2))
+	label var cotizando_ci "Cotizante a la Seguridad Social"
+	label define cotizando_ci 0 "No"  1 "Si"
+	label value cotizando_ci cotizando_ci
+	
+	*******************
+	***formal***
+	*******************
+	* MGD 04/2016; se cambia por afiliado ya que usa la pregunta que abarca a todos los ocupados.
+	g formal_ci=(afiliado_ci==1)
+	*gen formal_ci=(cotizando_ci==1)
+	label var formal_ci "1=afiliado o cotizante / PEA"
+	
+	****************
+	*instpen_ci*****
+	****************
+	gen instpen_ci=.
+	label var instpen_ci "Institucion proveedora de la pension - variable original de cada pais" 
+	gen tipopen_ci=.
+	
+	********************
+	*** instcot_ci *****
+	********************
+	gen instcot_ci=iess /* a todas las personas*/
+	label var instcot_ci "institución a la cual cotiza"
+
+	*************
+	*tamemp_ci
+	*************
+	*Ecuador Pequeña 1 a 5 Mediana 6 a 50 Grande Más de 50
+	*1 = menos de 100
+	*2 = más de 100
+
+	gen tamemp_ci=.
+	replace tamemp_ci=1 if p47a==1 & (p47b>=1 & p47b<=5)
+	replace tamemp_ci=2 if p47b>=6 & p47b<=50
+	replace tamemp_ci=3 if (p47a==2) | (p47b>50 & p47b!=.)
+	label var tamemp_ci "# empleados en la empresa segun rangos"
+	label define tamemp_ci 1 "Pequeña" 2 "Mediana" 3 "Grande"
+	label value tamemp_ci tamemp_ci
+	
+	*************
+	**pension_ci*
+	*************
+	gen pension_ci=0 
+	replace pension_ci=1 if (p72a==1) /* A todas las per mayores de cinco*/
+	replace pension_ci=. if p72a==.
+	label var pension_ci "1=Recibe pension contributiva"
+
+	*************
+	*ypen_ci*
+	*************
+	gen ypen_ci=p72b if pension_ci==1
+	replace ypen_ci=. if ypen_ci==999999 
+	label var ypen_ci "Valor de la pension contributiva"
+
+	***************
+	*pensionsub_ci*
+	***************
+	gen pensionsub_ci=0 
+	replace pensionsub_ci=1 if p75==1
+	label var pensionsub_ci "1=recibe pension subsidiada / no contributiva"
+
+	*****************
+	**  ypensub_ci  *
+	*****************
+	gen ypensub_ci=p76 if pensionsub_ci==1
+	replace ypensub_ci=. if ypensub_ci==999999
+	label var ypensub_ci "Valor de la pension subsidiada / no contributiva"
+
+	*************
+	*cesante_ci* 
+	*************
+	cap clonevar trabant = p37
+	generat cesante_ci=0 if condocup_ci==2
+	replace cesante_ci=1 if trabant==1 & condocup_ci==2
+	label var cesante_ci "Desocupado - definicion oficial del pais"
+
+	*********
+	*ln_ci***
+	*********
+	
+	* MGR: http://www.ecuadorencifras.gob.ec/documentos/web-inec/POBREZA/2015/Septiembre2015/Informe%20pobreza%20y%20desigualdad%20sep_15.pdf
+	gen ln_ci = 83.79
+	label var ln_ci "Linea de pobreza oficial del pais"
+
+	***********
+	*lpe_ci ***
+	***********
+	
+	* MGR: http://www.ecuadorencifras.gob.ec/documentos/web-inec/POBREZA/2015/Septiembre2015/Informe%20pobreza%20y%20desigualdad%20sep_15.pdf
+	gen lpe_ci = 47.22
+	label var lpe_ci "Linea de indigencia oficial del pais"
+
 
 
 
@@ -1558,7 +1573,7 @@ lab val grupo_int grupo_int
   aguared_ch aguafconsumo_ch aguafuente_ch aguadist_ch aguadisp1_ch aguadisp2_ch /// Agua y saneamineto
   aguatrat_ch aguamala_ch aguamejorada_ch aguamide_ch bano_ch banoex_ch banomejorado_ch sinbano_ch  /// Agua y saneamineto
   migrante_ci migrantiguo5_ci miglac_ci /// Migración
-  salmm_ci lp19_2011 lp31_2011 lp5_2011 lp_ci lpe_ci lp365_2017 lp685_2017 lp14_2017 lp81_2017 tc_c cpi_c cpi2011 cpi2017 ratio_cpi2011 ratio_cpi2017 /// Fuente externa
+  salmm_ci lp19_2011 lp31_2011 lp5_2011 ln_ci lpe_ci lp365_2017 lp685_2017 lp14_2017 lp81_2017 tc_c cpi_c cpi2011 cpi2017 ratio_cpi2011 ratio_cpi2017 /// Fuente externa
   ppp_c ppp_2011 ppp_2017 , first /// Fuente externa 
   /// the order was created by regex functions, sph variables are excluded /// Fuente externa 
   /// the order was created by regex functions, sph variables are excluded

@@ -526,9 +526,9 @@ use `base_in', clear
 			4	Menor que la edad límite de los entrevistados
 	*/	
 	gen byte condocup_ci = .
-	replace condocup_ci = 1 if CONDACT==1 //Ocupados
-	replace condocup_ci = 2 if CONDACT==2 //Desocupados
-	replace condocup_ci = 3 if CONDACT==3 //Inactivos, la variable TIPINAC es respondida por todas las personas inactivas. Las clasifica como (1) Potencialmente activos, (2) Desalentados y (3) Inactivos
+	replace condocup_ci = 1 if condact==1 //Ocupados
+	replace condocup_ci = 2 if condact==2 //Desocupados
+	replace condocup_ci = 3 if condact==3 //Inactivos, la variable TIPINAC es respondida por todas las personas inactivas. Las clasifica como (1) Potencialmente activos, (2) Desalentados y (3) Inactivos
 	replace condocup_ci = 4 if edad_ci<15 //Según la encuesta, las preguntas sobre ocupación se hacen a personas de 5 años en adelante. Pero en la BBDD sólo existe información disponible desde los 15 años.
 
 	*******************
@@ -554,9 +554,9 @@ use `base_in', clear
 			4	Otros inactivos
 	*/
 	gen byte categoinac_ci = .
-	replace categoinac_ci = 1 if (inlist(CA514,1,2) & condocup_ci == 3) //Jubilado o Pensionado
-	replace categoinac_ci = 2 if (CA514 == 4 & condocup_ci == 3) //Estudiante
-	replace categoinac_ci = 3 if (CA514 == 5 & condocup_ci == 3) //Quehaceres domesticos
+	replace categoinac_ci = 1 if (inlist(ca514,1,2) & condocup_ci == 3) //Jubilado o Pensionado
+	replace categoinac_ci = 2 if (ca514 == 4 & condocup_ci == 3) //Estudiante
+	replace categoinac_ci = 3 if (ca514 == 5 & condocup_ci == 3) //Quehaceres domesticos
 	replace categoinac_ci = 4 if (categoinac_ci != 1 & categoinac_ci != 2 & categoinac_ci != 3) & condocup_ci == 3  // Otros
 	
 	**********
@@ -1499,11 +1499,11 @@ use `base_in', clear
 	*internet_ch: si el hogar posee conexión a internet*
 	***********
 	
-	/*TIC03: Durante los últimos 3 meses, ¿tuvo acceso a internet?	
+	/* La respuesta es a nivel de persona, por lo que un mismo hogar puede tener diferentes respuestas. Por lo que se utiliza la jefatura de hogar.
+	TIC03: Durante los últimos 3 meses, ¿tuvo acceso a internet?	
 			1	Si
 			2	No
 			3	No sabe / no responde
-
 	  AT05: ¿En qué sitios tuvo acceso a Internet? 
 			1	En su casa
 			2	En un cyber-café o negocio de Internet
@@ -1512,17 +1512,21 @@ use `base_in', clear
 			5	Casa de un familiar / amigo/ casa de otra persona
 			6	Hotel, restaurante o negocio con Red Inalámbrica
 			7	Red pública (Parques u otro lugar Comunitario)
-			8	Otro sitio
-	*/
-	
-	gen internet_ch=(tic03==1 & at05_1==1) // Tuvo acceso durante los últimos 3 meses a internet (TIC03)-- en su casa  (AT05_1)
- 	replace internet_ch=. if (tic03==. | tic03==3) & at05_1==.
+			8	Otro sitio */
+	gen internet_jh = (tic03==1 & at05_1==1) & relacion_ci==1	// Tuvo acceso durante los últimos 3 meses a internet (TIC03)-- en su casa  (AT05_1)
+	replace internet_jh = . if (tic03==. | tic03==3) & at05_1==. & relacion_ci==1					// No tiene
+	bys idh_ch: egen internet_ch = max(internet_jh)
+	drop internet_jh
 	
 	***********
 	*cel_ch: si al menos un integrante del hogar tiene servicio telefónico celular activa*
 	***********
-	gen cel_ch=(tic09==1)
-	replace cel_ch=. if tic09==.
+	/* La respuesta es a nivel de persona, según el manual cel_ch = 1 si al menos un integrante tiene celular.
+	TIC09 (Nombre...) ¿Tiene teléfono celular? 
+           1 Si
+           2 No */
+	bys idh_ch: egen cel_ch = min(tic09)
+	replace cel_ch = 0 if cel_ch == 2
 
 	**************
 	***vivi1_ch: Tipo de vivienda en la que reside el hogar***
@@ -1539,9 +1543,9 @@ use `base_in', clear
 	*/	
 	
 	gen vivi1_ch=.
-	replace vivi1_ch=1 if inlist(v01,1,2,3) // Casa individual, rancho o improvisada
+	replace vivi1_ch=1 if inlist(v01,1) // Casa individual
 	replace vivi1_ch=2 if inlist(v01,4) // Apartamento / Departamento
-	replace vivi1_ch=3 if inlist(v01,5,6,7) // Otros
+	replace vivi1_ch=3 if inlist(v01,2,3,5,6,7) // Otros
 	
 	label define vivi1_ch 		1 "Casa" ///
 								2 "Departamento" ///
@@ -1755,12 +1759,12 @@ use `base_in', clear
 	*/
 	
 	gen bano_ch=.
-	replace bano_ch=0 if inlist(H06,2) //No tiene acceso a servicios sanitarios
- 	replace bano_ch=1 if inlist(H07,1) //Inodoro conectado a alcantarilla
-	replace bano_ch=2 if inlist(H07,2) //Inodoro a pozo séptico
-	replace bano_ch=3 if inlist(H07,6,7) // Letrina
-	replace bano_ch=4 if inlist(H07,3,4) // Inodoro con desague a río/laguna/mar
-	replace bano_ch=6 if inlist(H07,8,5,.) // Instalaciones no clasificada 
+	replace bano_ch=0 if inlist(h06,2) //No tiene acceso a servicios sanitarios
+ 	replace bano_ch=1 if inlist(h07,1) //Inodoro conectado a alcantarilla
+	replace bano_ch=2 if inlist(h07,2) //Inodoro a pozo séptico
+	replace bano_ch=3 if inlist(h07,6,7) // Letrina
+	replace bano_ch=4 if inlist(h07,3,4) // Inodoro con desague a río/laguna/mar
+	replace bano_ch=6 if inlist(h07,8,5,.) // Instalaciones no clasificada 
 
 	label define bano_ch 			0 "Sin instalaciones" ///
 									1 "Inodoro a red de desagüe" ///

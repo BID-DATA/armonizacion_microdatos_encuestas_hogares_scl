@@ -957,6 +957,7 @@ label var remesas_ch "Remesas mensuales del hogar"
 **asiste_ci***
 **************
 gen asiste_ci=(v3002==1)
+replace asiste_ci =. if v3002 ==. 	// Integrantes entre 0-4 años que no responden el modulo de educación
 label var asiste_ci "Personas que actualmente asisten a un centro de enseñanza"
 
 ***************
@@ -1413,7 +1414,7 @@ label var compu_ch "El hogar posee computador"
 ***internet_ch***
 *****************
 gen internet_ch=(s01029==1)
-label var internet_ch "El hogar posee conexión a Interne
+label var internet_ch "El hogar posee conexión a Internet"
 
 ************
 ***cel_ch***

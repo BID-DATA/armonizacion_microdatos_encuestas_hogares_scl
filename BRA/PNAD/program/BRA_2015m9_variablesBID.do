@@ -1495,7 +1495,7 @@ label var compu_ch "El hogar posee computador"
 ***internet_ch***
 *****************
 gen internet_ch=(v0232==2)
-label var internet_ch "El hogar posee conexión a Interne
+label var internet_ch "El hogar posee conexión a Internet"
 
 ************
 ***cel_ch***
