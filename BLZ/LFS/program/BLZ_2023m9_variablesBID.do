@@ -103,8 +103,8 @@ use "`base_in'", clear
 	******************
 	*idh_ch (idhogar)*
 	******************
-	*egen idh_ch=group(interview__key interview__id)
-	*tostring idh_ch, replace
+	egen idh_ch=_v1
+	tostring idh_ch, replace
 
 	***************
 	****idp_ci*****
