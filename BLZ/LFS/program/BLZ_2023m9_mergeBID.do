@@ -34,7 +34,8 @@ log using "`log_file'", replace
 *****************************************************************************/
 import spss "`base_in'\Sept_2021 - Microdata.sav", clear // 7480 obs
 rename *, lower
-
+duplicates report _v1 hl3 hl4new hl5
+drop if ind_weight==. //847 obs
 /***************************************************************************
   III. Guardar la base
 ****************************************************************************/
