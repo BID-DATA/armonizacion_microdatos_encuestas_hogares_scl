@@ -110,7 +110,7 @@ use "`base_in'", clear
 	****idp_ci*****
 	***************
 	
-	by interview__key: gen _seq = _n
+	bys interview__key: gen _seq = _n
 	egen idp_ci = concat(idh_ch _seq)
 	tostring idp_ci, replace format ("%20.0f") 
 	drop _seq
@@ -469,7 +469,6 @@ use "`base_in'", clear
 	***rama_ci ***
 	***************	
 	gen  byte rama_ci = .
-	replace rama_ci  = 0 if ...
 	replace rama_ci  = 1 if ea17_bcea_main_industry>=1 & ea17_bcea_main_industry<4
 	replace rama_ci  = 2 if ea17_bcea_main_industry==4
 	replace rama_ci  = 3 if ea17_bcea_main_industry==5
@@ -499,7 +498,7 @@ use "`base_in'", clear
 	***cotizando_ci***
 	***************	
 	gen  byte cotizando_ci = .
-	replace cotizando_ci  = 0 if ea19a==2 & inlist(condocup_ci 1, 2)
+	replace cotizando_ci  = 0 if ea19a==2 & inlist(condocup_ci, 1, 2)
 	replace cotizando_ci  = 1 if ea19a==1 & emp_ci==1
 	
 	
@@ -507,7 +506,7 @@ use "`base_in'", clear
 	***afiliado_ci***
 	***************	
 	gen  byte afiliado_ci = .
-	replace afiliado_ci  = = 0 if ea19a==2 & inlist(condocup_ci 1, 2)
+	replace afiliado_ci  = 0 if ea19a==2 & inlist(condocup_ci, 1, 2)
 	replace afiliado_ci  = 1 if ea19a==1 & emp_ci==1	
 	
 	***************
@@ -561,7 +560,7 @@ use "`base_in'", clear
 	***************
 	**instpen_ci **
 	***************
-	gen byte instpen_ci = ""
+	gen instpen_ci = ""
 	
 	
 ****************************
@@ -928,7 +927,7 @@ use "`base_in'", clear
 	***********
 	*aguafconsumo _ch*
 	***********
-	gen byte aguafconsumo _ch =.
+	gen byte aguafconsumo_ch =.
 
 
 	***********
@@ -1039,7 +1038,7 @@ use "`base_in'", clear
 	****************
 	 * pobre_ine _ci*
 	****************	
-	gen byte pobre_ine _ci= . 
+	gen byte pobre_ine_ci= . 
 
 
 	****************

@@ -103,14 +103,14 @@ use "`base_in'", clear
 	******************
 	*idh_ch (idhogar)*
 	******************
-	egen idh_ch=_v1
+	gen idh_ch=_v1
 	tostring idh_ch, replace
 
 	***************
 	****idp_ci*****
 	***************
 	
-	by interview__key: gen _seq = _n
+	bys _v1: gen _seq = _n
 	egen idp_ci = concat(_v1 _seq)
 	tostring idp_ci, replace format ("%20.0f") 
 	drop _seq
@@ -452,7 +452,7 @@ use "`base_in'", clear
 	***tiempoparc_ci ***
 	***************	
 	gen  byte tiempoparc_ci = .
-	replace tiempoparc_ci  =( total_hrs_last_week<30 & ea28 == 2) if  total_hrs_last_week!= 999999 &  total_hrs_last_week!=. 
+	replace tiempoparc_ci  =( total_hrs_last_week<30 & ea33 == 2) if  total_hrs_last_week!= 999999 &  total_hrs_last_week!=. 
 	
 	***************
 	***categopri_ci ***
@@ -474,7 +474,6 @@ use "`base_in'", clear
 	***rama_ci ***
 	***************	
 	gen  byte rama_ci = .
-	replace rama_ci  = 0 if ...
 	replace rama_ci  = 1 if bcea_main_industry>=1 & bcea_main_industry<4
 	replace rama_ci  = 2 if bcea_main_industry==4
 	replace rama_ci  = 3 if bcea_main_industry==5
@@ -502,7 +501,7 @@ use "`base_in'", clear
 	***cotizando_ci***
 	***************	
 	gen  byte cotizando_ci = .
-	replace cotizando_ci  = 0 if ea26a==2 & inlist(condocup_ci 1, 2)
+	replace cotizando_ci  = 0 if ea26a==2 & inlist(condocup_ci, 1, 2)
 	replace cotizando_ci  = 1 if ea26a==1 & emp_ci==1
 	
 	
@@ -510,13 +509,13 @@ use "`base_in'", clear
 	***afiliado_ci***
 	***************	
 	gen  byte afiliado_ci = .
-	replace afiliado_ci  = = 0 if ea26a==2 & inlist(condocup_ci 1, 2)
+	replace afiliado_ci  = 0 if ea26a==2 & inlist(condocup_ci, 1, 2)
 	replace afiliado_ci  = 1 if ea26a==1 & emp_ci==1	
 	
 	***************
 	***instcot_ci***
 	***************	
-	gen  byte instcot_ci = ""
+	gen  instcot_ci = ""
 	replace instcot_ci  = "Balize Social Security Board"	if cotizando_ci == 1
 	
 	**************
@@ -564,7 +563,7 @@ use "`base_in'", clear
 	***************
 	**instpen_ci **
 	***************
-	gen byte instpen_ci = ""
+	gen instpen_ci = ""
 	
 	
 ****************************
@@ -868,13 +867,13 @@ use "`base_in'", clear
 	************
 	***cel_ch***
 	************
-	gen byte cel_ch=(hh11l==1) if hh11l!=999999
+	gen byte cel_ch=(hh12l==1) if hh12l!=999999
 
 
 	***********
 	*refrig_ch*
 	***********
-	gen refrig_ch=(hh11b>0) if hh11b!=999999
+	gen refrig_ch=(hh12b>0) if hh12b!=999999
 
 	
 	***********
@@ -886,13 +885,13 @@ use "`base_in'", clear
 	***********
 	*auto_ch*
 	***********
-	gen auto_ch=(hh11q>0) if hh11p!=999999
+	gen auto_ch=(hh12q>0) if hh12p!=999999
 
 	
 	***********
 	*compu_ch*
 	***********
-	gen compu_ch=(hh11m>0) if hh11m!=999999
+	gen compu_ch=(hh12m>0) if hh12m!=999999
 
 		
 	***********
@@ -961,7 +960,7 @@ use "`base_in'", clear
 	***********
 	*aguafconsumo _ch*
 	***********
-	gen byte aguafconsumo _ch =.
+	gen byte aguafconsumo_ch =.
 
 
 	***********
@@ -1073,7 +1072,7 @@ use "`base_in'", clear
 	****************
 	 * pobre_ine _ci*
 	****************	
-	gen byte pobre_ine _ci= . 
+	gen byte pobre_ine_ci= . 
 
 
 	****************
