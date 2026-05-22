@@ -103,7 +103,7 @@ use "`base_in'", clear
 	******************
 	*idh_ch (idhogar)*
 	******************
-	gen idh_ch=_v1
+	egen idh_ch=group(_v1)
 	tostring idh_ch, replace
 
 	***************
@@ -403,8 +403,7 @@ use "`base_in'", clear
 	****************
 	***durades_ci***
 	**************** 
-	gen byte durades_ci=ea18_years*12+ea18_months if ea18_years<11 & ea18_years!=. & ea18_months<999999 & ea18_years<999999
-	replace durades_ci=0 if ea18_months==999999
+	replace durades_ci=ea18_yearsmerge*12 if condocup_ci == 2 & ea18_yearsmerge < 999998
 
 	***********
 	***pea_ci***
@@ -417,8 +416,8 @@ use "`base_in'", clear
 	*** nempleos_ci***
 	****************
 	gen byte nempleos_ci = .
-	replace nempleos_ci = 1 if ea21==1
-	replace nempleos_ci = 2 if ea21==2
+	replace nempleos_ci = 1 if ea21==2 & emp_ci == 1 
+	replace nempleos_ci = 2 if ea21==1 & emp_ci == 1 
 	replace nempleos_ci = . if emp_ci == 0
 
 	******************
@@ -439,20 +438,20 @@ use "`base_in'", clear
 	***horaspri_ci***
 	***************	
 	gen  byte horaspri_ci = .
-	replace horaspri_ci = total_hrs_last_week if total_hrs_last_week!= 999999 &  total_hrs_last_week!=. & ea19==2 //quedaria en missing las presonas que tienen más de un trabajo 
+	replace horaspri_ci = total_hrs_last_week if total_hrs_last_week!= 999999 &  total_hrs_last_week!=. & ea19==2  & emp_ci == 1 //quedaria en missing las presonas que tienen más de un trabajo 
 	
 	***************
 	***horastot_ci ***
 	***************	
 	gen  byte horastot_ci  = .
-	replace horastot_ci  = total_hrs_last_week if total_hrs_last_week!= 999999 &  total_hrs_last_week!=.
+	replace horastot_ci  = total_hrs_last_week if total_hrs_last_week!= 999999 &  total_hrs_last_week!=. & emp_ci == 1
 	
 	
 	***************
 	***tiempoparc_ci ***
 	***************	
 	gen  byte tiempoparc_ci = .
-	replace tiempoparc_ci  =( total_hrs_last_week<30 & ea33 == 2) if  total_hrs_last_week!= 999999 &  total_hrs_last_week!=. 
+	replace tiempoparc_ci  =( total_hrs_last_week<30 & ea33 == 2) if  total_hrs_last_week!= 999999 &  total_hrs_last_week!=.  & emp_ci == 1 
 	
 	***************
 	***categopri_ci ***
@@ -573,7 +572,7 @@ use "`base_in'", clear
 	*************
 	* ylmpri_ci *
 	*************
-	generate double ylmpri_ci = . if emp_ci == 1
+	generate double ylmpri_ci = income_month if emp_ci == 1
 
 	************
 	* ylmsec_ci *
@@ -717,13 +716,23 @@ use "`base_in'", clear
 	*Para quienes no terminaron el ultimo nivel educativo al que asistieron
 	replace aedu_ci=0 if ((ed5==21 | ed5==26) | hl5<3) & ed3==2 // Cero anios de educación para aquellos que no han asistido nunca a ninguna institucion y los menores de 2 anios
 	replace aedu_ci=ed5 if ed5<13 & ed3==2
-	replace aedu_ci=13 if ed5>12 & ed5<17 & ed3==2 //vocational and pre-vocational
+	*vocational and pre-vocational
+	replace aedu_ci=6 if ed5>12 & ed5<17 & ed3==2 & school==2 //Registran solo completar primaria.
+	replace aedu_ci=12 if ed5>12 & ed5<17 & ed3==2 & school==3 //Registran solo completar secundaria.
+	replace aedu_ci=12+3 if ed5>12 & ed5<17 & ed3==2 & school==4 //Registran terciaria completa.
+	
 	replace aedu_ci=12+2 if ed5==17 & ed3==2
 	replace aedu_ci=12+4 if ed5==18 & ed3==2
 	replace aedu_ci=12+6 if ed5==19 & ed3==2
 	
+	
+	
 	replace aedu_ci=ed4-1 if ed4<13 & ed3==1 & aedu_ci==.
-	replace aedu_ci=13-1 if ed4>12 & ed4<17 & ed3==1 & aedu_ci==.
+	*vocational and pre-vocational
+	replace aedu_ci=6 if ed4>12 & ed4<17 & ed3==1 & aedu_ci==. & school==2 //Registran solo completar primaria.
+	replace aedu_ci=12 if ed4>12 & ed4<17 & ed3==1 & aedu_ci==. & school==3 //Registran solo completar secundaria.
+	replace aedu_ci=12+3 if ed4>12 & ed4<17 & ed3==1 & aedu_ci==. & school==4 //Registran terciaria completa.
+	
 	replace aedu_ci=12+1 if ed4==17 & ed3==1 & aedu_ci==.
 	replace aedu_ci=12+3 if ed4==18 & ed3==1 & aedu_ci==.
 	replace aedu_ci=12+5 if ed4==19 & ed3==1 & aedu_ci==.
@@ -732,7 +741,8 @@ use "`base_in'", clear
 	**********
 	*eduui_ci*
 	**********
-	gen byte eduui_ci = (ed4==17 | ed4==18)
+	gen byte eduui_ci = (ed4==17 | ed4==18) 
+	replace eduui_ci = 1 if (aedu_ci>12 & aedu_ci<16) & (school==3)
 	replace eduui_ci = . if aedu_ci == . 
 
 	**********
@@ -744,8 +754,10 @@ use "`base_in'", clear
 	**********
 	*eduac_ci*
 	**********
-	gen eduac_ci = 1 if ed5==19
-	replace eduac_ci = 0 if ...
+	gen eduac_ci = 1 if (ed5==18 | ed5==19 | ed4==19)
+	replace eduac_ci=0 if ed5==17 | ed4==18 
+	replace eduac_ci=0 if (ed5>12 & ed5<17 & ed3==2 & school==4) 
+	replace eduac_ci=0 if (ed4>12 & ed4<17 &  school==4)
 	replace eduac_ci = . if aedu_ci == .
 	
 		
@@ -862,7 +874,7 @@ use "`base_in'", clear
 	***********
 	*telef_ch*
 	***********
-	gen telef_ch=.
+	gen telef_ch=(hh13b==1) if hh13b!=999999
 	
 	************
 	***cel_ch***
@@ -897,7 +909,7 @@ use "`base_in'", clear
 	***********
 	*internet_ch*
 	***********
-	gen internet_ch=.
+	gen internet_ch=(hh13c==1) if hh13c!=999999
 
 	
 	***********
