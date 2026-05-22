@@ -387,7 +387,6 @@ use "`base_in'", clear
 	replace condocup_ci = 3 if status == 4 /* inactivo */
 	replace condocup_ci = 4 if status == 1
 	* DK/NS: clasificamos según edad
-	replace condocup_ci = 3 if status == 5 & edad_ci >= 14
 	replace condocup_ci = 4 if status == 5 & edad_ci < 14
 
 	*******************
@@ -430,7 +429,7 @@ use "`base_in'", clear
 	* ea32: 1=Yes, 2=No  (Pregunta ¿quiere trabajar más horas?)
 
 	gen byte subemp_ci = 0
-	replace subemp_ci = 1 if total_hrs_last_week <= 30 & total_hrs_last_week != . & ea32 == 1 & emp_ci == 1 
+	replace subemp_ci = 1 if total_hrs_last_week <= 30 & total_hrs_last_week != . & ea32 == 1 & ea33==1 & emp_ci == 1 
 	replace subemp_ci = . if emp_ci != 1
 
 	****************
@@ -472,28 +471,28 @@ use "`base_in'", clear
 	* Desalentado: inactivo que no busca trabajo por razones de mercado
 	* ea12: 13=No suitable work, 14=No resources, 16=Tired of looking
 	gen byte desalent_ci= .
-	replace desalent_ci = 1 if condocup_ci == 3 & inlist(ea12, 13, 14, 16)
+	replace desalent_ci = 1 if condocup_ci == 3 & inlist(ea12, 13, 14, 15, 16)
 	replace desalent_ci = 0 if condocup_ci == 3 & desalent_ci == .
 
 	***************
 	***horaspri_ci***
 	***************	
 	gen  byte horaspri_ci = .
-	replace horaspri_ci = total_hrs_last_week if emp_ci == 1
+	replace horaspri_ci = total_hrs_last_week if total_hrs_last_week!= 999999 &  total_hrs_last_week!=. & ea19==2 & emp_ci == 1
 	
 	***************
 	***horastot_ci ***
 	***************	
 	gen  byte horastot_ci  = .
-	replace horastot_ci  = total_hrs_last_week if emp_ci == 1
+	replace horastot_ci  = total_hrs_last_week if  total_hrs_last_week!= 999999 &  total_hrs_last_week!=. &  emp_ci == 1
 	
 	
 	***************
 	***tiempoparc_ci ***
 	***************	
 	gen  byte tiempoparc_ci = .
-	replace tiempoparc_ci = 1 if total_hrs_last_week < 30 & total_hrs_last_week != . & emp_ci == 1
-	replace tiempoparc_ci = 0 if total_hrs_last_week >= 30 & total_hrs_last_week != . & emp_ci == 1 
+	replace tiempoparc_ci = 1 if total_hrs_last_week < 30 & total_hrs_last_week != . & emp_ci == 1 & ea32==2
+	replace tiempoparc_ci = 0 if total_hrs_last_week >= 30 & total_hrs_last_week != . & emp_ci == 1 & ea32==2
 	
 	***************
 	***categopri_ci ***
@@ -583,11 +582,8 @@ use "`base_in'", clear
 	* informalemp: 0=formal, 100=Informally employed
 	
 	gen byte formal_ci = .
-	replace formal_ci = 1 if informalemp == 0 & condocup_ci == 1
-	replace formal_ci = 0 if informalemp == 100 & condocup_ci == 1
-	
-*	replace formal_ci  =  1 if (cotizando_ci == 1 | afiliado_ci == 1) & condocup_ci == 1
-*	replace formal_ci = 0 if cotizando_ci == 0 & (condocup_ci == 1 | condocup_ci == 2)
+	replace formal_ci  =  1 if (cotizando_ci == 1 | afiliado_ci == 1) & condocup_ci == 1
+	replace formal_ci = 0 if cotizando_ci == 0 & (condocup_ci == 1 | condocup_ci == 2)
 	
 	*******************
 	***tipocontrato_ci***
@@ -770,22 +766,11 @@ use "`base_in'", clear
 	*************
     generate double remesas_ch = .
 
-	*************
-	* pension_ci *
-	*************
-	*Me sale una alerta de que esta variable ya está generada más arriba (línea 625)
-	*generate byte pension_ci = .
-
 	**********
 	* ypen_ci *
 	**********
 	generate double ypen_ci =.
 
-	****************
-	* pensionsub_ci *
-	****************
-	*Me sale una alerta de que esta variable ya está generada más arriba (línea 632)
-	*generate byte pensionsub_ci = .
 
 	*************
 	* ypensub_ci *
@@ -831,46 +816,55 @@ use "`base_in'", clear
 	replace aedu_ci = 0 if ed5 == 21  // None
 	
 	* Nivel Primario (Infant 1=1, Infant 2=2, Standard 1-6 = 3-8 años)
-	replace aedu_ci = 1 if ed5 == 1   // Infant 1
-	replace aedu_ci = 2 if ed5 == 2   // Infant 2
-	replace aedu_ci = 3 if ed5 == 3   // Standard 1
-	replace aedu_ci = 4 if ed5 == 4   // Standard 2
-	replace aedu_ci = 5 if ed5 == 5   // Standard 3
-	replace aedu_ci = 6 if ed5 == 6   // Standard 4
-	replace aedu_ci = 7 if ed5 == 7   // Standard 5
-	replace aedu_ci = 8 if ed5 == 8   // Standard 6
+	replace aedu_ci = 1 if ed5 == 1  & eed3new==2  // Infant 1
+	replace aedu_ci = 2 if ed5 == 2 & eed3new==2  // Infant 2
+	replace aedu_ci = 3 if ed5 == 3 & eed3new==2  // Standard 1
+	replace aedu_ci = 4 if ed5 == 4 & eed3new==2  // Standard 2
+	replace aedu_ci = 5 if ed5 == 5  & eed3new==2 // Standard 3
+	replace aedu_ci = 6 if ed5 == 6 & eed3new==2  // Standard 4
+	replace aedu_ci = 7 if ed5 == 7 & eed3new==2  // Standard 5
+	replace aedu_ci = 8 if ed5 == 8  & eed3new==2  // Standard 6
 	
 	* Nivel Secundario (1st-4th Form = 9-12 años)
-	replace aedu_ci = 9  if ed5 == 9  // 1st Form
-	replace aedu_ci = 10 if ed5 == 10 // 2nd Form
-	replace aedu_ci = 11 if ed5 == 11 // 3rd Form
-	replace aedu_ci = 12 if ed5 == 12 // 4th Form
+	replace aedu_ci = 9  if ed5 == 9  & eed3new==2 // 1st Form
+	replace aedu_ci = 10 if ed5 == 10 & eed3new==2 // 2nd Form
+	replace aedu_ci = 11 if ed5 == 11 & eed3new==2 // 3rd Form
+	replace aedu_ci = 12 if ed5 == 12 & eed3new==2 // 4th Form
 	
-	* Vocacional (se asimila a secundaria)
-	replace aedu_ci = 9  if ed5 == 13 // Pre vocational
-	replace aedu_ci = 10 if ed5 == 14 // Level 1 vocational
-	replace aedu_ci = 11 if ed5 == 15 // Level 2 vocational
+	*vocational and pre-vocational
+	replace aedu_ci=6 if ed5>12 & ed5<17 & ed3==2 & school==2 //Registran solo completar primaria.
+	replace aedu_ci=12 if ed5>12 & ed5<17 & ed3==2 & school==3 //Registran solo completar secundaria.
+	replace aedu_ci=12+3 if ed5>12 & ed5<17 & ed3==2 & school==4 //Registran terciaria completa.
 	
 	* Nivel Terciario
-	replace aedu_ci = 12 if ed5 == 16 // Level 3 vocational (Se asimila como terciaria)
-	replace aedu_ci = 14 if ed5 == 17 // Associate/6th Form Junior College
-	replace aedu_ci = 16 if ed5 == 18 // Bachelors
-	replace aedu_ci = 18 if ed5 == 19 // Master's or Higher
+	replace aedu_ci = 12 if ed5 == 16 & eed3new==2 // Level 3 vocational (Se asimila como terciaria)
+	replace aedu_ci = 14 if ed5 == 17 & eed3new==2 // Associate/6th Form Junior College
+	replace aedu_ci = 16 if ed5 == 18 & eed3new==2 // Bachelors
+	replace aedu_ci = 18 if ed5 == 19 & eed3new==2 // Master's or Higher
+	
+	**PARA LAS PERSONAS QUE AUN ESTAN CURSANDO ALGON NIVEL DE ESTUDIO
+	replace aedu_ci=ed4-1 if ed4<13 & eed3new==1 & aedu_ci==.
+	*vocational and pre-vocational
+	replace aedu_ci=6 if ed4>12 & ed4<17 & ed3==1 & aedu_ci==. & school==2 //Registran solo completar primaria.
+	replace aedu_ci=12 if ed4>12 & ed4<17 & ed3==1 & aedu_ci==. & school==3 //Registran solo completar secundaria.
+	replace aedu_ci=12+3 if ed4>12 & ed4<17 & ed3==1 & aedu_ci==. & school==4 //Registran terciaria completa.
+	
+	replace aedu_ci=12+1 if ed4==17 & ed3new==1 & aedu_ci==.
+	replace aedu_ci=12+3 if ed4==18 & ed3new==1 & aedu_ci==.
+	replace aedu_ci=12+5 if ed4==19 & ed3new==1 & aedu_ci==.
 
 	**********
 	*eduui_ci*
 	**********
 	gen byte eduui_ci = .
-	replace eduui_ci = 1 if aedu_ci >= 12 & aedu_ci < 16 & aedu_ci != .
-	replace eduui_ci = 0 if (aedu_ci < 12 | aedu_ci >= 16) & aedu_ci != .
+	replace eduui_ci = (aedu_ci>12 & aedu_ci<16) & (school==3)
 	replace eduui_ci = . if aedu_ci == .
 	
 	**********
 	*eduuc_ci*
 	**********
 	gen byte eduuc_ci = .
-	replace eduuc_ci = 1 if aedu_ci >= 16 & aedu_ci != .
-	replace eduuc_ci = 0 if aedu_ci < 16 & aedu_ci != .
+	replace eduuc_ci =(aedu_ci >= 16 & aedu_ci != . & (school==3))
 	replace eduuc_ci = . if aedu_ci == .
 
 	**********
