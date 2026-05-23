@@ -32,11 +32,11 @@ log using "`log_file'", replace
 /****************************************************************************
    II. Importar spss
 *****************************************************************************/
-<<<<<<< HEAD
+
 import spss "`base_in'\Oct_2022 - Microdata.sav", clear // 7480 obs
-=======
+
 import spss "`base_in'\Oct_2022- Microdata.sav", clear // 7480 obs
->>>>>>> 45e1d74ef7e881e145df7651b70a1acfb81c750b
+
 rename *, lower
 drop if ind_weight==. //11
 /***************************************************************************
