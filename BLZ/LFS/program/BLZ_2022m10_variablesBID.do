@@ -285,8 +285,8 @@ use "`base_in'", clear
 	*noafroind_ci*
 	**************
 	gen byte noafroind_ci =.   // se queda como missing (.) si no existe la pregunta
-	replace noafroind_ci = 1 if hl6new == 4
-	replace noafroind_ci = 0 if inlist(hl6new, 1, 2, 3, 5)	
+	replace noafroind_ci = 1 if afro_ci==0 & ind_ci==0 
+	replace noafroind_ci = 0 if afro_ci==1 | ind_ci==1
 	
 	**************
 	*afroind_ano_c*
@@ -378,7 +378,7 @@ use "`base_in'", clear
 	***emp_ci*
 	**********
 	gen byte emp_ci = .
-	replace emp_ci = (condocup_ci == 1) if condocup_ci != .
+	replace emp_ci = (condocup_ci == 1) if (condocup_ci != . & condocup_ci != 4)
 
 	**************
 	***cesante_ci*** 
@@ -391,7 +391,7 @@ use "`base_in'", clear
 	***desemp_ci***
 	***************	
 	gen byte desemp_ci = .
-	replace desemp_ci = (condocup_ci == 2) if condocup_ci! = .
+	replace desemp_ci = (condocup_ci == 2) if (condocup_ci != . & condocup_ci != 4)
 	
 	***************
 	***subemp_ci***
@@ -456,6 +456,7 @@ use "`base_in'", clear
 	***************
 	***categopri_ci ***
 	***************	
+	*contributing family= familiar no remunerado
 	gen  byte categopri_ci = .
 	replace categopri_ci  = 0 if catmain==5
 	replace categopri_ci  = 1 if catmain==1 &  statusinempl==1
@@ -488,7 +489,10 @@ use "`base_in'", clear
 	***************
 	***spublico_ci ***
 	***************	
+	* Solo se tiene en cuenta los empleados del gobierno 
 	gen  byte spublico_ci = .
+	replace spublico_ci  = 0 if  ea23_1!=3 & emp_ci == 1 & ea23_1<8 
+	replace spublico_ci  = 1 if  ea23_1==3 & emp_ci == 1  & ea23_1<8
 	
 	***************
 	***tamemp_ci ***
@@ -514,8 +518,8 @@ use "`base_in'", clear
 	***************
 	***instcot_ci***
 	***************	
-	gen  byte instcot_ci = ""
-	replace instcot_ci  = "Balize Social Security Board"	if cotizando_ci == 1
+	gen  instcot_ci = ""
+	replace instcot_ci  = "Belize Social Security Board"	if cotizando_ci == 1
 	
 	**************
 	***formal_ci***
@@ -572,6 +576,7 @@ use "`base_in'", clear
 	*************
 	* ylmpri_ci *
 	*************
+	**Ingreso promedio
 	generate double ylmpri_ci = income_month if emp_ci == 1
 
 	************
@@ -711,51 +716,57 @@ use "`base_in'", clear
 	*********	
 	*aedu_ci*
 	*********
-	gen aedu_ci=.
-		
-	*Para quienes no terminaron el ultimo nivel educativo al que asistieron
-	replace aedu_ci=0 if ((ed5==21 | ed5==26) | hl5<3) & ed3==2 // Cero anios de educación para aquellos que no han asistido nunca a ninguna institucion y los menores de 2 anios
-	replace aedu_ci=ed5 if ed5<13 & ed3==2
-	
-	*vocational and pre-vocational
-	replace aedu_ci=6 if ed5>12 & ed5<17 & ed3==2 & school==2 //Registran solo completar primaria.
-	replace aedu_ci=12 if ed5>12 & ed5<17 & ed3==2 & school==3 //Registran solo completar secundaria.
-	replace aedu_ci=12+3 if ed5>12 & ed5<17 & ed3==2 & school==4 //Registran terciaria completa.
-	
-	replace aedu_ci=12+2 if ed5==17 & ed3==2
-	replace aedu_ci=12+4 if ed5==18 & ed3==2
-	replace aedu_ci=12+6 if ed5==19 & ed3==2
-	
-	replace aedu_ci=ed4-1 if ed4<13 & ed3==1 & aedu_ci==.
+	gen aedu_ci = .
 
-	*vocational and pre-vocational
-	replace aedu_ci=6 if ed4>12 & ed4<17 & ed3==1 & aedu_ci==. & school==2 //Registran solo completar primaria.
-	replace aedu_ci=12 if ed4>12 & ed4<17 & ed3==1 & aedu_ci==. & school==3 //Registran solo completar secundaria.
-	replace aedu_ci=12+3 if ed4>12 & ed4<17 & ed3==1 & aedu_ci==. & school==4 //Registran terciaria completa.
+	* Nunca asistió / None
+	replace aedu_ci = 0 if ed5 == 22  // Never Attended
+	replace aedu_ci = 0 if ed5 == 21  // None
 	
-	replace aedu_ci=12+1 if ed4==17 & ed3==1 & aedu_ci==.
-	replace aedu_ci=12+3 if ed4==18 & ed3==1 & aedu_ci==.
-	replace aedu_ci=12+5 if ed4==19 & ed3==1 & aedu_ci==.
+	* Nivel Primario (Infant 1=1, Infant 2=2, Standard 1-6 = 3-8 años)
+	replace aedu_ci = 1 if ed5 == 1   // Infant 1
+	replace aedu_ci = 2 if ed5 == 2   // Infant 2
+	replace aedu_ci = 3 if ed5 == 3   // Standard 1
+	replace aedu_ci = 4 if ed5 == 4   // Standard 2
+	replace aedu_ci = 5 if ed5 == 5   // Standard 3
+	replace aedu_ci = 6 if ed5 == 6   // Standard 4
+	replace aedu_ci = 7 if ed5 == 7   // Standard 5
+	replace aedu_ci = 8 if ed5 == 8   // Standard 6
+	
+	* Nivel Secundario (1st-4th Form = 9-12 años)
+	replace aedu_ci = 9  if ed5 == 9  // 1st Form
+	replace aedu_ci = 10 if ed5 == 10 // 2nd Form
+	replace aedu_ci = 11 if ed5 == 11 // 3rd Form
+	replace aedu_ci = 12 if ed5 == 12 // 4th Form
+	
+	* Vocacional (se asimila a secundaria)
+	replace aedu_ci = 9  if ed5 == 13 // Pre vocational
+	replace aedu_ci = 10 if ed5 == 14 // Level 1 vocational
+	replace aedu_ci = 11 if ed5 == 15 // Level 2 vocational
+	
+	* Nivel Terciario
+	replace aedu_ci = 12 if ed5 == 16 // Level 3 vocational (Se asimila como terciaria)
+	replace aedu_ci = 14 if ed5 == 17 // Associate/6th Form Junior College
+	replace aedu_ci = 16 if ed5 == 18 // Bachelors
+	replace aedu_ci = 18 if ed5 == 19 // Master's or Higher
 	
 
 	**********
 	*eduui_ci*
 	**********
-	gen byte eduui_ci = (ed4==17 | ed4==18)
-	replace eduui_ci = . if aedu_ci == . 
-
+	gen byte eduui_ci = .
+	replace eduui_ci = (aedu_ci>12 & aedu_ci<16) & (school==3)
+	replace eduui_ci = . if aedu_ci == .
+	
 	**********
 	*eduuc_ci*
 	**********
-	gen byte eduuc_ci = (ed5==17 | ed5==18 | ed5==19)
+	gen byte eduuc_ci = .
+	replace eduuc_ci =(aedu_ci >= 16 & aedu_ci != . & (school==3))
 	replace eduuc_ci = . if aedu_ci == .
-
 	**********
 	*eduac_ci*
 	**********
-	gen eduac_ci = 1 if ed5==19
-	replace eduac_ci = 0 if ...
-	replace eduac_ci = . if aedu_ci == .
+	gen eduac_ci = .
 	
 		
 	***********
@@ -778,13 +789,15 @@ use "`base_in'", clear
 
 
 	*************
-	*pqnoasis1_ci*
+	*razonesnoasis_ci*
 	**************
-	gen pqnoasis1_ci=. 
-	replace pqnoasis1_ci =  1 if ed6==3
-	replace pqnoasis1_ci =  2 if ed6==8
-	replace pqnoasis1_ci =  3 if ed6==1 | ed6==7
-	replace pqnoasis1_ci =  5 if ed6==2 | ed6==888888
+
+	gen byte razonesnoasis_ci = .
+	replace razonesnoasis_ci = 1 if ed6 == 3
+	replace razonesnoasis_ci = 2 if ed6 == 8
+	replace razonesnoasis_ci = 3 if ed6 == 7
+	replace razonesnoasis_ci = 5 if ed6 == 2 | ed6 == 888888 | ed6 == 1
+
 
 	***********
 	*edupub_ci*
@@ -878,7 +891,7 @@ use "`base_in'", clear
 	***********
 	*refrig_ch*
 	***********
-	gen refrig_ch=(hh11b>0) if hh11b!=999999
+	gen refrig_ch=(hh11b>1) if hh11b!=999999
 
 	
 	***********
@@ -890,13 +903,13 @@ use "`base_in'", clear
 	***********
 	*auto_ch*
 	***********
-	gen auto_ch=(hh11q>0) if hh11p!=999999
+	gen auto_ch=(hh11q>1) if hh11p!=999999
 
 	
 	***********
 	*compu_ch*
 	***********
-	gen compu_ch=(hh11m>0) if hh11m!=999999
+	gen compu_ch=(hh11m>1) if hh11m!=999999
 
 		
 	***********
@@ -928,7 +941,6 @@ use "`base_in'", clear
 	gen viviprop_ch=.
 	replace viviprop_ch = 0 if inlist(hh2, 2, 3, 4)
 	replace viviprop_ch = 4 if hh2 == 1
-	replace viviprop_ch = 2 if hh2 == 2
 	replace viviprop_ch = 3 if inlist(hh2, 5, 6)	
 
 
@@ -960,18 +972,35 @@ use "`base_in'", clear
 	*aguared_ch*
 	***********
 	gen byte aguared_ch =.
+	replace aguared_ch = 1 if inlist(hh7, 1, 2, 3, 4)
+	replace aguared_ch = 0 if inlist(hh7, 6, 7, 8, 9)
 
 
 	***********
 	*aguafconsumo _ch*
 	***********
 	gen byte aguafconsumo_ch =.
+	replace aguafconsumo_ch= 1 if hh8==2 |hh8==3 	// distribution network, private tap or point of access
+	replace aguafconsumo_ch= 2 if hh8==4 		// distribution network, public point of access (standpipe or public tap)
+	replace aguafconsumo_ch= 3 if hh8==1 		// Bottled water 
+	replace aguafconsumo_ch= 4 if hh8==5		// Protected well
+	*replace aguafconsumo_ch= 7 if h8==		// Another improved water source		
+	replace aguafconsumo_ch= 8 if hh8==8		// Directly from surface water body
+	replace aguafconsumo_ch= 9 if hh8==6		// Another non-improved source
+	replace aguafconsumo_ch= 10 if inlist(hh8,7,9,10,88) // Unclassifiable 
 
 
 	***********
 	*aguafuente_ch*
 	***********	
 	gen byte aguafuente_ch =.
+	replace aguafuente_ch= 1 if hh7==1 |hh7==2		 	// Distribution network, private tap or point of access
+	replace aguafuente_ch= 2 if hh7==4				// Distribution network, public tap or point of access
+	replace aguafuente_ch= 4 if hh7==6				// Protected well
+	replace aguafuente_ch= 7 if hh7==3 				// Another improved
+	replace aguafuente_ch= 8 if hh7==9				// Surface water
+	replace aguafuente_ch= 9 if hh7==7 				// Another unimproved
+	replace aguafuente_ch= 10 if hh7==8	| hh7==888888		// Unclassifiable
 
 	
 	******************
@@ -1050,7 +1079,7 @@ use "`base_in'", clear
     ****************
 	gen byte migrante_ci= .
 	replace migrante_ci=0 if hl7new==1
-	replace migrante_ci=1 if inlist(hl7new,2,3,4)
+	replace migrante_ci=1 if inlist(hl7new,2,3,4,8)
 	
 	****************
 	 *migrantiguo5_ci*

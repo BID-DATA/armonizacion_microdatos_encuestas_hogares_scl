@@ -285,8 +285,8 @@ use "`base_in'", clear
 	*noafroind_ci*
 	**************
 	gen byte noafroind_ci =.   // se queda como missing (.) si no existe la pregunta
-	replace noafroind_ci = 1 if hl6new == 4
-	replace noafroind_ci = 0 if inlist(hl6new, 1, 2, 3, 5)	
+	replace noafroind_ci = 1 if afro_ci==0 & ind_ci==0 
+	replace noafroind_ci = 0 if afro_ci==1 | ind_ci==1
 	
 	**************
 	*afroind_ano_c*
@@ -377,7 +377,7 @@ use "`base_in'", clear
 	***emp_ci*
 	**********
 	gen byte emp_ci = .
-	replace emp_ci = (condocup_ci == 1) if condocup_ci != .
+	replace emp_ci = (condocup_ci == 1) if (condocup_ci != . & condocup_ci != 4)
 
 	**************
 	***cesante_ci*** 
@@ -390,7 +390,7 @@ use "`base_in'", clear
 	***desemp_ci***
 	***************	
 	gen byte desemp_ci = .
-	replace desemp_ci = (condocup_ci == 2) if condocup_ci! = .
+	replace desemp_ci = (condocup_ci == 2) if (condocup_ci != . & condocup_ci != 4)
 	
 	***************
 	***subemp_ci***
@@ -453,6 +453,7 @@ use "`base_in'", clear
 	***************
 	***categopri_ci ***
 	***************	
+	*contributing family= familiar no remunerado
 	gen  byte categopri_ci = .
 	replace categopri_ci  = 0 if ea18==8 & emp_ci ==1
 	replace categopri_ci  = 1 if ea18==1 & emp_ci ==1
@@ -469,23 +470,24 @@ use "`base_in'", clear
 	***rama_ci ***
 	***************	
 	gen  byte rama_ci = .
-	replace rama_ci  = 1 if ea17_bcea_main_industry>=1 & ea17_bcea_main_industry<4
-	replace rama_ci  = 2 if ea17_bcea_main_industry==4
-	replace rama_ci  = 3 if ea17_bcea_main_industry==5
-	replace rama_ci  = 4 if ea17_bcea_main_industry==6
-	replace rama_ci  = 5 if ea17_bcea_main_industry==7
-	replace rama_ci  = 6 if ea17_bcea_main_industry==8 | ea17_bcea_main_industry==9
-	replace rama_ci  = 7 if ea17_bcea_main_industry==10
-	replace rama_ci  = 8 if ea17_bcea_main_industry==11
-	replace rama_ci  = 9 if ea17_bcea_main_industry==14
-	replace rama_ci  = 10 if ea17_bcea_main_industry==13
+	replace rama_ci  = 1 if ea17_bcea_main_industry>=1 & ea17_bcea_main_industry<4 & emp_ci == 1
+	replace rama_ci  = 2 if ea17_bcea_main_industry==4 & emp_ci == 1
+	replace rama_ci  = 3 if ea17_bcea_main_industry==5 & emp_ci == 1
+	replace rama_ci  = 4 if ea17_bcea_main_industry==6 & emp_ci == 1
+	replace rama_ci  = 5 if ea17_bcea_main_industry==7 & emp_ci == 1
+	replace rama_ci  = 6 if ea17_bcea_main_industry==8 | ea17_bcea_main_industry==9 & emp_ci == 1
+	replace rama_ci  = 7 if ea17_bcea_main_industry==10 & emp_ci == 1
+	replace rama_ci  = 8 if ea17_bcea_main_industry==11 & emp_ci == 1
+	replace rama_ci  = 9 if ea17_bcea_main_industry==14 & emp_ci == 1
+	replace rama_ci  = 10 if ea17_bcea_main_industry==13 & emp_ci == 1
 	
 
 	***************
 	***spublico_ci ***
 	***************	
+	* Solo se tiene en cuenta los empleados del gobierno 
 	gen  byte spublico_ci = .
-	replace spublico_ci  = 0 if  ea18!=3 & emp_ci == 1 & ea18<8
+	replace spublico_ci  = 0 if  ea18!=3 & emp_ci == 1 & ea18<8 
 	replace spublico_ci  = 1 if  ea18==3 & emp_ci == 1  & ea18<8
 	
 	***************
@@ -512,8 +514,8 @@ use "`base_in'", clear
 	***************
 	***instcot_ci***
 	***************	
-	gen  byte instcot_ci = ""
-	replace instcot_ci  = "Balize Social Security Board"	if cotizando_ci == 1
+	gen instcot_ci = ""
+	replace instcot_ci  = "Belize Social Security Board"	if cotizando_ci == 1
 	
 	**************
 	***formal_ci***
@@ -570,6 +572,7 @@ use "`base_in'", clear
 	*************
 	* ylmpri_ci *
 	*************
+	**Ingreso promedio
 	generate double ylmpri_ci = income_month if emp_ci == 1
 
 	************
@@ -709,44 +712,58 @@ use "`base_in'", clear
 	*********	
 	*aedu_ci*
 	*********
-	gen aedu_ci=.
-		
-	*Para quienes no terminaron el ultimo nivel educativo al que asistieron
-	replace aedu_ci=0 if ((ed5==21 | ed5==26) | hl3<3) & ed3==2 // Cero anios de educación para aquellos que no han asistido nunca a ninguna institucion y los menores de 2 anios
-	replace aedu_ci=ed5 if ed5<13 & ed3==2
+	gen aedu_ci = .
+
+	* Nunca asistió / None
+	replace aedu_ci = 0 if ed5 == 22  // Never Attended
+	replace aedu_ci = 0 if ed5 == 21  // None
 	
-	replace aedu_ci=12+2 if ed5==17 & ed3==2
-	replace aedu_ci=12+4 if ed5==18 & ed3==2
-	replace aedu_ci=12+6 if ed5==19 & ed3==2
+	* Nivel Primario (Infant 1=1, Infant 2=2, Standard 1-6 = 3-8 años)
+	replace aedu_ci = 1 if ed5 == 1   // Infant 1
+	replace aedu_ci = 2 if ed5 == 2   // Infant 2
+	replace aedu_ci = 3 if ed5 == 3   // Standard 1
+	replace aedu_ci = 4 if ed5 == 4   // Standard 2
+	replace aedu_ci = 5 if ed5 == 5   // Standard 3
+	replace aedu_ci = 6 if ed5 == 6   // Standard 4
+	replace aedu_ci = 7 if ed5 == 7   // Standard 5
+	replace aedu_ci = 8 if ed5 == 8   // Standard 6
 	
-	replace aedu_ci=ed5-1 if ed4<13 & ed3==1
-	*vocational and pre-vocational
-	replace aedu_ci=6 if ed4>12 & ed4<17 & ed3==1 & aedu_ci==. & school==2 //Registran solo completar primaria.
-	replace aedu_ci=12 if ed4>12 & ed4<17 & ed3==1 & aedu_ci==. & school==3 //Registran solo completar secundaria.
-	replace aedu_ci=12+3 if ed4>12 & ed4<17 & ed3==1 & aedu_ci==. & school==4 //Registran terciaria completa.
+	* Nivel Secundario (1st-4th Form = 9-12 años)
+	replace aedu_ci = 9  if ed5 == 9  // 1st Form
+	replace aedu_ci = 10 if ed5 == 10 // 2nd Form
+	replace aedu_ci = 11 if ed5 == 11 // 3rd Form
+	replace aedu_ci = 12 if ed5 == 12 // 4th Form
 	
-	replace aedu_ci=12+1 if ed4==17 & ed3==1
-	replace aedu_ci=12+3 if ed4==18 & ed3==1
-	replace aedu_ci=12+5 if ed4==19 & ed3==1
+	* Vocacional (se asimila a secundaria)
+	replace aedu_ci = 9  if ed5 == 13 // Pre vocational
+	replace aedu_ci = 10 if ed5 == 14 // Level 1 vocational
+	replace aedu_ci = 11 if ed5 == 15 // Level 2 vocational
+	
+	* Nivel Terciario
+	replace aedu_ci = 12 if ed5 == 16 // Level 3 vocational (Se asimila como terciaria)
+	replace aedu_ci = 14 if ed5 == 17 // Associate/6th Form Junior College
+	replace aedu_ci = 16 if ed5 == 18 // Bachelors
+	replace aedu_ci = 18 if ed5 == 19 // Master's or Higher
 	
 
 	**********
 	*eduui_ci*
 	**********
-	gen byte eduui_ci = (ed4==17 | ed4==18)
-	replace eduui_ci = . if aedu_ci == . 
-
+	gen byte eduui_ci = .
+	replace eduui_ci = (aedu_ci>12 & aedu_ci<16)
+	replace eduui_ci = . if aedu_ci == .
+	
 	**********
 	*eduuc_ci*
 	**********
-	gen byte eduuc_ci = (ed5==17 | ed5==18 | ed5==19)
+	gen byte eduuc_ci = .
+	replace eduuc_ci =(aedu_ci >= 16 & aedu_ci != . )
 	replace eduuc_ci = . if aedu_ci == .
 
 	**********
 	*eduac_ci*
 	**********
-	gen eduac_ci = (ed5==18 | ed5==19 | ed4==19)
-	replace eduac_ci = . if aedu_ci == .
+	gen eduac_ci = .
 	
 		
 	***********
@@ -767,15 +784,16 @@ use "`base_in'", clear
 	replace asiste_ci=0 if ed3==1
 	replace asiste_ci=1 if  ed3==2
 
-
+	
 	*************
-	*pqnoasis1_ci*
+	*razonesnoasis_ci*
 	**************
-	gen pqnoasis1_ci=. 
-	replace pqnoasis1_ci =  1 if ed6==3
-	replace pqnoasis1_ci =  2 if ed6==8
-	replace pqnoasis1_ci =  3 if ed6==1 | ed6==7
-	replace pqnoasis1_ci =  5 if ed6==2 | ed6==888888
+
+	gen byte razonesnoasis_ci = .
+	replace razonesnoasis_ci = 1 if ed6 == 3
+	replace razonesnoasis_ci = 2 if ed6 == 8
+	replace razonesnoasis_ci = 3 if ed6 == 7
+	replace razonesnoasis_ci = 5 if ed6 == 2 | ed6 == 888888 | ed6 == 1 // se incluye por covid.
 
 	***********
 	*edupub_ci*

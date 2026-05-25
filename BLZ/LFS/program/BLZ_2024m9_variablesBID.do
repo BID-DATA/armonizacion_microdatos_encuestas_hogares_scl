@@ -324,6 +324,8 @@ use "`base_in'", clear
 	replace afroind_ci=2 if afro_ci==1
 	replace afroind_ci=3 if noafroind_ci == 1
 	
+
+	
 	*********
 	*afro_ch*
 	*********
@@ -405,7 +407,7 @@ use "`base_in'", clear
 	***emp_ci*
 	**********
 	gen byte emp_ci = .
-	replace emp_ci = (condocup_ci == 1) if condocup_ci != .
+	replace emp_ci = (condocup_ci == 1) if (condocup_ci != . & condocup_ci != 4)
 
 	**************
 	***cesante_ci*** 
@@ -420,7 +422,7 @@ use "`base_in'", clear
 	***desemp_ci***
 	***************	
 	gen byte desemp_ci = .
-	replace desemp_ci = (condocup_ci == 2) if condocup_ci! = .
+	replace desemp_ci = (condocup_ci == 2) if (condocup_ci != . & condocup_ci != 4)
 	
 	***************
 	***subemp_ci***
@@ -500,6 +502,7 @@ use "`base_in'", clear
 	* ea25: 1=Self-employed w/employees, 2=Self-employed w/o employees,
 	*       3=Employee(Govt), 4=Employee(NGO), 5=Employee(Intl Org),
 	*       6=Contributing family worker, 7=Domestic worker, 8=Employee(Private), 9=Apprentice
+	*contributing family= familiar no remunerado
 	gen  byte categopri_ci = .
 	replace categopri_ci = 1 if ea25 == 1 & emp_ci == 1
 	replace categopri_ci = 2 if ea25 == 2 & emp_ci == 1
@@ -573,7 +576,7 @@ use "`base_in'", clear
 	***instcot_ci***
 	***************	
 	* No hay información sobre afiliación a seguridad social en 2024
-	gen  byte instcot_ci = .
+	gen  instcot_ci = ""
 *	replace instcot_ci  = ""	
 	
 	**************
@@ -816,42 +819,31 @@ use "`base_in'", clear
 	replace aedu_ci = 0 if ed5 == 21  // None
 	
 	* Nivel Primario (Infant 1=1, Infant 2=2, Standard 1-6 = 3-8 años)
-	replace aedu_ci = 1 if ed5 == 1  & eed3new==2  // Infant 1
-	replace aedu_ci = 2 if ed5 == 2 & eed3new==2  // Infant 2
-	replace aedu_ci = 3 if ed5 == 3 & eed3new==2  // Standard 1
-	replace aedu_ci = 4 if ed5 == 4 & eed3new==2  // Standard 2
-	replace aedu_ci = 5 if ed5 == 5  & eed3new==2 // Standard 3
-	replace aedu_ci = 6 if ed5 == 6 & eed3new==2  // Standard 4
-	replace aedu_ci = 7 if ed5 == 7 & eed3new==2  // Standard 5
-	replace aedu_ci = 8 if ed5 == 8  & eed3new==2  // Standard 6
+	replace aedu_ci = 1 if ed5 == 1   // Infant 1
+	replace aedu_ci = 2 if ed5 == 2   // Infant 2
+	replace aedu_ci = 3 if ed5 == 3   // Standard 1
+	replace aedu_ci = 4 if ed5 == 4   // Standard 2
+	replace aedu_ci = 5 if ed5 == 5   // Standard 3
+	replace aedu_ci = 6 if ed5 == 6   // Standard 4
+	replace aedu_ci = 7 if ed5 == 7   // Standard 5
+	replace aedu_ci = 8 if ed5 == 8   // Standard 6
 	
 	* Nivel Secundario (1st-4th Form = 9-12 años)
-	replace aedu_ci = 9  if ed5 == 9  & eed3new==2 // 1st Form
-	replace aedu_ci = 10 if ed5 == 10 & eed3new==2 // 2nd Form
-	replace aedu_ci = 11 if ed5 == 11 & eed3new==2 // 3rd Form
-	replace aedu_ci = 12 if ed5 == 12 & eed3new==2 // 4th Form
+	replace aedu_ci = 9  if ed5 == 9  // 1st Form
+	replace aedu_ci = 10 if ed5 == 10 // 2nd Form
+	replace aedu_ci = 11 if ed5 == 11 // 3rd Form
+	replace aedu_ci = 12 if ed5 == 12 // 4th Form
 	
-	*vocational and pre-vocational
-	replace aedu_ci=6 if ed5>12 & ed5<17 & ed3==2 & school==2 //Registran solo completar primaria.
-	replace aedu_ci=12 if ed5>12 & ed5<17 & ed3==2 & school==3 //Registran solo completar secundaria.
-	replace aedu_ci=12+3 if ed5>12 & ed5<17 & ed3==2 & school==4 //Registran terciaria completa.
+	* Vocacional (se asimila a secundaria)
+	replace aedu_ci = 9  if ed5 == 13 // Pre vocational
+	replace aedu_ci = 10 if ed5 == 14 // Level 1 vocational
+	replace aedu_ci = 11 if ed5 == 15 // Level 2 vocational
 	
 	* Nivel Terciario
-	replace aedu_ci = 12 if ed5 == 16 & eed3new==2 // Level 3 vocational (Se asimila como terciaria)
-	replace aedu_ci = 14 if ed5 == 17 & eed3new==2 // Associate/6th Form Junior College
-	replace aedu_ci = 16 if ed5 == 18 & eed3new==2 // Bachelors
-	replace aedu_ci = 18 if ed5 == 19 & eed3new==2 // Master's or Higher
-	
-	**PARA LAS PERSONAS QUE AUN ESTAN CURSANDO ALGON NIVEL DE ESTUDIO
-	replace aedu_ci=ed4-1 if ed4<13 & eed3new==1 & aedu_ci==.
-	*vocational and pre-vocational
-	replace aedu_ci=6 if ed4>12 & ed4<17 & ed3==1 & aedu_ci==. & school==2 //Registran solo completar primaria.
-	replace aedu_ci=12 if ed4>12 & ed4<17 & ed3==1 & aedu_ci==. & school==3 //Registran solo completar secundaria.
-	replace aedu_ci=12+3 if ed4>12 & ed4<17 & ed3==1 & aedu_ci==. & school==4 //Registran terciaria completa.
-	
-	replace aedu_ci=12+1 if ed4==17 & ed3new==1 & aedu_ci==.
-	replace aedu_ci=12+3 if ed4==18 & ed3new==1 & aedu_ci==.
-	replace aedu_ci=12+5 if ed4==19 & ed3new==1 & aedu_ci==.
+	replace aedu_ci = 12 if ed5 == 16 // Level 3 vocational (Se asimila como terciaria)
+	replace aedu_ci = 14 if ed5 == 17 // Associate/6th Form Junior College
+	replace aedu_ci = 16 if ed5 == 18 // Bachelors
+	replace aedu_ci = 18 if ed5 == 19 // Master's or Higher
 
 	**********
 	*eduui_ci*
@@ -1086,9 +1078,8 @@ use "`base_in'", clear
 	***********
 	* hh2: 1=Own/hire-purchase, 2=Lease, 3=Rent-Private, 4=Rent-Government, 5=Rent-free, 6=Squat
 	gen viviprop_ch=.
-	replace viviprop_ch = 0 if inlist(hh2, 3, 4)
+	replace viviprop_ch = 0 if inlist(hh2, 2, 3, 4)
 	replace viviprop_ch = 1 if hh2 == 1
-	replace viviprop_ch = 2 if hh2 == 2
 	replace viviprop_ch = 3 if inlist(hh2, 5, 6)	
 	
 	***********
@@ -1131,17 +1122,15 @@ use "`base_in'", clear
 	*      1=Bottled/Purified water, 2=Public piped into dwelling or yard, 3=Private piped into dwelling or yard, 4=Public standpipe,
 	*      5=Protected dug well, 6=Unprotected dug well, 7=Private catchment, not piped (vat, drum,, 8=River/Creek/Spring/Stream/Pond ,
 	*	   888888 =Other
-	gen byte aguafconsumo_ch = .
-	replace aguafconsumo_ch = 1 if hh8 == 2 | hh8 == 3
-	replace aguafconsumo_ch = 2 if hh8 == 4
-	replace aguafconsumo_ch = 3 if hh8 == 1
-	replace aguafconsumo_ch = 4 if hh8 == 5
-	replace aguafconsumo_ch = 5 if hh8 == 7
-*	replace aguafconsumo_ch = 6 if ... No hay esta categoría 
-*	replace aguafconsumo_ch = 7 if ... No hay esta categoría 
-	replace aguafconsumo_ch = 8 if hh8 == 8
-	replace aguafconsumo_ch = 9 if hh8 == 6
-	replace aguafconsumo_ch = 10 if hh8 == 888888
+	gen aguafconsumo_ch=.
+	replace aguafconsumo_ch= 1 if hh8==2 |hh8==3 	// distribution network, private tap or point of access
+	replace aguafconsumo_ch= 2 if hh8==4 		// distribution network, public point of access (standpipe or public tap)
+	replace aguafconsumo_ch= 3 if hh8==1 		// Bottled water 
+	replace aguafconsumo_ch= 4 if hh8==5		// Protected well
+	*replace aguafconsumo_ch= 7 if h8==		// Another improved water source		
+	replace aguafconsumo_ch= 8 if hh8==8		// Directly from surface water body
+	replace aguafconsumo_ch= 9 if hh8==6		// Another non-improved source
+	replace aguafconsumo_ch= 10 if inlist(hh8,7,9,10,888888) // Unclassifiable 
 
 	***********
 	*aguafuente_ch*
@@ -1151,16 +1140,14 @@ use "`base_in'", clear
 	*      6= Protected dug well, 7=Unprotected dug well, 8=Private catchments, not piped (vat, drum ...), 9=River/Creek/Spring/Stream/Pond
 	*      888888 = Other, 999999= DK/NS
 	gen byte aguafuente_ch =.
-	replace aguafuente_ch = 1 if hh7 == 1 | hh7 == 2 | hh7 == 3
+	replace aguafuente_ch = 1 if hh7 == 1 | hh7 == 2 
 	replace aguafuente_ch = 2 if hh7 == 4
-*	replace aguafuente_ch = 3 if … No hay esta categoría (agua embotellada)
 	replace aguafuente_ch = 4 if hh7 == 6
-	replace aguafuente_ch = 5 if hh7 == 8
-*	replace aguafuente_ch = 6 if …
-*	replace aguafuente_ch = 7 if …
-	replace aguafuente_ch = 8 if hh7 == 9
+	replace aguafuente_ch = 7 if  hh7 == 3
+	replace aguafuente_ch= 8  if h7==9			// Surface water
 	replace aguafuente_ch = 9 if hh7 == 7
-	replace aguafuente_ch = 10 if hh7 == 888888 
+	replace aguafuente_ch = 10 if hh7==8 | hh7 == 888888 
+
 
 	******************
 	** aguadist_ch ** - 
