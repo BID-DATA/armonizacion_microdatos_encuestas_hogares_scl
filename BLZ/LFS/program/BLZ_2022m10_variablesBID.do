@@ -371,7 +371,7 @@ use "`base_in'", clear
 	replace categoinac_ci = 1 if (ea15== 3 & condocup_ci == 3)
 	replace categoinac_ci = 2 if  (ea15 == 2 & condocup_ci == 3)
 	replace categoinac_ci = 3 if  (ea15 ==1 & condocup_ci == 3)
-	replace categoinac_ci = 4 if  ((categoinac_ci != 1 | categoinac_ci != 2 | categoinac_ci != 3) & condocup_ci == 3)
+	replace categoinac_ci = 4 if ((categoinac_ci != 1 & categoinac_ci != 2 & categoinac_ci != 3) & condocup_ci == 3)
 
 	
 	**********
@@ -538,7 +538,7 @@ use "`base_in'", clear
 	***ocupa_ci***
 	**************
 	gen byte ocupa_ci=.
-	replace ocupa_ci=1 if ea21main_occ==2 | ea21main_occ==3 & emp_ci==1
+	replace ocupa_ci=1 if 	inlist(ea21main_occ, 2, 3) & emp_ci==1
 	replace ocupa_ci=2 if  ea21main_occ==1 & emp_ci==1
 	replace ocupa_ci=3 if  ea21main_occ==4 & emp_ci==1
 	replace ocupa_ci=6 if  ea21main_occ==6 | ea21main_occ==7 & emp_ci==1
@@ -1007,6 +1007,10 @@ use "`base_in'", clear
 	** aguadist_ch ** - 
 	*****************
 	gen byte aguadist_ch  =.
+	replace aguadist_ch = 1 if aguafuente_ch == 1
+	replace aguadist_ch = 2 if aguafuente_ch == 4 | aguafuente_ch == 5 | aguafuente_ch == 9 /* Pozo protegido, agua de lluvia, pozo no protegido (se asumen en el terreno) */
+	replace aguadist_ch = 3 if aguafuente_ch == 2 | aguafuente_ch == 8
+	replace aguadist_ch = 0 if missing(aguadist_ch) & aguafuente_ch!=.
 
 	
 	******************

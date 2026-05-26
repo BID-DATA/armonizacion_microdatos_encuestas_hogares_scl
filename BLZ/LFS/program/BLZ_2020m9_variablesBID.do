@@ -534,7 +534,7 @@ use "`base_in'", clear
 	***ocupa_ci***
 	**************
 	gen byte ocupa_ci=.
-	replace ocupa_ci=1 if ea16main_occ==2 | ea16main_occ==3 & emp_ci==1
+	replace ocupa_ci=1 if inlist(ea16main_occ, 2, 3) & emp_ci==1
 	replace ocupa_ci=2 if  ea16main_occ==1 & emp_ci==1
 	replace ocupa_ci=3 if  ea16main_occ==4 & emp_ci==1
 	replace ocupa_ci=6 if  ea16main_occ==6 | ea16main_occ==7 & emp_ci==1
