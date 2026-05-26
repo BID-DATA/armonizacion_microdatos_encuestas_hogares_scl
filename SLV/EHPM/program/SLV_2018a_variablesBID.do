@@ -1017,15 +1017,30 @@ gen aguafconsumo_ch = 0
 *aguafuente_ch*
 *****************
 
-gen aguafuente_ch = 1 if r312==1 | r312==2| r312==3| r312==4
-replace aguafuente_ch = 2 if r313==2
-replace aguafuente_ch= 4 if (r313==5 | r313==5.1)
-replace aguafuente_ch = 5 if r313==10
-replace aguafuente_ch= 6 if r313==3
-replace aguafuente_ch= 7 if r312==4.1 | r313==8 | r313==1 |r313==11
-replace aguafuente_ch = 8 if r313==7 | r313 ==9
-replace aguafuente_ch= 9 if  r313==6 |r313==6.1
-replace aguafuente_ch= 10 if r313==13 | r313==12 |r313==4 | r313==4.1   
+gen byte aguafuente_ch = .
+/* Cañería (piped) de cualquier tipo - todos son aguafuente=1 */
+replace aguafuente_ch = 1 if inlist(r312, 1, 2, 3, 4)
+/* r312==6: tiene cañería pero sin servicio - tratamos como piped */
+replace aguafuente_ch = 1 if r312 == 6
+
+/* r313: forma alternativa cuando no hay cañería */
+replace aguafuente_ch = 2  if r313 == 2    /* Pila/chorro público/cantarera  - pilón  */
+replace aguafuente_ch = 2  if r313 == 12   /* Chorro común                   - pilón  */
+*replace aguafuente_ch = 3 if...           /* Agua embotellada */
+replace aguafuente_ch = 4  if r313 == 4    /* Pozo con tubería privado        - pozo protegido */
+replace aguafuente_ch = 4  if r313 == 5    /* Pozo protegido privado          - pozo protegido */
+replace aguafuente_ch = 4  if r313 == 5.1  /* Pozo protegido público          - pozo protegido */
+replace aguafuente_ch = 5  if r313 == 8    /* Manantial protegido             - manantial prot. */
+replace aguafuente_ch = 6  if r313 == 3    /* Camión, carreta o pipa          - cisterna/camión */
+replace aguafuente_ch = 7  if r312 == 4.1  /* Tubería por poliducto (buen estado) - otra mejorada */
+replace aguafuente_ch = 7  if inlist(r313, 1, 11) /* Cañería vecino/acarreo vecino - otra mejorada */
+replace aguafuente_ch = 7  if r313 == 10   /* Colecta agua lluvia             - lluvia */
+replace aguafuente_ch = 8  if r313 == 6    /* Pozo no protegido privado       - pozo no prot. */
+replace aguafuente_ch = 8  if r313 == 9    /* Manantial no protegido          - fuente no prot. */
+replace aguafuente_ch = 9  if r313 == 6.1  /* Pozo no protegido público    	  - superficial */
+replace aguafuente_ch = 9  if r313 == 7    /* Ojo de agua, río o quebrada     - superficial */
+replace aguafuente_ch = 10 if r313 == 4.1  /* Pozo con tubería publica        -  */
+replace aguafuente_ch = 10 if r313 == 13   /* Otros medios                    - sin info */
 
 *************
 *aguadist_ch*

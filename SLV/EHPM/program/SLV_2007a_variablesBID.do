@@ -945,17 +945,26 @@ replace aguafconsumo_ch= 6 if (r313a1==4) & r314==1
 replace aguafconsumo_ch= 7 if (r313a1==1) & r314==1
 replace aguafconsumo_ch = 8 if (r313a1==6) & r314==1
 replace aguafconsumo_ch= 10 if (r313a1==8 | r313a1==3 |r313a1==5) & r314==1
+
 *****************
 *aguafuente_ch*
 *****************
 
-gen aguafuente_ch = 1 if r31301==1 |  r31301==2
-replace aguafuente_ch = 2 if r313a1==2
-replace aguafuente_ch = 5 if r313a1==7
-replace aguafuente_ch= 6 if r313a1==4
-replace aguafuente_ch= 7 if r313a1==1
-replace aguafuente_ch = 8 if r313a1==6
-replace aguafuente_ch= 10 if r313a1==8 | r313a1==3 |r313a1==5 | (r312==. & jefe_ci!=.)  
+gen byte aguafuente_ch = .
+/* Cañería (piped) de cualquier tipo - todos son aguafuente=1 */
+replace aguafuente_ch = 1 if inlist(r31301, 1, 2)
+/* r312==6: tiene cañería pero sin servicio - tratamos como piped */
+replace aguafuente_ch = 1 if r31301 == 4
+
+/* r313: forma alternativa cuando no hay cañería */
+replace aguafuente_ch = 2  if r313a1 == 2    /* Pila/chorro público/cantarera  - pilón  */
+replace aguafuente_ch = 2  if r313a1 == 3   /* Chorro común                   - pilón  */
+replace aguafuente_ch = 4  if r313a1 == 5    /* Pozo           - pozo  */
+replace aguafuente_ch = 6  if r313a1 == 4    /* Camión, carreta o pipa          - cisterna/camión */
+replace aguafuente_ch = 7  if r313a1 == 1   /* Cañería vecino/acarreo vecino - otra mejorada */
+replace aguafuente_ch = 7  if r313a1 == 7   /* Colecta agua lluvia             - lluvia */
+replace aguafuente_ch = 9  if r313a1 == 6    /* Ojo de agua, río o quebrada     - superficial */
+replace aguafuente_ch = 10 if r313a1 == 8   /* Otros medios                    - sin info */
 
 *************
 *aguadist_ch*

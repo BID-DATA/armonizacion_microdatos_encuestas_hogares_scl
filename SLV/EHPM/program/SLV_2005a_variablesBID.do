@@ -1503,16 +1503,23 @@ replace aguafconsumo_ch= 6 if (r313==6) & r314==1
 replace aguafconsumo_ch= 7 if (r313==3) & r314==1
 replace aguafconsumo_ch = 8 if (r313==8) & r314==1
 replace aguafconsumo_ch= 10 if (r313==9 | r313==5 |r313==7) & r314==1
+
 *****************
 *aguafuente_ch*
 *****************
 
-gen aguafuente_ch = 1 if r313==1 |  r313==2
-replace aguafuente_ch = 2 if r313==4
-replace aguafuente_ch= 6 if r313==6
-replace aguafuente_ch= 7 if r313==3
-replace aguafuente_ch = 8 if r313==8
-replace aguafuente_ch= 10 if r313==9 | r313==5 |r313==7
+gen byte aguafuente_ch = .
+/* Cañería (piped) de cualquier tipo - todos son aguafuente=1 */
+replace aguafuente_ch = 1 if inlist(r313, 1, 2)
+
+/* Forma alternativa cuando no hay cañería */
+replace aguafuente_ch = 2  if r313 == 4    /* Pila/chorro público/cantarera  - pilón  */
+replace aguafuente_ch = 2  if r313 == 5   /* Chorro común                   - pilón  */
+replace aguafuente_ch = 4  if r313 == 7    /* Pozo           - pozo  */
+replace aguafuente_ch = 6  if r313 == 6    /* Camión, carreta o pipa          - cisterna/camión */
+replace aguafuente_ch = 7  if r313 == 3   /* Cañería vecino/acarreo vecino - otra mejorada */
+replace aguafuente_ch = 9  if r313 == 8    /* Ojo de agua, río o quebrada     - superficial */
+replace aguafuente_ch = 10 if r313 == 9   /* Otros medios                    - sin info */
 
 *************
 *aguadist_ch*
