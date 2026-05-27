@@ -296,55 +296,70 @@ label var miembros_ci "Miembro del hogar"
 ***           VARIABLES DE DIVERSIDAD               ***
 *******************************************************				
 
+******************************
+*	afro_ci
+******************************
 gen afro_ci=.
 destring p4f_afrod, replace
 replace afro_ci=1 if p4f_afrod<8
 replace afro_ci=0 if p4f_afrod==8
 
+******************************
+*	ind_ci
+******************************
 gen ind_ci=.
 destring p4d_indige, replace
 replace ind_ci=1 if p4d_indige<11
 replace ind_ci=0 if p4d_indige==11
 
+******************************
+*	noafroind_ci
+******************************
 gen noafroind_ci=.
-replace noafroind_ci=1 if p4d_indige==11 & p4f_afrod==8
-replace noafroind_ci=0 if p4d_indige!=11 | p4f_afrod!=8
+replace noafroind_ci =1 if (afro_ci==0 | ind_ci==0)	 // Personas que NO se identifican como afro o indígenas
+replace noafroind_ci =0 if (afro_ci==1 | ind_ci==1)  // Personas que se identifican como afro o indígenas
+replace noafroind_ci =. if (afro_ci==. & ind_ci==.)
 
+******************************
+*	afro_ch
+******************************
 gen afro_jefe=afro_ci  if relacion_ci==1
 egen afro_ch  = min(afro_jefe), by(idh_ch) 
 drop afro_jefe
 
+******************************
+*	ind_ch
+******************************
 gen ind_jefe= ind_ci  if relacion_ci==1
 egen ind_ch  = min(ind_jefe), by(idh_ch) 
 drop ind_jefe
 
-gen afroind_ano_c=2019
-** cambia la encuesta pero la pregunta es la misma 
+***************
+*** afroind_ci ***
+***************
+** Para casos que reportan ambas autoidentificaciones, se pondera la afrodesendiente siguendo la forma de reportar en armonizaciones pasadas
 
+gen byte afroind_ci=. 
+replace afroind_ci=1 if ind_ci==1 
+replace afroind_ci=2 if afro_ci==1
+replace afroind_ci=3 if noafroind_ci == 1
 
-	***************
-	*** afroind_ci ***
-	***************
-	** Para casos que reportan ambas autoidentificaciones, se pondera la afrodesendiente siguendo la forma de reportar en armonizaciones pasadas
-
-	gen afroind_ci=. 
-replace afroind_ci=1 if p4d_indige>=1 & p4d_indige<=10 
-replace afroind_ci=2 if p4f_afrod>=1 & p4f_afrod<=7
-replace afroind_ci=3 if p4d_indige==11 & p4f_afrod==8
-
-
-	***************
-	*** afroind_ch ***
-	***************
+***************
+*** afroind_ch ***
+***************
 gen afroind_jefe= afroind_ci if relacion_ci==1
 egen afroind_ch  = min(afroind_jefe), by(idh_ch) 
-
-	***************
-	*** noafroind_ch ***
-	***************
-gen noafroind_ch = 0
-replace noafroind_ch = 1 if (ind_ci == 0 | afro_ci == 0) & jefe_ci == 1
 drop afroind_jefe
+
+***************
+*** noafroind_ch ***
+***************
+gen noafroind_jefe= noafroind_ci if relacion_ci==1
+egen noafroind_ch  = min(noafroind_jefe), by(idh_ch) 
+drop noafroind_jefe
+
+gen afroind_ano_c=2019
+** cambia la encuesta pero la pregunta es la misma 
 
 	*******************
 	*** dis_ci ***
