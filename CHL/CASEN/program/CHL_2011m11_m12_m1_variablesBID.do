@@ -299,27 +299,68 @@ label variable miembros_ci "Miembro del hogar"
 *Nathalia Maya & Antonella Pereira
 *Feb 2021	
 
+**Pregunta: Pueblos indígenas, pertenece usted o es descendiente de alguno de ellos? (r6) (Aimara 1; Rapa-Nui o Pascuenses 2; Quechua 3; Mapuche 4; Atacame�o (Likan-Antai) 5; Collas 6; Kawashkar o Alacalufes 7; Y�mana o Yag�n 8; Diaguita 9; No pertenece a ning�n pueblo ind�gena 10; No sabe/no responde 99)
+
+	*************
+	***afro_ci***
+	*************
+	gen byte afro_ci = . 
+
+	************
+	***ind_ci***
+	************
+	gen byte ind_ci = .
+	replace ind_ci = 1 if inrange(r6, 1, 9)  
+	replace ind_ci = 0 if r6 == 10			 
+	
+	******************
+	***noafroind_ci***
+	******************
+	gen byte noafroind_ci = .
+	replace noafroind_ci =1 if (afro_ci==0 | ind_ci==0)	 // Personas que NO se identifican como afro o indígenas
+	replace noafroind_ci =0 if (afro_ci==1 | ind_ci==1)  // Personas que se identifican como afro o indígenas
+	replace noafroind_ci =. if (afro_ci==. & ind_ci==.)
+
 	***************
 	***afroind_ci***
 	***************
-**Pregunta: Pueblos indígenas, pertenece usted o es descendiente de alguno de ellos? (r6) (Aimara 1; Rapa-Nui o Pascuenses 2; Quechua 3; Mapuche 4; Atacame�o (Likan-Antai) 5; Collas 6; Kawashkar o Alacalufes 7; Y�mana o Yag�n 8; Diaguita 9; No pertenece a ning�n pueblo ind�gena 10; No sabe/no responde 99)
-gen afroind_ci=. 
-replace afroind_ci=1 if (r6 >=1 & r6 <=9 )
-replace afroind_ci=2 if r6==0
-replace afroind_ci=3 if r6==10
-replace afroind_ci=. if  r6==99 
+	gen afroind_ci=. 
+	replace afroind_ci = 1 if ind_ci==1
+	replace afroind_ci = 2 if afro_ci==1
+	replace afroind_ci = 3 if noafroind_ci==1
+	
+	*********
+	*afro_ch*
+	*********
+	gen byte afro_jefe = afro_ci if relacion_ci==1
+	egen afro_ch  = max(afro_jefe), by(idh_ch) 
+	drop afro_jefe
+
+	********
+	*ind_ch*
+	********	
+	gen byte ind_jefe = ind_ci if relacion_ci==1
+	egen ind_ch = max(ind_jefe), by(idh_ch) 
+	drop ind_jefe
+
+	**************
+	*noafroind_ch*
+	**************
+	gen byte noafroind_jefe = noafroind_ci if relacion_ci==1
+	egen noafroind_ch = max(noafroind_jefe), by(idh_ch) 
+	drop noafroind_jefe
 
 	***************
 	***afroind_ch***
 	***************
-gen afroind_jefe= afroind_ci if relacion_ci==1
-egen afroind_ch  = min(afroind_jefe), by(idh_ch) 
-drop afroind_jefe
+	gen afroind_jefe= afroind_ci if relacion_ci==1
+	egen afroind_ch  = min(afroind_jefe), by(idh_ch) 
+	drop afroind_jefe
 
 	*******************
 	***afroind_ano_c***
 	*******************
-gen afroind_ano_c=2006
+	gen afroind_ano_c=2006
 
 	*******************
 	***dis_ci***
