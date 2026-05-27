@@ -1066,12 +1066,13 @@ label values edupub_ci edupub
 
 
 *********************
-gen aguared_ch=.
-replace aguared_ch= 1 if h8==1 | h8==2 | h71==1 | h72==1
-replace aguared_ch= 0 if h8>2 | h73==1 | h74==1 | h75==1 | h76==1 | h77==1 | h78==1 
+gen aguared_ch=0
+replace aguared_ch= 1 if h8==1 | h71==1
+
 *********************
 gen aguafconsumo_ch = 0
-replace aguafconsumo_ch= 1 if h8==1 | h8==2
+replace aguafconsumo_ch= 1 if h8==1 
+replace aguafconsumo_ch= 2 if h8==2
 replace aguafconsumo_ch= 3 if h8==6
 replace aguafconsumo_ch= 4 if h8==4
 replace aguafconsumo_ch= 7 if h8==3
@@ -1081,13 +1082,14 @@ replace aguafconsumo_ch= 10 if h8==8
 
 *********************
 gen aguafuente_ch =.
-replace aguafuente_ch= 1 if h8==1 | h8==2 | h71==1 | h72==1
-replace aguafuente_ch= 3 if h8==6 | h76==1
-replace aguafuente_ch= 4 if h8==4 | h74==1
-replace aguafuente_ch= 7 if h8==3 | h73==1
-replace aguafuente_ch= 8 if h8==7 | h77==1
-replace aguafuente_ch= 9 if h8==5 | h75==1
-replace aguafuente_ch= 10 if h8==8 | h78==1
+replace aguafuente_ch= 1 if h8==1 
+replace aguafuente_ch= 2 if h8==2
+replace aguafuente_ch= 3 if h8==6
+replace aguafuente_ch= 4 if h8==4
+replace aguafuente_ch= 7 if h8==3 
+replace aguafuente_ch= 8 if h8==7 
+replace aguafuente_ch= 9 if h8==5 
+replace aaguafuente_ch= 10 if h8==8 
 replace aguafuente_ch = 10 if aguafuente_ch ==. & jefe_ci==1
 
 *********************
