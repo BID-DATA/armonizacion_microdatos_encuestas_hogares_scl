@@ -133,7 +133,15 @@ keep if result==1 | result==2 /* Nos quedamos solo con Encuestas completas e inc
 
 	capture drop if p203 ==0 /* p203:  	�cual es la relacion de parentesco con el jefe(a) del  hogar?	*/
     /* No hay valor cero - no hay p203 ==0 -- todas las personas identifican su relacion con el jefe del hogar - familiar o no */
-	
+compress
+ds, has(vallabel)
+foreach v of varlist _all {
+    local lbl : variable label `v'
+    if length("`lbl'") > 80 {
+        local lbl_short = substr("`lbl'", 1, 80)
+        label variable `v' "`lbl_short'"
+    }
+}
 save "$out\PER_2025a.dta", replace
 
  
