@@ -389,27 +389,67 @@ label var miembros_ci "Miembro del hogar"
 ******************************************************************************
 **María Antonella Pereira & Nathalia Maya - Marzo 2021 
 
+	*********
+	* afro_ci
+	*********
+	gen byte afro_ci = .
+
+	********
+	* ind_ci   
+	********
+	gen byte ind_ci = .
+	destring etnia, replace
+	replace ind_ci = 1 if etnia  == 1
+	replace ind_ci = 0 if etnia  == 2
+
+	****************
+	* noafroind_ci  
+	****************
+	gen byte noafroind_ci = .
+	replace noafroind_ci =1 if (afro_ci==0 | ind_ci==0)	 // Personas que NO se identifican como afro o indígenas
+	replace noafroind_ci =0 if (afro_ci==1 | ind_ci==1)  // Personas que se identifican como afro o indígenas
+	replace noafroind_ci =. if (afro_ci==. & ind_ci==.)
+	
 	***************
 	***afroind_ci***
 	***************
-gen afroind_ci=. 
-replace afroind_ci=1 if etnia=="1" 
-replace afroind_ci=2 if etnia=="0"
-replace afroind_ci=3 if etnia=="2"
-replace afroind_ci=. if etnia==" "
-replace afroind_ci=9 if etnia==" " & edad_ci<3
+	gen afroind_ci=. 
+	replace afroind_ci = 1 if ind_ci==1
+	replace afroind_ci = 2 if afro_ci==1
+	replace afroind_ci = 3 if noafroind_ci==1
+	
+	*********
+	* afro_ch 
+	*********
+	gen  byte afro_jefe = afro_ci if jefe_ci==1
+	egen byte afro_ch = min(afro_jefe), by(idh_ch)
+	drop afro_jefe
+
+	********
+	* ind_ch 
+	********
+	gen  byte ind_jefe = ind_ci if jefe_ci==1
+	egen byte ind_ch  = min(ind_jefe), by(idh_ch)
+	drop ind_jefe
+
+	****************
+	* noafroind_ch 
+	****************
+	gen  byte noafroind_jefe = noafroind_ci if jefe_ci==1
+	egen byte noafroind_ch = min(noafroind_jefe), by(idh_ch)
+	drop noafroind_jefe
 
 	***************
 	***afroind_ch***
 	***************
-gen afroind_jefe= afroind_ci if relacion_ci==1
-egen afroind_ch  = min(afroind_jefe), by(idh_ch) 
-drop afroind_jefe
+	gen afroind_jefe= afroind_ci if relacion_ci==1
+	egen afroind_ch  = min(afroind_jefe), by(idh_ch) 
+	drop afroind_jefe
 
 	*******************
 	***afroind_ano_c***
 	*******************
-gen afroind_ano_c=2010
+	gen afroind_ano_c=2010
 
 	*************
 	***dis_ci***
