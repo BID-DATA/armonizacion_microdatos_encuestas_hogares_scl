@@ -326,7 +326,7 @@ gen byte afro_ci=.
 gen byte ind_ci=. 
 
 ***************
-***afroind_ci**
+***noafroind_ci**
 ***************
 gen byte noafroind_ci=. 
 
