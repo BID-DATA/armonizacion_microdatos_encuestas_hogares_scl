@@ -288,32 +288,25 @@ use "`base_in'", clear
 	*********
 	*afro_ci*
 	*********
-	gen byte afro_ci = .
+	gen byte afro_ci =0
 	replace afro_ci = 1 if s6q7_01==2 // se queda como missing (.) si no existe la pregunta
-	replace afro_ci = 0 if inlist(s6q7_01, 1, 3)
 	
 	*********
 	*ind_ci*
 	*********	
-	gen byte ind_ci = . 
+	gen byte ind_ci =0 
 	replace ind_ci=1 if s6q7_01==1 // se queda como missing (.) si no existe la pregunta
-	replace ind_ci = 0 if inlist(s6q7_01, 2, 3)
 
 	**************
 	*noafroind_ci*
 	**************
-	gen byte noafroind_ci = . 
-	replace noafroind_ci = 1 if (afro_ci==0 | ind_ci==0)  // Personas que NO se identifican como afro o indígenas
-	replace noafroind_ci = 0 if (afro_ci==1 | ind_ci==1)  // Personas que se identifican como afro o indígenas
-	replace noafroind_ci = . if (afro_ci==. & ind_ci==.)
+	gen byte noafroind_ci =0 
+	replace noafroind_ci=1 if s6q7_01==3 // se queda como missing (.) si no existe la pregunta
 
 	************
 	*afroind_ci*
 	************
-	gen byte afroind_ci=. 
-	replace afroind_ci = 1 if ind_ci==1
-	replace afroind_ci = 2 if afro_ci==1
-	replace afroind_ci = 3 if noafroind_ci==1
+	gen byte afroind_ci=2024
 	
 	*********
 	*afro_ch*
@@ -342,11 +335,6 @@ use "`base_in'", clear
  	gen byte afroind_jefe = afroind_ci if jefe_ci==1
 	egen afroind_ch = min(afroind_jefe), by(idh_ch) 
 	drop afroind_jefe 
-	
-	*******************
-	***afroind_ano_c***
-	*******************
-	gen byte afroind_ano_c=2024
 
 	********
 	*dis_ci*
