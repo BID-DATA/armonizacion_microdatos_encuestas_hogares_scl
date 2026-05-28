@@ -379,11 +379,40 @@ label variable miembros_ci "Miembros del hogar"
 *******************************************************				
 * Maria Antonella Pereira & Nathalia Maya - Marzo 2021	
 
+	*********
+	*afro_ci*
+	*********
+gen byte afro_ci = . 	  // se queda como missing (.) si no existe la pregunta
+	
+	*********
+	*ind_ci*
+	*********	
+gen byte ind_ci =. 		  // se queda como missing (.) si no existe la pregunta
+
+	**************
+	*noafroind_ci*
+	**************
+gen byte noafroind_ci =.   // se queda como missing (.) si no existe la pregunta
 			
 	***************
    *** afroind_ci ***
 	***************
 gen afroind_ci=. 
+
+	*********
+	*afro_ch*
+	*********
+gen afro_ch  = .
+	
+	********
+	*ind_ch*
+	********	
+gen ind_ch = .
+
+	**************
+	*noafroind_ch*
+	**************
+gen noafroind_ch = .
 
 	***************
    *** afroind_ch ***
