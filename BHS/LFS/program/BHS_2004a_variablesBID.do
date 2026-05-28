@@ -312,9 +312,9 @@ label variable miembros_ci "Miembro del hogar"
 	*noafroind_ci*
 	**************
 	gen byte noafroind_ci =.   // se queda como missing (.) si no existe la pregunta
-	replace noafroind_ci =1 if (afro_ci==0 & ind_ci==0)
-	replace noafroind_ci =0 if (afro_ci==1 | ind_ci==1)
-	replace noafroind_ci =. if (afro_ci==. | ind_ci==.) //Esto solo en el caso que se tenga ambas opciones no disponibles. 
+	replace noafroind_ci =1 if (afro_ci==0 | ind_ci==0)	 // Personas que NO se identifican como afro o indígenas
+	replace noafroind_ci =0 if (afro_ci==1 | ind_ci==1)  // Personas que se identifican como afro o indígenas
+	replace noafroind_ci =. if (afro_ci==. & ind_ci==.)
 	ta noafroind_ci,m
 
 	************
