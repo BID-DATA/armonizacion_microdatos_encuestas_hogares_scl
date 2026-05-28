@@ -223,10 +223,40 @@ label var edad_ci "edad del individuo"
 *******************************************************				
 * Maria Antonella Pereira & Nathalia Maya - Julio 2021	
 
+	*********
+	*afro_ci*
+	*********
+	gen byte afro_ci = . 	  // se queda como missing (.) si no existe la pregunta
+	
+	*********
+	*ind_ci*
+	*********	
+	gen byte ind_ci =. 		  // se queda como missing (.) si no existe la pregunta
+
+	**************
+	*noafroind_ci*
+	**************
+	gen byte noafroind_ci =.   // se queda como missing (.) si no existe la pregunta	
+
 	***************
 	***afroind_ci***
 	***************
 gen afroind_ci=. 
+
+	*********
+	*afro_ch*
+	*********
+	gen byte afro_ch = .
+	
+	*********
+	*ind_ch*
+	*********	
+	gen byte ind_ch =. 		  
+
+	**************
+	*noafroind_ch*
+	**************
+	gen byte noafroind_ch =. 
 
 	***************
 	***afroind_ch***
