@@ -297,37 +297,78 @@ by idh_ch, sort: egen byte nmenor1_ch=sum((relacion_ci>0 & relacion_ci<=5) & (ed
 
 /* q1_07 Options
 
-Creole/ Afrosurinamese
-East Indian
-Maroon
-Amerindian/ Indigenous
-Javanese
-Chinese
-White
-Mixed
-Other
-
+1 Creole/ Afrosurinamese
+2 East Indian
+3 Maroon
+4 Amerindian/ Indigenous
+5 Javanese
+6 Chinese
+7 White
+8 Mixed
+9 Other
 */ 
+
+	*********
+	* afro_ci
+	*********
+	gen byte afro_ci = .
+	replace afro_ci = 1 if q1_07 == 1 | q1_07 == 3
+	replace afro_ci = 0 if q1_07 != 1 & q1_07 != 3 & q1_07 != .
+
+	********
+	* ind_ci   
+	********
+	gen byte ind_ci = .
+	replace ind_ci = 1 if q1_07 == 4
+	replace ind_ci = 0 if q1_07 != 4 & q1_07 != .
+
+	****************
+	* noafroind_ci  
+	****************
+	gen byte noafroind_ci = .
+	replace noafroind_ci =1 if (afro_ci==0 | ind_ci==0)	 // Personas que NO se identifican como afro o indígenas
+	replace noafroind_ci =0 if (afro_ci==1 | ind_ci==1)  // Personas que se identifican como afro o indígenas
+	replace noafroind_ci =. if (afro_ci==. & ind_ci==.)
 			
 	***************
    *** afroind_ci ***
 	***************
-gen afroind_ci=. 
-replace afroind_ci = 1 if (q1_07 == 4 )
-replace afroind_ci = 2 if (q1_07 == 1 | q1_07 == 3 )
-replace afroind_ci = 3 if (q1_07 == 2 | q1_07 == 5 | q1_07 == 6 | q1_07 == 7 | q1_07 == 9 | q1_07 == 8 )
+	gen afroind_ci=. 
+	replace afroind_ci = 1 if ind_ci == 1
+	replace afroind_ci = 2 if afro_ci == 1
+	replace afroind_ci = 3 if noafroind_ci == 1
+	
+	*********
+	*afro_ch*
+	*********
+	gen byte afro_jefe = afro_ci if relacion_ci==1
+	egen afro_ch  = max(afro_jefe), by(idh_ch) 
+	drop afro_jefe
+	
+	********
+	*ind_ch*
+	********	
+	gen byte ind_jefe = ind_ci if relacion_ci==1
+	egen ind_ch = max(ind_jefe), by(idh_ch) 
+	drop ind_jefe
+
+	**************
+	*noafroind_ch*
+	**************
+	gen byte noafroind_jefe = noafroind_ci if relacion_ci==1
+	egen noafroind_ch = max(noafroind_jefe), by(idh_ch) 
+	drop noafroind_jefe
 
 	***************
-   *** afroind_ch ***
+    *** afroind_ch ***
 	***************
-gen afroind_jefe=.
-replace afroind_jefe= afroind_ci if relacion_ci==1
-egen afroind_ch  = min(afroind_jefe), by(idh_ch) 
-
-drop afroind_jefe
+	gen afroind_jefe=.
+	replace afroind_jefe= afroind_ci if relacion_ci==1
+	egen afroind_ch  = min(afroind_jefe), by(idh_ch) 
+	drop afroind_jefe
 
 	*******************
-   *** afroind_ano_c ***
+    *** afroind_ano_c ***
 	*******************
 gen afroind_ano_c = 2017		
 
