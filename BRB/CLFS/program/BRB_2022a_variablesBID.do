@@ -812,7 +812,7 @@ Professional		 -
 	**************
 	gen eduui_ci = .
 	replace eduui_ci = (inlist(EDUCLEV, 3, 4) & QUALLEV==4)
-	replace eduui_ci =  if EDUCLEV == 9
+	replace eduui_ci =.  if EDUCLEV == 9
 
 	**************
 	***eduuc_ci***
@@ -1074,8 +1074,8 @@ Professional		 -
     *migrante_ci****
     ****************
 	gen byte migrante_ci= .
-	replace migrante_ci==1 if Ntlty!=1 & Ntlty!=9
-	replace migrante_ci==0 if Ntlty==1 
+	replace migrante_ci=1 if Ntlty!=1 & Ntlty!=9
+	replace migrante_ci=0 if Ntlty==0
 	
 	****************
 	 *migrantiguo5_ci*
@@ -1086,8 +1086,8 @@ Professional		 -
 	 *miglac_ci*
 	****************	
 	gen byte miglac_ci = .
-	replace miglac_ci==1 if Ntlty==2  | Ntlty==3
-	replace miglac_ci==0 if Ntlty!=2  & Ntlty!=3
+	replace miglac_ci=1 if Ntlty==2  | Ntlty==3
+	replace miglac_ci=0 if Ntlty!=2  & Ntlty!=3
 
 ****************************
 ***VARIABLES DE EXTERNAS***
