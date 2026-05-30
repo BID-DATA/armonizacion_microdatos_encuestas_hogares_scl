@@ -431,7 +431,6 @@ drop pop*/
 	* HORAS TRABAJADAS EN LA ACTIVIDAD PRINCIPAL *
 	**********************************************
 	gen horaspri_ci = .
-
 	replace horaspri_ci = 0    if condocup_ci == 1 & HRSWRKD == 1   & TWOJOBS==2 // None
 	replace horaspri_ci = 2.5  if condocup_ci == 1 & HRSWRKD == 2   & TWOJOBS==2 // Under 5
 	replace horaspri_ci = 7    if condocup_ci == 1 & HRSWRKD == 3  & TWOJOBS==2 // 5-9
@@ -800,10 +799,10 @@ Professional		 -
 	*************
 	gen aedu_ci = .
 	replace aedu_ci = 0 if EDUCLEV == 0
-	replace aedu_ci = 3 if EDUCLEV == 1
+	replace aedu_ci = 6 if EDUCLEV == 1
 	replace aedu_ci = 9 if EDUCLEV == 2
 	replace aedu_ci = 13 if EDUCLEV == 3
-	replace aedu_ci = 14 if EDUCLEV == 4
+	replace aedu_ci = 15 if EDUCLEV == 4
 	replace aedu_ci = . if EDUCLEV == 5
 	replace aedu_ci = . if EDUCLEV == 9
 
@@ -843,11 +842,8 @@ Professional		 -
 	***************
 	***edupub_ci***
 	***************
-	* proxt
 	gen byte edupub_ci = .
-	replace edupub_ci = 1 if inlist(PLACETR,12,13,14,15,16)
-	replace edupub_ci = . if inlist(PLACETR,11,21,31,41,51,81)
-	replace edupub_ci = . if inlist(PLACETR,19,22,32,42,52)
+
 
 	****************
 	***asispre_ci***
