@@ -82,28 +82,20 @@ label values region_BID_c region_BID
 * REGION PAIS *
 ***************
 
-/*
-1. Port of Spain
- 2. San Fernando
- 3. Borough of Arima
- 4. Borough of Chaguanas
- 8. Borough of Point Fortin
- 13. St. George
- 14. Caroni
- 15. Nariva/Mayaro
- 16. St. Andrew/St. David
- 17. Victoria
- 18. St. Patrick
- 19. Tobago
-*/
-
-
-/*10. Port of Spain
- 20. San Fernando
- 30. Borough Arima
- 40. Bor. Chaguanas
- 80. Bor.Point Fortin
- */
+/* p08: Address:
+          10 Port of Spain
+          20 San Fernando
+          30 Arima Borough
+          31 St. George
+		  40 Bor. Chaguanas
+          41 Caroni
+          51 Nariva/Mayaro
+          61 St. Andrew/St. David
+          71 Victoria
+		  80 Bor.Point Fortin
+          81 St. Patrick
+          91 Tobago
+          99 Not stated */
 
 clonevar region_c=p08
 
@@ -168,7 +160,7 @@ tostring idh_ch, replace
 * IDENTIFICADOR DEL INDIVIDUO *
 *******************************
 
-egen idp_ci =group(idh_ch indivno)
+egen idp_ci =concat(idh_ch indivno)
 label var idp_ci "Identificador Individual dentro del Hogar"
 tostring idp_ci, replace
 
@@ -201,6 +193,14 @@ label var edad_ci "edad del individuo"
 
 * MGR Febrero 2016: Cuestionario sólo desagrega categorias por Single (living alone) or Married (coupled)
 
+ /*p12: marital status 
+           1 never married
+           2 married but living alone
+           3 had a partner but now living alone
+           4 married
+           5 common law
+           8 not applicable
+           9 not stated */
 gen civil_ci=.
 replace civil_ci=1 if p12==1 | p12==3  | p12==2 
 replace civil_ci=2 if p12==4 | p12==5 
@@ -227,7 +227,7 @@ label values relacion_ci relacion
 ************************************
 * Create a dummy indicating this person's income should NOT be included 
 gen miembros_ci=(relacion_ci>=1 & relacion_ci<=5)
-replace miembros_ci=1 if (relacion_ci>=1 & relacion_ci<=4)
+replace miembros_ci = . if relacion_ci == .
 label variable miembros_ci "Variable dummy que indica las personas que son miembros del Hogar"
 
 
@@ -290,76 +290,85 @@ label values clasehog_ch clasehog
 *************************************
 *  NUMERO DE MIEMBROS EN EL HOGAR  *
 *************************************
-egen nmiembros_ch=sum(relacion_ci>0 & relacion_ci<5), by (idh_ch)
+egen nmiembros_ch=sum(relacion_ci>0 & relacion_ci<=5), by (idh_ch)
 label variable nmiembros_ch "Numero de miembros en el Hogar"
-
-**************************
-*  MIEMBROS EN EL HOGAR  *
-**************************
-g miembros_ch=0
-replace miembros_ch=1 if relacion_ci>=1 & relacion_ci<=4
-label var miembros_ch "Miembros en el hogar"
-label define miembros 1"Miembro" 2"No miembro"  
-label values miembros_ch miembros
 
 ********************************************
 *  MIEMBROS EN EL HOGAR MAYORES DE 21 AÑOS *
 ********************************************
-egen nmayor21_ch=sum((relacion_ci>0 & relacion_ci<5) & (edad_ci>=21)), by (idh_ch)
+egen nmayor21_ch=sum((relacion_ci>0 & relacion_ci<=5) & (edad_ci>=21)), by (idh_ch)
 label variable nmayor21_ch "Numero de personas de 21 años o mas dentro del Hogar"
 
 ********************************************
 *  MIEMBROS EN EL HOGAR MENORES DE 21 AÑOS *
 ********************************************
-egen nmenor21_ch=sum((relacion_ci>0 & relacion_ci<5) & (edad_ci<21)), by (idh_ch)
+egen nmenor21_ch=sum((relacion_ci>0 & relacion_ci<=5) & (edad_ci<21)), by (idh_ch)
 label variable nmenor21_ch "Numero de personas menores a 21 años dentro del Hogar"
 
 ********************************************
 *  MIEMBROS EN EL HOGAR MAYORES DE 65 AÑOS *
 ********************************************
-egen nmayor65_ch=sum((relacion_ci>0 & relacion_ci<5) & (edad_ci>=65)), by (idh_ch)
+egen nmayor65_ch=sum((relacion_ci>0 & relacion_ci<=5) & (edad_ci>=65)), by (idh_ch)
 label variable nmayor65_ch "Numero de personas de 65 años o mas dentro del Hogar"
-
-********************************************
-*  MIEMBROS EN EL HOGAR MENORES DE 65 AÑOS *
-********************************************
-*egen nmenor65_ch=sum((relacion_ci>0 & relacion_ci<5) & (age<=65)), by (idh_ch)
-*label variable nmenor65_ch "Miembros de 65 años o menos dentro del Hogar"
 
 ********************************************
 *  MIEMBROS EN EL HOGAR MENORES DE 6 AÑOS *
 ********************************************
-egen nmenor6_ch=sum((relacion_ci>0 & relacion_ci<5) & (edad_ci<6)), by (idh_ch)
+egen nmenor6_ch=sum((relacion_ci>0 & relacion_ci<=5) & (edad_ci<6)), by (idh_ch)
 label variable nmenor6_ch "Miembros menores a 6 años dentro del Hogar"
 
 ******************************************
 *  MIEMBROS EN EL HOGAR MENORES DE 1 AÑO *
 ******************************************
-egen nmenor1_ch=sum((relacion_ci>0 & relacion_ci<5) & (edad_ci<1)),  by (idh_ch)
+egen nmenor1_ch=sum((relacion_ci>0 & relacion_ci<=5) & (edad_ci<1)),  by (idh_ch)
 label variable nmenor1_ch "Miembros menores a 1 año dentro del Hogar"
 
 *******************************************************
 ***           VARIABLES DE DIVERSIDAD               ***
 *******************************************************
+/* p05: ethnic group
+           1 african
+           2 indian
+           3 chinese
+           4 syrian/lebanese
+           5 white
+           6 mixed
+           7 other
+           9 not stated */
+		   
 	*********
 	*afro_ci*
 	*********
-	gen byte afro_ci = . 	  // se queda como missing (.) si no existe la pregunta
+	gen byte afro_ci = .
+	replace afro_ci = 1 if p05 == 1
+	replace afro_ci = 0 if p05 != 1 & p05 != 9 & p05 != .
+	tab p05 afro_ci, m
 	
 	*********
 	*ind_ci*
 	*********	
-	gen byte ind_ci =. 		  // se queda como missing (.) si no existe la pregunta
+	gen byte ind_ci = .
+	replace ind_ci = 1 if p05 == 2
+	replace ind_ci = 0 if p05 != 2 & p05 != 9 & p05 != .
+	tab p05 ind_ci, m
 
 	**************
 	*noafroind_ci*
 	**************
-	gen byte noafroind_ci =.   // se queda como missing (.) si no existe la pregunta
+	gen byte noafroind_ci = . 
+	replace noafroind_ci = 1 if (afro_ci == 0 | ind_ci == 0)
+	replace noafroind_ci = 0 if (afro_ci == 1 | ind_ci == 1)
+	replace noafroind_ci = . if (afro_ci == . & ind_ci == .) 
+	tab p05 noafroind_ci, m
 
 	************
 	*afroind_ci*
 	************
-	gen byte afroind_ci=. 
+	gen byte afroind_ci = . 
+	replace afroind_ci = 1 if ind_ci == 1 
+	replace afroind_ci = 2 if afro_ci == 1
+	replace afroind_ci = 3 if noafroind_ci == 1
+	tab afroind_ci noafroind_ci, m
 	
 	*********
 	*afro_ch*
@@ -424,11 +433,11 @@ label variable nmenor1_ch "Miembros menores a 1 año dentro del Hogar"
 * CONDICION DE OCUPACION *
 **************************
 
-g condocup_ci=.
-replace condocup_ci=1 if p18==1
-replace condocup_ci=2 if p18==2 & p23==1 
-replace condocup_ci=3 if (condocup_ci ~=1 & condocup_ci ~=2) & edad_ci>=15
-recode condocup_ci (.=4) if edad_ci<15
+g condocup_ci = .
+replace condocup_ci = 1 if p18 == 1 & edad_ci >= 15
+replace condocup_ci = 2 if p18 != 1 & p23 == 1 & edad_ci >= 15
+replace condocup_ci = 3 if (condocup_ci ~= 1 & condocup_ci ~= 2) & edad_ci >= 15
+replace condocup_ci = 4 if condocup_ci == . & edad_ci < 15
 label define condocup 1"Ocupado" 2"Desocupado" 3"Inactivo" 4"Menores de 15 años"
 label values condocup_ci condocup
 label var condocup_ci "Condición de ocupación"
@@ -436,6 +445,30 @@ label var condocup_ci "Condición de ocupación"
 *****************************
 * CATEGORIA DE INACTIVIDAD  *
 *****************************
+/* P21: Reason for leaving last job
+           1 New job
+           2 Illness
+           3 Fired
+           4 Retired
+           5 Returned to school
+           6 Retrenched/Laid off
+           7 Did not want to work
+           8 No more work available
+          98 Other
+          99 Not stated
+P25: Reason for not seeking work last week
+           1 At school
+           2 Housekeeping
+           3 Retired
+           4 Disabled
+           5 Temporary illness
+           6 Did not want work
+           7 Awaiting results
+           8 Knew of no vacancy
+           9 Presently employed
+          10 Discouraged
+          98 Other
+          99 Not stated */		  
 *Jubilados, pensionados 
 gen categoinac_ci=.
 replace categoinac_ci=1 if (p21==4 | p25==3) & condocup_ci==3
@@ -463,8 +496,8 @@ label values nempleos_ci nempleos_ci
 ************
 * OCUPADO  *
 ************
-gen emp_ci=0 
-replace emp_ci=1 if condocup_ci==1
+gen emp_ci = . 
+replace emp_ci = (condocup_ci == 1) if (condocup_ci != . & condocup_ci != 4)
 label var emp_ci "Ocupado"
 label define ocupado 1"Ocupado" 0"No ocupado"  
 label values emp_ci ocupado
@@ -478,8 +511,9 @@ label var antiguedad_ci "Años de trabajo en la actividad principal"
 ***************
 * DESOCUPADO  *
 ***************
-gen desemp_ci=0 
-replace desemp_ci=1 if condocup_ci==2
+gen desemp_ci = .
+replace desemp_ci = 1 if condocup_ci == 2
+replace desemp_ci = 0 if condocup_ci != 2 & condocup != 4 & condocup_ci != .
 label var desemp_ci "Desocupado"
 label define desocupado 1"Desocupado" 0"No desocupado"  
 label values desemp_ci desocupado
@@ -487,8 +521,9 @@ label values desemp_ci desocupado
 ***********
 * CESANTE *
 ***********
-gen cesante_ci=0 if condocup_ci==2
-replace cesante_ci=1 if p16==1 & condocup_ci==2
+gen cesante_ci = .
+replace cesante_ci = 0 if condocup_ci == 2
+replace cesante_ci = 1 if p16 == 1 & condocup_ci == 2
 label var cesante_ci "Cesante"
 
 ***********************************
@@ -507,15 +542,17 @@ label var durades_ci "Duración de desempleo o búsqueda de empleo"
 ***********************************
 * POBLACION ECONOMICAMENTE ACTIVA *
 ***********************************
-gen pea_ci=0
-replace pea_ci=1 if condocup_ci==1 | condocup_ci==2
+gen pea_ci = .
+replace pea_ci = 1 if inlist(condocup_ci, 1, 2)
+replace pea_ci = 0 if inlist(condocup_ci, 3, 4)
 label var pea_ci "Población económicamente activa"
 
 ****************
 * DESALENTADOS *
 ****************
-gen desalent_ci=0 if condocup_ci==3
-replace desalent_ci=1 if (p25==6 | p25==10 | p21==7) & condocup_ci==3
+gen desalent_ci = .
+replace desalent_ci = 0 if condocup_ci==3
+replace desalent_ci = 1 if (p25==6 | p25==10 | p21==7) & condocup_ci==3
 label var desalent_ci "Trabajadores desalentados, personas que creen que por alguna razon no conseguiran trabajo" 
 
 
@@ -524,8 +561,23 @@ label var desalent_ci "Trabajadores desalentados, personas que creen que por alg
 *****************************
 * No hay la pregunta de si quisiera o esta disponible para trabajar mas horas.
 * Se utiliza como proxy la razon de p35 "No more work available"
-gen subemp_ci=0 if condocup_ci==1
-replace subemp_ci=1 if p34>0 & p34<=5 & p35==1 & condocup_ci==1
+/* p34: hours worked
+           0 none
+           1 under 1 hour
+           2 1 - 8 hours
+           3 9 - 16 hours
+           4 17 - 24 hours
+           5 25 - 32 hours
+           6 33 - 40 hours
+           7 41 - 50 hours
+           8 51 - 60 hours
+           9 61 - 70 hours
+          10 71 + hours
+          88 not applicable
+          99 not stated */
+gen subemp_ci = .
+replace subemp_ci = 0 if condocup_ci == 1
+replace subemp_ci = 1 if p34 > 0 & p34 <= 5 & p35 == 1 & condocup_ci == 1
 label var subemp_ci "Trabaja menos de 30 horas"
 
 
@@ -534,8 +586,9 @@ label var subemp_ci "Trabaja menos de 30 horas"
 ****************************************************
 
 * Se aproxima con la pregunta p35 "own choise"
-gen tiempoparc_ci=0 
-replace tiempoparc_ci=1 if p34>0 & p34<=5 & p35==5 & condocup_ci==1
+gen tiempoparc_ci = .
+replace tiempoparc_ci = 0 if condocup_ci == 1
+replace tiempoparc_ci = 1 if p34>0 & p34<=5 & p35==5 & condocup_ci==1
 label var tiempoparc_ci "Trabaja menos de 30 horas"
 
 *********************************
@@ -577,8 +630,9 @@ label var rama_ci "Rama de actividad principal"
 *********************************
 *  TRABAJA EN EL SECTOR PUBLICO *
 *********************************
-gen spublico_ci=0 if condocup_ci==1
-replace spublico_ci=1 if (p28==1 | p28==2) & condocup_ci==1
+gen spublico_ci = .
+replace spublico_ci = 0 if condocup_ci==1
+replace spublico_ci = 1 if inlist(p28, 0, 1, 2) & condocup_ci==1
 label var spublico_ci "Personas que trabajan en el sector publico"
  
 ********************
@@ -1044,13 +1098,21 @@ label var tecnica_ci "Tiene carrera técnica"
 *******************************
 *******************************
 
-* No se armonizaro las variables de vivienda
 ****************
 ***aguared_ch***
 ****************
+/* water supply:
+           1 Public piped into dwelling
+           2 Public piped into yard
+           3 Private piped into dwelling
+           4 private catchment not piped
+           5 Public standpipe
+           6 Truck borne (and not piped into dwelling)
+           7 Other
+           9 Not stated */
 generate aguared_ch =.
 replace aguared_ch = 1 if (water==1 | water==2 | water==3)
-replace aguared_ch = 0 if water>3
+replace aguared_ch = 0 if water>3 & water<9
 la var aguared_ch "Acceso a fuente de agua por red"
 	
 *****************
@@ -1062,18 +1124,20 @@ gen aguafconsumo_ch = 0
 *aguafuente_ch*
 *****************
 
-gen aguafuente_ch = 1 if (water==1 | water==2 | water==3)
-replace aguafuente_ch = 2 if water==5
-replace aguafuente_ch= 6 if water==6
-replace aguafuente_ch= 10 if water==4 | water==7 |water==8 |water==9
+gen aguafuente_ch = .
+replace aguafuente_ch = 1  if (water==1 | water==2 | water==3)
+replace aguafuente_ch = 2  if  water==5
+replace aguafuente_ch = 6  if  water==6
+replace aguafuente_ch = 10 if  inlist(water, 4, 7, 8)
 
 *************
 *aguadist_ch*
 *************
-gen aguadist_ch=0
-replace aguadist_ch= 1 if  water==1 | water==3
-replace aguadist_ch= 2 if  water==2| water==6 
-replace aguadist_ch= 3 if  water==4 |water==5 | water==7 |water==8 | water==9
+gen aguadist_ch = .
+replace aguadist_ch = 1 if water==1 | water==3
+replace aguadist_ch = 2 if water==2
+replace aguadist_ch = 3 if inrange(water, 4, 8)
+replace aguadist_ch = 0 if aguadist_ch == . & aguafuente_ch != .
 
 **************
 *aguadisp1_ch*
@@ -1116,10 +1180,17 @@ gen aguamide_ch = .
 *****************
 *bano_ch         *  Altered
 *****************
+/* Toilet facilities:
+           1 Pit
+           2 WC linked to sewer
+           3 WC not linked to sewer
+           4 Other
+           5 None
+           9 Not stated */
 gen bano_ch=.
 replace bano_ch=0 if toilet==5
 replace bano_ch=1 if toilet==2
-replace bano_ch=6 if toilet==1|toilet==3|toilet==4|toilet==9 |toilet==8
+replace bano_ch=6 if inlist(toilet, 1, 3, 4, 8)
 
 ***************
 ***banoex_ch***
@@ -1138,7 +1209,7 @@ replace banomejorado_ch =0 if (bano_ch ==0 | bano_ch>=4) & bano_ch!=6
 *sinbano_ch*
 ************
 gen sinbano_ch = 3
-replace sinbano_ch = 0 if toilet!=5
+replace sinbano_ch = 0 if toilet!=5 & toilet!=9
 *label var sinbano_ch "= 0 si tiene baño en la vivienda o dentro del terreno"
 
 *************
@@ -1150,7 +1221,14 @@ gen aguatrat_ch =9
 *****************************
 *  ILUMINACION ES ELÉCTRICA *
 *****************************
-gen luz_ch=.
+/* lighting: Source of lighting
+           1 Electricity
+           2 Kerosene
+           3 Other
+           4 None
+           9 Not stated */
+gen luz_ch = (lighting == 1)
+replace luz_ch = . if lighting == 9
 label var luz_ch "La iluminación del hogar es eléctrica"
 
 ************************
@@ -1162,7 +1240,8 @@ label var luzmide_ch "Usa medidor de luz para pagar por su consumo"
 ********************************************
 *  USA COMBUSTIBLE COMO FUENTE DE ENERGIA  *
 ********************************************
-gen combust_ch=.
+gen combust_ch = (lighting == 2)
+replace combust_ch = . if lighting == 9
 label var combust_ch "Usa combustible como fuente de energía"
 
 
@@ -1221,14 +1300,15 @@ label values resid_ch resid
 *  CANTIDAD DE DORMITORIOS EN EL HOGAR  *
 *****************************************
 *Modificado Mayra Sáenz - Julio 2016: Antes se generaba como missing, pero la variable sí consta en la base de datos.
-gen dorm_ch= bedrooms
+gen dorm_ch = bedrooms
+replace dorm_ch = . if bedrooms == 9
 label var dorm_ch "Cantidad de dormitorios en el hogar"
 
 *****************************************
 *  CANTIDAD DE CUARTOS EN EL HOGAR  *
 *****************************************
-*Modificado Mayra Sáenz - Julio 2016: Antes se generaba como missing, pero la variable sí consta en la base de datos.
-gen cuartos_ch=rooms
+* Existe la variable rooms, pero no incluye cocina, baños, otros.
+gen cuartos_ch = .
 label var cuartos_ch "Cantidad de cuartos en el hogar"
 
 **********************************
@@ -1279,13 +1359,27 @@ label var internet_ch "Tiene acceso a internet"
 *  TIENE CELULAR  *
 *******************
 gen cel_ch=.
-*replace cel_ch=1 if
 label var cel_ch "Tiene celular"
 
 **********************
 *  TIPO DE VIVIENDA  *
 **********************
-gen vivi1_ch=.
+/* dwellingtyp: Type of dwell unit
+           1 Sepate house
+           2 Flat/Apartment
+           3 Town house
+           4 Condominium
+           5 Wafda
+           6 Double house/duplex
+           7 Part of Commercial/Industrial building
+           8 Barracks
+           9 Barracks
+          10 Other
+          99 Not stated */
+gen vivi1_ch = .
+replace vivi1_ch = 1 if inlist(dwelling, 1, 3, 5, 6)
+replace vivi1_ch = 2 if inlist(dwelling, 2, 4)
+replace vivi1_ch = 3 if inlist(dwelling, 7, 8, 9, 10)
 label var vivi1_ch "Tipo de vivienda"
 label define vivi1 1"Casa" 2"Departamento" 3"Otro tipo"
 label values vivi1_ch vivi1
@@ -1293,13 +1387,26 @@ label values vivi1_ch vivi1
 ************************
 *  CASA O DEPARTAMENTO *
 ************************
-gen vivi2_ch=.
+gen vivi2_ch = (vivi1_ch == 1 | vivi1_ch == 2)
+replace vivi2_ch = . if vivi1_ch == .
 label var vivi2_ch "Casa o departamento"
 
 ********************
 *  VIVIENDA PROPIA *
 ********************
-gen viviprop_ch=.
+/* Tenancy:
+           1 Owned
+           2 Rented Private - furnished
+           3 Rented Private - unfurnished
+           4 Rented Government
+           5 Rent free
+           6 Squatted
+           7 Other
+           9 Not stated */
+gen viviprop_ch = .
+replace viviprop_ch = 0 if inlist(tenancy, 2, 3, 4)
+replace viviprop_ch = 3 if inlist(tenancy, 5, 6, 7)
+replace viviprop_ch = 4 if tenancy == 1
 label var viviprop_ch "Vivienda propia"
 label define viviprop 0"Arrendada" 1"Propia" 2"Otra"
 label values viviprop_ch viviprop
@@ -1313,7 +1420,8 @@ label var vivitit_ch "El hogar posee un título de propiedad"
 ********************************
 *  MONTO DE PAGO POR ALQUILER  *
 ********************************
-gen vivialq_ch=.
+gen vivialq_ch = renteddw
+replace vivialq_ch = . if renteddw == 8888 | renteddw == 9999
 label var vivialq_ch "Monto pagado por el alquiler"
 
 ***********************************
@@ -1403,37 +1511,46 @@ lab val atencion_ci atencion_ci
 	*******************
 	*** migrante_ci ***
 	*******************
-	
+/* p07: place of birth 
+           1 trinidad and tobago
+           2 foreign/abroad
+           9 not stated */
 	gen migrante_ci=(p07==2) if p07!=. & p07!=9
 	label var migrante_ci "=1 si es migrante"
 	
 	**********************
-	*** migantiguo5_ci ***
+	*** migrantiguo5_ci ***
 	**********************
-	
-	gen migantiguo5_ci=.
-	label var migantiguo5_ci "=1 si es migrante antiguo (5 anos o mas)"
-		
-	**********************
-	*** migrantelac_ci ***
-	**********************
-	
-	gen migrantelac_ci=.
-	label var migrantelac_ci "=1 si es migrante proveniente de un pais LAC"
-	/* Los codigos de paises no permiten desagregar de forma correcta a los paises LAC, por esta razón no se armoniza */
-	
-	**********************
-	*** migrantiguo5_ci **
-	**********************
-	
-	gen migrantiguo5_ci=.
+/* p11:  number of years in pre4sent residence */
+	gen migrantiguo5_ci = 0
+	replace migrantiguo5_ci = 1 if p11 >= 5 & migrante_ci == 1
+	replace migrantiguo5_ci = . if migrante_ci == 0
 	label var migrantiguo5_ci "=1 si es migrante antiguo (5 anos o mas)"
 		
 	**********************
 	*** miglac_ci ***
 	**********************
-	
-	gen miglac_ci=.
+/* p09: country of birth
+		11 Barbados
+		12 Granada
+		13 Guyana
+		14 Art. Lucía
+		15 San Vicente
+		16 Otros países del Caribe
+		21 India
+		22 Venezuela/Margarita
+		23 Reino Unido
+		24 Estados Unidos
+		25 Canadá
+		26 Otros países de América
+		27 Europa
+		28 África
+		88 No aplica
+		98 Resto del mundo
+		99 No especificado	*/
+	gen miglac_ci = 0
+	replace miglac_ci = 1 if migrante_ci == 1 & inlist(p09, 11, 12, 13, 14, 15, 16, 22, 26)
+	replace miglac_ci = . if migrante_ci == 0
 	label var miglac_ci "=1 si es migrante proveniente de un pais LAC"
 	
 

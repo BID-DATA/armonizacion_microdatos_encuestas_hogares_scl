@@ -62,9 +62,13 @@ gen mes_c=.
 *************************
 * FACTORES DE EXPANSION *
 *************************
-gen factor_ch = raisef
+* Creación del Factor de expansión
+* Población WDI: 1370328
+* Observaciones base: 33301
+* % expansión: 41.149755
+gen factor_ch=41.149755
 label var factor_ch "Factor de Expansion del Hogar"
-gen factor_ci = raisef
+gen factor_ci= 41.149755
 label var factor_ci "Factor de Expansion del Individuo"
 
 ***************
@@ -183,6 +187,7 @@ label values relacion_ci relacion
 ************************************
 * Create a dummy indicating this person's income should NOT be included 
 gen miembros_ci = (relacion_ci >= 1 & relacion_ci <= 5)
+replace miembros_ci = . if relacion_ci == .
 label variable miembros_ci "Variable dummy que indica las personas que son miembros del Hogar"
 
 *******************************
