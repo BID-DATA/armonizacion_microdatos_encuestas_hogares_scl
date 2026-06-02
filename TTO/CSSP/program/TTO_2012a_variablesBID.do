@@ -1450,6 +1450,7 @@ g instcot_ci=.
 		15 San Vicente
 		16 Otros países del Caribe
 		21 India
+		22 Venezuela/Margarita
 		23 Reino Unido
 		24 Estados Unidos
 		25 Canadá
