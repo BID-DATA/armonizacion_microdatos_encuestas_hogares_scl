@@ -11,7 +11,6 @@ set more off
  *________________________________________________________________________________________________________________*
  
 global ruta = "\\sapidbshares.file.core.windows.net\\idbrestrictedshares\\SCL_DATAFILES_RESTRICTED"
-cd $ruta
 
 local PAIS BRB
 local ENCUESTA LFS
