@@ -1028,6 +1028,9 @@ drop pop*/
     *migrante_ci****
     ****************
 	gen byte migrante_ci= .
+	replace migrante_ci=1 if Ntlty!=0 & Ntlty!=9
+	replace migrante_ci=0 if Ntlty==0
+	replace migrante_ci= . if Ntlty==. 
 	
 	****************
 	 *migrantiguo5_ci*
@@ -1038,6 +1041,10 @@ drop pop*/
 	 *miglac_ci*
 	****************	
 	gen byte miglac_ci = .
+	replace miglac_ci=1 if migrante_ci==1 & (Ntlty==1 |Ntlty==2) 
+	replace miglac_ci=0 if migrante_ci==1 & Ntlty>2
+	replace miglac_ci=. if migrante_ci!=1 
+
 	
 
 ****************************
