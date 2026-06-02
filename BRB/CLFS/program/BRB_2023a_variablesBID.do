@@ -11,7 +11,6 @@ set more off
  *________________________________________________________________________________________________________________*
  
 global ruta = "\\sapidbshares.file.core.windows.net\\idbrestrictedshares\\SCL_DATAFILES_RESTRICTED"
-cd $ruta
 
 local PAIS BRB
 local ENCUESTA LFS
@@ -52,6 +51,8 @@ use `base_in', clear
 	* REGION PAIS *
 	***************
 	g region_c=PARNO
+	label define region_c 201 "St Michael" 202 "Christ Church" 203 "St George" 204 "St Philip" 205 "St John" 206 "St James" 207 "St Thomas" 208 "St Joseph" 209 "St Andrew" 210 "sS Peter" 211 "St Lucy"
+	label values region_c region_c
 
 	***********
 	*  PAIS   *
@@ -66,7 +67,7 @@ use `base_in', clear
 	**********************
 	* MES DE LA ENCUESTA *
 	**********************
-	gen mes_c = .
+	gen mes_c = MONTH
 
 	***************
 	*    ZONA     *
