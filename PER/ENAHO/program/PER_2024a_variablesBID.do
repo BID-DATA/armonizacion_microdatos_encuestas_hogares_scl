@@ -1,5 +1,5 @@
 *(Versión stata 18)
-
+     
 **# Bookmark #1
 clear
 set more off
