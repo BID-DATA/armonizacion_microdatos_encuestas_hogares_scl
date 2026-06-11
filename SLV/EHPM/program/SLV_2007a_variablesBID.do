@@ -945,17 +945,38 @@ replace aguafconsumo_ch= 6 if (r313a1==4) & r314==1
 replace aguafconsumo_ch= 7 if (r313a1==1) & r314==1
 replace aguafconsumo_ch = 8 if (r313a1==6) & r314==1
 replace aguafconsumo_ch= 10 if (r313a1==8 | r313a1==3 |r313a1==5) & r314==1
+
 *****************
 *aguafuente_ch*
 *****************
+/* r31301 ¿Tiene la vivienda servicio de agua por cañería?
+           1 Dentro de la vivienda 
+           2 Fuera de la vivienda pero dentro de la propiedad
+		   3 No tiene
+           4 Tiene pero no le cae (por más de un mes)
 
-gen aguafuente_ch = 1 if r31301==1 |  r31301==2
-replace aguafuente_ch = 2 if r313a1==2
-replace aguafuente_ch = 5 if r313a1==7
-replace aguafuente_ch= 6 if r313a1==4
-replace aguafuente_ch= 7 if r313a1==1
-replace aguafuente_ch = 8 if r313a1==6
-replace aguafuente_ch= 10 if r313a1==8 | r313a1==3 |r313a1==5 | (r312==. & jefe_ci!=.)  
+r313a1 ¿Cómo se abastede agua esta vivienda?
+           1 Cañería del vecino(a)
+           2 Pila, chorro público o cantarera
+		   3 Chorro común
+           4 Camión, carreta o pipa
+           5 Pozo (privado o común)
+           6 Ojo de agua, río o quebrada
+		   7 Colecta de agua lluvia
+           8 Otros medios */
+
+gen byte aguafuente_ch = .
+replace aguafuente_ch = 1 if inlist(r31301, 1, 2)	// Cañería (piped), red de distribución 
+replace aguafuente_ch = 2  if inlist(r313a1, 2, 3)	// Llave pública, pila, standpipe
+*replace aguafuente_ch = 3  if ...					// Agua embotellada
+*replace aguafuente_ch = 4  if ...					// Pozo protegido
+replace aguafuente_ch = 5  if r313a1 == 7			// Agua de lluvia
+replace aguafuente_ch = 6  if r313a1 == 4			// Camión, cisterna, aljibe
+replace aguafuente_ch = 7  if r313a1 == 1			// Otra fuente mejorada
+replace aguafuente_ch = 8  if r313a1 == 6			// Rio, vertiente, lago
+replace aguafuente_ch = 9  if r313a1 == 5			// Otra fuente no mejorada  
+replace aguafuente_ch = 10 if r313a1 == 8			// Otra fuente sin clasificación
+
 
 *************
 *aguadist_ch*

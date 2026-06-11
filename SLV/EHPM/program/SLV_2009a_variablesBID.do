@@ -899,17 +899,41 @@ gen aguafconsumo_ch = 0
 *****************
 *aguafuente_ch*
 *****************
+/* r312 ¿Tiene la vivienda servicio de agua por cañería?
+           1 Dentro de la vivienda con abastecimiento público (ANDA)
+           2 Dentro de la vivienda con otro tipo de abastecimiento
+           3 Fuera de la vivienda pero dentro de la propiedad con abastecimiento público (ANDA)
+           4 Fuera de la vivienda pero dentro de la propiedad con otro tipo de abastecimiento
+           5 No tiene
+           6 Tiene pero no le cae (por más de un mes)
 
-gen aguafuente_ch = 1 if r312<=4 
-replace aguafuente_ch = 2 if r313==2
-replace aguafuente_ch = 3 if r313==11
-replace aguafuente_ch= 4 if r313==5
-replace aguafuente_ch = 5 if r313==10
-replace aguafuente_ch= 6 if r313==3
-replace aguafuente_ch= 7 if r313==8 | r313==1
-replace aguafuente_ch = 8 if r313==7 | r313 ==9
-replace aguafuente_ch= 9 if  r313==6 
-replace aguafuente_ch= 10 if r313==14 |r313==13 | r313==12 |r313==4 | (r312==. & jefe_ci!=.)   
+r313 ¿Cómo se abastede agua esta vivienda?
+           1 Cañería del vecino(a)
+           2 Pila, chorro público o cantarera
+           3 Camión, carreta o pipa
+           4 Pozo con tubería
+           5 Pozo protegido (cubierto)
+		   6 Pozo no protegido
+           7 Ojo de agua, río o quebrada
+           8 Manantial protegido
+           9 Manantial no protegido
+          10 Colecta agua lluvia
+          11 Agua envasada
+		  12 Chorro común
+          13 Acarreo de cañería del vecino(a)
+		  14 Otros medios */
+
+gen byte aguafuente_ch = .
+replace aguafuente_ch = 1 if inlist(r312, 1, 2, 3, 4)	// Cañería (piped), red de distribución 
+replace aguafuente_ch = 2  if inlist(r313, 2, 12)		// Llave pública, pila, standpipe
+replace aguafuente_ch = 3  if r313 == 11				// Agua embotellada
+replace aguafuente_ch = 4  if inlist(r313, 4, 5)		// Pozo protegido
+replace aguafuente_ch = 5  if r313 == 10				// Agua de lluvia
+replace aguafuente_ch = 6  if r313 == 3					// Camión, cisterna, aljibe
+replace aguafuente_ch = 7  if inlist(r313, 1, 8, 13)	// Otra fuente mejorada
+replace aguafuente_ch = 8  if r313 == 7					// Rio, vertiente, lago
+replace aguafuente_ch = 9  if inlist(r313, 6, 9)		// Otra fuente no mejorada  
+replace aguafuente_ch = 10 if r313 == 14				// Otra fuente sin clasificación
 
 *************
 *aguadist_ch*

@@ -1562,16 +1562,33 @@ replace aguafconsumo_ch= 6 if (r313==6) & r314==1
 replace aguafconsumo_ch= 7 if (r313==3) & r314==1
 replace aguafconsumo_ch = 8 if (r313==8) & r314==1
 replace aguafconsumo_ch= 10 if (r313==9 | r313==5 |r313==7) & r314==1
+
 *****************
 *aguafuente_ch*
 *****************
+/* r313 Abastecimiento de agua
+           1 Cañería dentro de vivienda
+           2 Cañería fuera de vivienda, dentro de propiedad
+           3 Cañería del vecino
+           4 Pila o chorro público
+           5 Chorro común
+           6 Camión, carreta o pipa
+           7 Pozo (privado o común)
+           8 Ojo de agua, río o quebrada
+           9 Otros medios */
 
-gen aguafuente_ch = 1 if r313==1 |  r313==2
-replace aguafuente_ch = 2 if r313==4
-replace aguafuente_ch= 6 if r313==6
-replace aguafuente_ch= 7 if r313==3
-replace aguafuente_ch = 8 if r313==8
-replace aguafuente_ch= 10 if r313==9 | r313==5 |r313==7
+gen byte aguafuente_ch = .
+replace aguafuente_ch = 1 if inlist(r313, 1, 2)		// Cañería (piped), red de distribución 
+replace aguafuente_ch = 2 if inlist(r313, 4, 5)		// Llave pública, pila, standpipe
+*replace aguafuente_ch = 3  if ...					// Agua embotellada
+*replace aguafuente_ch = 4  if ...					// Pozo protegido
+*replace aguafuente_ch = 5  if ... 					// Agua de lluvia
+replace aguafuente_ch = 6  if r313 == 6			// Camión, cisterna, aljibe
+replace aguafuente_ch = 7  if r313 == 3			// Otra fuente mejorada
+replace aguafuente_ch = 8  if r313 == 8			// Rio, vertiente, lago
+replace aguafuente_ch = 9  if r313 == 7			// Otra fuente no mejorada  
+replace aguafuente_ch = 10 if r313 == 9			// Otra fuente sin clasificación
+
 
 *************
 *aguadist_ch*
