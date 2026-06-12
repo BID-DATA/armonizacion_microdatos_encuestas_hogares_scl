@@ -446,8 +446,8 @@ use "`base_in'", clear
 	********************
 	*** tiempoparc_ci ***
 	********************
-	/* d05: 3=menos horas sin ganar menos, 4=menos horas aunque gane menos, 5=igual horas igual pago */
-	gen byte tiempoparc_ci = ((horaspri_ci >= 1 & horaspri_ci < 30) & inlist(d05, 3, 4, 5) & emp_ci == 1)
+	/* d03: 6=no desea cambiar */
+	gen byte tiempoparc_ci = ((horaspri_ci >= 1 & horaspri_ci < 30) & d03 == 6 & emp_ci == 1)
 
 	********************
 	*** categopri_ci ***
@@ -513,7 +513,7 @@ use "`base_in'", clear
 	/* b10: aporta caja principal, c07: aporta caja secundaria */
 	gen byte cotizando_ci = .
 	replace cotizando_ci = 1 if (b10 == 1 | c07 == 1 ) & emp_ci==1
-	replace cotizando_ci = 0 if inlist(b10, 6, 9, .) & inlist(c07, 6, .) & inlist(conodocup_ci 1, 2)
+	replace cotizando_ci = 0 if inlist(b10, 6, 9, .) & inlist(c07, 6, .) & inlist(condocup_ci, 1, 2)
 	replace cotizando_ci = 0 if peaa == 2
 
 	********************
@@ -1040,29 +1040,29 @@ use "`base_in'", clear
 	*** aguafconsumo_ch ***
 	********************
 	gen byte aguafconsumo_ch = .
-	replace aguafconsumo_ch = 1 if inlist(v08, 1, 2, 3, 4) & inlist(v09, 1, 2)  /* red, cañería privada/terreno */
-	replace aguafconsumo_ch = 2 if inlist(v08, 1, 2, 3, 4) & v09 == 3 /* llave pública */
-	replace aguafconsumo_ch = 3 if v08 == 11 /* agua embotellada */
-	replace aguafconsumo_ch = 4 if inlist(v08, 5, 6) /* pozo protegido */
-	replace aguafconsumo_ch = 5 if v08 == 10 /* lluvia */
-	replace aguafconsumo_ch = 6 if v08 == 12 /* aguatero/camión */
-	replace aguafconsumo_ch = 7 if v08 == 8 | ((inrange(v08, 1, 10) | v08 == 12) & (inlist(v09, 5, 8)))  /* otra mejorada */
-	replace aguafconsumo_ch = 8 if v08 == 13 /* agua superficial */
-	replace aguafconsumo_ch = 9 if inlist(v08, 7, 9) /* pozo/manantial sin protección */
-	replace aguafconsumo_ch = 10 if inlist(v08, 14, 99) | v08 == . /* no clasificable */
+	replace aguafconsumo_ch = 1  if inlist(v08, 1, 2, 3, 4) & inlist(v09, 1, 2)  // red, cañería privada/terreno
+	replace aguafconsumo_ch = 2  if inlist(v08, 1, 2, 3, 4) & v09 == 3 		// llave pública
+	replace aguafconsumo_ch = 3  if v08 == 11 | v09 == 7 					//agua embotellada
+	replace aguafconsumo_ch = 4  if inlist(v08, 5, 6) 						// pozo protegido (dentro del terreno)
+	replace aguafconsumo_ch = 5  if v08 == 10  								// lluvia
+	replace aguafconsumo_ch = 6  if v08 == 12 | v09 == 6 					// camión cisterna (aguatero)
+	replace aguafconsumo_ch = 7  if (v08 == 8 | ((inlist(v08, 1, 2, 3, 4) & (inlist(v09, 5, 8)))))  // otra mejorada
+	replace aguafconsumo_ch = 8  if v08 == 13 								// agua superficial
+	replace aguafconsumo_ch = 9  if inlist(v08, 7, 9) 						// pozo/manantial sin protección
+	replace aguafconsumo_ch = 10 if (inlist(v08, 14, 99) | v09 == 99) 		// otros, no clasificable, NR
 
 	********************
 	*** aguafuente_ch ***
 	********************
 	gen byte aguafuente_ch = .
-	replace aguafuente_ch = 1 if inlist(v06, 1, 2, 3, 4)  /* red (ESSAP/SENASA/comunitaria/privada) */
-	replace aguafuente_ch = 4 if inlist(v06, 5, 6) /* pozo protegido (artesiano/con bomba) */
-	replace aguafuente_ch = 5 if v06 == 7 /* pozo sin protección (sin bomba) */
-	replace aguafuente_ch = 6 if v06 == 11 /* camión cisterna (aguatero) */
-	replace aguafuente_ch = 7 if v06 == 10 /* agua de lluvia */
-	replace aguafuente_ch = 8 if v06 == 9 /* agua superficial (tajamar/río) */
-	replace aguafuente_ch = 9 if aguafuente_ch == . & !missing(v06) /* resto: manantial, otra, NR */
-	replace aguafuente_ch = 3 if v08 == 11 /* agua embotellada (override — JMP oct 2025) */
+	replace aguafuente_ch = 1  if inlist(v06, 1, 2, 3, 4)  & inlist(v07a, 1, 2) 	//red (ESSAP/SENASA/comunitaria/privada)
+	replace aguafuente_ch = 2  if inlist(v06, 1, 2, 3, 4) & v07a == 3  		// llave pública
+	replace aguafuente_ch = 4  if inlist(v06, 5, 6) 						// pozo protegido (artesiano/con bomba)
+	replace aguafuente_ch = 5  if v06 == 10 								// agua lluvia
+	replace aguafuente_ch = 6  if v06 == 11 | v07a == 6  					// camión cisterna (aguatero)
+	replace aguafuente_ch = 7  if (inlist(v06, 1, 2, 3, 4) & inlist(v07a, 4, 5, 7))  // otra mejorada
+	replace aguafuente_ch = 8  if v06 == 9 									 // agua superficial (tajamar/río)
+	replace aguafuente_ch = 10 if (inlist(v06, 7, 8, 12, 99) | v07a == 9)  // pozo, manantial, otra, NR
 
 	********************
 	*** aguadist_ch ***
@@ -1123,7 +1123,7 @@ use "`base_in'", clear
 	replace bano_ch = 3 if inlist(v13, 5, 6) /* letrina mejorada */
 	replace bano_ch = 4 if v13 == 4 /* inodoro/letrina a superficie */
 	replace bano_ch = 5 if v13 == 7 /* letrina sin techo/puerta */
-	replace bano_ch = 6 if inlist(v13, 3, 8, 9) | (v13 == . & jefe_ci != .) /* no clasificable */
+	replace bano_ch = 6 if inlist(v13, 3, 8, 9) | (v12 == . & jefe_ci != .) /* no clasificable */
 
 	********************
 	*** banoex_ch ***
