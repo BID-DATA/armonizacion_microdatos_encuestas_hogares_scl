@@ -689,8 +689,8 @@ label var ypen_ci "Valor de la pension contributiva"
 ***************
 *pensionsub_ci*
 ***************
-*DZ Mayo 2020 se dejó de incluir variable en cuestionario
-gen pensionsub_ci= .
+/*Variable f125 no disponible, si bien existe pregunta f124_2 sobre pensionistas, no permite la desagregación necesaria que mantiene la consistencia con los otros años de las encuestas */
+gen pensionsub_ci=.
 label var pensionsub_ci "1=recibe pension subsidiada / no contributiva"
 
 *****************

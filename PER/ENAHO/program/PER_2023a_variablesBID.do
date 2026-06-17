@@ -718,16 +718,13 @@ by idh_ch, sort: egen byte nmenor1_ch=sum((relacion_ci>0 & relacion_ci<=5) & (ed
 	**  ypensub_ci  *
 	*****************
 	*pensión no contributiva
-		gen p_pension65 = p5566c/2 
-		gen p_juntos = p5567c/2
-		
-		gen ypensub_ci    =  p5566c/2 
-		label var ypensub_ci "Valor de la pension subsidiada / no contributiva"
+	gen ypensub_ci    = ingtpu03/12
+	label var ypensub_ci "Valor de la pension subsidiada / no contributiva"
 
 	***************
 	*pensionsub_ci*
 	***************
-		gen pensionsub_ci = ypensub_ci>0 & ypensub_ci!=.
+		gen pensionsub_ci = ingtpu03>0 & ingtpu03!=.
 		label var pensionsub_ci "1=recibe pension subsidiada / no contributiva"
 
 	****************
