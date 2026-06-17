@@ -776,6 +776,8 @@ use "`base_in'", clear
 	  1=sin nivel, 2=inicial, 3=prim.incomp, 4=prim.comp, 5=sec.incomp, 6=sec.comp,
 	  7=sup.no.univ.incomp, 8=sup.no.univ.comp, 9=sup.univ.incomp, 10=sup.univ.comp,
 	  11=maestría/doctorado, 12=básica especial (- missing)
+
+    En el caso de superior no universitaria (8 y 9), los programas pueden durar entre 3 y 5 años. Se recomienda utilizar el total de básica (11) + la cantidad de años que reporta para ese nivel (grados)
 	*/
 	egen double grados = rowtotal(p301b p301c), missing
 
@@ -786,7 +788,7 @@ use "`base_in'", clear
 	replace aedu_ci = 6 + grados if p301a == 5
 	replace aedu_ci = 11 if p301a == 6
 	replace aedu_ci = 11 + grados if p301a == 7
-	replace aedu_ci = 13 if p301a == 8
+	replace aedu_ci = 11 + grados if p301a == 8 
 	replace aedu_ci = 11 + grados if p301a == 9
 	replace aedu_ci = 16 if p301a == 10
 	replace aedu_ci = 16 + grados if p301a == 11
