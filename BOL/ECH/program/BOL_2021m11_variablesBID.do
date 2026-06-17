@@ -291,6 +291,11 @@ label variable nmenor1_ch "Numero de familiares menores a 1 anio"
 gen miembros_ci=(relacion_ci>=1 & relacion_ci<=5)
 label variable miembros_ci "Miembro del hogar"
 
+*****************
+*miembros_one_ci*
+*****************
+gen miembros_one_ci = (inrange(s01a_05,1,10))
+
 
 *******************************************************
 ***           VARIABLES DE DIVERSIDAD               ***
@@ -318,11 +323,10 @@ label variable miembros_ci "Miembro del hogar"
 	**************
 	*noafroind_ci*
 	**************
-	gen byte noafroind_ci =.   // se queda como missing (.) si no existe la pregunta
+	gen byte noafroind_ci =.
 	replace noafroind_ci =1 if (afro_ci==0 & ind_ci==0)
 	replace noafroind_ci =0 if (afro_ci==1 | ind_ci==1)
-	replace noafroind_ci =. if (afro_ci==. | ind_ci==.) //Esto solo en el caso que se tenga ambas opciones no disponibles. 
-	ta noafroind_ci,m
+	replace noafroind_ci =. if (afro_ci==. | ind_ci==.)
 
 	************
 	*afroind_ci*
@@ -331,35 +335,34 @@ label variable miembros_ci "Miembro del hogar"
 	replace afroind_ci=1 if ind_ci==1 
 	replace afroind_ci=2 if afro_ci==1
 	replace afroind_ci=3 if noafroind_ci == 1
-	ta afroind_ci,m
 	
 	*********
 	*afro_ch*
 	*********
 	gen byte afro_jefe = afro_ci if relacion_ci==1
-	egen afro_ch  = max(afro_jefe), by(idh_ch) 
+	egen afro_ch  = min(afro_jefe), by(idh_ch) 
 	drop afro_jefe
 	
 	********
 	*ind_ch*
 	********	
-	gen byte ind_jefe = ind_ci if relacion_ci==1
-	egen ind_ch = max(ind_jefe), by(idh_ch) 
+	gen ind_jefe = ind_ci if relacion_ci == 1
+	egen ind_ch = min(ind_jefe), by(idh_ch) 
 	drop ind_jefe
 
 	**************
 	*noafroind_ch*
 	**************
-	gen byte noafroind_jefe = noafroind_ci if relacion_ci==1
-	egen noafroind_ch = max(noafroind_jefe), by(idh_ch) 
+	gen noafroind_jefe = noafroind_ci if relacion_ci == 1
+	egen noafroind_ch = min(noafroind_jefe), by(idh_ch) 
 	drop noafroind_jefe
 
 	************
 	*afroind_ch*
 	************
- 	gen byte afroind_jefe = afroind_ci if jefe_ci==1
+	gen afroind_jefe = afroind_ci if relacion_ci == 1
 	egen afroind_ch = min(afroind_jefe), by(idh_ch) 
-	drop afroind_jefe 
+	drop afroind_jefe
 
 	********
 	*dis_ci*
@@ -410,12 +413,13 @@ label variable miembros_ci "Miembro del hogar"
 	*******************
 	gen afroind_ano_c=2012
 
+	
 ************************************
 *** VARIABLES DEL MERCADO LABORAL***
 ************************************
 /************************************************************************************************************
 * Líneas de pobreza oficiales
-************************************************************************************************************/
+************************************************************************************************************
 
 ***********************
 *llave lp nacionales***
@@ -446,7 +450,7 @@ label var lp_ci "Linea de pobreza oficial del pais"
 *lpe_ci***
 *********
 gen lpe_ci =zext
-label var lpe_ci "Linea de indigencia oficial del pais"
+label var lpe_ci "Linea de indigencia oficial del pais"*/ 
 
 *************
 **salmm_ci***
@@ -2432,6 +2436,38 @@ bys idh_ch: gen pcasht_ch = (ptmc_ch==1|pnc_ch==1| potrot_ch==1)
 
 * Ingreso neto del hogar per cápita
 gen y_pc_net_ch = (y_hog_ch - ing_ptmc_ch - ing_pnc_ch - ing_otrot_ch) / nmiembros_sph_ch
+
+
+****************************
+***VARIABLES DE EXTERNAS***
+****************************	
+	
+	*****************
+	 *tipo_bienestar*
+	*****************	
+	gen byte tipo_bienestar = . 
+	replace tipo_bienestar  = 1 
+
+	*****************
+	 * pobre_ine _ci*
+	*****************	
+	gen pobre_ine_ci= p0
+
+	***********************
+	 * bienestar_agregado *
+	***********************	
+	gen bienestar_agregado = yhogpc
+
+	****************
+	* lpe_ci *
+	****************	
+	gen lpe_ci = z
+	
+	****************
+	 * ln_ci *
+	****************	
+	gen ln_ci = zext
+
 
 /*_____________________________________________________________________________________________________*/
 * Asignación de etiquetas e inserción de variables externas: tipo de cambio, Indice de Precios al 
