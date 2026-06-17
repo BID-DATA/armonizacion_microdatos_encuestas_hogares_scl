@@ -750,12 +750,19 @@ drop pop*/
 	*************
 	***aedu_ci*** 
 	*************
+	/* 
+    0 None; 1 Primary/elementary; 2 secondary; 3 Post secondary;
+    4 University; 5 other; 9 Not stated
+
+    En barbados post secondary es similar a terciaria no universitaria. ref: https://datacatalog.ihsn.org/catalog/6314/variable/F4/V367?name=WB4
+    */
+
 	gen aedu_ci = .
-	replace aedu_ci = 0 if EDUCLEV == 0
-	replace aedu_ci = 3 if EDUCLEV == 1
-	replace aedu_ci = 9 if EDUCLEV == 2
-	replace aedu_ci = 13 if EDUCLEV == 3
-	replace aedu_ci = 14 if EDUCLEV == 4
+	replace aedu_ci = 0 if EDUCLEV == 0                 /* Sin estudios */
+	replace aedu_ci = 0 + 6 if EDUCLEV == 1             /* Primaria completa */
+	replace aedu_ci = 6 + 5 if EDUCLEV == 2             /* Secundaria completa: 6 de prim + 5 de secu */ 
+	replace aedu_ci = 11 + 3 if EDUCLEV == 3            /* Terciaria no universitaria: 11 de básica + 3 de terciaria no universitaria */
+	replace aedu_ci = 11 + 5 if EDUCLEV == 4            /*Universitaria: 11 de básica + 5 de universitaria */ 
 	replace aedu_ci = . if EDUCLEV == 5
 	replace aedu_ci = . if EDUCLEV == 9
 
