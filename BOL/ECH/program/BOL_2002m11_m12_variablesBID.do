@@ -400,6 +400,207 @@ label variable miembros_ci "Miembro del hogar"
 	***afroind_ano_c***
 	*******************
 	gen afroind_ano_c=2001 
+	
+	
+****************************
+***VARIABLES DE MERCADO LABORAL***
+****************************
+
+	*************
+	*condocup_ci*
+	*************
+
+
+	*******************
+	***categoinac_ci***
+	*******************
+
+	
+	**********
+	***emp_ci*
+	**********
+
+
+	**************
+	***cesante_ci*** 
+	**************
+
+
+	***************
+	***desemp_ci***
+	***************	
+	
+	***************
+	***subemp_ci***
+	***************
+
+
+	****************
+	***durades_ci***
+	****************
+
+
+	***********
+	***pea_ci***
+	***********
+
+		
+	****************
+	*** nempleos_ci***
+	****************
+
+
+	******************
+	***antiguedad_ci***
+	******************
+
+	
+	***************
+	***desalent_ci***
+	***************
+
+
+	***************
+	***horaspri_ci***
+	***************	
+	gen horas1=s524min/60
+	egen horaspri_ci=rsum(s524hrs horas1), missing
+	replace horaspri_ci=. if s524hrs==. & horas1==.
+	replace horaspri_ci=horaspri_ci*s524a
+	replace horaspri_ci = . if emp_ci!=1
+	
+
+	
+	***************
+	***horastot_ci ***
+	***************	
+	gen horas2=s538min/60
+
+	egen horassec=rsum(s538hrs horas2), missing
+	replace horassec=. if s538hrs==. & horas2==.
+	replace horassec=horassec*s538a
+	
+	egen horastot_ci=rsum(horaspri_ci horassec), missing
+	replace horastot_ci=. if horaspri_ci==. & horassec==.
+	replace horaspri_ci = . if emp_ci!=1
+	
+	drop  horas1 horas2 horassec
+	
+	***************
+	***tiempoparc_ci ***
+	***************	
+
+	
+	***************
+	***categopri_ci ***
+	***************	
+
+	
+	***************
+	***categosec_ci ***
+	***************	
+
+
+	***************
+	***rama_ci ***
+	***************	
+
+
+	***************
+	***spublico_ci ***
+	***************	
+
+	
+	***************
+	***tamemp_ci ***
+	***************	
+
+	
+	***************
+	***spublico_ci ***
+	***************	
+
+	
+	***************
+	***cotizando_ci***
+	***************	
+	gen  byte cotizando_ci = .
+
+	
+	***************
+	***afiliado_ci***
+	***************	
+	gen  byte afiliado_ci = .
+	replace afiliado_ci  = 0 if   s550b ==2
+	replace afiliado_ci  = 1 if   s550b ==1		
+	
+	***************
+	***instcot_ci***
+	***************	
+	gen byte instcot_ci="AFP" if cotizando_ci == 1
+	
+	**************
+	***formal_ci***
+	**************
+	gen byte formal_ci = .
+	replace formal_ci  =  1 if (cotizando_ci == 1 | afiliado_ci == 1) & condocup_ci == 1
+	replace formal_ci = 0 if cotizando_ci == 0 & (condocup_ci == 1 | condocup_ci == 2)
+	
+	*******************
+	***tipocontrato_ci***
+	*******************
+	gen byte tipocontrato_ci=.
+	replace tipocontrato_ci=1 if  s618==3 & categopri_ci==3
+	replace tipocontrato_ci=2 if s618==1 & categopri_ci==3
+	replace tipocontrato_ci=3 if ((s618==2 | s618==4) | tipocontrato_ci==.) & categopri_ci==3
+
+
+
+	**************
+	***ocupa_ci***
+	**************
+
+	gen byte ocupa_ci=.
+
+	
+	**************
+	**pension_ci***
+	**************
+	gen byte pension_ci=. 
+	replace pension_ci=1 if s602c>0 | s602d>0 | s602e>0 |  s602f>0 |  s602g>0
+	recode pension_ci .=0 
+
+	
+	***************
+	**pensionsub_ci**
+	***************
+	gen byte pensionsub_ci=1 if s604d>0 & s604d!=.
+	recode pensionsub_ci .=0
+
+	
+	****************
+	*tipopen_ci*****
+	****************
+	gen tipopen_ci=.
+	replace tipopen_ci=1 if s602c>0 &  s602c!=.
+	replace tipopen_ci=2 if s602f>0 & s602f!=.
+	replace tipopen_ci=3 if s602d>0 & s602d!=.
+	replace tipopen_ci=4 if s602e>0 & s602e!=. 
+	replace tipopen_ci=12 if (s602c>0 & s602f>0) & (s602c!=. & s602f!=.)
+	replace tipopen_ci=13 if (s602c>0 & s602d>0) & (s602c!=. & s602d!=.)
+	replace tipopen_ci=23 if (s602f>0 & s602d>0) & (s602f!=. & s602d!=.)
+	replace tipopen_ci=123 if (s602c>0 & s602f>0 & s602d>0) & (s602c!=. & s602f!=. & s602d=.)
+	label define  t 1 "Jubilacion" 2 "Viudez/orfandad" 3 "Benemerito" 4 "Invalidez" 12 "Jub y viudez" 13 "Jub y benem" 23 "Viudez y benem" 123 "Todas"
+	label value tipopen_ci t
+
+	
+	***************
+	**instpen_ci **
+	***************
+	gen byte instpen_ci = . 
+
+	
+*********************************************************
 
 ************************************
 *** VARIABLES DEL MERCADO LABORAL***
@@ -462,46 +663,6 @@ gen salmm_ci= 	430.00
 
 label var salmm_ci "Salario minimo legal"
 
-****************
-*cotizando_ci***
-****************
-gen cotizando_ci=.
-
-*recode cotizando_ci .=0 if condact>=1 & condact<=3
-label var cotizando_ci "Cotizante a la Seguridad Social"
-
-****************
-*afiliado_ci****
-****************
-gen afiliado_ci= 1 if  s550b ==1	
-*replace afiliado_ci =1 if s5_71b==1
-recode afiliado_ci .=0 if condact>=2 & condact<=4
-label var afiliado_ci "Afiliado a la Seguridad Social"
-
-****************
-*tipopen_ci*****
-****************
-gen tipopen_ci=.
-
-
-replace tipopen_ci=1 if s602c>0 &  s602c~=.
-replace tipopen_ci=2 if s602f>0 & s602f~=.
-replace tipopen_ci=3 if s602d>0 & s602d~=.
-replace tipopen_ci=4 if s602e>0 & s602e~=. 
-replace tipopen_ci=12 if (s602c>0 & s602f>0) & (s602c~=. & s602f~=.)
-replace tipopen_ci=13 if (s602c>0 & s602d>0) & (s602c~=. & s602d~=.)
-replace tipopen_ci=23 if (s602f>0 & s602d>0) & (s602f~=. & s602d~=.)
-replace tipopen_ci=123 if (s602c>0 & s602f>0 & s602d>0) & (s602c~=. & s602f~=. & s602d~=.)
-label define  t 1 "Jubilacion" 2 "Viudez/orfandad" 3 "Benemerito" 4 "Invalidez" 12 "Jub y viudez" 13 "Jub y benem" 23 "Viudez y benem" 123 "Todas"
-label value tipopen_ci t
-label var tipopen_ci "Tipo de pension - variable original de cada pais" 
-
-****************
-*instpen_ci*****
-****************
-gen instpen_ci=.
-label var instpen_ci "Institucion proveedora de la pension - variable original de cada pais" 
-gen instcot_ci=. 
 
 
 ****************
@@ -559,39 +720,20 @@ label var tamemp_ci "# empleados en la empresa segun rangos"
 label define tamemp_ci 1 "Pequena" 2 "Mediana" 3 "Grande"
 label value tamemp_ci tamemp_ci
 
-*************
-**pension_ci*
-*************
-
-egen aux_p=rsum(s602c s602d s602e s602f s602g), missing
-gen pension_ci=1 if aux_p>0 & aux_p!=. 
-recode pension_ci .=0 
-label var pension_ci "1=Recibe pension contributiva"
 
 *************
 **ypen_ci*
 *************
 
-gen ypen_ci=aux_p 
-recode ypen_ci .=0 
-label var ypen_ci "Valor de la pension contributiva"
+egen ypen_ci=rsum(s602c s602d s602e s602f s602g), missing
 
-***************
-*pensionsub_ci*
-***************
-ta s604d
-gen aux_ps= s604d/12  if s604d >0 & s604d !=. 
-gen byte pensionsub_ci=1 if aux_ps>0 & aux_ps!=.
-recode pensionsub_ci .=0
-label var pensionsub_ci "1=recibe pension subsidiada / no contributiva"
 
 *****************
 **ypensub_ci*
 *****************
-destring aux_ps, replace
-gen  ypensub_ci=aux_ps
+destring s604d, replace
+gen  ypensub_ci=s604d/12  if s604d >0 & s604d !=. 
 
-label var ypensub_ci "Valor de la pension subsidiada / no contributiva"
 	
 
 ************
@@ -620,37 +762,6 @@ label var pea_ci "Población Económicamente Activa"
 gen desalent_ci=(emp_ci==0 & s505==2 & (s509a==3 | s509a==4))
 replace desalent_ci=. if emp_ci==.
 
-*****************
-***horaspri_ci***
-*****************
-
-gen horas1=s524min/60
-
-egen horaspri_ci=rsum(s524hrs horas1), missing
-replace horaspri_ci=. if s524hrs==. & horas1==.
-replace horaspri_ci=horaspri_ci*s524a
-replace horaspri_ci=. if emp_ci~=1
-
-drop horas1
-
-
-*****************
-***horastot_ci***
-*****************
-
-gen horas2=s538min/60
-
-egen horassec=rsum(s538hrs horas2), missing
-replace horassec=. if s538hrs==. & horas2==.
-replace horassec=horassec*s538a
-replace horassec=. if emp_ci~=1
-
-egen horastot_ci=rsum(horaspri_ci horassec), missing
-replace horastot_ci=. if horaspri_ci==. & horassec==.
-replace horastot_ci=. if emp_ci~=1
-
-drop horas2
-drop horassec
 
 ***************
 ***subemp_ci***
@@ -748,21 +859,6 @@ replace spublico_ci=0 if s519==1
 replace spublico_ci=. if emp_ci~=1
 
 
-**************
-***ocupa_ci***
-**************
-* Nota MGD 07/25/2014: no hay como separar entre servicios y comercio; tampoco es posible desagregar la categoria 9.  
-* Es por esto que no hay categoria 4 de comercio y la categoria 9 sube respecto a la serie posterior. No es comparable se deja como missing.
-gen ocupa_ci=.
-/*replace ocupa_ci=1 if (cob_p==2 | cob_p==3) & emp_ci==1
-replace ocupa_ci=2 if cob_p==1 & emp_ci==1
-replace ocupa_ci=3 if cob_p==4 & emp_ci==1
-replace ocupa_ci=5 if cob_p==5 & emp_ci==1
-replace ocupa_ci=6 if cob_p==6 & emp_ci==1
-replace ocupa_ci=7 if (cob_p==7 | cob_p==8)  & emp_ci==1
-replace ocupa_ci=8 if cob_p==0 & emp_ci==1
-replace ocupa_ci=9 if cob_p==9 & emp_ci==1*/
-
 
 *************
 ***rama_ci***
@@ -816,23 +912,6 @@ label var categoinac_ci "Categoría de inactividad"
 label define categoinac_ci 1 "jubilados o pensionados" 2 "Estudiantes" 3 "Quehaceres domésticos" 4 "Otros" 
 
 
-*******************
-***formal***
-*******************
-gen formal=1 if cotizando_ci==1
-
-replace formal=1 if afiliado_ci==1 & (cotizando_ci!=1 | cotizando_ci!=0) & condocup_ci==1 & pais_c=="BOL"   /* si se usa afiliado, se restringiendo a ocupados solamente*/
-replace formal=1 if afiliado_ci==1 & (cotizando_ci!=1 | cotizando_ci!=0) & condocup_ci==1 & pais_c=="CRI"
-replace formal=1 if afiliado_ci==1 & (cotizando_ci!=1 | cotizando_ci!=0) & condocup_ci==1 & pais_c=="GTM" & anio_c>1998
-replace formal=1 if afiliado_ci==1 & (cotizando_ci!=1 | cotizando_ci!=0) & condocup_ci==1 & pais_c=="PAN"
-replace formal=1 if afiliado_ci==1 & (cotizando_ci!=1 | cotizando_ci!=0) & condocup_ci==1 & pais_c=="PRY" & anio_c<=2006
-replace formal=1 if afiliado_ci==1 & (cotizando_ci!=1 | cotizando_ci!=0) & condocup_ci==1 & pais_c=="DOM"
-replace formal=1 if afiliado_ci==1 & (cotizando_ci!=1 | cotizando_ci!=0) & condocup_ci==1 & pais_c=="MEX" & anio_c>=2008
-
-gen byte formal_ci=.
-replace formal_ci=1 if formal==1 & (condocup_ci==1 | condocup_ci==2)
-replace formal_ci=0 if formal_ci==. & (condocup_ci==1 | condocup_ci==2) 
-label var formal_ci "1=afiliado o cotizante / PEA"
 *************************************************************************************
 *******************************INGRESOS**********************************************
 *************************************************************************************
@@ -1475,6 +1554,10 @@ gen vivitit_ch=.
 
 gen vivialq_ch=s803a if viviprop_ch==0
 replace vivialq_ch=vivialq_ch*7.45 if s803b==2
+
+*******************
+***vivialqimp_ch***
+*******************
 
 gen vivialqimp_ch=s804a
 replace vivialqimp_ch=vivialqimp_ch*7.45 if s804b==2
