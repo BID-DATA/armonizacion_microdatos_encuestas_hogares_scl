@@ -338,37 +338,50 @@ label variable nmenor1_ch "Numero de familiares menores a 1 anio"
 ***************
 ****afro_ci****
 ***************
-gen afro_ci = (s01a_09npioc == 1)
+gen byte afro_ci = .
+replace afro_ci = 1 if s01a_09npioc == 1
+replace afro_ci = 0 if s01a_09npioc != 1 & s01a_09 != .
 label variable afro_ci "se autoidentifican como negras, afrodescendientes o variaciones de estas identidades"
 
 ***************
 ****ind_ci*****
 ***************
-gen ind_ci = (s01a_09 == 1)
+gen byte ind_ci = .
+replace ind_ci = 1 if s01a_09npioc != 1 & s01a_09 == 1
+replace ind_ci = 0 if s01a_09npioc == 1 | s01a_09 == 2  | s01a_09 == 3
 label variable ind_ci "se autoidentifican como indígena o variaciones de estas identidades"
 
 ******************
 ***noafroind_ci***
 ******************
-gen noafroind_ci = (afro_ci == 0 & ind_ci == 0)
+gen byte noafroind_ci = .
+replace noafroind_ci = 1 if (afro_ci == 0 & ind_ci == 0)
+replace noafroind_ci = 0 if (afro_ci==1 | ind_ci==1)
+replace noafroind_ci =. if (afro_ci==. | ind_ci==.) //Esto solo en el caso que se tenga ambas opciones no disponibles. 
 label variable noafroind_ci "No se autoidentifican como indígena, negro, afrodescendiente o variaciones de estas identidades"
 
 ****************
 ****afro_ch*****
 ****************
-gen afro_ch = (jefe_ci == 1 & afro_ci == 1)
+gen byte afro_jefe = afro_ci if relacion_ci==1
+egen afro_ch = max(afro_jefe), by(idh_ch)   // Agregar el bys y max asegura que la variable sea a nivel de hogar
+drop afro_jefe
 label variable afro_ch "Jefe del hogar se autoidentifica como negro, afrodescendiento o variaciones"
 
 ****************
-****afro_ch*****
+****ind_ch*****
 ****************
-gen ind_ch = (jefe_ci == 1 & ind_ci == 1)
+gen byte ind_jefe = ind_ci if relacion_ci==1
+egen ind_ch = max(ind_jefe), by(idh_ch)    // Agregar el bys y max asegura que la variable sea a nivel de hogar
+drop ind_jefe
 label variable ind_ch "Jefe del hogar se autoidentifica como indígena o variaciones"
 
 ******************
 ***noafroind_ch***
 ******************
-gen noafroind_ch = (jefe_ci == 1 & noafroind_ci == 1)
+gen byte noafroind_jefe = noafroind_ci if relacion_ci==1
+egen noafroind_ch =  max(noafroind_jefe), by(idh_ch)  // Agregar el bys y max asegura que la variable sea a nivel de hogar
+drop noafroind_jefe
 label variable noafroind_ch "Jefe del hogar no se autoidentifica como indígena, negro, afrodescendiente o variaciones"
 
 *******************
@@ -388,18 +401,18 @@ gen afroind_ano_c = 2012
 
 **Pregunta 2022: ¿A que nación o pueblo indígena originario campesino o afro boliviano pertenece? (s01a_09) (PERTENCE 1, NO PERTENECE 2, NO SOY BOLIVIANO/BOLIVIANA 3)
 
-gen afroind_ci = . 
-replace afroind_ci = 1 if s01a_09 == 1 
-replace afroind_ci = 2 if s01a_09npioc == 1
-replace afroind_ci = 3 if s01a_09 == 2
-replace afroind_ci = 9 if s01a_09 == 3
+gen byte afroind_ci = .
+replace afroind_ci = 1 if ind_ci==1  // La condicion antigua mezclaba afro e ind (s01a_09 == 1)
+replace afroind_ci = 2 if afro_ci==1 
+replace afroind_ci=3 if noafroind_ci == 1  
+*replace afroind_ci = 9 if s01a_09 == 3  // Según el manual el uso del 9 no debería aplicar en este caso
 
 ***************
 ***afroind_ch***
 ***************
-gen afroind_ch = 0 
-bysort idh_ch (jefe_ci s01a_09): replace afroind_ch = 1 if jefe_ci == 1 & s01a_09 == 1
-
+gen byte afroind_jefe = afroind_ci if jefe_ci==1
+egen afroind_ch = min(afroind_jefe), by(idh_ch)  // La condición antigua mezclaba afro e ind (s01a_09 == 1)
+drop afroind_jefe
 
 
 	*******************************
