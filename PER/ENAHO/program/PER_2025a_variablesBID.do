@@ -1218,7 +1218,7 @@ use "`base_in'", clear
 
 
 
-
+compress
 saveold "`base_out'", version(12) replace
 
 cap log close
