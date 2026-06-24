@@ -582,16 +582,16 @@ use "`base_in'", clear
 	*************
 	* ylmpri_ci *
 	*************
-	egen ylmpri_ci=rsum(ing_trab1 ing_negp1)if emp_ci==1, missing
-	replace ylmpri_ci = . if ylmpri_ci <= 0 | ylmpri_ci >= 999999999     //excluye valores fuera de rango
-	replace ylmpri_ci = 0 if categopri_ci == 4     // se imputa ingreso 0 a los trabajadores no remunerados según categopri_ci.
+	egen ylmpri_ci=rsum(ing_trab1 ing_negp1), missing
+	*replace ylmpri_ci = . if ylmpri_ci <= 0 | ylmpri_ci >= 999999999     //excluye valores fuera de rango
+	*replace ylmpri_ci = 0 if categopri_ci == 4     // se imputa ingreso 0 a los trabajadores no remunerados según categopri_ci.
 
 	************
 	* ylmsec_ci *
 	************
-	egen ylmsec_ci=rsum(ing_trab2 ing_negp2)if emp_ci==1, missing
-	replace  ylmsec_ci = . if ylmsec_ci<= 0 | ylmsec_ci >= 999999999
-	replace  ylmsec_ci = 0 if categopri_ci == 4
+	egen ylmsec_ci=rsum(ing_trab2 ing_negp2), missing
+	*replace  ylmsec_ci = . if ylmsec_ci<= 0 | ylmsec_ci >= 999999999
+	*replace  ylmsec_ci = 0 if categopri_ci == 4
 
 	**************
 	* ylmotros_ci *
@@ -603,7 +603,7 @@ use "`base_in'", clear
 	*********
 	* ylm_ci *
 	*********
-	egen double ylm_ci = rowtotal(ylmpri_ci ylmsec_ci ylmotros_ci), mi
+	egen double ylm_ci = rsum(ylmpri_ci ylmsec_ci ylmotros_ci), mi
 
 	**************
 	* ylnmpri_ci *
@@ -623,12 +623,12 @@ use "`base_in'", clear
 	**********
 	* ylnm_ci *
 	**********
-	egen double ylnm_ci = rowtotal(ylnmpri_ci ylnmsec_ci ylnmotros_ci), mi
+	egen double ylnm_ci = rsum(ylnmpri_ci ylnmsec_ci ylnmotros_ci), mi
 
 	**********
 	* ynlm_ci *
 	**********
-	egen ynlm_ci=rsum(ing_rent ing_tran otros), missing //CONEVAL no incluye otros
+	egen double ynlm_ci=rsum(ing_rent ing_tran otros), missing //CONEVAL no incluye otros
 
 	***********
 	* ynlnm_ci *
