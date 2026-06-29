@@ -276,27 +276,67 @@ label variable miembros_ci "Miembro del hogar"
            pueblos indígenas, ¿[NOMBRE] |
                              pertenece?
 	*/
+	
+	*************
+	***afro_ci***
+	*************
+	gen byte afro_ci = . 
+
+	************
+	***ind_ci***
+	************
+	gen byte ind_ci = .
+	replace ind_ci = 1 if inrange(r3, 1, 10)  /* se incluyó "10. Chango" a la lista */
+	replace ind_ci = 0 if r3 == 11			  /* changed to "11. Otro" this year */
+	
+	******************
+	***noafroind_ci***
+	******************
+	gen byte noafroind_ci = .
+	replace noafroind_ci =1 if (afro_ci==0 | ind_ci==0)	 // Personas que NO se identifican como afro o indígenas
+	replace noafroind_ci =0 if (afro_ci==1 | ind_ci==1)  // Personas que se identifican como afro o indígenas
+	replace noafroind_ci =. if (afro_ci==. & ind_ci==.)
+	
 	***************
 	***afroind_ci***
 	***************
+	gen afroind_ci=. 
+	replace afroind_ci = 1 if ind_ci==1
+	replace afroind_ci = 2 if afro_ci==1
+	replace afroind_ci = 3 if noafroind_ci==1
 
-gen afroind_ci=. 
-replace afroind_ci=1 if (r3 >=1 & r3 <=10 ) /* se incluyó "10. Chango" a la lista */
-replace afroind_ci=2 if r3==0
-replace afroind_ci=3 if r3==11  /* changed to "11. Otro" this year */
+	*********
+	*afro_ch*
+	*********
+	gen byte afro_jefe = afro_ci if relacion_ci==1
+	egen afro_ch  = max(afro_jefe), by(idh_ch) 
+	drop afro_jefe
 
+	********
+	*ind_ch*
+	********	
+	gen byte ind_jefe = ind_ci if relacion_ci==1
+	egen ind_ch = max(ind_jefe), by(idh_ch) 
+	drop ind_jefe
+
+	**************
+	*noafroind_ch*
+	**************
+	gen byte noafroind_jefe = noafroind_ci if relacion_ci==1
+	egen noafroind_ch = max(noafroind_jefe), by(idh_ch) 
+	drop noafroind_jefe
 
 	***************
 	***afroind_ch***
 	***************
-gen afroind_jefe= afroind_ci if relacion_ci==1
-egen afroind_ch  = min(afroind_jefe), by(idh_ch) 
-drop afroind_jefe 
+	gen afroind_jefe= afroind_ci if relacion_ci==1
+	egen afroind_ch  = min(afroind_jefe), by(idh_ch) 
+	drop afroind_jefe 
 
 	*******************
 	***afroind_ano_c***
 	*******************
-gen afroind_ano_c=2020
+	gen afroind_ano_c=2020
 
 
 		*********************************

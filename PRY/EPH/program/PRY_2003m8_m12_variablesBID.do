@@ -1624,6 +1624,21 @@ replace vivialqimp_ch=. if v14ede>=15000000
 *******************************************************				
 * Maria Antonella Pereira & Nathalia Maya - Julio 2021	
 
+	*********
+	*afro_ci*
+	*********
+gen byte afro_ci = . 	  // se queda como missing (.) si no existe la pregunta
+	
+	*********
+	*ind_ci*
+	*********	
+gen byte ind_ci =. 		  // se queda como missing (.) si no existe la pregunta
+
+	**************
+	*noafroind_ci*
+	**************
+gen byte noafroind_ci =.   // se queda como missing (.) si no existe la pregunta
+
 	***************
 	***afroind_ci***
 	***************
@@ -1633,6 +1648,21 @@ gen afroind_ci=.
 	***afroind_ch***
 	***************
 gen afroind_ch=. 
+
+	*********
+	*afro_ch*
+	*********
+gen afro_ch  = .
+	
+	********
+	*ind_ch*
+	********	
+gen ind_ch = .
+
+	**************
+	*noafroind_ch*
+	**************
+gen noafroind_ch = .
 
 	*******************
 	***afroind_ano_c***

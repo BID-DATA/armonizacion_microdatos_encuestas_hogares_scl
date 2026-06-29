@@ -95,11 +95,40 @@ label var factor_ch "Factor de expansion del Hogar"
 *******************************************************				
 * Maria Antonella Pereira & Nathalia Maya - Marzo 2021	
 
+	*********
+	* afro_ci
+	*********
+gen afro_ci = .
+
+	********
+	* ind_ci   
+	********
+gen ind_ci = .
+
+	****************
+	* noafroind_ci  
+	****************
+gen byte noafroind_ci = .
 			
 	***************
 	*** afroind_ci ***
 	***************
 gen afroind_ci=. 
+
+	*********
+	* afro_ch 
+	*********
+gen afro_ch = .
+
+	********
+	* ind_ch 
+	********
+gen ind_ch = .
+
+	****************
+	* noafroind_ch 
+	****************
+gen noafroind_ch = . 
 
 	***************
 	*** afroind_ch ***

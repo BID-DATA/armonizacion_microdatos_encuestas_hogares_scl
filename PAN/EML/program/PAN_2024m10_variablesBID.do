@@ -301,9 +301,10 @@ use `base_in', clear
 	*	noafroind_ci
 	******************************
 	gen noafroind_ci=.
-	replace noafroind_ci=1 if p4d_indige==11 & p4f_afrod==8
-	replace noafroind_ci=0 if p4d_indige!=11 | p4f_afrod!=8
-
+	replace noafroind_ci =1 if (afro_ci==0 | ind_ci==0)	 // Personas que NO se identifican como afro o indígenas
+	replace noafroind_ci =0 if (afro_ci==1 | ind_ci==1)  // Personas que se identifican como afro o indígenas
+	replace noafroind_ci =. if (afro_ci==. & ind_ci==.)
+	
 	******************************
 	*	afro_jefe
 	******************************
@@ -331,9 +332,9 @@ use `base_in', clear
 	** Para casos que reportan ambas autoidentificaciones, se pondera la afrodesendiente siguendo la forma de reportar en armonizaciones pasadas
 
 	gen afroind_ci=. 
-	replace afroind_ci=1 if p4d_indige>=1 & p4d_indige<=10 
-	replace afroind_ci=2 if p4f_afrod>=1 & p4f_afrod<=7
-	replace afroind_ci=3 if p4d_indige==11 & p4f_afrod==8
+	replace afroind_ci=1 if ind_ci==1 
+	replace afroind_ci=2 if afro_ci==1
+	replace afroind_ci=3 if noafroind_ci == 1
 
 
 	***************
@@ -341,13 +342,14 @@ use `base_in', clear
 	***************
 	gen afroind_jefe= afroind_ci if relacion_ci==1
 	egen afroind_ch  = min(afroind_jefe), by(idh_ch) 
+	drop afroind_jefe
 
 	***************
 	*** noafroind_ch ***
 	***************
-	gen noafroind_ch = 0
-	replace noafroind_ch = 1 if (ind_ci == 0 | afro_ci == 0) & jefe_ci == 1
-	drop afroind_jefe
+	gen noafroind_jefe= noafroind_ci if relacion_ci==1
+	egen noafroind_ch  = min(noafroind_jefe), by(idh_ch) 
+	drop noafroind_jefe
 
 	*******************
 	*** dis_ci ***

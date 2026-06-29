@@ -349,9 +349,10 @@ drop ind_jefe
 *****************
 
 		gen byte noafroind_ci = . 
-		replace noafroind_ci = 1 if afro_ci==0 & ind_ci==0
-		replace noafroind_ci = 0 if afro_ci==1 | ind_ci==1
-
+		replace noafroind_ci =1 if (afro_ci==0 | ind_ci==0)	 // Personas que NO se identifican como afro o indígenas
+		replace noafroind_ci =0 if (afro_ci==1 | ind_ci==1)  // Personas que se identifican como afro o indígenas
+		replace noafroind_ci =. if (afro_ci==. & ind_ci==.)
+		
 ***************
 ***noafroind_ch***
 ***************
