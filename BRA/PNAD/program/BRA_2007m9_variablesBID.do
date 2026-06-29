@@ -280,34 +280,6 @@ desocupadas
 PET: >=10 años de edad
 */
 
-****************
-*afiliado_ci****
-****************
-
-gen afiliado_ci=.
-label var afiliado_ci "Afiliado a la Seguridad Social"
-
-****************
-*cotizando_ci***
-****************
-gen cotizando_ci=0     if condocup_ci==1 | condocup_ci==2 
-replace cotizando_ci=1 if (v9059==1 | v9099==1 | v9103==1 | v9120==2) & cotizando_ci==0 /*solo a emplead@s y asalariad@s, difiere con los otros paises*/
-label var cotizando_ci "Cotizante a la Seguridad Social"
-
-
-gen cotizapri_ci=0     if condocup_ci==1 | condocup_ci==2 
-replace cotizapri_ci=1 if (v9059==1) & cotizando_ci==0 
-label var cotizapri_ci "Cotizante a la Seguridad Social por su trabajo principal"
-
-gen cotizasec_ci=0     if condocup_ci==1 | condocup_ci==2 
-replace cotizasec_ci=1 if (v9099==1) & cotizando_ci==0 
-label var cotizasec_ci "Cotizante a la Seguridad Social por su trabajo secundario"
-
-gen cotizaotros_ci=0     if condocup_ci==1 | condocup_ci==2 
-replace cotizaotros_ci=1 if (v9103==1 | v9120==2) & cotizando_ci==0 
-label var cotizaotros_ci "Cotizante a la Seguridad Social por otro trabajos o por aporte privado"
-
-
 ********************
 *** instcot_ci *****
 ********************
@@ -474,25 +446,61 @@ label var tecnica_ci "=1 formacion terciaria tecnica"
 ************
 ***emp_ci***
 ************
+***** El código mantiene como missing values a la poblacion menor de la edad limite de la PET que no forman parte de la población de 	referencia de la sección laboral de la Encuesta *****.
+gen byte emp_ci = .
+replace emp_ci = (condocup_ci == 1) if (condocup_ci != . & condocup_ci != 4)
+label var emp_ci "Ocupado (empleado)"
+label define emp_ci 0"No" 1"Si", add
+label value emp_ci emp_ci
 
-gen emp_ci=(condocup_ci==1)
-
-****************
+***************
 ***desemp_ci***
-****************
+***************
+***** El código mantiene como missing values a la poblacion menor de la edad limite de la PET que no forman parte de la población de referencia de la sección laboral de la Encuesta *****.
+gen byte desemp_ci = .
+replace desemp_ci = (condocup_ci == 2) if (condocup_ci != . & condocup_ci != 4)
+label var desemp_ci "Desocupado (desempleado)"
+label define desemp_ci 0"No " 1"Si", add
+label value desemp_ci desemp_ci
 
-gen desemp_ci=(condocup_ci==2)
+****************
+*afiliado_ci****
+****************
+gen afiliado_ci=.
+label var afiliado_ci "Afiliado a la Seguridad Social"
+
+****************
+*cotizando_ci***
+****************
+***** El código mantiene a la poblacion inactiva y a los menores de la edad límite de la PET como missing values en congruencia con la variable formal_ci *****.
+gen byte cotizando_ci = .
+replace cotizando_ci = 1 if ((v9059==1 | v9099==1 | v9103==1 | v9120==2) & emp_ci==1)
+replace cotizando_ci = 0 if (cotizando_ci != 1 & inlist(condocup_ci, 1, 2))
+label var cotizando_ci "Cotizante a la Seguridad Social"
+label define cotizando_ci 0 "No"  1 "Si"
+label value cotizando_ci cotizando_ci
+
+gen cotizapri_ci=0     if condocup_ci==1 | condocup_ci==2 
+replace cotizapri_ci=1 if (v9059==1) & cotizando_ci==0 
+label var cotizapri_ci "Cotizante a la Seguridad Social por su trabajo principal"
+
+gen cotizasec_ci=0     if condocup_ci==1 | condocup_ci==2 
+replace cotizasec_ci=1 if (v9099==1) & cotizando_ci==0 
+label var cotizasec_ci "Cotizante a la Seguridad Social por su trabajo secundario"
+
+gen cotizaotros_ci=0     if condocup_ci==1 | condocup_ci==2 
+replace cotizaotros_ci=1 if (v9103==1 | v9120==2) & cotizando_ci==0 
+label var cotizaotros_ci "Cotizante a la Seguridad Social por otro trabajos o por aporte privado"
+
 
 *************
 ***pea_ci***
 *************
-
 gen pea_ci=(emp_ci==1 | desemp_ci==1)
 
 ****************
 ***formal_ci ***
 ****************
-
 gen formal_ci=(cotizando_ci==1)
 
 /*************************************************************************************************************************/

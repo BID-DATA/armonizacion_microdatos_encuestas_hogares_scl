@@ -439,9 +439,13 @@ gen vd4012_fixed=.
 replace vd4012_fixed=1 if  v2009>=14 & v4009!=. & ((v4012==3 & v4029==1) | (v4012==1 & v4029==1) | (v4012==4 & v4029==1) | (v4012==2 | (v4012==4 & v4028==1)) | (v4032==1 & v4012==3 & v4029==2) | (v4032==1 & v4012==1 & v4029==2) | (v4032==1 & v4012==4 & v4029==2) | (v4032==1 & v4012==5) | (v4032==1 & v4012==6) | ((v4009==2 | v4009==3) & (v4043==1 | v4043==3) & v4048==1 ) | ((v4009==2 | v4009==3) & (v4043==1 | v4043==3) & v4048==2 & v4049==1) | ((v4009==2 | v4009==3) & v4043==2) | ((v4009==2 | v4009==3) & v4043==4 & v4047==1) | ((v4009==2 | v4009==3) & v4043==4 & v4047==2 & v4048==1) | ((v4009==2 | v4009==3) & v4043==4 & v4047==2 & v4048==2 & v4049==1) | ((v4009==2 | v4009==3) & (v4043==5 | v4043==6) & v4049==1) | (v4009==3 & v4057==1))
 replace vd4012_fixed=2 if v2009>=14 & v4009!=. & ((v4012!=3 & v4012!=1 & v4012!=4) | v4029!=1) & (v4012!=2 & (v4012!=4 | v4028!=1)) & (v4032!=1 | (v4012==1 | v4012==2 | v4012==4 | v4012==5 | v4012==6) | v4029!=2) & (v4032!=1 | (v4012==2 | v4012==3 | v4012==4 | v4012==5 | v4012==6) | v4029!=2) & (v4032!=1 | (v4012==1 | v4012==2 | v4012==3 | v4012==5 | v4012==6) | v4029!=2) & (v4032!=1 | (v4012==1 | v4012==2 | v4012==3 | v4012==4 | v4012==6)) & (v4032!=1 | (v4012==1 | v4012==2 | v4012==3 | v4012==4 | v4012==5)) & (v4009==1 | (v4043!=1 & v4043!=3) | v4048 !=1) & (v4009==1 | (v4043!=1 & v4043!=3) | v4048!= 2 | v4049!=1) & (v4009==1 | v4043!=2) & (v4009==1 | v4043!=4 | v4047!= 1) & (v4009==1 | v4043!=4 | v4047!= 2 | v4048!= 1) & (v4009==1 | v4043!=4 | v4047!=2 | v4048!=2 | v4049!=1) & (v4009==1 | (v4043!=5 & v4043!=6) | v4049!=1) & (v4009!= 3 | v4057!=1) 
 
-gen cotizando_ci=0       if condocup_ci==1 | condocup_ci==2 
-replace cotizando_ci=1   if (vd4012_fixed==1) & cotizando_ci==0
+***** El código mantiene a la poblacion inactiva y a los menores de la edad límite de la PET como missing values en congruencia con la variable formal_ci *****.
+gen byte cotizando_ci = .
+replace cotizando_ci = 1 if (vd4012_fixed == 1 & emp_ci==1)
+replace cotizando_ci = 0 if (cotizando_ci != 1 & inlist(condocup_ci, 1, 2))
 label var cotizando_ci "Cotizante a la Seguridad Social"
+label define cotizando_ci 0 "No"  1 "Si"
+label value cotizando_ci cotizando_ci
 
 gen cotizapri_ci=0       if condocup_ci==1 | condocup_ci==2 
 replace cotizapri_ci=1   if (v4032==1) & cotizando_ci==0 
@@ -608,16 +612,25 @@ label var lpe_ci "Linea de indigencia oficial del pais"
 gen salmm_ci=1100 //https://www.dmtemdebate.com.br/nota-tecnica-dieese-n-249-salario-minimo-em-2021-sera-de-r-1-10000/
 label var salmm_ci "Salario minimo legal"
 
-
 ************
 ***emp_ci***
 ************
-gen emp_ci=(condocup_ci==1)
+***** El código mantiene como missing values a la poblacion menor de la edad limite de la PET que no forman parte de la población de 	referencia de la sección laboral de la Encuesta *****.
+gen byte emp_ci = .
+replace emp_ci = (condocup_ci == 1) if (condocup_ci != . & condocup_ci != 4)
+label var emp_ci "Ocupado (empleado)"
+label define emp_ci 0"No" 1"Si", add
+label value emp_ci emp_ci
 
 ***************
 ***desemp_ci***
 ***************
-gen desemp_ci=(condocup_ci==2)
+***** El código mantiene como missing values a la poblacion menor de la edad limite de la PET que no forman parte de la población de referencia de la sección laboral de la Encuesta *****.
+gen byte desemp_ci = .
+replace desemp_ci = (condocup_ci == 2) if (condocup_ci != . & condocup_ci != 4)
+label var desemp_ci "Desocupado (desempleado)"
+label define desemp_ci 0"No " 1"Si", add
+label value desemp_ci desemp_ci
 
 ************
 ***pea_ci***
@@ -636,8 +649,13 @@ gen formal_1=(cotizando_ci1==1)
 ***desalent_ci***
 *****************
 *Definición nacional (variable derivada)
-gen desalent_ci=.
-label var desalent_ci "Trabajadores desalentados"
+***** El código mantiene como población de referencia a las personas inactivas (condocup_ci == 3) *****.
+gen byte desalent_ci = .
+replace desalent_ci = 1 if (vd4005 == 1 & condocup_ci == 3)
+replace desalent_ci = 0 if (desalent_ci != 1 & condocup_ci==3)
+label var desalent_ci "Desalentados"
+label define desalent_ci 0"No" 1"Si", add
+label value desalent_ci desalent_ci
 
 *****************
 ***horaspri_ci***

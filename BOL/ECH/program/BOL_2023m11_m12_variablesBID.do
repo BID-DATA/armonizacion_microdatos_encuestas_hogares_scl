@@ -50,7 +50,7 @@ Detalle de procesamientos o modificaciones anteriores:
 ****************************************************************************
 */
 
-use "`base_in'", clear
+use `base_in', clear
 
 duplicates re folio nro // Verifico que no tenga duplicados
 
@@ -498,8 +498,12 @@ label value categoinac_ci categoinac_ci
 ************
 ***emp_ci***
 ************
-gen byte emp_ci = (condocup_ci == 1)
+***** El código mantiene como missing values a la poblacion menor de la edad limite de la PET que no forman parte de la población de 	referencia de la sección laboral de la Encuesta *****.
+gen byte emp_ci = .
+replace emp_ci = (condocup_ci == 1) if (condocup_ci != . & condocup_ci != 4)
 label var emp_ci "Ocupado (empleado)"
+label define emp_ci 0"No" 1"Si", add
+label value emp_ci emp_ci
 
 *************
 *cesante_ci* 
@@ -511,8 +515,12 @@ label var cesante_ci "Desocupado - definicion oficial del pais"
 ****************
 ***desemp_ci***
 ****************
-gen desemp_ci = (condocup_ci == 2)
-label var desemp_ci "Desempleado que buscó empleo en el periodo de referencia"
+***** El código mantiene como missing values a la poblacion menor de la edad limite de la PET que no forman parte de la población de referencia de la sección laboral de la Encuesta *****.
+gen byte desemp_ci = .
+replace desemp_ci = (condocup_ci == 2) if (condocup_ci != . & condocup_ci != 4)
+label var desemp_ci "Desocupado (desempleado)"
+label define desemp_ci 0"No " 1"Si", add
+label value desemp_ci desemp_ci
 
 ***************
 ***subemp_ci***
@@ -571,12 +579,14 @@ label variable antiguedad_ci "Antigüedad en la actividad actual en años"
 *****************
 ***desalent_ci***
 *****************
+***** El código mantiene como población de referencia a las personas inactivas (condocup_ci == 3) *****.
 destring s04a_07, ignore("NA") replace
-
-gen desalent_ci = (emp_ci == 0 & inlist(s04a_07, 3, 4))
-replace desalent_ci = . if missing(emp_ci)
-
-label variable desalent_ci "Trabajadores desalentados"
+gen byte desalent_ci = .
+replace desalent_ci = 1 if (s04a_05 == 2 & s04a_07 == 3 & condocup_ci == 3)
+replace desalent_ci = 0 if (desalent_ci != 1 & condocup_ci==3)
+label var desalent_ci "Desalentados"
+label define desalent_ci 0"No" 1"Si", add
+label value desalent_ci desalent_ci
 
 *****************
 ***horaspri_ci***
@@ -748,8 +758,13 @@ label value tamemp_ci tamemp_ci
 ****************
 *cotizando_ci***
 ****************
-gen cotizando_ci = .
+***** El código mantiene a la poblacion inactiva y a los menores de la edad límite de la PET como missing values en congruencia con la variable formal_ci *****.
+gen byte cotizando_ci = . 
+replace cotizando_ci = 1 if (s04f_36 == 1 & emp_ci==1)
+replace cotizando_ci = 0 if (cotizando_ci != 1 & inlist(condocup_ci, 1, 2))
 label var cotizando_ci "Cotizante a la Seguridad Social"
+label define cotizando_ci 0 "No"  1 "Si"
+label value cotizando_ci cotizando_ci
 
 ****************
 ***instcot_ci***
@@ -760,13 +775,13 @@ gen instcot_ci = .
 *afiliado_ci****
 ****************
 destring s04f_35, ignore("NA") replace
-
-gen afiliado_ci = (s04f_35 == 1)    // Afiliado a la Seguridad Social
-
-* Asignar 0 a casos missing que corresponden a personas activas o aspirantes (condact 1–3)
-recode afiliado_ci .= 0 if inrange(condact, 1, 3)
-
-label variable afiliado_ci "Afiliado a la Seguridad Social"
+***** El código mantiene a la poblacion inactiva y a los menores de la edad límite de la PET como missing values en congruencia con la variable formal_ci *****.
+gen byte afiliado_ci = .
+replace afiliado_ci = 1 if (s04f_35 == 1 & emp_ci==1)
+replace afiliado_ci = 0 if (afiliado_ci != 1 & inlist(condocup_ci, 1, 2))
+label var afiliado_ci "Afiliado a la Seguridad Social"
+label define afiliado_ci 0 "No"  1 "Si"
+label value afiliado_ci afiliado_ci
 
 *******************
 *****formal_ci*****
