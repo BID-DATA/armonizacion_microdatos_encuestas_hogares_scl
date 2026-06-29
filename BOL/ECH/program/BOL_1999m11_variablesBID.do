@@ -317,36 +317,45 @@ label variable miembros_ci "Miembro del hogar"
 *******************************************************
 ***           VARIABLES DE DIVERSIDAD               ***
 *******************************************************
+
+* Pregunta encuesta original: ¿Se considera perteneciente a alguno de los siguientes pueblos indigenas / originarios, o perteneciente a algún grupo minoritario?
+* Variable encuesta original: grupo
+	* 1: Quechua; 2: Aymara; 3: Guaraní; 4: Mojeño; 5: Chiquitano 
+	* 6: Otro (especifique);
+	* 7: Raza negra;
+	* 8: Ninguno;
+	* 0: Menores de 12 años que no deben responder esta pregunta
+
 	*********
 	*afro_ci*
 	*********
 	gen byte afro_ci = . 	 
-	replace afro_ci = 1 if grupo == 6
-	replace afro_ci = 0 if inlist(grupo, 1, 2, 3, 4, 5, 7, 8)
+	replace afro_ci = 1 if grupo == 7 // El código 6 corresponde a "otro (especifique)"
+	replace afro_ci = 0 if inlist(grupo, 1, 2, 3, 4, 5, 6, 8)
 	
 	*********
 	*ind_ci*
 	*********	
 	gen byte ind_ci = .
-	replace ind_ci = 1 if inrange(grupo, 1,6) | grupo == 8
-	replace ind_ci = 0 if inlist(grupo, 6, 7)
+	replace ind_ci = 1 if inrange(grupo, 1, 6) // El código grupo 8 corresponde a "ninguno"
+	replace ind_ci = 0 if inlist(grupo, 7, 8)
 
 	**************
 	*noafroind_ci*
 	**************
 	gen byte noafroind_ci =.   // se queda como missing (.) si no existe la pregunta
-	replace noafroind_ci =1 if (afro_ci==0 & ind_ci==0)
-	replace noafroind_ci =0 if (afro_ci==1 | ind_ci==1)
-	replace noafroind_ci =. if (afro_ci==. | ind_ci==.) //Esto solo en el caso que se tenga ambas opciones no disponibles. 
+	replace noafroind_ci =1 if (afro_ci==0 | ind_ci==0)	 // Personas que NO se identifican como afro o indígenas
+	replace noafroind_ci =0 if (afro_ci==1 | ind_ci==1)  // Personas que se identifican como afro o indígenas
+	replace noafroind_ci =. if (afro_ci==. & ind_ci==.)
 	ta noafroind_ci,m
 
 	************
 	*afroind_ci*
 	************
-	gen byte afroind_ci=. 
-	replace afroind_ci=1 if ind_ci==1 
-	replace afroind_ci=2 if afro_ci==1
-	replace afroind_ci=3 if noafroind_ci == 1
+	gen byte afroind_ci =. 
+	replace afroind_ci =1 if ind_ci==1 			 // Personas que se identifican como indígenas
+	replace afroind_ci =2 if afro_ci==1			 // Personas que se identifican como afros
+	replace afroind_ci =3 if noafroind_ci==1	 // Personas que NO se identifican como afro o indígenas
 	ta afroind_ci,m
 	
 	*********
