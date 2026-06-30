@@ -474,17 +474,25 @@ replace condocup_ci=4 if edad<5
 ****************
 *afiliado_ci****
 ****************
-gen afiliado_ci=(iess>=2 & iess<=4) /*todas personas*/	
-*replace afiliado_ci=. if iess==.
+***** El código mantiene a la poblacion inactiva y a los menores de la edad límite de la PET como missing values en congruencia con la variable formal_ci *****.
+gen byte afiliado_ci = .
+replace afiliado_ci = 1 if ((iess>=2 & iess<=4) & emp_ci==1)
+replace afiliado_ci = 0 if (iess > 4 & inlist(condocup_ci, 1, 2))
 label var afiliado_ci "Afiliado a la Seguridad Social"
+label define afiliado_ci 0 "No"  1 "Si"
+label value afiliado_ci afiliado_ci
 *Nota: seguridad social comprende solo los que en el futuro me ofrecen una pension.
 
 ****************
 *cotizando_ci***
 ****************
-gen cotizando_ci=0     if condocup_ci==1 | condocup_ci==2 
-replace cotizando_ci=1 if (pe42e==1) & cotizando_ci==0 /*Emplead@s y asalariad@s, ocupados y desoc*/
+***** El código mantiene a la poblacion inactiva y a los menores de la edad límite de la PET como missing values en congruencia con la variable formal_ci *****.
+gen byte cotizando_ci = .
+replace cotizando_ci = 1 if (pe42e==1 & emp_ci==1)  /*Emplead@s y asalariad@s, ocupados y desoc*/
+replace cotizando_ci = 0 if (cotizando_ci != 1 & inlist(condocup_ci, 1, 2))
 label var cotizando_ci "Cotizante a la Seguridad Social"
+label define cotizando_ci 0 "No"  1 "Si"
+label value cotizando_ci cotizando_ci
 *Nota: solo seguro social publico, con el cual tenga derecho a pensiones en el futuro.
 
 ****************
@@ -602,14 +610,22 @@ label var tecnica_ci "=1 formacion terciaria tecnica"
 ************
 ***emp_ci***
 ************
-gen byte emp_ci=(condocup_ci==1)
+***** El código mantiene como missing values a la poblacion menor de la edad limite de la PET que no forman parte de la población de referencia de la sección laboral de la Encuesta *****.
+gen byte emp_ci = .
+replace emp_ci = (condocup_ci == 1) if (condocup_ci != . & condocup_ci != 4)
 label var emp_ci "Ocupado (empleado)"
+label define emp_ci 0"No" 1"Si", add
+label value emp_ci emp_ci
 
 ****************
 ***desemp_ci***
 ****************
-gen desemp_ci=(condocup_ci==2)
-label var desemp_ci "Desempleado que buscó empleo en el periodo de referencia"
+***** El código mantiene como missing values a la poblacion menor de la edad limite de la PET que no forman parte de la población de referencia de la sección laboral de la Encuesta *****.
+gen byte desemp_ci = .
+replace desemp_ci = (condocup_ci == 2) if (condocup_ci != . & condocup_ci != 4)
+label var desemp_ci "Desocupado (desempleado)"
+label define desemp_ci 0"No " 1"Si", add
+label value desemp_ci desemp_ci
   
 *************
 ***pea_ci***
@@ -622,9 +638,13 @@ label var pea_ci "Población Económicamente Activa"
 	*****************
 	***desalent_ci***
 	*****************
-	
-	gen desalent_ci=(motnobus==2 | motnobus==3)
-	label var desalent_ci "Trabajadores desalentados"
+	***** El código mantiene como población de referencia a las personas inactivas (condocup_ci == 3) *****.
+	gen byte desalent_ci = .
+	replace desalent_ci = 1 if ((bustrama == 2 & (motnobus == 2 | motnobus == 3)) & condocup_ci == 3)
+	replace desalent_ci = 0 if (desalent_ci != 1 & condocup_ci==3)
+	label var desalent_ci "Desalentados"
+	label define desalent_ci 0"No" 1"Si", add
+	label value desalent_ci desalent_ci
 	
 	*****************
 	***horaspri_ci***
