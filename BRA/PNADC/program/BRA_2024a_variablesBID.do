@@ -1326,24 +1326,15 @@ rename *, lower
 	* tipo_bienestar *
 	****************
 	* Tipo de medida de bienestar usada por INE/IBGE.
-	* Para Brasil, PNADC reporta ingreso → tipo_bienestar = 1
-	* (1 = Ingreso, 2 = Consumo)
+	* Para Brasil, PNADC reporta ingreso → tipo_bienestar = 1 = Ingreso
 	gen byte tipo_bienestar = 1
-
-	****************
-	* pobre_ine_ci *
-	****************
-	* Indicador oficial de pobreza según metodología del país.
-	* Requiere el umbral oficial (ln_ci o lpe_ci) y la variable de ingreso.
-	* Aquí va el criterio de corte (por ejemplo, ingreso per cápita < ln_ci).
-	gen byte pobre_ine_ci = .
 
 	****************
 	* bienestar_agregado *
 	****************
 	* Variable continua con el ingreso per cápita mensual imputado/limpio
 	* En PNADC: ingreso de todos los miembros dividido por nº de miembros
-	gen bienestar_agregado = .
+	gen bienestar_agregado = vd5008 // Rendimento domiciliar mensual per capita (habitual de todos os trabalhos e efetivo de outras fontes) (exclusive o rendimento das pessoas cuja condição na unidade domiciliar era pensionista, empregado doméstico ou parente do empregado doméstico)
 
 	****************
 	* lpe_ci *
@@ -1351,11 +1342,27 @@ rename *, lower
 	* 2024: https://agenciadenoticias.ibge.gov.br/en/agencia-news/2184-news-agency/news/45366-8-6-million-persons-got-out-of-poverty-between-2023-and-2024
 	gen lpe_ci= 218 
 
-
 	****************
 	* ln_ci *
 	****************
 	gen ln_ci = 694 
+	
+	****************
+	* pobre_ine_ci *
+	****************
+	gen byte pobre_ine_ci=(bienestar_agregado < ln_ci) if !missing(bienestar_agregado, ln_ci)
+
+	*******************
+	* pobre_ext_ine_ci*
+	*******************	
+	gen byte extrema=(bienestar_agregado < lpe_ci) if !missing(bienestar_agregado, lpe_ci)
+
+	
+	*******************
+	*Cálculo de pobreza*
+	********************
+	mean pobre_ine_ci [aw=factor_ci]  //23% comparado a 23.1 & del IBGE
+	mean pobre_ext_ine_ci [aw=factor_ci]  // 3.5% segun IBGE es 3.5%
 		
 		
 /*_____________________________________________________________________________________________________*/

@@ -1114,23 +1114,37 @@ use "`base_in'", clear
 ****************************
 ***VARIABLES DE EXTERNAS***
 ****************************
+*ENIGH 2024 se realizó del 11 de agosto al 18 de noviembre de 2024, y El ICTPC fue deflactado con el Índice Nacional de Precios al Consumidor (INPC) a precios deagosto del mismo año, mes en el que inició el levantamiento de la ENIGH 2024.
+
 	****************
+	*tipo_bienestar*
+	****************
+	gen byte tipo_bienestar = 1     // 1 = Ingreso (metodología oficial México)
+
+	**********************
 	* bienestar_agregado *
-	****************	
+	**********************	
 	gen bienestar_agregado = .
-
 	* ENIGH México usa ingreso corriente trimestral per cápita
-	replace bienestar_agregado = ing_cor / tot_integ  if ing_cor < .
-
+	replace bienestar_agregado = (ing_cor/3) / tot_integ if ing_cor < .
+	
 	****************
 	* lpe_ci *
-	****************	
+	****************
+	* Basado en https://www.inegi.org.mx/contenidos/desarrollosocial/pm/doc/pm_nota_tecnica_2024.pdf
+	*Línea de Pobreza Extrema por Ingresos (LPEI): equivalente al valor monetario de la canasta alimentaria por persona al mes; y
+	* Promedio de lineas de pobreza mensuales de agosto a diciembre
 	gen lpe_ci = .
+	replace lpe_ci =  1800.55 if zona_c==0 // rural 
+	replace lpe_ci =  2354.65 if zona_c==1 //urbano
 
 	****************
 	* ln_ci *
 	****************	
+	*Línea de Pobreza por Ingresos (LPI): equivalente al valor monetario total de la canasta alimentaria más la canasta no alimentaria por persona al mes. 
 	gen ln_ci = .
+	replace ln_ci = 3296.92  if zona_c==0 // rural 
+	replace ln_ci = 4564.97 if zona_c==1 //urbano
 	
 	****************
 	* pobre_ine _ci*
@@ -1138,11 +1152,20 @@ use "`base_in'", clear
 	gen byte pobre_ine_ci = .
 	replace pobre_ine_ci = 1 if bienestar_agregado < ln_ci   & bienestar_agregado < .
 	replace pobre_ine_ci = 0 if bienestar_agregado >= ln_ci  & bienestar_agregado < .
+
+	*******************
+	* pobre_ext_ine_ci*
+	*******************	
+	gen byte pobre_ext_ine_ci = .
+	replace pobre_ext_ine_ci = 1 if bienestar_agregado < lpe_ci   & bienestar_agregado < .
+	replace pobre_ext_ine_ci = 0 if bienestar_agregado >= lpe_ci  & bienestar_agregado < .
 	
-	****************
-	*tipo_bienestar*
-	****************	
-	gen byte tipo_bienestar = 1     // 1 = Ingreso (metodología oficial México)
+	*******************
+	*Cálculo de pobreza*
+	********************
+	mean pobre_ine_ci [aw=factor_ci]   // pobreza en PERSONAS 34.9% segun inegi es 35.4%
+	mean pobre_ext_ine_ci [aw=factor_ci]  // pobreza en PERSONAS 8.7% segun inegi es 9.3%
+
 
 /*_____________________________________________________________________________________________________*/
 * Asignación de etiquetas e inserción de variables externas: tipo de cambio, Indice de Precios al 
