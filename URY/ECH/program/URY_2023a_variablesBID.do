@@ -434,9 +434,13 @@ label var categoinac_ci "Categoría de inactividad"
 label define categoinac_ci 1 "jubilados o pensionados" 2 "Estudiantes" 3 "Quehaceres domésticos" 4 "Otros" 
 label values categoinac_ci categoinac_ci
 
-
 ***emp_ci***
-gen byte emp_ci=(condocup_ci==1)
+***** El código mantiene como missing values a la poblacion menor de la edad limite de la PET que no forman parte de la población de referencia de la sección laboral de la Encuesta *****.
+gen byte emp_ci = .
+replace emp_ci = (condocup_ci == 1) if (condocup_ci != . & condocup_ci != 4)
+label var emp_ci "Ocupado (empleado)"
+label define emp_ci 0"No" 1"Si", add
+label value emp_ci emp_ci
 
 destring f70, replace
 gen nempleos_ci = f70
@@ -460,9 +464,13 @@ gen pea_ci=0
 replace pea_ci=1 if emp_ci==1 |desemp_ci==1
 
 *desalent_ci
-gen desalent_ci = 1 if f108==4 & condocup_ci==3
-replace desalent_ci=0 if f108!=4 & condocup_ci==3
-replace desalent_ci =. if emp_ci ==.
+***** El código mantiene como población de referencia a las personas inactivas (condocup_ci == 3) *****.
+gen byte desalent_ci = .
+replace desalent_ci = 1 if (f299 == 2 & f108 == 4 & condocup_ci == 3)
+replace desalent_ci = 0 if (desalent_ci != 1 & condocup_ci == 3)
+label var desalent_ci "Desalentados"
+label define desalent_ci 0 "No" 1 "Si", add
+label value desalent_ci desalent_ci
 
 *horaspri_ci
 gen horaspri_ci=f85
@@ -562,9 +570,13 @@ label values tamemp_ci tamaño
 ****************
 *cotizando_ci***
 ****************
-gen cotizando_ci=0
-replace cotizando_ci=1 if (f82==1 | f96==1)
+***** El código mantiene a la poblacion inactiva y a los menores de la edad límite de la PET como missing values en congruencia con la variable formal_ci *****.
+gen byte cotizando_ci = .
+replace cotizando_ci = 1 if ((f82==1 | f96==1) & emp_ci==1)
+replace cotizando_ci = 0 if ((f82==2 | f96==2) & inlist(condocup_ci, 1, 2) )
 label var cotizando_ci "Cotizante a la Seguridad Social"
+label define cotizando_ci 0 "No"  1 "Si"
+label value cotizando_ci cotizando_ci
 
 ********************
 *** instcot_ci *****
@@ -579,9 +591,13 @@ label var instcot_ci "institución a la cual cotiza por su trabajo"
 ****************
 *afiliado_ci**** 
 ****************
-
-gen afiliado_ci =0
-replace afiliado_ci=1 if (f82==1 | f96==1)
+***** El código mantiene a la poblacion inactiva y a los menores de la edad límite de la PET como missing values en congruencia con la variable formal_ci *****.
+gen byte afiliado_ci = .
+replace afiliado_ci = 1 if ((f82==1 | f96==1) & emp_ci==1)
+replace afiliado_ci = 0 if ((f82==2 | f96==2) & inlist(condocup_ci, 1, 2))
+label var afiliado_ci "Afiliado a la Seguridad Social"
+label define afiliado_ci 0 "No"  1 "Si"
+label value afiliado_ci afiliado_ci
 
 *******************
 ***formal***

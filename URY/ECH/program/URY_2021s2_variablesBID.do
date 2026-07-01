@@ -447,18 +447,25 @@ label define condocup_ci 1"ocupados" 2"desocupados" 3"inactivos" 4"menor que 14"
 label value condocup_ci condocup_ci
 label var condocup_ci "Condicion de ocupacion utilizando definicion del pais"
 
-
 ************
 ***emp_ci***
 ************
-
-gen byte emp_ci=(condocup_ci==1)
+***** El código mantiene como missing values a la poblacion menor de la edad limite de la PET que no forman parte de la población de referencia de la sección laboral de la Encuesta *****.
+gen byte emp_ci = .
+replace emp_ci = (condocup_ci == 1) if (condocup_ci != . & condocup_ci != 4)
+label var emp_ci "Ocupado (empleado)"
+label define emp_ci 0"No" 1"Si", add
+label value emp_ci emp_ci
 
 ****************
 ***desemp_ci****
 ****************
-
-gen desemp_ci=(condocup_ci==2)
+***** El código mantiene como missing values a la poblacion menor de la edad limite de la PET que no forman parte de la población de referencia de la sección laboral de la Encuesta *****.
+gen byte desemp_ci = .
+replace desemp_ci = (condocup_ci == 2) if (condocup_ci != . & condocup_ci != 4)
+label var desemp_ci "Desocupado (desempleado)"
+label define desemp_ci 0"No " 1"Si", add
+label value desemp_ci desemp_ci
 
 *************
 ***pea_ci****
@@ -569,9 +576,13 @@ label var lpe_ci "Linea de indigencia oficial del pais"
 ****************
 *cotizando_ci***
 ****************
-gen cotizando_ci=0 if condocup_ci==1 | condocup_ci==2
-replace cotizando_ci=1 if (f82==1 | f96==1) & cotizando_ci==0
+***** El código mantiene a la poblacion inactiva y a los menores de la edad límite de la PET como missing values en congruencia con la variable formal_ci *****.
+gen byte cotizando_ci = .
+replace cotizando_ci = 1 if ((f82==1 | f96==1) & emp_ci==1)
+replace cotizando_ci = 0 if ((f82==2 | f96==2) & inlist(condocup_ci, 1, 2))
 label var cotizando_ci "Cotizante a la Seguridad Social"
+label define cotizando_ci 0 "No"  1 "Si"
+label value cotizando_ci cotizando_ci
 
 * Formalidad sin restringir a PEA
 gen cotizando_ci1=0 if condocup_ci>=1 & condocup_ci<=3
@@ -614,9 +625,14 @@ gen poli=.
 replace poli=1 if e45_cv==6
 replace poli=0 if e45_cv!=6
 
-gen afiliado_ci=(msp==1 | iamc==1 | spm==1 | hpm==1 | bps==1 | poli==1)
-replace afiliado_ci=. if msp==. & iamc==. & spm==. & hpm==. & bps==. & poli==.
+***** El código mantiene a la poblacion inactiva y a los menores de la edad límite de la PET como missing values en congruencia con la variable formal_ci *****.
+gen byte afiliado_ci = .
+replace afiliado_ci = 1 if ((msp==1 | iamc==1 | spm==1 | hpm==1 | bps==1 | poli==1) & emp_ci==1)
+replace afiliado_ci = 0 if ((msp==0 & iamc==0 & spm==0 & hpm==0 & bps==0 & poli==0) & inlist(condocup_ci, 1, 2))
 label var afiliado_ci "Afiliado a la Seguridad Social"
+label define afiliado_ci 0 "No"  1 "Si"
+label value afiliado_ci afiliado_ci
+
 drop msp iamc spm hpm bps
 *Nota: seguridad social comprende solo los que en el futuro me ofrecen una pension.
 
@@ -719,8 +735,15 @@ label var salmm_ci "Salario minimo legal"
 ***desalent_ci***
 *****************
 * Se utiliza la pregunta Razones por las cuales no buscó o no estableció su negocio f108 (Buscó antes, no encontró y dejó de buscar)
-gen desalent_ci = (emp_ci == 0 & f108 == 4 )
-replace desalent_ci =. if emp_ci ==.
+***** El código mantiene como población de referencia a las personas inactivas (condocup_ci == 3) *****.
+destring f299, replace
+format f299 %8.0g
+gen byte desalent_ci = .
+replace desalent_ci = 1 if (f299 == 2 & f108 == 4 & condocup_ci == 3)
+replace desalent_ci = 0 if (desalent_ci != 1 & condocup_ci == 3)
+label var desalent_ci "Desalentados"
+label define desalent_ci 0 "No" 1 "Si", add
+label value desalent_ci desalent_ci
 
 *27. Horas totales trabajadas en la actividad principal
 

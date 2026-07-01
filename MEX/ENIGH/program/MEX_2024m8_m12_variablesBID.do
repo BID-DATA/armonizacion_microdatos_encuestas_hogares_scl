@@ -38,7 +38,7 @@ Versión: 25 de setiembre 2025
 ****************************************************************************
 							SCL/LMK - IADB
 ****************************************************************************/
-use "`base_in'", clear
+use `base_in', clear
 
 **********************************
 ***VARIABLES DEL IDENTIFICACION***
@@ -360,8 +360,12 @@ use "`base_in'", clear
 	**********
 	***emp_ci*
 	**********
+	***** El código mantiene como missing values a la poblacion menor de la edad limite de la PET que no forman parte de la población de referencia de la sección laboral de la Encuesta *****.
 	gen byte emp_ci = .
-	replace emp_ci = (condocup_ci == 1) if condocup_ci != .
+	replace emp_ci = (condocup_ci == 1) if (condocup_ci != . & condocup_ci != 4)
+	label var emp_ci "Ocupado (empleado)"
+	label define emp_ci 0"No" 1"Si", add
+	label value emp_ci emp_ci
 
 	**************
 	***cesante_ci*** 
@@ -379,8 +383,12 @@ use "`base_in'", clear
 	***************
 	***desemp_ci***
 	***************	
+	***** El código mantiene como missing values a la poblacion menor de la edad limite de la PET que no forman parte de la población de referencia de la sección laboral de la Encuesta *****.
 	gen byte desemp_ci = .
-	replace desemp_ci = (condocup_ci == 2) if condocup_ci! = .
+	replace desemp_ci = (condocup_ci == 2) if (condocup_ci != . & condocup_ci != 4)
+	label var desemp_ci "Desocupado (desempleado)"
+	label define desemp_ci 0"No " 1"Si", add
+	label value desemp_ci desemp_ci
 
 	***************
 	***subemp_ci***
@@ -484,10 +492,13 @@ use "`base_in'", clear
 	***************
 	***cotizando_ci***
 	***************	
+	***** El código mantiene a la poblacion inactiva y a los menores de la edad límite de la PET como missing values en congruencia con la variable formal_ci *****.
 	gen byte cotizando_ci = .
-
-	replace cotizando_ci = 1 if condocup_ci==1 & inscr_1=="1"   // cotiza por el trabajo
-	replace cotizando_ci = 0 if condocup_ci==1 & inscr_1!="1"   // no cotiza
+	replace cotizando_ci = 1 if (condocup_ci==1 & inscr_1=="1" & emp_ci==1)  // cotiza por el trabajo
+	replace cotizando_ci = 0 if (inscr_1!="1" & inlist(condocup_ci, 1, 2))  // no cotiza
+	label var cotizando_ci "Cotizante a la Seguridad Social"
+	label define cotizando_ci 0 "No"  1 "Si"
+	label value cotizando_ci cotizando_ci
 	
 	***************
 	***instcot_ci***
@@ -507,8 +518,13 @@ use "`base_in'", clear
 	***afiliado_ci***
 	***************	
 	destring pres_* servmed* inscr_* inst_* atemed tam_emp1  contrato1, replace
-	gen afiliado_ci=0 if condocup_ci==1 | condocup_ci==2  
-	replace afiliado_ci=1 if (pres_81==8 | pres_82==8) /* inscrito en prestaciones de salud por trabajo*/
+	***** El código mantiene a la poblacion inactiva y a los menores de la edad límite de la PET como missing values en congruencia con la variable formal_ci *****.
+	gen byte afiliado_ci = .
+	replace afiliado_ci = 1 if((pres_81==8 | pres_82==8) & emp_ci==1)  /* inscrito en prestaciones de salud por trabajo*/
+	replace afiliado_ci = 0 if (afiliado_ci != 1 & inlist(condocup_ci, 1, 2))
+	label var afiliado_ci "Afiliado a la Seguridad Social"
+	label define afiliado_ci 0 "No"  1 "Si"
+	label value afiliado_ci afiliado_ci
 	
 	**************
 	***formal_ci***

@@ -402,21 +402,6 @@ label define categopri_ci 1 "Patron" 2 "Cuenta Propia" 3 "Asalariado" 4 "Trabaja
 label values categopri_ci categopri_ci
 
 ****************
-*afiliado_ci****
-****************
-gen afiliado_ci=.
-label var afiliado_ci "Afiliado a la Seguridad Social"
-
-****************
-*cotizando_ci***
-****************
-gen cotizando_ci=0     if condocup_ci==1 | condocup_ci==2 
-foreach var of varlist  pp56a pp56b pp56c {
-replace cotizando_ci=1 if (`var'==3) & cotizando_ci==0 /*solo a emplead@s y asalariad@s, difiere con los otros paises*/
-}
-label var cotizando_ci "Cotizante a la Seguridad Social"
-
-****************
 *instpen_ci*****
 ****************
 gen instpen_ci=.
@@ -549,13 +534,41 @@ label var tecnica_ci "=1 formacion terciaria tecnica"
 ************
 ***emp_ci***
 ************
-gen emp_ci=(condocup_ci==1)
-label var emp_ci "Empleado en la semana de referencia"
+***** El código mantiene como missing values a la poblacion menor de la edad limite de la PET que no forman parte de la población de referencia de la sección laboral de la Encuesta *****.
+gen byte emp_ci = .
+replace emp_ci = (condocup_ci == 1) if (condocup_ci != . & condocup_ci != 4)
+label var emp_ci "Ocupado (empleado)"
+label define emp_ci 0"No" 1"Si", add
+label value emp_ci emp_ci
 
 ****************
 ***desemp_ci***
 ****************
-gen desemp_ci=(condocup_ci==2)
+***** El código mantiene como missing values a la poblacion menor de la edad limite de la PET que no forman parte de la población de referencia de la sección laboral de la Encuesta *****.
+gen byte desemp_ci = .
+replace desemp_ci = (condocup_ci == 2) if (condocup_ci != . & condocup_ci != 4)
+label var desemp_ci "Desocupado (desempleado)"
+label define desemp_ci 0"No " 1"Si", add
+label value desemp_ci desemp_ci
+
+****************
+*afiliado_ci****
+****************
+gen afiliado_ci=.
+label var afiliado_ci "Afiliado a la Seguridad Social"
+
+****************
+*cotizando_ci***
+****************
+***** El código mantiene a la poblacion inactiva y a los menores de la edad límite de la PET como missing values en congruencia con la variable formal_ci *****.
+gen byte cotizando_ci = .
+foreach var of varlist  pp56a pp56b pp56c {
+replace cotizando_ci = 1 if (`var'==3) & emp_ci==1 /*solo a emplead@s y asalariad@s, difiere con los otros paises*/
+}
+replace cotizando_ci = 0 if (cotizando_ci != 1 & inlist(condocup_ci, 1, 2))
+label var cotizando_ci "Cotizante a la Seguridad Social"
+label define cotizando_ci 0 "No"  1 "Si"
+label value cotizando_ci cotizando_ci
 
 *************
 ***pea_ci***
@@ -591,10 +604,13 @@ drop edad_meses
 ***desalent_ci***
 *****************
 capture drop desalent_ci
-gen byte desalent_ci=0
-replace desalent_ci=1 if (pp29>4 & pp29<10) & pp30==11 & pp31==2 & pp36==2 & (pp39==1 | pp39==2 )
-replace desalent=. if edad<10
-label var desalent_ci "Trabajadores desalentados, personas que creen que por alguna razon no conseguiran trabajo" 
+***** El código mantiene como población de referencia a las personas inactivas (condocup_ci == 3) *****.
+gen byte desalent_ci = .
+replace desalent_ci = 1 if (inlist(pp39, 1, 2) & condocup_ci == 3)
+replace desalent_ci = 0 if (desalent_ci != 1 & condocup_ci==3)
+label var desalent_ci "Desalentados"
+label define desalent_ci 0"No" 1"Si", add
+label value desalent_ci desalent_ci
 
 ***************
 ***subemp_ci***

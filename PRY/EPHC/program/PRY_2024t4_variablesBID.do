@@ -43,7 +43,7 @@ Nombre de autor (SCL/SCL) - Email: ..., Fecha:...
 Detalle de procesamientos o modificaciones anteriores:
 ****************************************************************************/
 
-use "`base_in'", clear
+use `base_in', clear
 
 ********************************************************************************
 ********************  VARIABLES DEL IDENTIFICACION *****************************
@@ -576,8 +576,12 @@ use "`base_in'", clear
 	**********
 	***emp_ci: Variable dicotómica que identifica con valor 1 a los ocupados y 0 a los no ocupados y mantiene con valores perdidos a los que se muestran en la encuesta con valores perdidos*
 	**********
+	***** El código mantiene como missing values a la poblacion menor de la edad limite de la PET que no forman parte de la población de 	referencia de la sección laboral de la Encuesta *****.
 	gen byte emp_ci = .
-	replace emp_ci = (condocup_ci == 1) if condocup_ci != .
+	replace emp_ci = (condocup_ci == 1) if (condocup_ci != . & condocup_ci != 4)
+	label var emp_ci "Ocupado (empleado)"
+	label define emp_ci 0"No" 1"Si", add
+	label value emp_ci emp_ci
 
 	**************
 	***cesante_ci: Identifica a las personas que actualmente se encuentran desempleadas pero que habían trabajado anteriormente. Toma valor de 1 cuando la persona es cesante; 0 para el resto de los desocupados y con missing value al resto de la población.*** 
@@ -595,8 +599,12 @@ use "`base_in'", clear
 	***desemp_ci: Variable dicotómica que identifica con valor 1 a los desocupados, 0 a los individuos que son parte del grupo de referencia y missing para el resto de la población.***
 	***************	
 	*Codigo extraído del manual
+	***** El código mantiene como missing values a la poblacion menor de la edad limite de la PET que no forman parte de la población de referencia de la sección laboral de la Encuesta *****.
 	gen byte desemp_ci = .
-	replace desemp_ci = (condocup_ci == 2) if condocup_ci! = .
+	replace desemp_ci = (condocup_ci == 2) if (condocup_ci != . & condocup_ci != 4)
+	label var desemp_ci "Desocupado (desempleado)"
+	label define desemp_ci 0"No " 1"Si", add
+	label value desemp_ci desemp_ci
 	
 	***************
 	***subemp_ci: Variable dicotómica que indica con valor 1 si la persona trabaja 30 o menos horas a la semana en la actividad principal, está disponible para trabajar más horas y quiere/desea/está dispuesto a trabajar más horas (subempleo visible); y con valor 0 al resto de la población ocupada. ***
@@ -666,7 +674,14 @@ use "`base_in'", clear
 	***************
 	***desalent_ci: Variable dicotómica que indica con el valor de 1 si las personas que se clasifican como inactivas declaran que no buscan trabajo por desanimo, cansancio o sentimiento de incapacidad. y con valor 0 al resto de los individuos de la población de referencia.***
 	***************
-	gen byte desalent_ci= . //No hay ninguna pregunta en la encuesta que haga referencia a la razón por la que una persona no buscó trabajo siendo inactiva
+	***** El código mantiene como población de referencia a las personas inactivas (condocup_ci == 3) *****.
+*destring s04a_07, ignore("NA") replace
+	gen byte desalent_ci = .
+	replace desalent_ci = 1 if (a08 == 6 & inlist(a09, 2, 3) & condocup_ci == 3)
+	replace desalent_ci = 0 if (desalent_ci != 1 & condocup_ci==3)
+	label var desalent_ci "Desalentados"
+	label define desalent_ci 0"No" 1"Si", add
+	label value desalent_ci desalent_ci
 
 	***************
 	***horaspri_ci: Variable continua que indica el número de horas totales trabajadas en la actividad principal en la semana de referencia.***
@@ -864,11 +879,13 @@ use "`base_in'", clear
 			6	No
 			9	No Responde	
 	*/
-	gen cotizando_ci=.
-	replace cotizando_ci=1 if b10==1 | c07==1 //Si aporta
-	replace cotizando_ci=0 if (b10==6 | b10==. | b10==9) & (c07==6 | c07==.) // No aporta
-	replace cotizando_ci = 0 if peaa == 2 
+	***** El código mantiene a la poblacion inactiva y a los menores de la edad límite de la PET como missing values en congruencia con la variable formal_ci *****.
+	gen byte cotizando_ci = .
+	replace cotizando_ci = 1 if ((b10 == 1 | c07 == 1 ) & emp_ci==1) //Si aporta
+	replace cotizando_ci = 0 if (cotizando_ci != 1 & inlist(condocup_ci, 1, 2)) // No aporta
 	label var cotizando_ci "Cotizante a la Seguridad Social"
+	label define cotizando_ci 0 "No"  1 "Si"
+	label value cotizando_ci cotizando_ci
 
 	***************
 	***instcot_ci: Variable categórica que indica la institución de la Seguridad Social a la cual cotiza o está afiliado. Contiene la información de la variable original de la base de datos. ***
@@ -880,8 +897,7 @@ use "`base_in'", clear
 	***afiliado_ci: Variable dicotómica que indica con valor 1 si el trabajador está afiliado a la Seguridad Social (independientemente que haya o no cotizado en el mes de referencia), con 0 al resto del grupo de referencia y mantenemos con valores perdidos si la encuesta los tiene como perdidos***
 	***************	
 	gen  byte afiliado_ci = . //No existe esta pregunta 
-	
-	
+		
 	**************
 	***formal_ci: Variable dicotómica que indica con valor 1 si el trabajador es formal y con 0 al resto. ***
 	**************

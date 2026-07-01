@@ -470,12 +470,29 @@ label define condocup_ci 1"ocupados" 2"desocupados" 3"inactivos" 4"menor que 14"
 label value condocup_ci condocup_ci
 label var condocup_ci "Condicion de ocupacion utilizando definicion del pais"
 */
-*56. Empleado
 
-cap gen emp_ci=(pobpcoac==2)
+*56. Empleado
+****************
+***emp_ci***
+****************
+***** El código mantiene como missing values a la poblacion menor de la edad limite de la PET que no forman parte de la población de referencia de la sección laboral de la Encuesta *****.
+gen byte emp_ci = .
+replace emp_ci = (condocup_ci == 1) if (condocup_ci != . & condocup_ci != 4)
+label var emp_ci "Ocupado (empleado)"
+label define emp_ci 0"No" 1"Si", add
+label value emp_ci emp_ci
+
+
+****************
+***desemp_ci***
+****************
+***** El código mantiene como missing values a la poblacion menor de la edad limite de la PET que no forman parte de la población de referencia de la sección laboral de la Encuesta *****.
+gen byte desemp_ci = .
+replace desemp_ci = (condocup_ci == 2) if (condocup_ci != . & condocup_ci != 4)label var desemp_ci "Desocupado (desempleado)"
+label define desemp_ci 0"No " 1"Si", add
+label value desemp_ci desemp_ci
 
 *57. Personas que no tienen trabajo y han buscado en el periodo de referencia de la encuesta
-
 gen desemp1_ci=((pobpcoac==3|pobpcoac==4|pobpcoac==5) & f107==1)
 
 *58. Personas que no trabajaron ni buscaron trabajo en la ÃÂºltima semanana pero esperan respuesta de una solicitud de empleo
@@ -624,9 +641,14 @@ gen bps=.
 replace bps=1 if e45_5==1
 replace bps=0 if e45_5==2
 
-gen afiliado_ci=(msp==1 | iamc==1 | spm==1 | hpm==1 | bps==1)
-replace afiliado_ci=. if msp==. & iamc==. & spm==. & hpm==. & bps==.
+***** El código mantiene a la poblacion inactiva y a los menores de la edad límite de la PET como missing values en congruencia con la variable formal_ci *****.
+gen byte afiliado_ci = .
+replace afiliado_ci = 1 if ((msp==1 | iamc==1 | spm==1 | hpm==1 | bps==1) & emp_ci==1)
+replace afiliado_ci = 0 if ((msp==0 & iamc==0 & spm==0 & hpm==0 & bps==0) & inlist(condocup_ci, 1, 2))
 label var afiliado_ci "Afiliado a la Seguridad Social"
+label define afiliado_ci 0 "No"  1 "Si"
+label value afiliado_ci afiliado_ci
+
 drop msp iamc spm hpm bps
 *Nota: seguridad social comprende solo los que en el futuro me ofrecen una pension.
 *MRU - Abril 2014: pego esto porque no estaba copiado correctamente del do-file de la unidad x
@@ -634,9 +656,13 @@ drop msp iamc spm hpm bps
 ****************
 *cotizando_ci***
 ****************
-gen cotizando_ci=0 if condocup_ci==1 | condocup_ci==2
-replace cotizando_ci=1 if (f82==1 | f96==1) & cotizando_ci==0
+***** El código mantiene a la poblacion inactiva y a los menores de la edad límite de la PET como missing values en congruencia con la variable formal_ci *****.
+gen byte cotizando_ci = .
+replace cotizando_ci = 1 if ((f82==1 | f96==1) & emp_ci==1)
+replace cotizando_ci = 0 if ((f82==2 | f96==2) & inlist(condocup_ci, 1, 2))
 label var cotizando_ci "Cotizante a la Seguridad Social"
+label define cotizando_ci 0 "No"  1 "Si"
+label value cotizando_ci cotizando_ci
 
 gen cotizapri_ci=0     if condocup_ci==1 | condocup_ci==2 
 replace cotizapri_ci=1 if (f82==1) & cotizando_ci==0 
@@ -775,9 +801,13 @@ replace pea_ci=1 if emp_ci==1 |desemp_ci==1
 
 
 *63. Trabajadores desalentados: Personas que creen que por alguna razÃÂ³n no conseguirÃÂ¡n empleo
-
-gen desalent_ci=.
-
+***** El código mantiene como población de referencia a las personas inactivas (condocup_ci == 3) *****.
+gen byte desalent_ci = .
+replace desalent_ci = 1 if (f107 == 2 & f108 == 4 & condocup_ci == 3)
+replace desalent_ci = 0 if (desalent_ci != 1 & condocup_ci == 3)
+label var desalent_ci "Desalentados"
+label define desalent_ci 0 "No" 1 "Si", add
+label value desalent_ci desalent_ci
 *27. Horas totales trabajadas en la actividad principal
 
 gen horaspri_ci=f85
