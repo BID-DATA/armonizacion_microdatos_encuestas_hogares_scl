@@ -439,7 +439,7 @@ label values nempleos_ci nempleos_ci
 * OCUPADO  *
 ************
 gen emp_ci=0 
-replace emp_ci=1 if condocup_ci==1
+replace emp_ci = (condocup_ci == 1) if (condocup_ci != . & condocup_ci != 4)
 label var emp_ci "Ocupado"
 label define ocupado 1"Ocupado" 0"No ocupado"  
 label values emp_ci ocupado

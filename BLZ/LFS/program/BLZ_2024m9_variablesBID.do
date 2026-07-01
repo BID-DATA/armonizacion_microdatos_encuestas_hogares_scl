@@ -325,6 +325,8 @@ use "`base_in'", clear
 	replace afroind_ci=2 if afro_ci==1
 	replace afroind_ci=3 if noafroind_ci == 1
 	
+
+	
 	*********
 	*afro_ch*
 	*********
@@ -388,7 +390,6 @@ use "`base_in'", clear
 	replace condocup_ci = 3 if status == 4 /* inactivo */
 	replace condocup_ci = 4 if status == 1
 	* DK/NS: clasificamos según edad
-	replace condocup_ci = 3 if status == 5 & edad_ci >= 14
 	replace condocup_ci = 4 if status == 5 & edad_ci < 14
 
 	*******************
@@ -407,7 +408,7 @@ use "`base_in'", clear
 	***emp_ci*
 	**********
 	gen byte emp_ci = .
-	replace emp_ci = (condocup_ci == 1) if condocup_ci != .
+	replace emp_ci = (condocup_ci == 1) if (condocup_ci != . & condocup_ci != 4)
 
 	**************
 	***cesante_ci*** 
@@ -422,7 +423,7 @@ use "`base_in'", clear
 	***desemp_ci***
 	***************	
 	gen byte desemp_ci = .
-	replace desemp_ci = (condocup_ci == 2) if condocup_ci! = .
+	replace desemp_ci = (condocup_ci == 2) if (condocup_ci != . & condocup_ci != 4)
 	
 	***************
 	***subemp_ci***
@@ -431,7 +432,7 @@ use "`base_in'", clear
 	* ea32: 1=Yes, 2=No  (Pregunta ¿quiere trabajar más horas?)
 
 	gen byte subemp_ci = 0
-	replace subemp_ci = 1 if total_hrs_last_week <= 30 & total_hrs_last_week != . & ea32 == 1 & emp_ci == 1 
+	replace subemp_ci = 1 if total_hrs_last_week <= 30 & total_hrs_last_week != . & ea32 == 1 & ea33==1 & emp_ci == 1 
 	replace subemp_ci = . if emp_ci != 1
 
 	****************
@@ -473,28 +474,28 @@ use "`base_in'", clear
 	* Desalentado: inactivo que no busca trabajo por razones de mercado
 	* ea12: 13=No suitable work, 14=No resources, 16=Tired of looking
 	gen byte desalent_ci= .
-	replace desalent_ci = 1 if condocup_ci == 3 & inlist(ea12, 13, 14, 16)
+	replace desalent_ci = 1 if condocup_ci == 3 & inlist(ea12, 13, 14, 15, 16)
 	replace desalent_ci = 0 if condocup_ci == 3 & desalent_ci == .
 
 	***************
 	***horaspri_ci***
 	***************	
 	gen  byte horaspri_ci = .
-	replace horaspri_ci = total_hrs_last_week if emp_ci == 1
+	replace horaspri_ci = total_hrs_last_week if total_hrs_last_week!= 999999 &  total_hrs_last_week!=. & ea19==2 & emp_ci == 1
 	
 	***************
 	***horastot_ci ***
 	***************	
 	gen  byte horastot_ci  = .
-	replace horastot_ci  = total_hrs_last_week if emp_ci == 1
+	replace horastot_ci  = total_hrs_last_week if  total_hrs_last_week!= 999999 &  total_hrs_last_week!=. &  emp_ci == 1
 	
 	
 	***************
 	***tiempoparc_ci ***
 	***************	
 	gen  byte tiempoparc_ci = .
-	replace tiempoparc_ci = 1 if total_hrs_last_week < 30 & total_hrs_last_week != . & emp_ci == 1
-	replace tiempoparc_ci = 0 if total_hrs_last_week >= 30 & total_hrs_last_week != . & emp_ci == 1 
+	replace tiempoparc_ci = 1 if total_hrs_last_week < 30 & total_hrs_last_week != . & emp_ci == 1 & ea32==2
+	replace tiempoparc_ci = 0 if total_hrs_last_week >= 30 & total_hrs_last_week != . & emp_ci == 1 & ea32==2
 	
 	***************
 	***categopri_ci ***
@@ -502,6 +503,7 @@ use "`base_in'", clear
 	* ea25: 1=Self-employed w/employees, 2=Self-employed w/o employees,
 	*       3=Employee(Govt), 4=Employee(NGO), 5=Employee(Intl Org),
 	*       6=Contributing family worker, 7=Domestic worker, 8=Employee(Private), 9=Apprentice
+	*contributing family= familiar no remunerado
 	gen  byte categopri_ci = .
 	replace categopri_ci = 1 if ea25 == 1 & emp_ci == 1
 	replace categopri_ci = 2 if ea25 == 2 & emp_ci == 1
@@ -575,7 +577,7 @@ use "`base_in'", clear
 	***instcot_ci***
 	***************	
 	* No hay información sobre afiliación a seguridad social en 2024
-	gen  byte instcot_ci = .
+	gen  instcot_ci = ""
 *	replace instcot_ci  = ""	
 	
 	**************
@@ -584,11 +586,8 @@ use "`base_in'", clear
 	* informalemp: 0=formal, 100=Informally employed
 	
 	gen byte formal_ci = .
-	replace formal_ci = 1 if informalemp == 0 & condocup_ci == 1
-	replace formal_ci = 0 if informalemp == 100 & condocup_ci == 1
-	
-*	replace formal_ci  =  1 if (cotizando_ci == 1 | afiliado_ci == 1) & condocup_ci == 1
-*	replace formal_ci = 0 if cotizando_ci == 0 & (condocup_ci == 1 | condocup_ci == 2)
+	replace formal_ci  =  1 if (cotizando_ci == 1 | afiliado_ci == 1) & condocup_ci == 1
+	replace formal_ci = 0 if cotizando_ci == 0 & (condocup_ci == 1 | condocup_ci == 2)
 	
 	*******************
 	***tipocontrato_ci***
@@ -771,22 +770,11 @@ use "`base_in'", clear
 	*************
     generate double remesas_ch = .
 
-	*************
-	* pension_ci *
-	*************
-	*Me sale una alerta de que esta variable ya está generada más arriba (línea 625)
-	*generate byte pension_ci = .
-
 	**********
 	* ypen_ci *
 	**********
 	generate double ypen_ci =.
 
-	****************
-	* pensionsub_ci *
-	****************
-	*Me sale una alerta de que esta variable ya está generada más arriba (línea 632)
-	*generate byte pensionsub_ci = .
 
 	*************
 	* ypensub_ci *
@@ -862,16 +850,14 @@ use "`base_in'", clear
 	*eduui_ci*
 	**********
 	gen byte eduui_ci = .
-	replace eduui_ci = 1 if aedu_ci >= 12 & aedu_ci < 16 & aedu_ci != .
-	replace eduui_ci = 0 if (aedu_ci < 12 | aedu_ci >= 16) & aedu_ci != .
+	replace eduui_ci = (aedu_ci>12 & aedu_ci<16) & (school==3)
 	replace eduui_ci = . if aedu_ci == .
 	
 	**********
 	*eduuc_ci*
 	**********
 	gen byte eduuc_ci = .
-	replace eduuc_ci = 1 if aedu_ci >= 16 & aedu_ci != .
-	replace eduuc_ci = 0 if aedu_ci < 16 & aedu_ci != .
+	replace eduuc_ci =(aedu_ci >= 16 & aedu_ci != . & (school==3))
 	replace eduuc_ci = . if aedu_ci == .
 
 	**********
@@ -1093,9 +1079,8 @@ use "`base_in'", clear
 	***********
 	* hh2: 1=Own/hire-purchase, 2=Lease, 3=Rent-Private, 4=Rent-Government, 5=Rent-free, 6=Squat
 	gen viviprop_ch=.
-	replace viviprop_ch = 0 if inlist(hh2, 3, 4)
+	replace viviprop_ch = 0 if inlist(hh2, 2, 3, 4)
 	replace viviprop_ch = 1 if hh2 == 1
-	replace viviprop_ch = 2 if hh2 == 2
 	replace viviprop_ch = 3 if inlist(hh2, 5, 6)	
 	
 	***********
@@ -1138,17 +1123,15 @@ use "`base_in'", clear
 	*      1=Bottled/Purified water, 2=Public piped into dwelling or yard, 3=Private piped into dwelling or yard, 4=Public standpipe,
 	*      5=Protected dug well, 6=Unprotected dug well, 7=Private catchment, not piped (vat, drum,, 8=River/Creek/Spring/Stream/Pond ,
 	*	   888888 =Other
-	gen byte aguafconsumo_ch = .
-	replace aguafconsumo_ch = 1 if hh8 == 2 | hh8 == 3
-	replace aguafconsumo_ch = 2 if hh8 == 4
-	replace aguafconsumo_ch = 3 if hh8 == 1
-	replace aguafconsumo_ch = 4 if hh8 == 5
-	replace aguafconsumo_ch = 5 if hh8 == 7
-*	replace aguafconsumo_ch = 6 if ... No hay esta categoría 
-*	replace aguafconsumo_ch = 7 if ... No hay esta categoría 
-	replace aguafconsumo_ch = 8 if hh8 == 8
-	replace aguafconsumo_ch = 9 if hh8 == 6
-	replace aguafconsumo_ch = 10 if hh8 == 888888
+	gen aguafconsumo_ch=.
+	replace aguafconsumo_ch= 1 if hh8==2 |hh8==3 	// distribution network, private tap or point of access
+	replace aguafconsumo_ch= 2 if hh8==4 		// distribution network, public point of access (standpipe or public tap)
+	replace aguafconsumo_ch= 3 if hh8==1 		// Bottled water 
+	replace aguafconsumo_ch= 4 if hh8==5		// Protected well
+	*replace aguafconsumo_ch= 7 if h8==		// Another improved water source		
+	replace aguafconsumo_ch= 8 if hh8==8		// Directly from surface water body
+	replace aguafconsumo_ch= 9 if hh8==6		// Another non-improved source
+	replace aguafconsumo_ch= 10 if inlist(hh8,7,9,10,888888) // Unclassifiable 
 
 	***********
 	*aguafuente_ch*
@@ -1158,16 +1141,14 @@ use "`base_in'", clear
 	*      6= Protected dug well, 7=Unprotected dug well, 8=Private catchments, not piped (vat, drum ...), 9=River/Creek/Spring/Stream/Pond
 	*      888888 = Other, 999999= DK/NS
 	gen byte aguafuente_ch =.
-	replace aguafuente_ch = 1 if hh7 == 1 | hh7 == 2 | hh7 == 3
+	replace aguafuente_ch = 1 if hh7 == 1 | hh7 == 2 
 	replace aguafuente_ch = 2 if hh7 == 4
-*	replace aguafuente_ch = 3 if … No hay esta categoría (agua embotellada)
 	replace aguafuente_ch = 4 if hh7 == 6
-	replace aguafuente_ch = 5 if hh7 == 8
-*	replace aguafuente_ch = 6 if …
-*	replace aguafuente_ch = 7 if …
-	replace aguafuente_ch = 8 if hh7 == 9
+	replace aguafuente_ch = 7 if  hh7 == 3
+	replace aguafuente_ch= 8  if h7==9			// Surface water
 	replace aguafuente_ch = 9 if hh7 == 7
-	replace aguafuente_ch = 10 if hh7 == 888888 
+	replace aguafuente_ch = 10 if hh7==8 | hh7 == 888888 
+
 
 	******************
 	** aguadist_ch ** - 
