@@ -760,42 +760,71 @@ replace tiempoparc_ci = . if emp_ci == 0
 	***VARIABLES DE EDUCACION***
 	****************************
 
-	**************
+		**************
 	***aedu_ci***
 	**************
-	// CORREGIDA: Educación superior codificada correctamente con semestres / 2
-	// p3042s1 para niveles 7-13 está en semestres — se divide por 2 para convertir a años
+	// CORREGIDA: Educación superior codificada correctamente con (semestres/2)
+	// p3042s1 para niveles 7-13 está en semestres — se divide entre 2 para convertir a años
 
 	/*
-	1  Ninguno  |  2  Preescolar  |  3  Básica primaria (1o-5o)
-	4  Básica secundaria (6o-9o)  |  5  Media académica  |  6  Media técnica
-	7  Normalista  |  8  Técnica profesional  |  9  Tecnológica
-	10 Universitaria  |  11 Especialización  |  12 Maestría  |  13 Doctorado
-	99 No sabe, no informa
+	1	Ninguno
+	2	Preescolar 
+	3	Básica primaria (1o - 5o)
+	4	Básica secundaria (6o - 9o)
+	5	Media académica (Bachillerato clásico) 
+	6	Media técnica (Bachillerato técnico)
+	7	Normalista
+	8	Técnica profesional
+	9	Tecnológica 
+	10	Universitaria
+	11	Especialización 
+	12	Maestría 
+	13	Doctorado 
+	99	No sabe, no informa
+	
+	Nota 1. La educación secundaria se compone por básica secundaria + media (todo ello 
+	hace el bachillerato) que tiene en total 6 años de escolaridad (4 de básica secundaria +
+	2 de media)
+	
+	Nota 2. p3042s1 para niveles 7-13 está en semestres, por ello se divide entre 2 para convertir a años y
+	se trunca hacia abajo cuando haya decimales. Si el valor es 3.9 años, se trunca a 3 años.
+	
+	Nota 3. La educación normalista suelen durar 4 semestres. La educación técnica profesional y la tecnológica  
+	puede llegar a durar 6 semestres. Cuando se ven 6 semestres asociados a lo "técnico", casi siempre se trata 
+	del ciclo completo técnico + tecnólogo sumados: los técnicos profesionales cuentan con una duración de cuatro 
+	a cinco semestres, y si se continúa con la tecnología esta agrega dos semestres más, totalizando seis semestres 
+	para llegar al título de tecnólogo.
+	
+	Nota 4. La educación universitaria tiene como máximo 12 semestres en el caso de Medicina y 10 para las demás.
+	Considerando esto, todos los valores mayores a 12 se truncarán a 12 semestres asumiendo que corresponden a 
+	la carrera profesional de medicina (esto es un supuesto práctico).
+	
+	Nota 5. La especialización es conceptualmente diferente a maestría y doctorado. Esta suele tener duración 
+	de entre 2 a 4 semestres, aunque para el caso de medicina puede durar 10 semestres incluso (especializaciones 
+	médico-quirúrgicas). Por ello, se divide entre 2 sin modificaciones y se hacen arreglos según corresponda.
+	
+	Nota 6. Los doctorados en colombia pueden tener duración de 10 semestre (5 años) como máximo. Todos los 
+	valores mayores a 10 se truncarán a 10 semestres (5 años).
 	*/
 
+	/* Superior: convertir de semestre a años */
+	g sup_top = trunc(p3042s1/2)									/* convierte a años dividiendo directamente */
+	replace sup_top = 2 if p3042 == 7 & p3042s1 > 4					/* normalista: máx 2 años adicionales */
+	replace sup_top = 3 if p3042 == 8 & p3042s1 > 6					/* técnica prof.: máx 3 años adicionales */
+	replace sup_top = 3 if p3042 == 9 & p3042s1 > 6					/* tecnológica: máx 3 años adicionales */
+	replace sup_top = 6 if p3042 == 10 & p3042s1 > 12    			/* universitaria: máx 6 años adicionales */
+	replace sup_top = 2 if p3042 == 12 & p3042s1 > 4  				/* maestría: máx 2 años adicionales */
+	replace sup_top = 5 if p3042 == 13 & p3042s1 > 10     			/* doctorado: máx 5 años adicionales */
+
 	g aedu_ci = .
-	* 0 años de educacion
-	replace aedu_ci = 0 if p3042 == 1 | p3042 == 2
-
-	* en años
-	// Primaria: p3042s1 = grado 1-5 (relativo)
-	replace aedu_ci = p3042s1 if p3042==3
-	// Secundaria básica: p3042s1 = grado relativo 1-4 (6o-9o en absoluto) → 5+grado = 6-9 años totales
-	replace aedu_ci = 5 + p3042s1 if p3042 == 4
-	// Media: p3042s1 = grado relativo → 11+grado
-	replace aedu_ci = 11 + p3042s1 if inlist(p3042, 5, 6)
-
-	// Superior: p3042s1 está en semestres → convertir a años (trunc(sem/2)), con topes por nivel
-	g sup_top = trunc(p3042s1/2)
-	replace sup_top = 5 if p3042 == 10 & p3042s1 > 10    // universitaria: máx 5 años adicionales
-	replace sup_top = 2 if inlist(p3042, 11, 12) & p3042s1 > 4  // especialización/maestría: máx 2
-	replace sup_top = 3 if p3042 == 13 & p3042s1 > 6     // doctorado: máx 3
-
-	replace aedu_ci = 11 + sup_top if inlist(p3042, 7, 8, 9, 10)   // normalista, técnica, tecnológica, univ
-	replace aedu_ci = 16 + sup_top if inlist(p3042, 11, 12)         // especialización, maestría (11+5=16 base)
-	replace aedu_ci = 18 + sup_top if inlist(p3042, 13)             // doctorado (11+5+2=18 base)
-	drop sup_top
+	replace aedu_ci = 0 if inlist(p3042, 1, 2) 						/* 0 años de educacion */
+	replace aedu_ci = p3042s1 if p3042==3 							/* Primaria: p3042s1 = grado 1-5 */
+	replace aedu_ci = 5 + p3042s1 if p3042 == 4     				/* Secundaria básica: p3042s1 = grado 6-9 */
+	replace aedu_ci = 9 + p3042s1 if inlist(p3042, 5, 6)    		/* Media: p3042s1 = grado 10-11 */
+	replace aedu_ci = 11 + sup_top if inlist(p3042, 7, 8, 9, 10)    /* normalista, técnica, tecnológica, universitaria */
+	replace aedu_ci = 16 + sup_top if inlist(p3042, 11, 12)         /* especialización, maestría */
+	replace aedu_ci = 18 + sup_top if inlist(p3042, 13)             /* doctorado */
+	drop sup_top 
 
 	***************
 	***edupre_ci***
@@ -806,6 +835,14 @@ replace tiempoparc_ci = . if emp_ci == 0
 	***eduui_ci***
 	**************
 	* Nota: normalista es una modalidad especial que no hace parte de superior pero es postsecundaria
+	/* Nota (06/07/2026): La Ley 2481 de 2025 estableció el marco normativo de las escuelas normales superiores 
+	como instituciones autorizadas para la oferta de educación superior, y define expresamente que estas operan 
+	mediante ciclos propedéuticos en la educación superior, otorgando el título de normalista superior en el 
+	Programa de Formación Complementaria y el título de licenciado en el programa de formación de maestros. Es 
+	decir, con la normativa vigente el normalista superior ya está formalmente incorporado como parte de la 
+	oferta de educación superior, aunque con un régimen especial. En este sentido, hay que evaluar si se ingresa 
+	como superior o no ya que esto podría afectar la comparabilidad */
+
 	g byte eduui_ci = 0
 	replace eduui_ci = 1 if inlist(p3042, 8, 9, 10) & p3043<5
 	replace eduui_ci = . if aedu_ci == .
@@ -814,12 +851,21 @@ replace tiempoparc_ci = . if emp_ci == 0
 	***eduuc_ci***
 	***************
 	* Nota: normalista es una modalidad especial que no hace parte de superior pero es postsecundaria
+	/* Nota (06/07/2026): La Ley 2481 de 2025 estableció el marco normativo de las escuelas normales superiores 
+	como instituciones autorizadas para la oferta de educación superior, y define expresamente que estas operan 
+	mediante ciclos propedéuticos en la educación superior, otorgando el título de normalista superior en el 
+	Programa de Formación Complementaria y el título de licenciado en el programa de formación de maestros. Es 
+	decir, con la normativa vigente el normalista superior ya está formalmente incorporado como parte de la 
+	oferta de educación superior, aunque con un régimen especial. En este sentido, hay que evaluar si se ingresa 
+	como superior o no ya que esto podría afectar la comparabilidad */
+
 	g byte eduuc_ci = (inlist(p3042, 8, 9, 10, 11, 12, 13) & inlist(p3043, 5, 6, 7, 8, 9, 10))
 	replace eduuc_ci = . if aedu_ci == .
 
 	**************
 	***eduac_ci***
 	**************
+
 	gen byte eduac_ci = .
 	replace eduac_ci = 1 if (inlist(p3042, 10, 11, 12, 13) & inlist(p3043, 7, 8, 9, 10))
 	replace eduac_ci = 0 if (inlist(p3042, 8, 9 ) & inlist(p3043, 5, 6))
@@ -828,7 +874,8 @@ replace tiempoparc_ci = . if emp_ci == 0
 	***asiste_ci***
 	***************
 	* FIX-COL-03 (QA 2026-05-28): p6170 es la variable correcta (no p3038)
-	* p6170: 1=sí asiste actualmente, 2=no — verificado en script de referencia MECOVI
+	* p6170: 1=sí asiste actualmente, 2=no — verificado en script de referencia MECOVI. Verificado en diccionario de códigos de la encuesta
+
 	gen byte asiste_ci = .
 	replace asiste_ci = 1 if p6170 == 1
 	replace asiste_ci = 0 if p6170 == 2
@@ -836,6 +883,10 @@ replace tiempoparc_ci = . if emp_ci == 0
 	***************
 	***edupub_ci***
 	***************
+	/*
+	p3041: La institución a la que asiste es 1. Pública o 2. Privada
+
+	*/
 	g byte edupub_ci =.
 	replace edupub_ci = 1 if p3041 == 1 & p6170==1
 	replace edupub_ci = 0 if p3041 == 2 & p6170==1
@@ -848,6 +899,13 @@ replace tiempoparc_ci = . if emp_ci == 0
 	***************
 	***asispre_ci**
 	***************
+	/*
+	p6170: ¿Actualmente asiste a alguna institución educativa (por ejemplo: jardín, escuela, colegio, universidad)?
+	p3042: ¿Cuál es el mayor nivel educativo alcanzado y el último grado o semestre aprobado por ...?
+	p3042s1: ¿Cuál es el mayor nivel educativo alcanzado y el último grado o semestre aprobado por …...? Año o Grado
+	
+	*/
+
 	g byte asispre_ci= (p6170==1 & p3042==2 & p3042s1 <2)
 
 
