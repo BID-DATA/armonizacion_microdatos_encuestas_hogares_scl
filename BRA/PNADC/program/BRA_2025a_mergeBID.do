@@ -49,7 +49,7 @@ global output "${surveysFolder}\survey\BRA\PNADC\\`ano'\\`ronda'\data_merge"
               1: txt. to .dta 
 ==================================================*/
 
-infile using "${input}\input_`ano'.do", using("${input}\PNADC_`ano'_visita1.txt")
+infile using "${input}\input_`ano'.do", using("${input}\PNADC_2025_visita1_20260508\PNADC_`ano'_visita1.txt")
 		save   "${input}\PNADC_`ano'`ronda'.dta", replace
 
 foreach v of varlist _all {
