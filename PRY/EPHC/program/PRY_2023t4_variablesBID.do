@@ -100,7 +100,8 @@ label variable factor_ch "Factor de expansion del hogar"
 ************
 ***idh_ch***
 ************
-gen idh_ch=upms+nvivis+nhogas
+sort upm nvivi nhoga
+egen idh_ch = group(upm nvivi nhoga)
 label variable idh_ch "ID del hogar"
 tostring idh_ch, replace
 
@@ -108,12 +109,10 @@ tostring idh_ch, replace
 ************
 ***idp_ci***
 ************
-gen idp_ci=upms + nvivis + nhogas + l02s
+gen idp_ci=l02
 label variable idp_ci "ID de la persona en el hogar"
 tostring idp_ci, replace
 
-sort idh_ch idp_ci
-drop upms nvivis nhogas l02s
 
 **********
 ***zona***
@@ -445,18 +444,21 @@ label var salmm_ci "Salario minimo legal"
 ************
 ***emp_ci***
 ************
-gen byte emp_ci=(condocup_ci==1)
+gen byte emp_ci = (condocup_ci == 1)
+replace emp_ci = . if condocup_ci == 4 | condocup_ci == .
 
 ***************
 ***desemp_ci***
 ***************
-gen desemp_ci=(condocup_ci==2)
+gen byte desemp_ci = (condocup_ci == 2)
+replace desemp_ci = . if condocup_ci == 4 | condocup_ci == .
 
 ************
 ***pea_ci***
 ************
-gen pea_ci=0
-replace pea_ci=1 if emp_ci==1 |desemp_ci==1
+gen byte pea_ci = .
+replace pea_ci = 1 if inlist(condocup_ci, 1, 2)
+replace pea_ci = 0 if inlist(condocup_ci, 3, 4)
 
 *****************
 ***desalent_ci***
@@ -466,51 +468,46 @@ gen desalent_ci=(a09==2)
 ***************
 ***subemp_ci***
 ***************
-gen holune=int(b03lu) if b03lu<99
-gen homart=int(b03ma) if b03ma<99
-gen homier=int(b03mi) if b03mi<99
-gen hojuev=int(b03ju) if b03ju<99
-gen hovier=int(b03vi) if b03vi<99
-gen hosab=int(b03sa)  if b03sa<99
-gen hodom=int(b03do)  if b03do<99
+/* d01: En los últimos 7 días ¿estuvo disponible para trabajar más horas? 
+		1	Sí
+		6	No
+		9	No Responde
 
-gen minlune=b03lu-holune
-gen minmart=b03ma-homart
-gen minmier=b03mi-homier
-gen minjuev=b03ju-hojuev
-gen minvier=b03vi-hovier
-gen minsab=b03sa-hosab
-gen mindom=b03do-hodom
+ d05: ¿Cuál es la razón principal por al que desea mejorar o cambiar o adicionar su empleo actual?:
+		6	Desea trabajar más horas y ganar más
 
-egen horas=rsum(holune homart homier hojuev hovier hosab hodom), missing
-egen min = rsum(minlune minmart minmier minjuev minvier minsab mindom), missing
-replace min=min*100
-gen horas2 =min/60
-egen tothoras=rsum(horas horas2), missing
+ horab: Horas semanales trabajas en la actividad principal habitualmente */
 
-gen subemp_ci=0
-replace subemp_ci=1 if (tothoras>=1 & tothoras<=30) & (emp_ci==1 & d01==1)
-drop min* 
-
-*******************
-***tiempoparc_ci***
-*******************
-*10/21/2015 MGD: se considera solo la restricción de si quiere trabajar más.  No la de disponibilidad
-gen tiempoparc_ci=0
-replace tiempoparc_ci=1 if (tothoras>=1 & tothoras<30) & emp_ci==1 /*& d01==6*/  & d03==6
+gen byte subemp_ci = 0
+replace subemp_ci = 1 if horab < 30 & d05 == 6 & d01 == 1
+replace subemp_ci = . if condocup_ci != 1
 
 *****************
 ***horaspri_ci***
 *****************
-egen hr_seman=rsum(b03lu b03ma b03mi b03ju b03vi b03sa b03do), missing
-gen hr_sem_s=tothoras
-gen horaspri_ci=hr_seman if emp_ci==1 & hr_seman<170  //AJAM: en una semana hay 168 horas (hay individuos que reportan más de eso)
+* horab - Horas trabajadas en la actividad principal // 999	. (codificación de missings)
+gen  byte horaspri_ci = horab 
+replace horaspri_ci = . if horab == 999 | emp_ci == 0 // Reemplazando los missings  y los que no trabajan
 
 *****************
 ***horastot_ci***
 *****************
 
-gen horastot_ci=hr_sem_s  if emp_ci==1 
+* horabco - Horas trabajadas en todas las actividades // 999 . (codificación de missings)
+gen  byte horastot_ci = horabco
+replace horastot_ci = . if horabco == 999 | emp_ci == 0 // Reemplazando los missings  y los que no trabajan
+
+*******************
+***tiempoparc_ci***
+*******************
+/*¿Desea mejorar su/sus ocupación/nes o cambiar o adicionar otra ocupación? - d03:
+           1 Sí, mejorar su/s ocupación/es
+           2 Sí, cambiar la/s ocupación/es
+           3 Sí, adicionar otra ocupación
+           6 No desea cambiar
+           9 NR */
+gen tiempoparc_ci = (horaspri_ci >= 1 & horaspri_ci < 30) & d03 == 6 & emp_ci == 1
+replace tiempoparc_ci = . if emp_ci == 0
 
 ******************
 ***categopri_ci***
@@ -594,11 +591,9 @@ label var nempleos_ci "Número de empleos"
 *****************
 ***spublico_ci***
 *****************
-*10/21/2015 MGD: corrección pequeña para que se tomen en cuenta a todos los ocupados.
-gen spublico_ci=0 if emp_ci==1
-replace spublico_ci=1 if cate_pea==1 & emp_ci==1
-/*replace spublico_ci=0 if cate_pea!=1 & cate_pea!=9
-replace spublico_ci=. if emp_ci~=1*/
+gen spublico_ci = .
+replace spublico_ci = 0 if emp_ci == 1
+replace spublico_ci = 1 if cate_pea == 1 & emp_ci == 1
 
 **************
 ***ocupa_ci***
@@ -799,17 +794,16 @@ gen ylnm_ci=.
 *************
 ***ynlm_ci***
 *************
-destring e02tde, force replace
-local var="e01dde e01ede e01fde e01gde e01hde e01ide e01jde e01kde e01lde  e02tde"
+local var="e01dde e01ede e01fde e01gde e01hde e01ide e01jde e01kde e01lde e02bde"
 
 foreach x of local var {
 gen `x'1=`x'
 replace `x'1=. if `x'==0 | `x'>=999999999 /*No aplicable*/
 }
 
-egen ynlm_ci=rsum(e01dde1 e01ede1 e01fde1 e01gde1 e01hde1 e01ide1 e01jde1 e01kde1 e01lde1 e02tde1), missing
-replace ynlm_ci=. if e01dde1==. & e01ede1==. & e01fde1==. & e01gde1==. & e01hde1==. & e01ide1==. & e01jde1==. & e01kde1==. & e02tde1==.
-drop e01dde1 e01ede1 e01fde1 e01gde1 e01hde1 e01ide1 e01jde1 e01kde1 e02tde1
+egen ynlm_ci=rsum(e01dde1 e01ede1 e01fde1 e01gde1 e01hde1 e01ide1 e01jde1 e01kde1 e01lde1 e02bde1), missing
+replace ynlm_ci=. if e01dde1==. & e01ede1==. & e01fde1==. & e01gde1==. & e01hde1==. & e01ide1==. & e01jde1==. & e01kde1==. & e02bde1==.
+drop e01dde1 e01ede1 e01fde1 e01gde1 e01hde1 e01ide1 e01jde1 e01kde1 e02bde1
 
 *************************************************
 ***Ingreso laboral no monetario otros trabajos***
@@ -819,7 +813,8 @@ gen ylnmotros_ci=.
 ****************
 ***remesas_ci***
 ****************
-gen remesas_ci= e02tde
+gen remesas_ci= e02bde
+replace remesas_ci = . if e02bde == 99999999999
 gen ynlnm_ci=.
 egen ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci)
 
@@ -857,29 +852,19 @@ replace ylmnr_ch=. if nrylmpri_ch==1
 by idh_ch, sort: egen ylnm_ch=sum(ylnm_ci) if miembros_ci==1, missing
 
 *******************************
-***remesas_ch & remesasnm_ch***
+***remesas_ch***
 *******************************
-gen remesash=.
-
-by idh_ch, sort: egen remesasi=sum(remesas_ci) if miembros_ci==1, missing
-replace remesasi=. if remesasi==0
-egen remesas_ch=rsum(remesasi remesash), missing
-replace remesas_ch=. if remesasi==. 
-
-gen remesasnm_ch=.
+by idh_ch, sort: egen double remesas_ch = sum(remesas_ci) if miembros_ci == 1, missing
 
 *************
 ***ynlm_ch***
 *************
-by idh_ch, sort: egen ynlm=sum(ynlm_ci) if miembros_ci==1, missing
-egen ynlm_ch=rsum(ynlm remesash), missing
-replace ynlm_ch=. if ynlm==. 
-drop ynlm
+by idh_ch, sort: egen ynlm_ch=sum(ynlm_ci) if miembros_ci==1, missing
 
 **************
 ***ynlnm_ch***
 **************
-gen ynlnm_ch=remesasnm_ch
+gen ynlnm_ch=.
 
 *****************
 ***autocons_ci***
@@ -1103,31 +1088,85 @@ la var aguared_ch "Acceso a fuente de agua por red"
 *****************
 *aguafconsumo_ch*
 *****************
-gen aguafconsumo_ch = 0
-replace aguafconsumo_ch = 1 if (v08==4 | v08==1 | v08==2 |v08==3) & v09<=2
-replace aguafconsumo_ch = 2 if (v08==4 | v08==1 | v08==2 |v08==3) & v09==3
-replace aguafconsumo_ch = 3 if v08==11
-replace aguafconsumo_ch= 4 if (v08==5 | v08==6)
-replace aguafconsumo_ch = 5 if v08==10
-replace aguafconsumo_ch = 6 if v08==12
-replace aguafconsumo_ch = 7 if v08==8 | ((v08==1 | v08==2 |v08==3| v08==4 |v08==5|v08==6|v08==8|v08==10|v08==11|v08==12) & v09==5)
-replace aguafconsumo_ch = 8 if v08==13
-replace aguafconsumo_ch = 9 if v08==9 | v08==7
-replace aguafconsumo_ch = 10 if v08==14 
+/* v08 - Agua para beber en el hogar. El agua que más beben en el hogar proviene de…
+	  1 ESSAP (ex CORPOSANA)
+	  2 Junta de Saneamiento (SENASA)
+	  3 Red comunitaria
+	  4 Red o prestador privado
+	  5 Pozo artesiano
+	  6 Pozo excavado protegido (brocal y tapa)
+	  7 Pozo excavado sin protección (sin brocal y/o sin tapa)
+	  8 Manantial protegido
+	  9 Manantial sin protección
+	 10 Agua de lluvia
+	 11 Agua embotellada (mineral)
+	 12 Aguatero
+	 13 Agua superficial (río, represa, lago, estanque, arroyo, canal, canales de riego)
+	 14 Otro (especificar)
+	 99 NR
+
+v09. El agua que beben llega a su vivienda a través de….
+	  1 Cañería dentro del terreno pero fuera de la vivienda
+	  2 Cañería dentro de la vivienda
+	  3 Canilla pública
+	  4 Pozo dentro del terreno
+	  5 Vecino
+	  6 Aguatero
+	  7 Agua embotellada (mineral)
+	  8 Otros medios (especificar)
+	  9 NR */
+
+gen byte aguafconsumo_ch = .
+replace aguafconsumo_ch = 1  if inlist(v08, 1, 2, 3, 4) & inlist(v09, 1, 2)  // red, cañería privada/terreno
+replace aguafconsumo_ch = 2  if inlist(v08, 1, 2, 3, 4) & v09 == 3 		// llave pública
+replace aguafconsumo_ch = 3  if v08 == 11 | v09 == 7 					//agua embotellada
+replace aguafconsumo_ch = 4  if inlist(v08, 5, 6) 						// pozo protegido (dentro del terreno)
+replace aguafconsumo_ch = 5  if v08 == 10  								// lluvia
+replace aguafconsumo_ch = 6  if v08 == 12 | v09 == 6 					// camión cisterna (aguatero)
+replace aguafconsumo_ch = 7  if (v08 == 8 | ((inlist(v08, 1, 2, 3, 4) & (inlist(v09, 5, 8)))))  // otra mejorada
+replace aguafconsumo_ch = 8  if v08 == 13 								// agua superficial
+replace aguafconsumo_ch = 9  if inlist(v08, 7, 9) 						// pozo/manantial sin protección
+replace aguafconsumo_ch = 10 if (inlist(v08, 14, 99) | v09 == 99) 		// otros, no clasificable, NR
 
 
 *****************
 *aguafuente_ch*
 *****************
 
-gen aguafuente_ch = 1 if (v06==4 | v06==1 | v06==2 |v06==3) & v07a<=2
-replace aguafuente_ch = 2 if (v06==4 | v06==1 | v06==2 |v06==3) & v07a==3
-replace aguafuente_ch= 4 if (v06==5 | v06==6)
-replace aguafuente_ch = 5 if v06==10
-replace aguafuente_ch = 6 if v06==11
-replace aguafuente_ch = 7 if (v06==1 | v06==2 |v06==3 |v06==4 |v06==5|v06==10|v06==11) & (v07a ==5 | v07a ==7)
-replace aguafuente_ch = 8 if v06==9
-replace aguafuente_ch = 10 if (v06==99|v06==12 | v06==8 |v06==7|(v06==.& jefe_ci!=.))
+/* v06 -  Agua utilizada en la vivienda. El agua que más utiliza el hogar proviene de…
+	 1 ESSAP (ex CORPOSANA)
+	 2 Junta de Saneamiento (SENASA)
+	 3 Red comunitaria
+	 4 Red o prestador privado
+	 5 Pozo artesiano
+	 6 Pozo con bomba
+	 7 Pozo sin bomba
+	 8 Manantial o naciente
+	 9 Tajamar, río, arroyo
+	10 Agua de lluvia
+	11 Aguatero
+	12 Otra fuente
+	99 NR
+
+v07a. El agua que utiliza en su vivienda llega a través de …. 
+	 1 Cañería dentro del terreno pero fuera de la vivienda
+	 2 Cañería dentro de la vivienda
+	 3 Canilla pública
+	 4 Pozo dentro del terreno
+	 5 Vecino
+	 6 Aguatero
+	 7 Otros medios (especificar)
+	 9 NR */
+
+gen byte aguafuente_ch = .
+replace aguafuente_ch = 1  if inlist(v06, 1, 2, 3, 4)  & inlist(v07a, 1, 2) 	//red (ESSAP/SENASA/comunitaria/privada)
+replace aguafuente_ch = 2  if inlist(v06, 1, 2, 3, 4) & v07a == 3  		// llave pública
+replace aguafuente_ch = 4  if inlist(v06, 5, 6) 						// pozo protegido (artesiano/con bomba)
+replace aguafuente_ch = 5  if v06 == 10 								// agua lluvia
+replace aguafuente_ch = 6  if v06 == 11 | v07a == 6  					// camión cisterna (aguatero)
+replace aguafuente_ch = 7  if (inlist(v06, 1, 2, 3, 4) & inlist(v07a, 4, 5, 7))  // otra mejorada
+replace aguafuente_ch = 8  if v06 == 9 									 // agua superficial (tajamar/río)
+replace aguafuente_ch = 10 if (inlist(v06, 7, 8, 12, 99) | v07a == 9)  // pozo, manantial, otra, NR
 
 *************
 *aguadist_ch*
@@ -1207,6 +1246,7 @@ replace banomejorado_ch =0 if (bano_ch ==0 | bano_ch>=4) & bano_ch!=6
 ************
 gen sinbano_ch = 3
 replace sinbano_ch = 0 if v12==1
+replace sinbano_ch = . if v12==9
 
 *label var sinbano_ch "= 0 si tiene baño en la vivienda o dentro del terreno"
 
@@ -1327,7 +1367,9 @@ gen cocina_ch=(v14a ==1)
 **************
 ***telef_ch***
 **************
-gen telef_ch=(v11a ==1)
+gen telef_ch=.
+replace telef_ch=1 if v11a==1 //Sí cuentan con línea fija
+replace telef_ch=0 if v11a==6 //No cuentan con línea fija
 
 ***************
 ***refrig_ch***
@@ -1352,9 +1394,9 @@ drop automovil
 **************
 ***compu_ch***
 **************
-*MGR: encuesta agrega opción si hogar cuenta con tableta
-*gen compu_ch=(v23a==1)
-gen compu_ch=(v23a1==1 | v23a2==1)
+gen compu_ch=.
+replace compu_ch=1 if v23a1==1				//Sí tienen computadora
+replace compu_ch=0 if v23a1==6				//No tienen computadora
 
 *****************
 ***internet_ch***
@@ -1364,7 +1406,9 @@ gen internet_ch=(v23b==1)
 ************
 ***cel_ch***
 ************
-gen cel_ch=(v11b ==1)
+gen cel_ch=.
+replace cel_ch=1 if v11b==1
+replace cel_ch=0 if v11b==6
 
 **************
 ***vivi1_ch***

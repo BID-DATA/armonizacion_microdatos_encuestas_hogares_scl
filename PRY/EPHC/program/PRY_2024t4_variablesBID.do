@@ -576,8 +576,8 @@ use "`base_in'", clear
 	**********
 	***emp_ci: Variable dicotómica que identifica con valor 1 a los ocupados y 0 a los no ocupados y mantiene con valores perdidos a los que se muestran en la encuesta con valores perdidos*
 	**********
-	gen byte emp_ci = .
-	replace emp_ci = (condocup_ci == 1) if condocup_ci != .
+	gen byte emp_ci = (condocup_ci == 1)
+	replace emp_ci = . if condocup_ci == 4 | condocup_ci == .
 
 	**************
 	***cesante_ci: Identifica a las personas que actualmente se encuentran desempleadas pero que habían trabajado anteriormente. Toma valor de 1 cuando la persona es cesante; 0 para el resto de los desocupados y con missing value al resto de la población.*** 
@@ -597,6 +597,7 @@ use "`base_in'", clear
 	*Codigo extraído del manual
 	gen byte desemp_ci = .
 	replace desemp_ci = (condocup_ci == 2) if condocup_ci! = .
+	replace desemp_ci = . if condocup_ci == 4 | condocup_ci == .
 	
 	***************
 	***subemp_ci: Variable dicotómica que indica con valor 1 si la persona trabaja 30 o menos horas a la semana en la actividad principal, está disponible para trabajar más horas y quiere/desea/está dispuesto a trabajar más horas (subempleo visible); y con valor 0 al resto de la población ocupada. ***
@@ -688,13 +689,14 @@ use "`base_in'", clear
 	***************
 	***tiempoparc_ci: Variable dicotómica que indica con valor 1 si la persona trabaja menos de 30 horas a la semana en la actividad principal y no desea trabajar más***
 	***************	
-	/*¿Cuál es la razón principal por al que desea mejorar o cambiar o adicionar su empleo actual? - d05:
-			3	Desea trabajar menos horas sin ganar menos
-			4	Desea trabajar menos horas aunque gane menos
-			5	Desea trabajar igual cantidad de horas y ganar igual
-	*/
-	gen byte tiempoparc_ci= ((horaspri_ci >= 1 & horaspri_ci < 30) & inlist(d05,3,4,5) & emp_ci == 1) 
-
+	/*¿Desea mejorar su/sus ocupación/nes o cambiar o adicionar otra ocupación? - d03:
+           1 Sí, mejorar su/s ocupación/es
+           2 Sí, cambiar la/s ocupación/es
+           3 Sí, adicionar otra ocupación
+           6 No desea cambiar
+           9 NR */
+	gen byte tiempoparc_ci = ((horaspri_ci >= 1 & horaspri_ci < 30) & d03 == 6 & emp_ci == 1) 
+	replace tiempoparc_ci = . if emp_ci == 0
 		
 	***************
 	***categopri_ci: Indica la categoría ocupacional de la actividad principal para los ocupados. (Solo aplica para los trabajadores ocupados emp_ci=1)***
@@ -811,11 +813,13 @@ use "`base_in'", clear
 	label value rama_ci rama_ci
 
 	***************
-	***spublico_ci: Variable dicotómica que indica con valor 1 si la persona lleva a cabo su actividad laboral principal en el sector público y con valor 0 al resto de la población. Solo para los ocupados emp_ci=1.***
+	***spublico_ci: Variable dicotómica que indica con valor 1 si la persona lleva a cabo su actividad laboral principal en el sector público y con valor 0 al resto de los ocupados. Solo para los ocupados emp_ci=1.***
 	***************	
 	
-	gen spublico_ci=0 if emp_ci==1
-	replace spublico_ci=1 if cate_pea==1 & emp_ci==1
+	gen spublico_ci = .
+	replace spublico_ci = 0 if emp_ci == 1
+	replace spublico_ci = 1 if cate_pea == 1 & emp_ci == 1
+
 	***************
 	***tamemp_ci: Indica la categoría del tamaño de la empresa donde el individuo realiza su actividad laboral principal. ***
 	***************	
@@ -1116,20 +1120,22 @@ e01ide	Ingreso mensual del Estado (Monetario: Tekoporã)
 e01jde	Ingreso mensual Pensión (ex combatiente,viudas,etc)
 e01kde	Ingreso mensual del Estado (Monetario: Adulto Mayor) 
 e01lde	Ingreso por víveres de alguna Institución pública
-e02tde	Ingreso mensual que recibe de ayuda familiar del exterior (deflactado)
+e02bde	Ingreso mensual que recibe de ayuda familiar del exterior (individual)
 */
 
-	local var="e01dde e01ede e01fde e01gde e01hde e01ide e01jde e01kde e01lde  e02tde"
+	local var="e01dde e01ede e01fde e01gde e01hde e01ide e01jde e01kde e01lde e02bde"
 	
 	*Con este bucle se reemplazan las codificación de missings para cada variable
 	foreach x of local var {
-	replace `x'=. if `x'>=99999999999 //Quedan como missings 
-	}	
+	gen `x'1=`x'
+	replace `x'1=. if `x'==0 | `x'>=999999999 //Quedan como missings
+	}
 	
 	*Se suman todas las variables for filas
-	egen ynlm_ci=rsum(e01dde e01ede e01fde e01gde e01hde e01ide e01jde e01kde e01lde  e02tde), missing
-	replace ynlm_ci=. if e01dde==. & e01ede==. & e01fde==. & e01gde==. & e01hde==. & e01ide==. & e01jde==. & e01kde==. & e02tde==.
+	egen ynlm_ci=rsum(e01dde1 e01ede1 e01fde1 e01gde1 e01hde1 e01ide1 e01jde1 e01kde1 e01lde1 e02bde1), missing
+	replace ynlm_ci=. if e01dde1==. & e01ede1==. & e01fde1==. & e01gde1==. & e01hde1==. & e01ide1==. & e01jde1==. & e01kde1==. & e02bde1==.
 	label var ynlm_ci "Ingreso No Laboral Monetario"	
+	drop e01dde1 e01ede1 e01fde1 e01gde1 e01hde1 e01ide1 e01jde1 e01kde1 e01lde1 e02bde1
 	
 	***********
 	* ynlnm_ci:Ingreso no laboral no monetario. Variable continua que indica el monto mensual del ingreso no laboral no monetario (otras fuentes). En esta categoría se encuentran otros beneficios y transferencias no monetarias como las donaciones en alimentos, útiles escolares, becas, entre otros.*
@@ -1220,16 +1226,16 @@ e02tde	Ingreso mensual que recibe de ayuda familiar del exterior (deflactado)
 	*************
 	* remesas_ci: Variable continua que indica el monto mensual por remesas reportadas por el individuo en moneda local corriente. *
 	*************
-	*e02tde: ingresos por ayuda familiar del exterior
-	gen remesas_ci= e02tde
-	replace remesas_ci=. if e02tde==99999999999
+	*e02bde: ingresos por ayuda familiar del exterior (individual)
+	gen remesas_ci= e02bde
+	replace remesas_ci=. if e02bde==99999999999
 	label var remesas_ci "Remesas Individuales"
 	
 	*************
 	* remesas_ch: Variable continua que indica el monto mensual por remesas del hogar. Esta variable se genera a partir de la variable remesas_ci.*
 	*************
 	*Codigo extraído del manual 
-	by idh_ch, sort: egen byte remesas_ch = sum(remesas_ci) if miembros_ci == 1
+	by idh_ch, sort: egen double remesas_ch = sum(remesas_ci) if miembros_ci == 1, missing
 	
 	**********
 	* ypen_ci: Ingreso por pensión contributiva: Variable continua que indica el monto mensual en moneda local corriente efectivamente recibido por el individuo por pensiones contributivas en sus distintas modalidades (jubilación, vejez, pensión, etc).*
@@ -1692,7 +1698,6 @@ e02tde	Ingreso mensual que recibe de ayuda familiar del exterior (deflactado)
 	gen compu_ch=.
 	replace compu_ch=1 if v23a1==1				//Sí tienen computadora
 	replace compu_ch=0 if v23a1==6				//No tienen computadora
-	replace compu_ch=9 if v23a1==. | v23a1==9	//Missing o No responde
 		
 	*****************
 	***internet_ch: si el hogar posee conexión a internet ***
@@ -1710,8 +1715,10 @@ e02tde	Ingreso mensual que recibe de ayuda familiar del exterior (deflactado)
 	************
 	***cel_ch: si al menos un integrante del hogar tiene servicio telefónico celular activa***
 	************
-	*En la encuesta existe la pregunta ¿Algún miembro del hogar tiene celular? - v11b, más no la pregunta de sí tienen línea activa. No se puede asumir que una persona que tenga telefono tenga línea activa (puede tener el telefono sin línea) Por tanto, la variable queda como missing.
-	gen cel_ch=. 
+	*En la encuesta existe la pregunta ¿Algún miembro del hogar tiene celular? - v11b
+	gen cel_ch=.
+	replace cel_ch=1 if v11b==1
+	replace cel_ch=0 if v11b==6
 	
 	
 	**************
@@ -1855,30 +1862,31 @@ e02tde	Ingreso mensual que recibe de ayuda familiar del exterior (deflactado)
 			10 	Pozo, manantial, u otra fuente sin clasificación clara 
 	*/
 	
-	gen aguafconsumo_ch = .
-	replace aguafconsumo_ch = 1  if (v08==4 | v08==1 | v08==2 |v08==3) & v09<=2
-	replace aguafconsumo_ch = 2  if (v08==4 | v08==1 | v08==2 |v08==3) & v09==3
-	replace aguafconsumo_ch = 3  if v08==11
-	replace aguafconsumo_ch = 4  if (v08==5 | v08==6)
-	replace aguafconsumo_ch = 5  if v08==10
-	replace aguafconsumo_ch = 6  if v08==12
-	replace aguafconsumo_ch = 7  if v08==8 | ((v08==1 | v08==2 |v08==3| v08==4 |v08==5|v08==6|v08==8|v08==10|v08==11|v08==12) & v09==5 | v09==8) | (v08 == 8)
-	replace aguafconsumo_ch = 8  if v08==13
-	replace aguafconsumo_ch = 9  if v08==9 | v08==7
-	replace aguafconsumo_ch = 10 if v08==14| v08==99
+	gen byte aguafconsumo_ch = .
+	replace aguafconsumo_ch = 1  if inlist(v08, 1, 2, 3, 4) & inlist(v09, 1, 2)  // red, cañería privada/terreno
+	replace aguafconsumo_ch = 2  if inlist(v08, 1, 2, 3, 4) & v09 == 3 		// llave pública
+	replace aguafconsumo_ch = 3  if v08 == 11 | v09 == 7 					//agua embotellada
+	replace aguafconsumo_ch = 4  if inlist(v08, 5, 6) 						// pozo protegido (dentro del terreno)
+	replace aguafconsumo_ch = 5  if v08 == 10  								// lluvia
+	replace aguafconsumo_ch = 6  if v08 == 12 | v09 == 6 					// camión cisterna (aguatero)
+	replace aguafconsumo_ch = 7  if (v08 == 8 | ((inlist(v08, 1, 2, 3, 4) & (inlist(v09, 5, 8)))))  // otra mejorada
+	replace aguafconsumo_ch = 8  if v08 == 13 								// agua superficial
+	replace aguafconsumo_ch = 9  if inlist(v08, 7, 9) 						// pozo/manantial sin protección
+	replace aguafconsumo_ch = 10 if (inlist(v08, 14, 99) | v09 == 99) 		// otros, no clasificable, NR
 
 
 	*****************
 	*aguafuente_ch: Principal fuente de agua utilizada por el hogar para todos los usos*
 	*****************
-	gen aguafuente_ch=1      if (v06==4 | v06==1 | v06==2 |v06==3) & v07a<=2
-	replace aguafuente_ch=2  if (v06==4 | v06==1 | v06==2 |v06==3) & v07a==3
-	replace aguafuente_ch=4  if (v06==5 | v06==6)
-	replace aguafuente_ch=5  if v06==10
-	replace aguafuente_ch=6  if v06==11
-	replace aguafuente_ch=7  if (v06==1 | v06==2 |v06==3 |v06==4 |v06==5|v06==10|v06==11) & (v07a ==5 | v07a ==7)
-	replace aguafuente_ch=8  if v06==9
-	replace aguafuente_ch=10 if (v06==99|v06==12 | v06==8 |v06==7|(v06==.& jefe_ci!=.))
+	gen byte aguafuente_ch = .
+	replace aguafuente_ch = 1  if inlist(v06, 1, 2, 3, 4)  & inlist(v07a, 1, 2) 	//red (ESSAP/SENASA/comunitaria/privada)
+	replace aguafuente_ch = 2  if inlist(v06, 1, 2, 3, 4) & v07a == 3  		// llave pública
+	replace aguafuente_ch = 4  if inlist(v06, 5, 6) 						// pozo protegido (artesiano/con bomba)
+	replace aguafuente_ch = 5  if v06 == 10 								// agua lluvia
+	replace aguafuente_ch = 6  if v06 == 11 | v07a == 6  					// camión cisterna (aguatero)
+	replace aguafuente_ch = 7  if (inlist(v06, 1, 2, 3, 4) & inlist(v07a, 4, 5, 7))  // otra mejorada
+	replace aguafuente_ch = 8  if v06 == 9 									 // agua superficial (tajamar/río)
+	replace aguafuente_ch = 10 if (inlist(v06, 7, 8, 12, 99) | v07a == 9)  // pozo, manantial, otra, NR
 	
 	*****************
 	*aguadist_ch: Ubicación de la principal fuente de agua*
@@ -2000,7 +2008,7 @@ e02tde	Ingreso mensual que recibe de ayuda familiar del exterior (deflactado)
 	replace bano_ch=3 if (v13==5 | v13==6) //Letrina mejorada
 	replace bano_ch=4 if v13==4 //Letrina a cuerpo superficial
 	replace bano_ch=5 if v13==7 //Instalación no mejorada
-	replace bano_ch=6 if (v13==9 |v13==8 | v13==3) | (v13 ==. & jefe_ci!=.)  //Instalación que no se puede clasificar
+	replace bano_ch=6 if (v13==9 |v13==8 | v13==3) | (v12 ==. & jefe_ci!=.)  //Instalación que no se puede clasificar
 			
 	*****************
 	*banoex_ch: Instalaciones del hogar son de uso exclusivo      *  
@@ -2012,7 +2020,7 @@ e02tde	Ingreso mensual que recibe de ayuda familiar del exterior (deflactado)
 	************
 	gen sinbano_ch = .
 	replace sinbano_ch = 0 if v12==1 //El hogar tiene baño
-	replace sinbano_ch = 3 if v12==2 //El hogar no tiene baño pero no especifica cuáles alternativas ysa
+	replace sinbano_ch = 3 if v12==6 //El hogar no tiene baño pero no especifica cuáles alternativas ysa
 		
 	*****************
 	*banomejorado_ch: el hogar tiene acceso a saneamiento de fuente mejorado
