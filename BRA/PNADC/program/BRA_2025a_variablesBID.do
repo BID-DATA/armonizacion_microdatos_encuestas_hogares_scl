@@ -1104,20 +1104,30 @@ rename *, lower
 	****************
 	* bienestar_agregado *
 	****************
-	gen bienestar_agregado = .
+	gen bienestar_agregado = vd5008
 
 	*******************
 	*** ln_ci        ***
 	*******************
 	/* Pendiente de publicación del IBGE, eventualmente se podrá extraer de https://agenciadenoticias.ibge.gov.br/agencia-noticias.html como en años anteriores (hasta ahora solo post sobre internet y condición laboral) */
-	gen ln_ci = .
+	gen ln_ci =  611.66
 
 
 	*******************
 	*** lpe_ci       ***
 	*******************
 	/* Pendiente de publicación del IBGE, eventualmente se podrá extraer de https://agenciadenoticias.ibge.gov.br/agencia-noticias.html como en años anteriores (hasta ahora solo post sobre internet y condición laboral) */
-	gen lpe_ci = .
+	gen lpe_ci = 309.3
+
+	****************
+	* pobre_ine_ci *
+	****************
+	gen byte pobre_ine_ci=(bienestar_agregado < ln_ci) if !missing(bienestar_agregado, ln_ci)
+
+	*******************
+	* pobre_ext_ine_ci*
+	*******************	
+	gen byte pobre_ext_ine_ci=(bienestar_agregado < lpe_ci) if !missing(bienestar_agregado, lpe_ci)
 
 	/*_____________________________________________________________________________________________________*/
 
@@ -1155,7 +1165,7 @@ rename *, lower
 	  aguared_ch aguafconsumo_ch aguafuente_ch aguadist_ch aguadisp1_ch aguadisp2_ch /// Agua y saneamineto
 	  aguatrat_ch aguamala_ch aguamejorada_ch aguamide_ch bano_ch banoex_ch banomejorado_ch sinbano_ch  /// Agua y saneamineto
 	  migrante_ci migrantiguo5_ci miglac_ci /// Migración  
-	  miembros_one_ci tipo_bienestar pobre_ine_ci bienestar_agregado lpe_ci  ln_ci /// Pobreza  
+	  miembros_one_ci tipo_bienestar pobre_ine_ci bienestar_agregado lpe_ci  ln_ci pobre_ine_ci pobre_ext_ine_ci/// Pobreza  
       lp19_2011 lp31_2011 lp5_2011  lp365_2017 lp685_2017 lp14_2017 lp81_2017 tc_c ratio_cpi2011 ratio_cpi2017 cpi_c cpi2011 cpi2017 ppp_c ppp_2011 ppp_2017, first /// Fuente externa
 
 
