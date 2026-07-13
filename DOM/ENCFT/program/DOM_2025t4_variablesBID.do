@@ -51,7 +51,7 @@ use "`base_in'", clear
 	gen byte region_BID_c = 1
 
 	*****************
-	*** region_c  ***
+	*** region_c  ***×+
 	*****************
 	gen byte region_c = id_provincia
 
@@ -1127,7 +1127,248 @@ use "`base_in'", clear
 		341, 345, 391, 493, 580, 586, 589, 770, 810, 845, 850)
 	replace  miglac_ci = . if migrante_ci == 0
 
-
+	***************
+	*** mig_pais_ci ***
+	***************
+	
+	*pais de nacimiento (código)
+gen mig_pais_code = pais_nacimiento
+gen str40 mig_pais_ci = ""
+* Rellenar según código (confirmar que se abarcan todos los países)
+replace mig_pais_ci = "Afganistán" if mig_pais_code==13
+replace mig_pais_ci = "Albania" if mig_pais_code==17
+replace mig_pais_ci = "Alemania" if mig_pais_code==23
+replace mig_pais_ci = "Armenia" if mig_pais_code==26
+replace mig_pais_ci = "Aruba" if mig_pais_code==27
+replace mig_pais_ci = "Bosnia-Herzegovina" if mig_pais_code==29
+replace mig_pais_ci = "Burkina Faso" if mig_pais_code==31
+replace mig_pais_ci = "Andorra" if mig_pais_code==37
+replace mig_pais_ci = "Angola" if mig_pais_code==40
+replace mig_pais_ci = "Anguilla" if mig_pais_code==41
+replace mig_pais_ci = "Antigua y Barbuda" if mig_pais_code==43
+replace mig_pais_ci = "Antillas Holandesas" if mig_pais_code==47
+replace mig_pais_ci = "Arabia Saudita" if mig_pais_code==53
+replace mig_pais_ci = "Argelia" if mig_pais_code==59
+replace mig_pais_ci = "Argentina" if mig_pais_code==63
+replace mig_pais_ci = "Australia" if mig_pais_code==69
+replace mig_pais_ci = "Austria" if mig_pais_code==72
+replace mig_pais_ci = "Azerbaiyán" if mig_pais_code==74
+replace mig_pais_ci = "Bahamas" if mig_pais_code==77
+replace mig_pais_ci = "Bahrein" if mig_pais_code==80
+replace mig_pais_ci = "Bangladesh" if mig_pais_code==81
+replace mig_pais_ci = "Barbados" if mig_pais_code==83
+replace mig_pais_ci = "Bélgica" if mig_pais_code==87
+replace mig_pais_ci = "Belice" if mig_pais_code==88
+replace mig_pais_ci = "Bermudas" if mig_pais_code==90
+replace mig_pais_ci = "Bielorrusia" if mig_pais_code==91
+replace mig_pais_ci = "Birmania (Myanmar)" if mig_pais_code==93
+replace mig_pais_ci = "Bolivia" if mig_pais_code==97
+replace mig_pais_ci = "Botswana" if mig_pais_code==101
+replace mig_pais_ci = "Brasil" if mig_pais_code==105
+replace mig_pais_ci = "Brunei Darussalam" if mig_pais_code==108
+replace mig_pais_ci = "Bulgaria" if mig_pais_code==111
+replace mig_pais_ci = "Burundi" if mig_pais_code==115
+replace mig_pais_ci = "Bután" if mig_pais_code==119
+replace mig_pais_ci = "Cabo Verde" if mig_pais_code==127
+replace mig_pais_ci = "Islas Caimán" if mig_pais_code==137
+replace mig_pais_ci = "Camboya (Kampuchea)" if mig_pais_code==141
+replace mig_pais_ci = "Camerún" if mig_pais_code==145
+replace mig_pais_ci = "Canadá" if mig_pais_code==149
+replace mig_pais_ci = "Santa Sede" if mig_pais_code==159
+replace mig_pais_ci = "Islas Cocos (Keeling)" if mig_pais_code==165
+replace mig_pais_ci = "Colombia" if mig_pais_code==169
+replace mig_pais_ci = "Comoras" if mig_pais_code==173
+replace mig_pais_ci = "Congo" if mig_pais_code==177
+replace mig_pais_ci = "Islas Cook" if mig_pais_code==183
+replace mig_pais_ci = "Corea del Norte" if mig_pais_code==187
+replace mig_pais_ci = "Corea del Sur" if mig_pais_code==190
+replace mig_pais_ci = "Costa de Marfil" if mig_pais_code==193
+replace mig_pais_ci = "Costa Rica" if mig_pais_code==196
+replace mig_pais_ci = "Croacia" if mig_pais_code==198
+replace mig_pais_ci = "Cuba" if mig_pais_code==199
+replace mig_pais_ci = "Chad" if mig_pais_code==203
+replace mig_pais_ci = "Chile" if mig_pais_code==211
+replace mig_pais_ci = "China" if mig_pais_code==215
+replace mig_pais_ci = "Taiwán (Formosa)" if mig_pais_code==218
+replace mig_pais_ci = "Chipre" if mig_pais_code==221
+replace mig_pais_ci = "Benín" if mig_pais_code==229
+replace mig_pais_ci = "Dinamarca" if mig_pais_code==232
+replace mig_pais_ci = "Dominica" if mig_pais_code==235
+replace mig_pais_ci = "Ecuador" if mig_pais_code==239
+replace mig_pais_ci = "Egipto" if mig_pais_code==240
+replace mig_pais_ci = "El Salvador" if mig_pais_code==242
+replace mig_pais_ci = "Eritrea" if mig_pais_code==243
+replace mig_pais_ci = "Emiratos Árabes Unidos" if mig_pais_code==244
+replace mig_pais_ci = "España" if mig_pais_code==245
+replace mig_pais_ci = "Eslovaquia" if mig_pais_code==246
+replace mig_pais_ci = "Eslovenia" if mig_pais_code==247
+replace mig_pais_ci = "Estados Unidos" if mig_pais_code==249
+replace mig_pais_ci = "Estonia" if mig_pais_code==251
+replace mig_pais_ci = "Etiopía" if mig_pais_code==253
+replace mig_pais_ci = "Islas Feroe" if mig_pais_code==259
+replace mig_pais_ci = "Filipinas" if mig_pais_code==267
+replace mig_pais_ci = "Finlandia" if mig_pais_code==271
+replace mig_pais_ci = "Francia" if mig_pais_code==275
+replace mig_pais_ci = "Gabón" if mig_pais_code==281
+replace mig_pais_ci = "Gambia" if mig_pais_code==285
+replace mig_pais_ci = "Georgia" if mig_pais_code==287
+replace mig_pais_ci = "Ghana" if mig_pais_code==289
+replace mig_pais_ci = "Gibraltar" if mig_pais_code==293
+replace mig_pais_ci = "Granada" if mig_pais_code==297
+replace mig_pais_ci = "Grecia" if mig_pais_code==301
+replace mig_pais_ci = "Groenlandia" if mig_pais_code==305
+replace mig_pais_ci = "Guadalupe" if mig_pais_code==309
+replace mig_pais_ci = "Guam" if mig_pais_code==313
+replace mig_pais_ci = "Guatemala" if mig_pais_code==317
+replace mig_pais_ci = "Guayana Francesa" if mig_pais_code==325
+replace mig_pais_ci = "Guinea" if mig_pais_code==329
+replace mig_pais_ci = "Guinea Ecuatorial" if mig_pais_code==331
+replace mig_pais_ci = "Guinea-Bissau" if mig_pais_code==334
+replace mig_pais_ci = "Guyana" if mig_pais_code==337
+replace mig_pais_ci = "Haití" if mig_pais_code==341
+replace mig_pais_ci = "Honduras" if mig_pais_code==345
+replace mig_pais_ci = "Hong Kong" if mig_pais_code==351
+replace mig_pais_ci = "Hungría" if mig_pais_code==355
+replace mig_pais_ci = "India" if mig_pais_code==361
+replace mig_pais_ci = "Indonesia" if mig_pais_code==365
+replace mig_pais_ci = "Irak" if mig_pais_code==369
+replace mig_pais_ci = "Irán" if mig_pais_code==372
+replace mig_pais_ci = "Irlanda" if mig_pais_code==375
+replace mig_pais_ci = "Islandia" if mig_pais_code==379
+replace mig_pais_ci = "Israel" if mig_pais_code==383
+replace mig_pais_ci = "Italia" if mig_pais_code==386
+replace mig_pais_ci = "Jamaica" if mig_pais_code==391
+replace mig_pais_ci = "Japón" if mig_pais_code==399
+replace mig_pais_ci = "Jordania" if mig_pais_code==403
+replace mig_pais_ci = "Kazajistán" if mig_pais_code==406
+replace mig_pais_ci = "Kenia" if mig_pais_code==410
+replace mig_pais_ci = "Kiribati" if mig_pais_code==411
+replace mig_pais_ci = "Kirguistán" if mig_pais_code==412
+replace mig_pais_ci = "Kuwait" if mig_pais_code==413
+replace mig_pais_ci = "Laos" if mig_pais_code==420
+replace mig_pais_ci = "Lesoto" if mig_pais_code==426
+replace mig_pais_ci = "Letonia" if mig_pais_code==429
+replace mig_pais_ci = "Líbano" if mig_pais_code==431
+replace mig_pais_ci = "Liberia" if mig_pais_code==434
+replace mig_pais_ci = "Libia" if mig_pais_code==438
+replace mig_pais_ci = "Liechtenstein" if mig_pais_code==440
+replace mig_pais_ci = "Lituania" if mig_pais_code==443
+replace mig_pais_ci = "Luxemburgo" if mig_pais_code==445
+replace mig_pais_ci = "Macao" if mig_pais_code==447
+replace mig_pais_ci = "Macedonia" if mig_pais_code==448
+replace mig_pais_ci = "Madagascar" if mig_pais_code==450
+replace mig_pais_ci = "Malasia" if mig_pais_code==455
+replace mig_pais_ci = "Malawi" if mig_pais_code==458
+replace mig_pais_ci = "Maldivas" if mig_pais_code==461
+replace mig_pais_ci = "Malí" if mig_pais_code==464
+replace mig_pais_ci = "Malta" if mig_pais_code==467
+replace mig_pais_ci = "Islas Marianas del Norte" if mig_pais_code==469
+replace mig_pais_ci = "Islas Marshall" if mig_pais_code==472
+replace mig_pais_ci = "Marruecos" if mig_pais_code==474
+replace mig_pais_ci = "Martinica" if mig_pais_code==477
+replace mig_pais_ci = "Mauricio" if mig_pais_code==485
+replace mig_pais_ci = "Mauritania" if mig_pais_code==488
+replace mig_pais_ci = "México" if mig_pais_code==493
+replace mig_pais_ci = "Micronesia" if mig_pais_code==494
+replace mig_pais_ci = "Moldavia" if mig_pais_code==496
+replace mig_pais_ci = "Mongolia" if mig_pais_code==497
+replace mig_pais_ci = "Mónaco" if mig_pais_code==498
+replace mig_pais_ci = "Montserrat" if mig_pais_code==501
+replace mig_pais_ci = "Mozambique" if mig_pais_code==505
+replace mig_pais_ci = "Namibia" if mig_pais_code==507
+replace mig_pais_ci = "Nauru" if mig_pais_code==508
+replace mig_pais_ci = "Islas Navidad (Christmas)" if mig_pais_code==511
+replace mig_pais_ci = "Nepal" if mig_pais_code==517
+replace mig_pais_ci = "Nicaragua" if mig_pais_code==521
+replace mig_pais_ci = "Níger" if mig_pais_code==525
+replace mig_pais_ci = "Nigeria" if mig_pais_code==528
+replace mig_pais_ci = "Niue" if mig_pais_code==531
+replace mig_pais_ci = "Isla Norfolk" if mig_pais_code==535
+replace mig_pais_ci = "Noruega" if mig_pais_code==538
+replace mig_pais_ci = "Nueva Caledonia" if mig_pais_code==542
+replace mig_pais_ci = "Papúa Nueva Guinea" if mig_pais_code==545
+replace mig_pais_ci = "Nueva Zelandia" if mig_pais_code==548
+replace mig_pais_ci = "Vanuatu" if mig_pais_code==551
+replace mig_pais_ci = "Omán" if mig_pais_code==556
+replace mig_pais_ci = "Islas del Pacífico (USA)" if mig_pais_code==566
+replace mig_pais_ci = "Países Bajos (Holanda)" if mig_pais_code==573
+replace mig_pais_ci = "Pakistán" if mig_pais_code==576
+replace mig_pais_ci = "Islas Palau" if mig_pais_code==578
+replace mig_pais_ci = "Panamá" if mig_pais_code==580
+replace mig_pais_ci = "Paraguay" if mig_pais_code==586
+replace mig_pais_ci = "Perú" if mig_pais_code==589
+replace mig_pais_ci = "Isla Pitcairn" if mig_pais_code==593
+replace mig_pais_ci = "Polinesia Francesa" if mig_pais_code==599
+replace mig_pais_ci = "Polonia" if mig_pais_code==603
+replace mig_pais_ci = "Portugal" if mig_pais_code==607
+replace mig_pais_ci = "Puerto Rico" if mig_pais_code==611
+replace mig_pais_ci = "Qatar" if mig_pais_code==618
+replace mig_pais_ci = "Reino Unido" if mig_pais_code==628
+replace mig_pais_ci = "República Centroafricana" if mig_pais_code==640
+replace mig_pais_ci = "República Checa" if mig_pais_code==644
+replace mig_pais_ci = "República Dominicana" if mig_pais_code==647
+replace mig_pais_ci = "Reunión" if mig_pais_code==660
+replace mig_pais_ci = "Zimbabue" if mig_pais_code==665
+replace mig_pais_ci = "Rumania" if mig_pais_code==670
+replace mig_pais_ci = "Ruanda" if mig_pais_code==675
+replace mig_pais_ci = "Rusia" if mig_pais_code==676
+replace mig_pais_ci = "Islas Salomón" if mig_pais_code==677
+replace mig_pais_ci = "Sahara Occidental" if mig_pais_code==685
+replace mig_pais_ci = "Samoa" if mig_pais_code==687
+replace mig_pais_ci = "Samoa Norteamericana" if mig_pais_code==690
+replace mig_pais_ci = "San Cristóbal y Nieves" if mig_pais_code==695
+replace mig_pais_ci = "San Marino" if mig_pais_code==697
+replace mig_pais_ci = "San Pedro y Miquelón" if mig_pais_code==700
+replace mig_pais_ci = "San Vicente y las Granadinas" if mig_pais_code==705
+replace mig_pais_ci = "Santa Elena" if mig_pais_code==710
+replace mig_pais_ci = "Santa Lucía" if mig_pais_code==715
+replace mig_pais_ci = "Santo Tomé y Príncipe" if mig_pais_code==720
+replace mig_pais_ci = "Senegal" if mig_pais_code==728
+replace mig_pais_ci = "Seychelles" if mig_pais_code==731
+replace mig_pais_ci = "Sierra Leona" if mig_pais_code==735
+replace mig_pais_ci = "Singapur" if mig_pais_code==741
+replace mig_pais_ci = "Siria" if mig_pais_code==744
+replace mig_pais_ci = "Somalia" if mig_pais_code==748
+replace mig_pais_ci = "Sri Lanka" if mig_pais_code==750
+replace mig_pais_ci = "Sudáfrica" if mig_pais_code==756
+replace mig_pais_ci = "Sudán" if mig_pais_code==759
+replace mig_pais_ci = "Suecia" if mig_pais_code==764
+replace mig_pais_ci = "Suiza" if mig_pais_code==767
+replace mig_pais_ci = "Surinam" if mig_pais_code==770
+replace mig_pais_ci = "Suazilandia" if mig_pais_code==773
+replace mig_pais_ci = "Tayikistán" if mig_pais_code==774
+replace mig_pais_ci = "Tailandia" if mig_pais_code==776
+replace mig_pais_ci = "Tanzania" if mig_pais_code==780
+replace mig_pais_ci = "Yibuti" if mig_pais_code==783
+replace mig_pais_ci = "Territorio Británico del Océano Índico" if mig_pais_code==787
+replace mig_pais_ci = "Timor del Este" if mig_pais_code==788
+replace mig_pais_ci = "Togo" if mig_pais_code==800
+replace mig_pais_ci = "Tokelau" if mig_pais_code==805
+replace mig_pais_ci = "Tonga" if mig_pais_code==810
+replace mig_pais_ci = "Trinidad y Tobago" if mig_pais_code==815
+replace mig_pais_ci = "Túnez" if mig_pais_code==820
+replace mig_pais_ci = "Islas Turcas y Caicos" if mig_pais_code==823
+replace mig_pais_ci = "Turkmenistán" if mig_pais_code==825
+replace mig_pais_ci = "Turquía" if mig_pais_code==827
+replace mig_pais_ci = "Tuvalu" if mig_pais_code==828
+replace mig_pais_ci = "Ucrania" if mig_pais_code==830
+replace mig_pais_ci = "Uganda" if mig_pais_code==833
+replace mig_pais_ci = "Uruguay" if mig_pais_code==845
+replace mig_pais_ci = "Uzbekistán" if mig_pais_code==847
+replace mig_pais_ci = "Venezuela" if mig_pais_code==850
+replace mig_pais_ci = "Vietnam" if mig_pais_code==855
+replace mig_pais_ci = "Islas Vírgenes Británicas" if mig_pais_code==863
+replace mig_pais_ci = "Islas Vírgenes Norteamericanas" if mig_pais_code==866
+replace mig_pais_ci = "Fiyi" if mig_pais_code==870
+replace mig_pais_ci = "Islas Wallis y Futuna" if mig_pais_code==875
+replace mig_pais_ci = "Yemen" if mig_pais_code==880
+replace mig_pais_ci = "Yugoslavia (ant.)" if mig_pais_code==885
+replace mig_pais_ci = "Zaire (ant., hoy RD Congo)" if mig_pais_code==888
+replace mig_pais_ci = "Zambia" if mig_pais_code==890
+replace mig_pais_ci = "Zona Neutral Palestina" if mig_pais_code==897
+* Códigos 777 y 970 no están en el catálogo DIAN estándar - confirmar en diccionario ENCFT
+	
+	
 	***************************************
 	*** VARIABLES DE REFERENCIA EXTERNA ***
 	***************************************
