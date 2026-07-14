@@ -442,8 +442,6 @@ replace lp_ci= 422.14604252096 if ciudad1==8  |  ID01==8 & zona_c==1
 replace lp_ci= 313.342580371434 if ciudad1==10 |  ID01==9 & zona_c==1
 replace lp_ci= 422.14604252096 if ciudad1==9 & zona_c==1
 replace lp_ci=  294.00   if  zona_c==0
-
-
 label var lp_ci "Linea de pobreza oficial del pais"
 
 *********
@@ -462,11 +460,6 @@ replace lpe_ci= 214.450189600648 if ciudad1==8 |  ID01==8 & zona_c==1
 replace lpe_ci= 190.198946285461 if ciudad1==10 |  ID01==9 & zona_c==1
 replace lpe_ci= 214.450189600648 if ciudad1==9  & zona_c==1
 replace lpe_ci=   167.58   if  zona_c==0
-
-
-
-
-
 label var lpe_ci "Linea de indigencia oficial del pais"
 
 *************
@@ -475,23 +468,7 @@ label var lpe_ci "Linea de indigencia oficial del pais"
 
 *BOL 2006
 gen salmm_ci= 	500.00
-
-
 label var salmm_ci "Salario minimo legal"
-
-****************
-*cotizando_ci***
-****************
-gen cotizando_ci=.
-label var cotizando_ci "Cotizante a la Seguridad Social"
-
-****************
-*afiliado_ci****
-****************
-gen afiliado_ci= 1 if  s5_54 ==1	
-*replace afiliado_ci =1 if s5_71b==1
-recode afiliado_ci .=0  if condact>=1 & condact<=3
-label var afiliado_ci "Afiliado a la Seguridad Social"
 
 ****************
 *tipopen_ci*****
@@ -605,18 +582,25 @@ gen ypensub_ci=aux_ps
 
 label var ypensub_ci "Valor de la pension subsidiada / no contributiva"
 	
-
 ************
 ***emp_ci***
 ************
-gen byte emp_ci=(condocup_ci==1)
+***** El código mantiene como missing values a la poblacion menor de la edad limite de la PET que no forman parte de la población de 	referencia de la sección laboral de la Encuesta *****.
+gen byte emp_ci = .
+replace emp_ci = (condocup_ci == 1) if (condocup_ci != . & condocup_ci != 4)
 label var emp_ci "Ocupado (empleado)"
+label define emp_ci 0"No" 1"Si", add
+label value emp_ci emp_ci
 
 ****************
 ***desemp_ci***
 ****************
-gen desemp_ci=(condocup_ci==2)
-label var desemp_ci "Desempleado que buscó empleo en el periodo de referencia"
+***** El código mantiene como missing values a la poblacion menor de la edad limite de la PET que no forman parte de la población de referencia de la sección laboral de la Encuesta *****.
+gen byte desemp_ci = .
+replace desemp_ci = (condocup_ci == 2) if (condocup_ci != . & condocup_ci != 4)
+label var desemp_ci "Desocupado (desempleado)"
+label define desemp_ci 0"No " 1"Si", add
+label value desemp_ci desemp_ci
   
 *************
 ***pea_ci***
@@ -625,14 +609,33 @@ gen pea_ci=0
 replace pea_ci=1 if emp_ci==1 |desemp_ci==1
 label var pea_ci "Población Económicamente Activa"
 
-
 *****************
 ***desalent_ci***
 *****************
+***** El código mantiene como población de referencia a las personas inactivas (condocup_ci == 3) *****.
+gen byte desalent_ci = .
+replace desalent_ci = 1 if (s5_05 == 2 & inlist(s5_15, 3, 4) & condocup_ci == 3)
+replace desalent_ci = 0 if (desalent_ci != 1 & condocup_ci==3)
+label var desalent_ci "Desalentados"
+label define desalent_ci 0"No" 1"Si", add
+label value desalent_ci desalent_ci
 
-gen desalent_ci=(emp_ci==0 & (s5_15==3 | s5_15==4))
-replace desalent_ci=. if emp_ci==.
-label var desalent_ci "Trabajadores desalentados"
+****************
+*cotizando_ci***
+****************
+gen cotizando_ci=.
+label var cotizando_ci "Cotizante a la Seguridad Social"
+
+****************
+*afiliado_ci****
+****************
+***** El código mantiene a la poblacion inactiva y a los menores de la edad límite de la PET como missing values en congruencia con la variable formal_ci *****.
+gen byte afiliado_ci = .
+replace afiliado_ci = 1 if (s5_54 == 1 & emp_ci==1)
+replace afiliado_ci = 0 if (afiliado_ci != 1 & inlist(condocup_ci, 1, 2))
+label var afiliado_ci "Afiliado a la Seguridad Social"
+label define afiliado_ci 0 "No"  1 "Si"
+label value afiliado_ci afiliado_ci
 
 
 *****************

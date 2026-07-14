@@ -494,17 +494,24 @@ Fuente:http://www.inegi.org.mx/inegi/contenidos/espanol/prensa/comunicados/ocupb
 ************
 ***emp_ci***
 ************
-
-gen byte emp_ci=(condocup_ci==1)
+***** El código mantiene como missing values a la poblacion menor de la edad limite de la PET que no forman parte de la población de referencia de la sección laboral de la Encuesta *****.
+gen byte emp_ci = .
+replace emp_ci = (condocup_ci == 1) if (condocup_ci != . & condocup_ci != 4)
+label var emp_ci "Ocupado (empleado)"
+label define emp_ci 0"No" 1"Si", add
+label value emp_ci emp_ci
 
 ****************
 *afiliado_ci****
 ****************
 destring pres_* servmed* inscr_* inst_* atemed tam_emp1  contrato1, replace
-generat afiliado_ci=0 if condocup_ci==1 | condocup_ci==2  
-replace afiliado_ci=1 if (pres_81==8 | pres_82==8)  /* inscripto en prestaciones de salud por trabajo*/
-*replace afiliado_ci=1 if (inst_1==1 | inst_2==2 | inst_3==3 | inst_4==4) & atemed==1 & afiliado_ci==0 
+***** El código mantiene a la poblacion inactiva y a los menores de la edad límite de la PET como missing values en congruencia con la variable formal_ci *****.
+gen byte afiliado_ci = .
+replace afiliado_ci = 1 if ((pres_81==8 | pres_82==8) & emp_ci==1)  /* inscrito en prestaciones de salud por trabajo*/
+replace afiliado_ci = 0 if (afiliado_ci != 1 & inlist(condocup_ci, 1, 2))
 label var afiliado_ci "Afiliado a la Seguridad Social"
+label define afiliado_ci 0 "No"  1 "Si"
+label value afiliado_ci afiliado_ci
 *Nota: seguridad social comprende solo los que en el futuro me ofrecen una pension.
 
 * Formalidad sin restringir a PEA
@@ -517,15 +524,19 @@ replace afiliado_ci1=1 if (pres_81==8) | (inscr_1 == 1  & (servmed_3==3 | servme
 ****************
 gen tipopen_ci=.
 label var tipopen_ci "Tipo de pension - variable original de cada pais" 
+
 ****************
 *cotizando_ci***   
 ****************
+***** El código mantiene a la poblacion inactiva y a los menores de la edad límite de la PET como missing values en congruencia con la variable formal_ci *****.
 gen byte cotizando_ci = .
-
-replace cotizando_ci = 1 if condocup_ci==1 & inscr_1==1   // cotiza por el trabajo
-replace cotizando_ci = 0 if condocup_ci==1 & inscr_1!=1   // no cotiza
+replace cotizando_ci = 1 if (condocup_ci==1 & inscr_1==1 & emp_ci==1)  // cotiza por el trabajo
+replace cotizando_ci = 0 if (inscr_1!=1 & inlist(condocup_ci, 1, 2))  // no cotiza
 label var cotizando_ci "Cotizante a la Seguridad Social"
+label define cotizando_ci 0 "No"  1 "Si"
+label value cotizando_ci cotizando_ci
 *Nota: solo seguro social publico, con el cual tenga derecho a pensiones en el futuro.
+
 ****************
 *cotizapri_ci***
 ****************
@@ -3215,8 +3226,12 @@ gen pea3_ci=.
 ****************
 ***desemp_ci***
 ****************
-
-gen desemp_ci=(condocup_ci==2)
+***** El código mantiene como missing values a la poblacion menor de la edad limite de la PET que no forman parte de la población de referencia de la sección laboral de la Encuesta *****.
+gen byte desemp_ci = .
+replace desemp_ci = (condocup_ci == 2) if (condocup_ci != . & condocup_ci != 4)
+label var desemp_ci "Desocupado (desempleado)"
+label define desemp_ci 0"No " 1"Si", add
+label value desemp_ci desemp_ci
 
 *************
 ***pea_ci***

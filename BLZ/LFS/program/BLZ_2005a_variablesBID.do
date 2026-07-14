@@ -457,12 +457,12 @@ label values nempleos_ci nempleos_ci
 ************
 * OCUPADO  *
 ************
-gen emp_ci=0 
-replace emp_ci=1 if condocup_ci==1
-label var emp_ci "Ocupado"
-label define ocupado 1"Ocupado" 0"No ocupado"  
-label values emp_ci ocupado
-
+***** El código mantiene como missing values a la poblacion menor de la edad limite de la PET que no forman parte de la población de referencia de la sección laboral de la Encuesta *****.
+gen byte emp_ci = .
+replace emp_ci = (condocup_ci == 1) if (condocup_ci != . & condocup_ci != 4)
+label var emp_ci "Ocupado (empleado)"
+label define emp_ci 0"No ocupado" 1"Ocupado", add
+label value emp_ci emp_ci
 
 *****************************************
 * ANTIGUEDAD EN LA ACTIVIDAD PRINCIPAL  *
@@ -473,11 +473,12 @@ label var antiguedad_ci "Años de trabajo en la actividad principal"
 ***************
 * DESOCUPADO  *
 ***************
-gen desemp_ci=0 
-replace desemp_ci=1 if condocup_ci==2
-label var emp_ci "Desocupado"
-label define desocupado 1"Desocupado" 0"No desocupado"  
-label values desemp_ci desocupado
+***** El código mantiene como missing values a la poblacion menor de la edad limite de la PET que no forman parte de la población de referencia de la sección laboral de la Encuesta *****.
+gen byte desemp_ci = .
+replace desemp_ci = (condocup_ci == 2) if (condocup_ci != . & condocup_ci != 4)
+label var desemp_ci "Desocupado (desempleado)"
+label define desemp_ci 0"No " 1"Si", add
+label value desemp_ci desemp_ci
 
 ***********
 * CESANTE *
@@ -516,9 +517,13 @@ replace desalent_ci1=1 if reason==5 | reason==6 | reason==8
 label var desalent_ci "Trabajadores desalentados, personas que creen que por alguna razon no conseguiran trabajo" 
 */
 * MGD 09/03/2014: calculo desgun la definicion del documento metodologico.
-gen desalent_ci=0 if condocup_ci==3
-replace desalent_ci=1 if (reason>=10 & reason<=14) & condocup_ci==3
-
+***** El código mantiene como población de referencia a las personas inactivas (condocup_ci == 3) *****.
+gen byte desalent_ci = .
+replace desalent_ci = 1 if (inlist(reason, 10,11,12,13,14) & condocup_ci == 3)
+replace desalent_ci = 0 if (desalent_ci != 1 & condocup_ci==3)
+label var desalent_ci "Desalentados"
+label define desalent_ci 0"No" 1"Si", add
+label value desalent_ci desalent_ci
 
 *****************************
 * TRABAJA MENOS DE 30 HORAS *

@@ -44,7 +44,7 @@ Fecha de última modificación - Junio 2020
 /***************************************************************************
 Detalle de procesamientos o modificaciones anteriores:
 ****************************************************************************/
-use "`base_in'", clear
+use `base_in', clear
 
 ************
 * Region_c *
@@ -383,39 +383,6 @@ gen lpe_ci = linpobex
 label var lp_ci "Linea de pobreza extrema del pais"
 
 ****************
-*cotizando_ci***
-****************
-gen cotizando_ci=.
-replace cotizando_ci=1 if b10==1 | c07==1
-replace cotizando_ci=0 if (b10==6 | b10==. | b10==9) & (c07==6 | c07==.)
-replace cotizando_ci = 0 if peaa == 2 
-label var cotizando_ci "Cotizante a la Seguridad Social"
-
-****************
-*cotizapri_ci***
-****************
-gen cotizapri_ci=.
-replace cotizapri_ci=1 if b10==1 
-replace cotizapri_ci=0 if (b10==6 | b10==. | b10==9) 
-replace cotizapri_ci = 0 if peaa == 2 
-label var cotizapri_ci "Cotizante a la Seguridad Social en actividad ppal."
-
-****************
-*cotizasec_ci***
-****************
-gen cotizasec_ci=.
-replace cotizasec_ci=1 if  c07==1
-replace cotizasec_ci=0 if (c07==6 | c07==.)
-replace cotizasec_ci = 0 if peaa == 2 
-label var cotizasec_ci "Cotizante a la Seguridad Social en actividad sec."
-
-****************
-*afiliado_ci****
-****************
-gen afiliado_ci=.	
-label var afiliado_ci "Afiliado a la Seguridad Social"
-
-****************
 *tipopen_ci*****
 ****************
 gen tipopen_ci=.
@@ -508,18 +475,25 @@ label var ypensub_ci "Valor de la pension subsidiada / no contributiva"
 gen salmm_ci= 	2192839
 label var salmm_ci "Salario minimo legal"
 
-
 ************
 ***emp_ci***
 ************
+***** El código mantiene como missing values a la poblacion menor de la edad limite de la PET que no forman parte de la población de 	referencia de la sección laboral de la Encuesta *****.
+gen byte emp_ci = .
+replace emp_ci = (condocup_ci == 1) if (condocup_ci != . & condocup_ci != 4)
+label var emp_ci "Ocupado (empleado)"
+label define emp_ci 0"No" 1"Si", add
+label value emp_ci emp_ci
 
-gen byte emp_ci=(condocup_ci==1)
-
-****************
+***************
 ***desemp_ci***
-****************
-
-gen desemp_ci=(condocup_ci==2)
+***************
+***** El código mantiene como missing values a la poblacion menor de la edad limite de la PET que no forman parte de la población de referencia de la sección laboral de la Encuesta *****.
+gen byte desemp_ci = .
+replace desemp_ci = (condocup_ci == 2) if (condocup_ci != . & condocup_ci != 4)
+label var desemp_ci "Desocupado (desempleado)"
+label define desemp_ci 0"No " 1"Si", add
+label value desemp_ci desemp_ci
 
 *************
 ***pea_ci***
@@ -530,8 +504,48 @@ replace pea_ci=1 if emp_ci==1 |desemp_ci==1
 *****************
 ***desalent_ci***
 *****************
+***** El código mantiene como población de referencia a las personas inactivas (condocup_ci == 3) *****.
+gen byte desalent_ci = .
+replace desalent_ci = 1 if (a08 == 6 & inlist(a09, 2, 3) & condocup_ci == 3)
+replace desalent_ci = 0 if (desalent_ci != 1 & condocup_ci==3)
+label var desalent_ci "Desalentados"
+label define desalent_ci 0"No" 1"Si", add
+label value desalent_ci desalent_ci
 
-gen desalent_ci=(a09==2)
+****************
+*cotizando_ci***
+****************
+***** El código mantiene a la poblacion inactiva y a los menores de la edad límite de la PET como missing values en congruencia con la variable formal_ci *****.
+gen byte cotizando_ci = .
+replace cotizando_ci = 1 if ((b10 == 1 | c07 == 1 ) & emp_ci==1)
+replace cotizando_ci = 0 if (cotizando_ci != 1 & inlist(condocup_ci, 1, 2))
+label var cotizando_ci "Cotizante a la Seguridad Social"
+label define cotizando_ci 0 "No"  1 "Si"
+label value cotizando_ci cotizando_ci
+
+****************
+*cotizapri_ci***
+****************
+gen cotizapri_ci=.
+replace cotizapri_ci=1 if b10==1 
+replace cotizapri_ci=0 if (b10==6 | b10==. | b10==9) 
+replace cotizapri_ci = 0 if peaa == 2 
+label var cotizapri_ci "Cotizante a la Seguridad Social en actividad ppal."
+
+****************
+*cotizasec_ci***
+****************
+gen cotizasec_ci=.
+replace cotizasec_ci=1 if  c07==1
+replace cotizasec_ci=0 if (c07==6 | c07==.)
+replace cotizasec_ci = 0 if peaa == 2 
+label var cotizasec_ci "Cotizante a la Seguridad Social en actividad sec."
+
+****************
+*afiliado_ci****
+****************
+gen afiliado_ci=.	
+label var afiliado_ci "Afiliado a la Seguridad Social"
 
 ***************
 ***subemp_ci***

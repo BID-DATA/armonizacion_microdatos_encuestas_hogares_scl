@@ -437,8 +437,12 @@ label define categoinac_ci 1 "jubilados o pensionados" 2 "Estudiantes" 3 "Quehac
 ************
 ***emp_ci***
 ************
-gen byte emp_ci=(condocup_ci==1)
+***** El código mantiene como missing values a la poblacion menor de la edad limite de la PET que no forman parte de la población de referencia de la sección laboral de la Encuesta *****.
+gen byte emp_ci = .
+replace emp_ci = (condocup_ci == 1) if (condocup_ci != . & condocup_ci != 4)
 label var emp_ci "Ocupado (empleado)"
+label define emp_ci 0"No" 1"Si", add
+label value emp_ci emp_ci
 
 ***************
 * nempleos_ci *
@@ -472,8 +476,12 @@ label var antiguedad_ci "Antiguedad en la actividad actual en anios"
 ****************
 ***desemp_ci***
 ****************
-gen desemp_ci=(condocup_ci==2)
-label var desemp_ci "Desempleado que buscó empleo en el periodo de referencia"
+***** El código mantiene como missing values a la poblacion menor de la edad limite de la PET que no forman parte de la población de referencia de la sección laboral de la Encuesta *****.
+gen byte desemp_ci = .
+replace desemp_ci = (condocup_ci == 2) if (condocup_ci != . & condocup_ci != 4)
+label var desemp_ci "Desocupado (desempleado)"
+label define desemp_ci 0"No " 1"Si", add
+label value desemp_ci desemp_ci
   
 *************
 *cesante_ci* 
@@ -523,9 +531,13 @@ label var pea_ci "Población Económicamente Activa"
 * desalent_ci *
 ***************
 *personas que creen que por alguna razon no conseguiran trabajo
-gen desalent_ci=(emp_ci==0 & (b8==5 | b8==6 |b8==7 |b8==8))
-replace desalent_ci=. if condact==.
-label var desalent_ci "Trabajadores desalentados"
+***** El código mantiene como población de referencia a las personas inactivas (condocup_ci == 3) *****.
+gen byte desalent_ci = .
+replace desalent_ci = 1 if (b7i == 0 & (inlist(b8, 5,7) | inlist(g3, 13,14)) & condocup_ci == 3)
+replace desalent_ci = 0 if (desalent_ci != 1 & condocup_ci==3)
+label var desalent_ci "Desalentados"
+label define desalent_ci 0"No" 1"Si", add
+label value desalent_ci desalent_ci
 
 ***************
 * horaspri_ci *
@@ -672,10 +684,12 @@ label var tamemp_ci "Tamaño de empresa"
 ****************
 *Cambia respecto a la de 2015, ya que separaron las categorias cuenta propia o voluntario
 *gen cotizando_ci=1 if (a11==1 | a11==2 | a11==3)
-gen cotizando_ci=1 if (a11==1 | a11==2 | a11==13 | a11==14) 
-recode cotizando_ci .=0 
+***** El código mantiene a la poblacion inactiva y a los menores de la edad límite de la PET como missing values en congruencia con la variable formal_ci *****.
+gen byte cotizando_ci = .
+replace cotizando_ci = 1 if ((a11==1 | a11==2 | a11==13 | a11==14) & emp_ci==1)
+replace cotizando_ci = 0 if (cotizando_ci != 1 & inlist(condocup_ci, 1, 2))
 label var cotizando_ci "Cotizante a la Seguridad Social"
-label define cotizando_ci 0"No cotiza" 1"Cotiza a la SS" 
+label define cotizando_ci 0 "No"  1 "Si"
 label value cotizando_ci cotizando_ci
 
 **************
@@ -688,9 +702,13 @@ label var instcot_ci "Institucion a la que cotiza - variable original de cada pa
 * afiliado_ci *	
 ***************
 * esta variable no estaba creada en la armonización de años anteriores
-gen afiliado_ci =.
-replace afiliado_ci = 0 if a11==0
-replace afiliado_ci =1 if a11>0 & a11<99
+***** El código mantiene a la poblacion inactiva y a los menores de la edad límite de la PET como missing values en congruencia con la variable formal_ci *****.
+gen byte afiliado_ci = .
+replace afiliado_ci = 1 if((a11>0 & a11<99) & emp_ci==1)
+replace afiliado_ci = 0 if (afiliado_ci != 1 & inlist(condocup_ci, 1, 2))
+label var afiliado_ci "Afiliado a la Seguridad Social"
+label define afiliado_ci 0 "No"  1 "Si"
+label value afiliado_ci afiliado_ci
 
 *************
 * formal_ci *

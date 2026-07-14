@@ -435,24 +435,6 @@ label var categopri_ci "CATEGORIA OCUPACIONAL ACTIVIDAD PRINCIPAL"
 label define categopri_ci 1 "Patron" 2 "Cuenta Propia" 3 "Asalariado" 4 "Trabajador No Remunerado" 
 label values categopri_ci categopri_ci
 
-
-****************
-*afiliado_ci****
-****************
-
-gen afiliado_ci=0     if condocup_ci==1 | condocup_ci==2 
-replace afiliado_ci=1 if (tp50ss==6 | sp20==1 | sp20==2 | pp61ss==1) & afiliado_ci==0
-label var afiliado_ci "Afiliado a la Seguridad Social"
-
-****************
-*cotizando_ci***
-****************
-*Las preguntas relacionadas con pensiones cambian en esta encuesta y están relacionadas a la pregunta 50 tp50ss, usamos seguridad social donde tp50ss == 6 significa que tiene seguro soccial
-
-gen cotizando_ci=0     if condocup_ci==1 | condocup_ci==2 
-replace cotizando_ci=1 if (tp50ss==6) & cotizando_ci==0
-label var cotizando_ci "Cotizante a la Seguridad Social"
-
 ****************
 *instpen_ci*****
 ****************
@@ -579,22 +561,27 @@ label var tecnica_ci "=1 formacion terciaria tecnica"
 ************
 ***emp_ci***
 ************
-gen emp_ci=(condocup_ci==1)
+***** El código mantiene como missing values a la poblacion menor de la edad limite de la PET que no forman parte de la población de referencia de la sección laboral de la Encuesta *****.
+gen byte emp_ci = .
+replace emp_ci = (condocup_ci == 1) if (condocup_ci != . & condocup_ci != 4)
+label var emp_ci "Ocupado (empleado)"
+label define emp_ci 0"No" 1"Si", add
+label value emp_ci emp_ci
 
 ****************
 ***desemp_ci***
 ****************
-gen desemp_ci=(condocup_ci==2)
+***** El código mantiene como missing values a la poblacion menor de la edad limite de la PET que no forman parte de la población de referencia de la sección laboral de la Encuesta *****.
+gen byte desemp_ci = .
+replace desemp_ci = (condocup_ci == 2) if (condocup_ci != . & condocup_ci != 4)
+label var desemp_ci "Desocupado (desempleado)"
+label define desemp_ci 0"No " 1"Si", add
+label value desemp_ci desemp_ci
 
 *************
 ***pea_ci***
 *************
 gen pea_ci=(emp_ci==1 | desemp_ci==1)
-
-*************
-***formal_ci***
-*************
-gen formal_ci=(cotizando_ci==1)
 
 *****************
 ***horaspri_ci***
@@ -604,22 +591,50 @@ gen byte horaspri_ci=.
 replace horaspri_ci=tp51 if tp51>=0 & tp51 <168
 label var horaspri_ci "Horas totales trabajadas la semana pasada en la Actividad Principal"
 
-
 ****************
 ***durades_ci***
 ****************
 * Variable categórica tp41
 gen durades_ci = .
 
-
 *****************
 ***desalent_ci***
 *****************
-gen desalent_ci=(tp42 ==1 | tp42 ==3)
-label var desalent_ci "Trabajadores desalentados: personas que creen que por alguna razón no conseguirán trabajo"
-label define desalent_ci 1 "Trabajador desalentado" 0 "No es trabajador desalentado" 
-label values desalent_ci desalent_ci 
+***** El código mantiene como población de referencia a las personas inactivas (condocup_ci == 3) *****.
+gen byte desalent_ci = .
+replace desalent_ci = 1 if (inlist(tp42, 1, 3) & condocup_ci == 3)
+replace desalent_ci = 0 if (desalent_ci != 1 & condocup_ci==3)
+label var desalent_ci "Desalentados"
+label define desalent_ci 0"No" 1"Si", add
+label value desalent_ci desalent_ci
 
+****************
+*afiliado_ci****
+****************
+***** El código mantiene a la poblacion inactiva y a los menores de la edad límite de la PET como missing values en congruencia con la variable formal_ci *****.
+gen byte afiliado_ci = .
+replace afiliado_ci = 1 if ((tp50ss==6 | sp20==1 | sp20==2 | pp61ss==1) & emp_ci==1)
+replace afiliado_ci = 0 if (afiliado_ci != 1 & inlist(condocup_ci, 1, 2))
+label var afiliado_ci "Afiliado a la Seguridad Social"
+label define afiliado_ci 0 "No"  1 "Si"
+label value afiliado_ci afiliado_ci
+
+****************
+*cotizando_ci***
+****************
+*Las preguntas relacionadas con pensiones cambian en esta encuesta y están relacionadas a la pregunta 50 tp50ss, usamos seguridad social donde tp50ss == 6 significa que tiene seguro soccial
+***** El código mantiene a la poblacion inactiva y a los menores de la edad límite de la PET como missing values en congruencia con la variable formal_ci *****.
+gen byte cotizando_ci = .
+replace cotizando_ci = 1 if (tp50ss==6 & emp_ci==1)
+replace cotizando_ci = 0 if (cotizando_ci != 1 & inlist(condocup_ci, 1, 2))
+label var cotizando_ci "Cotizante a la Seguridad Social"
+label define cotizando_ci 0 "No"  1 "Si"
+label value cotizando_ci cotizando_ci
+
+*************
+***formal_ci***
+*************
+gen formal_ci=(cotizando_ci==1)
 
 ***************
 ***subemp_ci***

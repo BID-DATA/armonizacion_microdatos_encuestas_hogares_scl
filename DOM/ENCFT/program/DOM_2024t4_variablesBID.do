@@ -412,8 +412,12 @@ label value categoinac_ci categoinac_ci
 ************
 ***emp_ci***
 ************
-gen byte emp_ci=(condocup_ci==1)
+***** El código mantiene como missing values a la poblacion menor de la edad limite de la PET que no forman parte de la población de referencia de la sección laboral de la Encuesta *****.
+gen byte emp_ci = .
+replace emp_ci = (condocup_ci == 1) if (condocup_ci != . & condocup_ci != 4)
 label var emp_ci "Ocupado (empleado)"
+label define emp_ci 0"No" 1"Si", add
+label value emp_ci emp_ci
 
 *************
 *cesante_ci* 
@@ -425,8 +429,12 @@ label var cesante_ci "Desocupado - definicion oficial del pais"
 ****************
 ***desemp_ci***
 ****************
-gen desemp_ci=(condocup_ci==2)
-label var desemp_ci "Desempleado que buscó empleo en el periodo de referencia"
+***** El código mantiene como missing values a la poblacion menor de la edad limite de la PET que no forman parte de la población de referencia de la sección laboral de la Encuesta *****.
+gen byte desemp_ci = .
+replace desemp_ci = (condocup_ci == 2) if (condocup_ci != . & condocup_ci != 4)
+label var desemp_ci "Desocupado (desempleado)"
+label define desemp_ci 0"No " 1"Si", add
+label value desemp_ci desemp_ci
 
 ***************
 ***subemp_ci***
@@ -480,10 +488,13 @@ drop temp*
 *****************
 ***desalent_ci***
 *****************
-gen desalent_ci=(motivo_no_busca_trabajo==5 | motivo_no_busca_trabajo==6) & condocup_ci ==3
-replace desalent_ci=. if motivo_no_busca_trabajo==.
-label var desalent_ci "Trabajadores desalentados"
-*Utilizo para desalentado la opcion 5 y la 6 del nuevo cuestionario
+***** El código mantiene como población de referencia a las personas inactivas (condocup_ci == 3) *****.
+gen byte desalent_ci = .
+replace desalent_ci = 1 if (busco_trabajo_establ_negocio == 2 & inlist(motivo_no_busca_trabajo, 4, 12) & condocup_ci == 3)
+replace desalent_ci = 0 if (desalent_ci != 1 & condocup_ci==3)
+label var desalent_ci "Desalentados"
+label define desalent_ci 0"No" 1"Si", add
+label value desalent_ci desalent_ci
 
 *****************
 ***horaspri_ci***
@@ -616,11 +627,13 @@ label var instcot_ci "institución a la cual cotiza"
 ****************
 *afiliado_ci****
 ****************
-gen afiliado_ci=.	
-replace afiliado_ci =1 if afiliado_afp_princ==1 
-replace afiliado_ci =0 if afiliado_afp_princ==2 
-replace afiliado_ci =. if afiliado_afp_princ==98 
+***** El código mantiene a la poblacion inactiva y a los menores de la edad límite de la PET como missing values en congruencia con la variable formal_ci *****.
+gen byte afiliado_ci = .
+replace afiliado_ci = 1 if (afiliado_afp_princ == 1 & emp_ci==1)
+replace afiliado_ci = 0 if (afiliado_ci != 1 & inlist(condocup_ci, 1, 2))
 label var afiliado_ci "Afiliado a la Seguridad Social"
+label define afiliado_ci 0 "No"  1 "Si"
+label value afiliado_ci afiliado_ci
 
 ***************
 ***formal_ci***

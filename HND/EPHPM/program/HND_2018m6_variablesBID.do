@@ -43,7 +43,7 @@ Detalle de procesamientos o modificaciones anteriores:
 ****************************************************************************/
 
 
-use "`base_in'", clear
+use `base_in', clear
 
 foreach v of varlist _all {
       capture rename `v' `=lower("`v'")'
@@ -434,12 +434,22 @@ label value condocup_ci condocup_ci
 ************
 ***emp_ci***
 ************
-gen emp_ci=(condocup_ci==1)
+***** El código mantiene como missing values a la poblacion menor de la edad limite de la PET que no forman parte de la población de referencia de la sección laboral de la Encuesta *****.
+gen byte emp_ci = .
+replace emp_ci = (condocup_ci == 1) if (condocup_ci != . & condocup_ci != 4)
+label var emp_ci "Ocupado (empleado)"
+label define emp_ci 0"No" 1"Si", add
+label value emp_ci emp_ci
 
 ****************
 ***desemp_ci***
 ****************
-gen desemp_ci=(condocup_ci==2)
+***** El código mantiene como missing values a la poblacion menor de la edad limite de la PET que no forman parte de la población de referencia de la sección laboral de la Encuesta *****.
+gen byte desemp_ci = .
+replace desemp_ci = (condocup_ci == 2) if (condocup_ci != . & condocup_ci != 4)
+label var desemp_ci "Desocupado (desempleado)"
+label define desemp_ci 0"No " 1"Si", add
+label value desemp_ci desemp_ci
 
 *************
 ***pea_ci***
@@ -508,9 +518,13 @@ label var antiguedad_ci "Antiguedad en la Ocupacion Actual (en anios)"
 *************
 *desalent_ci*
 *************
-gen desalent_ci=.
-replace desalent_ci=1 if cp511==6
-replace desalent_ci=0 if cp511!=6 & cp511!=.
+***** El código mantiene como población de referencia a las personas inactivas (condocup_ci == 3) *****.
+gen byte desalent_ci = .
+replace desalent_ci = 1 if ((cp510 == 3 & cp511 ==6) & condocup_ci == 3)
+replace desalent_ci = 0 if ((cp511!= 6 & cp511!=.) & condocup_ci==3)
+label var desalent_ci "Desalentados"
+label define desalent_ci 0"No" 1"Si", add
+label value desalent_ci desalent_ci
 
 ***********
 *subemp_ci*
@@ -618,16 +632,12 @@ label var afiliado_ci "Afiliado a la Seguridad Social"
 ****************
 *cotizando_ci***
 ****************
-gen cotizando_ci=.
-replace cotizando_ci=1 if (cp517_1>=1 & cp517_1<=5) 
-replace cotizando_ci=1 if (cp517_2>=1 & cp517_2<=5) & cotizando_ci==.
-replace cotizando_ci=1 if (cp517_3>=1 & cp517_3<=5) & cotizando_ci==.
-replace cotizando_ci=1 if (cp517_4>=1 & cp517_4<=5) & cotizando_ci==.
-recode cotizando_ci .=0 if condact>=1 & condact<=2
-/*independiente que no cotiza en primera/segunda ocupacion*/ 
-/* desocupados no cotizan*/
+***** El código mantiene a la poblacion inactiva y a los menores de la edad límite de la PET como missing values en congruencia con la variable formal_ci *****.
+gen cotizando_ci = .
+replace cotizando_ci = 1 if (((cp517_1>=1 & cp517_1<=5) | (cp517_2>=1 & cp517_2<=5) | (cp517_3>=1 & cp517_3<=5) | (cp517_4>=1 & cp517_4<=5)) & emp_ci==1)
+replace cotizando_ci = 0 if (cotizando_ci != 1 & inlist(condocup_ci, 1, 2))
 label var cotizando_ci "Cotizante a la Seguridad Social"
-label define cotizando_ci 0"No cotiza" 1"Cotiza a la SS" 
+label define cotizando_ci 0 "No"  1 "Si"
 label value cotizando_ci cotizando_ci
 
 * Formalidad sin restringir a PEA

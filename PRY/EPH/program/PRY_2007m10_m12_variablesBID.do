@@ -526,39 +526,6 @@ replace lpe_ci= 205978 if dominio2==4  /*resto urbano*/
 label var lpe_ci "Linea de indigencia oficial del pais"
 
 ****************
-*cotizando_ci***
-****************
-gen cotizando_ci=.
-replace cotizando_ci=1 if b10==1 | c07==1 
-replace cotizando_ci=0 if (b10==6 | b10==. | b10==0) & (c07==6 | c07==. | c07==0)
-recode cotizando_ci .= 0 if peaa != 3 &  peaa != 0
-label var cotizando_ci "Cotizante a la Seguridad Social"
-
-****************
-*cotizapri_ci***
-****************
-gen cotizapri_ci=.
-replace cotizapri_ci=1 if b10==1 
-replace cotizapri_ci=0 if (b10==6 | b10==.) 
-recode cotizapri_ci .= 0 if peaa != 3  & peaa != 0
-label var cotizapri_ci "Cotizante a la Seguridad Social en actividad ppal."
-
-****************
-*cotizasec_ci***
-****************
-gen cotizasec_ci=.
-replace cotizasec_ci=1 if  c07==1
-replace cotizasec_ci=0 if (c07==6 | c07==.)
-recode cotizasec_ci .= 0 if peaa != 3  & peaa != 0
-label var cotizasec_ci "Cotizante a la Seguridad Social en actividad sec."
-
-****************
-*afiliado_ci****
-****************
-gen afiliado_ci=.	
-label var afiliado_ci "Afiliado a la Seguridad Social"
-
-****************
 *tipopen_ci*****
 ****************
 gen tipopen_ci=.
@@ -669,14 +636,22 @@ label var salmm_ci "Salario minimo legal"
 ************
 ***emp_ci***
 ************
+***** El código mantiene como missing values a la poblacion menor de la edad limite de la PET que no forman parte de la población de 	referencia de la sección laboral de la Encuesta *****.
+gen byte emp_ci = .
+replace emp_ci = (condocup_ci == 1) if (condocup_ci != . & condocup_ci != 4)
+label var emp_ci "Ocupado (empleado)"
+label define emp_ci 0"No" 1"Si", add
+label value emp_ci emp_ci
 
-gen byte emp_ci=(condocup_ci==1)
-
-****************
+***************
 ***desemp_ci***
-****************
-
-gen desemp_ci=(condocup_ci==2)
+***************
+***** El código mantiene como missing values a la poblacion menor de la edad limite de la PET que no forman parte de la población de referencia de la sección laboral de la Encuesta *****.
+gen byte desemp_ci = .
+replace desemp_ci = (condocup_ci == 2) if (condocup_ci != . & condocup_ci != 4)
+label var desemp_ci "Desocupado (desempleado)"
+label define desemp_ci 0"No " 1"Si", add
+label value desemp_ci desemp_ci
 
 *************
 ***pea_ci***
@@ -688,10 +663,48 @@ replace pea_ci=1 if emp_ci==1 |desemp_ci==1
 ***desalent_ci***
 *****************
 *10/21/15 MGD: se construye la variable que estaba como missing
-gen desalent_ci=(a09==2) if condocup_ci==3
-/*no se puede construir: que es??? */ 
+***** El código mantiene como población de referencia a las personas inactivas (condocup_ci == 3) *****.
+gen byte desalent_ci1 = .
+replace desalent_ci1 = 1 if (a08 == 6 & inlist(a09, 2, 3) & condocup_ci == 3)
+replace desalent_ci1 = 0 if (desalent_ci1 != 1 & condocup_ci==3)
+label var desalent_ci1 "Desalentados"
+label define desalent_ci1 0"No" 1"Si", add
+label value desalent_ci1 desalent_ci1
 
+****************
+*cotizando_ci***
+****************
+***** El código mantiene a la poblacion inactiva y a los menores de la edad límite de la PET como missing values en congruencia con la variable formal_ci *****.
+gen byte cotizando_ci = .
+replace cotizando_ci = 1 if ((b10 == 1 | c07 == 1 ) & emp_ci==1)
+replace cotizando_ci = 0 if (cotizando_ci != 1 & inlist(condocup_ci, 1, 2))
+label var cotizando_ci "Cotizante a la Seguridad Social"
+label define cotizando_ci 0 "No"  1 "Si"
+label value cotizando_ci cotizando_ci
 
+****************
+*cotizapri_ci***
+****************
+gen cotizapri_ci=.
+replace cotizapri_ci=1 if b10==1 
+replace cotizapri_ci=0 if (b10==6 | b10==.) 
+recode cotizapri_ci .= 0 if peaa != 3  & peaa != 0
+label var cotizapri_ci "Cotizante a la Seguridad Social en actividad ppal."
+
+****************
+*cotizasec_ci***
+****************
+gen cotizasec_ci=.
+replace cotizasec_ci=1 if  c07==1
+replace cotizasec_ci=0 if (c07==6 | c07==.)
+recode cotizasec_ci .= 0 if peaa != 3  & peaa != 0
+label var cotizasec_ci "Cotizante a la Seguridad Social en actividad sec."
+
+****************
+*afiliado_ci****
+****************
+gen afiliado_ci=.	
+label var afiliado_ci "Afiliado a la Seguridad Social"
 
 ***************
 ***subemp_ci***
@@ -699,8 +712,6 @@ gen desalent_ci=(a09==2) if condocup_ci==3
 gen subemp_ci=0
 egen tothoras=rsum(b03lu b03ma b03mi b03ju b03vi b03sa b03do), missing
 replace subemp_ci=1 if tothoras>=1 & tothoras<=30 & d01==1 & emp_ci==1 /* There is no d01==1:Trabajó el encuestado menos de 30 horas? for 2006 */ 
-
-
 
 *****************
 ***horaspri_ci***

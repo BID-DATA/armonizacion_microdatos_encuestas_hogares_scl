@@ -477,15 +477,25 @@ label var condocup_ci "Condicion de ocupación de acuerdo a def de cada pais"
 label define condocup_ci 1 "Ocupado" 2 "Desocupado" 3 "Inactivo" 4 "Menor de PET" 
 label value condocup_ci condocup_ci
 
-************
-***emp_ci***
-************
-gen emp_ci=(condocup_ci==1)
+********
+*emp_ci*
+********
+***** El código mantiene como missing values a la poblacion menor de la edad limite de la PET que no forman parte de la población de referencia de la sección laboral de la Encuesta *****.
+gen byte emp_ci = .
+replace emp_ci = (condocup_ci == 1) if (condocup_ci != . & condocup_ci != 4)
+label var emp_ci "Ocupado (empleado)"
+label define emp_ci 0"No" 1"Si", add
+label value emp_ci emp_ci
 
-****************
-***desemp_ci***
-****************
-gen desemp_ci=(condocup_ci==2)
+***********
+*desemp_ci*
+***********
+***** El código mantiene como missing values a la poblacion menor de la edad limite de la PET que no forman parte de la población de referencia de la sección laboral de la Encuesta *****.
+gen byte desemp_ci = .
+replace desemp_ci = (condocup_ci == 2) if (condocup_ci != . & condocup_ci != 4)
+label var desemp_ci "Desocupado (desempleado)"
+label define desemp_ci 0"No " 1"Si", add
+label value desemp_ci desemp_ci
 
 *************
 ***pea_ci***
@@ -563,11 +573,13 @@ gen pea_ci=(emp_ci==1 | desemp_ci==1)
 	*p08==4 razon de no busqueda es que cree que no encontrara trabajo
 	***********/
 	*Se toman las personas que reportan haberse cansado de buscar y que pertenecen a la PET
-
-	
-	gen desalent_ci=0 if edad_ci>=10
-	replace desalent_ci=1 if pp02e==3 | pp02e==4 
-	label var desalent_ci "Trabajadores desalentados"
+***** El código mantiene como población de referencia a las personas inactivas (condocup_ci == 3) *****.
+gen byte desalent_ci = .
+replace desalent_ci = 1 if (inlist(pp02e, 3, 4) & condocup_ci == 3)
+replace desalent_ci = 0 if (desalent_ci != 1 & condocup_ci==3)
+label var desalent_ci "Desalentados"
+label define desalent_ci 0"No" 1"Si", add
+label value desalent_ci desalent_ci
 	
 *Note: Se debería incrementar la categoria 4 "hay poco trabajo en esta epoca de año"
 
@@ -1734,21 +1746,18 @@ label var lpe_ci "Linea de indigencia oficial del pais"
 ****************
 *cotizando_ci***
 ****************
-gen cotizando_ci=.
-replace cotizando_ci=1 if pp07h==1 
-replace cotizando_ci=0 if pp07h==2 
-replace cotizando_ci=. if pp07h==0
-recode cotizando_ci .=0 if (estado==1 & (categopri_ci==1 | categopri_ci==2))| (estado==1 & (categosec_ci==1 | categosec_ci==2))  /*independiente que no cotiza en primera/segunda ocupacion*/ 
-replace cotizando_ci =0 if estado==2										/* desocupados no cotizan*/
+***** El código mantiene a la poblacion inactiva y a los menores de la edad límite de la PET como missing values en congruencia con la variable formal_ci 
+gen byte cotizando_ci = .
+replace cotizando_ci = 1 if ((pp07h == 1 | pp07i == 1) & emp_ci==1)
+replace cotizando_ci = 0 if (cotizando_ci != 1 & inlist(condocup_ci, 1, 2))
 label var cotizando_ci "Cotizante a la Seguridad Social"
-label define cotizando_ci 0"No cotiza" 1"Cotiza a la SS" 
+label define cotizando_ci 0 "No"  1 "Si"
 label value cotizando_ci cotizando_ci
 
 ****************
 *afiliado_ci****
 ****************
-gen afiliado_ci=.
-recode afiliado_ci .=0 if pea_ci==1 & desemp_ci==0
+gen afiliado_ci=.	
 label var afiliado_ci "Afiliado a la Seguridad Social"
 
 

@@ -340,11 +340,14 @@ use `base_in', clear
 	*************
 	*condocup_ci*
 	*************
-	gen condocup_ci=.
-	replace condocup_ci=1 if employ==1
-	replace condocup_ci=2 if employ==2
-	replace condocup_ci=3 if employ==3
-	recode condocup_ci .=4 if edad_ci<15
+	gen condocup_ci =.
+	replace condocup_ci = 1 if employ==1
+	replace condocup_ci = 2 if employ==2
+	replace condocup_ci = 3 if employ==3
+	replace condocup_ci = 4 if edad_ci<15
+	label var condocup_ci "Condicion de ocupacion utilizando definicion del pais"
+	label define condocup_ci 1"ocupados" 2"desocupados" 3"inactivos" 4"menor de PET"
+	label value condocup_ci condocup_ci
 	
 	***************
 	*categoinac_ci*
@@ -369,15 +372,22 @@ use `base_in', clear
 	***emp_ci*******
 	****************
 	* 1=Ocupado; 0=No ocupado; . = missing original
+	***** El código mantiene como missing values a la poblacion menor de la edad limite de la PET que no forman parte de la población de referencia de la 	sección laboral de la Encuesta *****.
 	gen byte emp_ci = .
-	replace emp_ci = (condocup_ci==1) if condocup_ci<.
+	replace emp_ci = (condocup_ci == 1) if (condocup_ci != . & condocup_ci != 4)
+	label var emp_ci "Ocupado (empleado)"
+	label define emp_ci 0"No" 1"Si", add
+	label value emp_ci emp_ci
 
 	****************
 	***desemp_ci****
 	****************
 	* 1=Desocupado; 0=No desocupado; . = missing
 	gen byte desemp_ci = .
-	replace desemp_ci = (condocup_ci==2) if condocup_ci<.
+	replace desemp_ci = (condocup_ci == 2) if (condocup_ci != . & condocup_ci != 4)
+	label var desemp_ci "Desocupado (desempleado)"
+	label define desemp_ci 0"No " 1"Si", add
+	label value desemp_ci desemp_ci
 		
 	*****************
 	***cesante_ci****
@@ -441,9 +451,13 @@ use `base_in', clear
 	***desalent_ci***
 	****************
 	* Usa variable oficial 'discouraged'
+	***** El código mantiene como población de referencia a las personas inactivas (condocup_ci == 3) *****.
 	gen byte desalent_ci = .
-	replace desalent_ci = 1 if discouraged==1
-	replace desalent_ci = 0 if discouraged!=. & discouraged!=1
+	replace desalent_ci = 1 if (discouraged == 1 & condocup_ci == 3)
+	replace desalent_ci = 0 if (desalent_ci != 1 & condocup_ci==3)
+	label var desalent_ci "Desalentados"
+	label define desalent_ci 0"No" 1"Si", add
+	label value desalent_ci desalent_ci
 
 	*****************
 	***horaspri_ci***

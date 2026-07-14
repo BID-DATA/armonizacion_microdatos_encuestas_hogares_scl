@@ -43,7 +43,7 @@ Nombre de autor (SCL/SCL) - Email: linarias8@gmail.com, Fecha: 01/13/2026
 Detalle de procesamientos o modificaciones anteriores:
 ****************************************************************************/
 
-use "`base_in'", clear
+use `base_in', clear
 
 **********************************
 ***VARIABLES DEL IDENTIFICACION***
@@ -388,25 +388,45 @@ use "`base_in'", clear
 	label define categoinac_ci 1 "jubilado/pensionado" 2 "estudiante" 3 "quehaceres_domesticos" 4 "otros_inactivos"
 	label value categoinac_ci categoinac_ci
 
-	
 	**********
 	***emp_ci*
 	**********
+	***** El código mantiene como missing values a la poblacion menor de la edad limite de la PET que no forman parte de la población de referencia de la sección laboral de la Encuesta *****.
 	gen byte emp_ci = .
-	replace emp_ci = (condocup_ci == 1) if condocup_ci != .
+	replace emp_ci = (condocup_ci == 1) if (condocup_ci != . & condocup_ci != 4)
+	label var emp_ci "Ocupado (empleado)"
+	label define emp_ci 0"No" 1"Si", add
+	label value emp_ci emp_ci
+		
+	***************
+	***desemp_ci***
+	***************	
+	***** El código mantiene como missing values a la poblacion menor de la edad limite de la PET que no forman parte de la población de referencia de la sección laboral de la Encuesta *****.
+	gen byte desemp_ci = .
+	replace desemp_ci = (condocup_ci == 2) if (condocup_ci != . & condocup_ci != 4)
+	label var desemp_ci "Desocupado (desempleado)"
+	label define desemp_ci 0"No " 1"Si", add
+	label value desemp_ci desemp_ci
+	
+	***************
+	***desalent_ci***
+	***************
+	*gen byte desalent_ci= .
 
+	***** El código mantiene como población de referencia a las personas inactivas (condocup_ci == 3) *****.
+	gen byte desalent_ci = .
+	replace desalent_ci = 1 if (o6 == 2 & inlist(o7, 15, 16) & condocup_ci == 3)
+	replace desalent_ci = 0 if (desalent_ci != 1 & condocup_ci==3)
+	label var desalent_ci "Desalentados"
+	label define desalent_ci 0"No" 1"Si", add
+	label value desalent_ci desalent_ci
+	
 	**************
 	***cesante_ci*** 
 	**************
 	gen byte cesante_ci = .
 	replace cesante_ci = 1 if o4==1 & (o6==1 | o7<=2)
 	replace cesante_ci=0 if o4==2 & (o6==1 | o7<=2)
-
-	***************
-	***desemp_ci***
-	***************	
-	gen byte desemp_ci = .
-	replace desemp_ci = (condocup_ci == 2) if condocup_ci != .
 	
 	***************
 	***subemp_ci***
@@ -440,11 +460,6 @@ use "`base_in'", clear
 	gen byte antiguedad_ci = .
 	*replace antiguedad_ci = 1 if ...
 	*replace antiguedad_ci = ... if emp_ci == 1
-	
-	***************
-	***desalent_ci***
-	***************
-	gen byte desalent_ci= .
 
 	***************
 	***horaspri_ci***
@@ -517,20 +532,27 @@ use "`base_in'", clear
 	*replace tamemp_ci  = 2 if ...
 	*replace tamemp_ci  = 3 if ...
 	
-	
 	***************
 	***cotizando_ci***
-	***************	
-	gen  byte cotizando_ci = .
-	replace cotizando_ci  = 0 if (condocup_ci==1 | condocup_ci==2)
-	replace cotizando_ci  = 1 if o32>=1 & o32<=5
-	
-	
+	***************
+	***** El código mantiene a la poblacion inactiva y a los menores de la edad límite de la PET como missing values en congruencia con la variable formal_ci *****.
+	gen byte cotizando_ci = . 
+	replace cotizando_ci = 1 if (inrange(o32, 1, 5) & emp_ci==1)
+	replace cotizando_ci = 0 if (cotizando_ci != 1 & inlist(condocup_ci, 1, 2))
+	label var cotizando_ci "Cotizante a la Seguridad Social"
+	label define cotizando_ci 0 "No"  1 "Si"
+	label value cotizando_ci cotizando_ci
+
 	***************
 	***afiliado_ci***
 	***************	
-	gen  byte afiliado_ci = 1 if o31==1
-	recode afiliado_ci .=0 
+	***** El código mantiene a la poblacion inactiva y a los menores de la edad límite de la PET como missing values en congruencia con la variable formal_ci *****.
+	gen byte afiliado_ci = .
+	replace afiliado_ci = 1 if (o31==1 & emp_ci==1)
+	replace afiliado_ci = 0 if (afiliado_ci != 1 & inlist(condocup_ci, 1, 2))
+	label var afiliado_ci "Afiliado a la Seguridad Social"
+	label define afiliado_ci 0 "No"  1 "Si"
+	label value afiliado_ci afiliado_ci
 	
 	***************
 	***instcot_ci***

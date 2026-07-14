@@ -36,7 +36,7 @@ Mail: matiasi@iadb.org/mrodriguezm@iadb.org, 13 de ,ayp de 2026
 							SCL/SCL - IADB							
 ***************************************************************************/
 
-use "`base_in'", clear
+use `base_in', clear
 
 
 ********************************************************************************
@@ -373,8 +373,12 @@ use "`base_in'", clear
 	********************
 	*** emp_ci ***
 	********************
+	***** El código mantiene como missing values a la poblacion menor de la edad limite de la PET que no forman parte de la población de 	referencia de la sección laboral de la Encuesta *****.
 	gen byte emp_ci = .
 	replace emp_ci = (condocup_ci == 1) if (condocup_ci != . & condocup_ci != 4)
+	label var emp_ci "Ocupado (empleado)"
+	label define emp_ci 0"No" 1"Si", add
+	label value emp_ci emp_ci
 
 	********************
 	*** cesante_ci ***
@@ -387,8 +391,12 @@ use "`base_in'", clear
 	********************
 	*** desemp_ci ***
 	********************
+	***** El código mantiene como missing values a la poblacion menor de la edad limite de la PET que no forman parte de la población de referencia de la sección laboral de la Encuesta *****.
 	gen byte desemp_ci = .
 	replace desemp_ci = (condocup_ci == 2) if (condocup_ci != . & condocup_ci != 4)
+	label var desemp_ci "Desocupado (desempleado)"
+	label define desemp_ci 0"No " 1"Si", add
+	label value desemp_ci desemp_ci
 
 	********************
 	*** subemp_ci ***
@@ -428,8 +436,14 @@ use "`base_in'", clear
 	********************
 	*** desalent_ci ***
 	********************
-	gen byte desalent_ci = .   /* no existe pregunta en EPHC */
-
+	***** El código mantiene como población de referencia a las personas inactivas (condocup_ci == 3) *****.
+*destring s04a_07, ignore("NA") replace
+	gen byte desalent_ci = .
+	replace desalent_ci = 1 if (a08 == 6 & inlist(a09, 2, 3) & condocup_ci == 3)
+	replace desalent_ci = 0 if (desalent_ci != 1 & condocup_ci==3)
+	label var desalent_ci "Desalentados"
+	label define desalent_ci 0"No" 1"Si", add
+	label value desalent_ci desalent_ci
 	********************
 	*** horaspri_ci ***
 	********************
@@ -511,10 +525,13 @@ use "`base_in'", clear
 	*** cotizando_ci ***
 	********************
 	/* b10: aporta caja principal, c07: aporta caja secundaria */
+	***** El código mantiene a la poblacion inactiva y a los menores de la edad límite de la PET como missing values en congruencia con la variable formal_ci *****.
 	gen byte cotizando_ci = .
-	replace cotizando_ci = 1 if (b10 == 1 | c07 == 1 ) & emp_ci==1
-	replace cotizando_ci = 0 if inlist(b10, 6, 9, .) & inlist(c07, 6, .) & inlist(condocup_ci, 1, 2)
-	replace cotizando_ci = 0 if peaa == 2
+	replace cotizando_ci = 1 if ((b10 == 1 | c07 == 1 ) & emp_ci==1) //Si aporta
+	replace cotizando_ci = 0 if (cotizando_ci != 1 & inlist(condocup_ci, 1, 2)) // No aporta
+	label var cotizando_ci "Cotizante a la Seguridad Social"
+	label define cotizando_ci 0 "No"  1 "Si"
+	label value cotizando_ci cotizando_ci
 
 	********************
 	*** instcot_ci ***

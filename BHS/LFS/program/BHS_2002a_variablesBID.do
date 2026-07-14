@@ -436,18 +436,17 @@ gen instpen_ci=.
 label var instpen_ci "Institucion proveedora de la pension - variable original de cada pais" 
 gen instcot_ci=. 
 
-
 ****************
 ****condocup_ci*
 ****************
 * Encuesta no incluye a menores y se usa la clasificación del país con variable creada.
-gen condocup_ci=.
-replace condocup_ci=1 if employ==1
-replace condocup_ci=2 if employ==2
-replace condocup_ci=3 if employ==3
-recode condocup_ci .=4 if edad_ci<15
-label var condocup_ci "Condicion de ocupación de acuerdo a def de cada pais"
-label define condocup_ci 1 "Ocupado" 2 "Desocupado" 3 "Inactivo" 4 "Menor que 10" 
+gen condocup_ci =.
+replace condocup_ci = 1 if employ==1
+replace condocup_ci = 2 if employ==2
+replace condocup_ci = 3 if employ==3
+replace condocup_ci = 4 if edad_ci<15
+label var condocup_ci "Condicion de ocupacion utilizando definicion del pais"
+label define condocup_ci 1"ocupados" 2"desocupados" 3"inactivos" 4"menor de PET"
 label value condocup_ci condocup_ci
 
 *************
@@ -493,18 +492,26 @@ label var pensionsub_ci "1=recibe pension subsidiada / no contributiva"
 gen  ypensub_ci=.
 label var ypensub_ci "Valor de la pension subsidiada / no contributiva"
 	
-
-************
-***emp_ci***
-************
-gen byte emp_ci=(condocup_ci==1)
+****************
+***emp_ci*******
+****************
+* 1=Ocupado; 0=No ocupado; . = missing original
+***** El código mantiene como missing values a la poblacion menor de la edad limite de la PET que no forman parte de la población de referencia de la 	sección laboral de la Encuesta *****.
+gen byte emp_ci = .
+replace emp_ci = (condocup_ci == 1) if (condocup_ci != . & condocup_ci != 4)
 label var emp_ci "Ocupado (empleado)"
+label define emp_ci 0"No" 1"Si", add
+label value emp_ci emp_ci
 
 ****************
-***desemp_ci***
+***desemp_ci****
 ****************
-gen desemp_ci=(condocup_ci==2)
-label var desemp_ci "Desempleado que buscó empleo en el periodo de referencia"
+* 1=Desocupado; 0=No desocupado; . = missing
+gen byte desemp_ci = .
+replace desemp_ci = (condocup_ci == 2) if (condocup_ci != . & condocup_ci != 4)
+label var desemp_ci "Desocupado (desempleado)"
+label define desemp_ci 0"No " 1"Si", add
+label value desemp_ci desemp_ci
   
 *************
 ***pea_ci***

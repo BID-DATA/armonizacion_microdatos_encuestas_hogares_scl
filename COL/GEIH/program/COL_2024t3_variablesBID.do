@@ -45,7 +45,7 @@ Juan Camilo Perdomo (SCL/SCL) - Email: ..., Fecha: 24 de septiembre de 2025
 Detalle de procesamientos o modificaciones anteriores:
 ****************************************************************************/
 
-use "`base_in'", clear
+use `base_in', clear
 
 		
 		**********************************
@@ -408,8 +408,12 @@ recode categoinac_ci .=4 if ((categoinac_ci != 1 & categoinac_ci != 2 & categoin
 **********
 ***emp_ci*
 **********
+***** El código mantiene como missing values a la poblacion menor de la edad limite de la PET que no forman parte de la población de referencia de la sección laboral de la Encuesta *****.
 gen byte emp_ci = .
-replace emp_ci = (condocup_ci == 1) if condocup_ci != .
+replace emp_ci = (condocup_ci == 1) if (condocup_ci != . & condocup_ci != 4)
+label var emp_ci "Ocupado (empleado)"
+label define emp_ci 0"No" 1"Si", add
+label value emp_ci emp_ci
 
 **************
 ***cesante_ci*** 
@@ -421,8 +425,12 @@ replace cesante_ci = 0 if (cesante_ci != 1 & condocup_ci ==2)
 ***************
 ***desemp_ci***
 ***************	
+***** El código mantiene como missing values a la poblacion menor de la edad limite de la PET que no forman parte de la población de referencia de la sección laboral de la Encuesta *****.
 gen byte desemp_ci = .
-replace desemp_ci = (condocup_ci == 2) if condocup_ci! = .
+replace desemp_ci = (condocup_ci == 2) if (condocup_ci != . & condocup_ci != 4)
+label var desemp_ci "Desocupado (desempleado)"
+label define desemp_ci 0"No " 1"Si", add
+label value desemp_ci desemp_ci
 
 ***************
 ***horaspri_ci***
@@ -475,8 +483,13 @@ replace antiguedad_ci = . if emp_ci == 0 | p6426 == 999
 ***************
 ***desalent_ci***
 ***************
-g desalent_ci = inrange(p6310, 4, 6)
-replace desalent_ci = . if p6310 == .
+***** El código mantiene como población de referencia a las personas inactivas (condocup_ci == 3) *****.
+gen byte desalent_ci = .
+replace desalent_ci = 1 if (p6280 == 2 & inrange(p6310, 4, 6) & condocup_ci == 3)
+replace desalent_ci = 0 if (desalent_ci != 1 & condocup_ci==3)
+label var desalent_ci "Desalentados"
+label define desalent_ci 0"No" 1"Si", add
+label value desalent_ci desalent_ci
 	
 *******************
 ***tiempoparc_ci***
@@ -552,15 +565,24 @@ replace tamemp_ci=3 if p3069>=8 & p3069<=10
 ******************
 ***cotizando_ci***
 ******************	
-gen  byte cotizando_ci = .
-replace cotizando_ci=1 if p6920==1
-replace cotizando_ci=0 if p6920==2 | (condocup_ci==2 & p6920!=1)
-		
+***** El código mantiene a la poblacion inactiva y a los menores de la edad límite de la PET como missing values en congruencia con la variable formal_ci *****.
+gen byte cotizando_ci = .
+replace cotizando_ci = 1 if (p6920==1 & emp_ci==1)
+replace cotizando_ci = 0 if (cotizando_ci != 1 & inlist(condocup_ci, 1, 2))
+label var cotizando_ci "Cotizante a la Seguridad Social"
+label define cotizando_ci 0 "No"  1 "Si"
+label value cotizando_ci cotizando_ci
+
 *****************
 ***afiliado_ci***
 *****************
-gen  byte afiliado_ci = (p6090==1)
-replace afiliado_ci=. if p6090==9
+***** El código mantiene a la poblacion inactiva y a los menores de la edad límite de la PET como missing values en congruencia con la variable formal_ci *****.
+gen byte afiliado_ci = .
+replace afiliado_ci = 1 if(p6090==1 & emp_ci==1)
+replace afiliado_ci = 0 if (afiliado_ci != 1 & inlist(condocup_ci, 1, 2))
+label var afiliado_ci "Afiliado a la Seguridad Social"
+label define afiliado_ci 0 "No"  1 "Si"
+label value afiliado_ci afiliado_ci
 	
 ***************
 ***instcot_ci***
