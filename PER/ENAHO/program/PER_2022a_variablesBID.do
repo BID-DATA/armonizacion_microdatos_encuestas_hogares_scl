@@ -33,7 +33,7 @@ Round: a
 ****************************************************************************/
 ****************************************************************************/
 
-use `base_in', clear
+use "`base_in'", clear
 
 ***************
 ***region_c ***
@@ -1291,13 +1291,13 @@ gen tcylmpri_ch=.
 *Modificación SGR Julio 2020, se evita colocar ingreso 0 cuando las personas no reportan ingreso.
 *recode i524e1 i530a i538e1 i541a d544t d556t1 d556t2 d557t d558t d529t d536 d540t d543 (.=0) (999999=0)
 recode i524e1 i530a i538e1 i541a d544t d556t1 d556t2 d557t d558t d529t d536 d540t d543 (999999=.)
-gen ypridbd = i524e1 /12
-gen yprijbi = i530a  /12
-gen ysecbd  = i538e1 /12
-gen ysecjbi = i541a  /12
-gen ingext  = d544t  /12
+gen double ypridbd = i524e1 /12
+gen double yprijbi = i530a  /12
+gen double ysecbd  = i538e1 /12
+gen double ysecjbi = i541a  /12
+gen double ingext  = d544t  /12
 
-egen ylmpri_ci=rsum(ypridbd yprijbi ingext), missing
+egen double ylmpri_ci=rsum(ypridbd yprijbi ingext), missing
 
 
 *******************
@@ -1311,59 +1311,76 @@ gen nrylmpri_ci=.
 *** ylnmpri_ci ***
 ******************
 
-gen ylnmprid = d529t /12
-gen ylnmprii = d536  /12
-gen ylnmsecd = d540t /12
-gen ylnmseci = d543  /12
+gen double ylnmprid = d529t /12
+gen double ylnmprii = d536  /12
+gen double ylnmsecd = d540t /12
+gen double ylnmseci = d543  /12
 
-egen ylnmpri_ci=rsum(ylnmprid ylnmprii), missing
+egen double ylnmpri_ci=rsum(ylnmprid ylnmprii), missing
 
 
 
 ***************
 ***ylmsec_ci***
 ***************
-egen ylmsec_ci=rsum(ysecbd ysecjbi), missing
+egen double ylmsec_ci=rsum(ysecbd ysecjbi), missing
 
 
 ******************
 ****ylnmsec_ci****
 ******************
 
-egen ylnmsec_ci=rsum(ylnmsecd ylnmseci), missing
+egen double ylnmsec_ci=rsum(ylnmsecd ylnmseci), missing
+
+******************
+****ylmotros_ci****
+******************
+gen ylmotros_ci = .
+
+******************
+****ylnmotros_ci****
+******************
+gen ylnmotros_ci = .
 
 
 ************
 ***ylm_ci***
 ************
-egen ylm_ci = rowtotal(ypridbd yprijbi ysecbd ysecjbi ingext), missing
+egen double ylm_ci = rowtotal(ylmpri_ci ylmsec_ci ylmotros_ci), missing
 
 *************
 ***ylnm_ci***
 *************
 
-egen ylnm_ci = rowtotal(ylnmprid ylnmprii ylnmsecd ylnmseci), missing
+egen double ylnm_ci = rowtotal(ylnmpri_ci ylnmsec_ci ylnmotros_ci), missing
 
 
 *************
 ***ynlm_ci***
 *************
 
-gen transltot = d556t1/12
-gen transetot = d556t2/12
-gen remesas_ci= d556t2/12 if p5563a==1
+gen double transltot = d556t1/12
+gen double transetot = d556t2/12
+gen double remesas_ci= d556t2/12 if p5563a==1
 *Modificación SGR Julio 2020, se evita colocar ingreso 0 cuando las personas no reportan ingreso.
 *recode remesas_ci (.=0)
-gen d557t_1 = d557t/12 
-gen d558t_1 = d558t/12
-egen ynlm_ci  = rowtotal(transltot transetot d557t_1 d558t_1), missing  // d557t es renta de propiedad y d558t ing extraord
+gen double d557t_1 = d557t/12 
+gen double d558t_1 = d558t/12
+
+egen double ynlm_ci  = rowtotal(transltot transetot d557t_1 d558t_1), missing  // d557t es renta de propiedad y d558t ing extraord
 
 **************
 ***ynlnm_ci***
 **************
 
-gen vivialqimp = ia01hd /12
-gen ynlnm_ci = (ig06hd+ig08hd+sig24+sig26+gru13hd1+gru13hd2+gru13hd3+gru23hd1+gru23hd2+gru23hd3+gru24hd+gru33hd1+gru33hd2+gru33hd3+(gru34hd-ga04hd)+gru43hd1+gru43hd2+gru43hd3+gru44hd+gru53hd1+gru53hd2+gru53hd3+gru54hd+gru63hd1+gru63hd2+gru63hd3+gru64hd+gru73hd1+gru73hd2+gru73hd3+gru74hd+gru83hd1+gru83hd2+gru83hd3+gru84hd+gru14hd3+gru14hd4+gru14hd5+sg42d+sg42d1+sg42d2+sg42d3) /(12 * nmiembros_ch)
+gen ynlnm_ci = .
+
+**************
+***ytot_ci***
+**************
+
+egen double ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci), mi
+
 
 ********************
 ***Transferencias***
@@ -1394,6 +1411,7 @@ egen trat_pub = rsum( trac_pub  dona_pub), missing
 egen rtasot = rsum(d557t_1  d558t_1), missing
 label var rtasot "Rentas y otros"
 
+
 ************************
 *** HOUSEHOLD INCOME ***
 ************************
@@ -1411,7 +1429,7 @@ replace nrylmpri_ch=. if nrylmpri_ch==.
 *** ylm_ch ***
 **************
 
-by idh_ch, sort: egen ylm_ch=sum(ylm_ci) if miembros_ci==1
+by idh_ch, sort: egen double ylm_ch=sum(ylm_ci) if miembros_ci==1
 
 ****************
 *** ylmnr_ch ***
@@ -1424,24 +1442,32 @@ replace ylmnr_ch=. if nrylmpri_ch==1
 *** ylnm_ch ***
 ***************
 
-by idh_ch, sort: egen ylnm_ch=sum(ylnm_ci) if miembros_ci==1
+by idh_ch, sort: egen double ylnm_ch=sum(ylnm_ci) if miembros_ci==1
 
 *******************
 *** remesas_ch ***
 *******************
 
-by idh_ch, sort: egen remesas_ch=sum(remesas_ci) if miembros_ci==1
+by idh_ch, sort: egen double remesas_ch=sum(remesas_ci) if miembros_ci==1
 
 ***************
 *** ynlm_ch ***
 ***************
 
-by idh_ch, sort: egen ynlm_ch=sum(ynlm_ci) if miembros_ci==1
+by idh_ch, sort: egen double ynlm_ch=sum(ynlm_ci) if miembros_ci==1
 
 ****************
 *** ynlnm_ch ***
 ****************
-by idh_ch, sort: egen ynlnm_ch=sum(ynlnm_ci) if miembros_ci==1
+gen double vivialqimp = ia01hd /12
+
+gen double ynlnm_ch = (ig06hd+ig08hd+sig24+sig26+gru13hd1+gru13hd2+gru13hd3+gru23hd1+gru23hd2+gru23hd3+gru24hd+gru33hd1+gru33hd2+gru33hd3+(gru34hd-ga04hd)+gru43hd1+gru43hd2+gru43hd3+gru44hd+gru53hd1+gru53hd2+gru53hd3+gru54hd+gru63hd1+gru63hd2+gru63hd3+gru64hd+gru73hd1+gru73hd2+gru73hd3+gru74hd+gru83hd1+gru83hd2+gru83hd3+gru84hd+gru14hd3+gru14hd4+gru14hd5+sg42d+sg42d1+sg42d2+sg42d3) /(12) if miembros_ci==1
+
+**************
+***ytot_ch***
+**************
+
+egen double ytot_ch = rowtotal(ylm_ch ylnm_ch ynlm_ch ynlnm_ch), mi
 
 
 *******************
@@ -1490,17 +1516,6 @@ gen ylmhopri_ci=ylmpri_ci/(horaspri_ci*4.3)
 
 gen ylmho_ci=ylm_ci/(horastot_ci*4.3)
 
-***************
-**ylmotros_ci**
-***************
-
-gen ylmotros_ci=.
-
-****************
-**ylnmotros_ci**
-****************
-
-gen ylnmotros_ci=.
 
 ***************
 **tcylmpri_ci**
@@ -2230,39 +2245,65 @@ lab val atencion_ci atencion_ci
 
 
 
-******************************
-* Variables SPH - PMTC y PNC *
-******************************
+****************************************
+* VARIABLES DE PROTECCION SOCIAL (SPH) *
+****************************************
 
-* PTMC:  Juntos (ingtpu01)
-* PNC: 	 Pensión 65 (ingtpu03)
+* PNC: Pensiones sociales no contributivas: 
+		* Pensión 65 (ingtpu03)
+* PTMC: Programas de transferencias monetarias condicionadas: 
+		* Juntos (ingtpu01)
+		* Beca 18 (ingtpu04)
+* POTROT: Programas de otras transferencias monetarias no condicionadas: 
+		* Bono gas (ingtpu05)
+		* Bono Niño Universal (ingtpu11)
+		* Programa social Contigo (ingtpu13)
+		* Bono Yanapay (ingtpu14)
+		* Bono alimentario (ingtpu16)
+		* Bono Yo me quedo en casa (ingtpu06) - 0 obs.
+		* Bono Independiente (ingtpu07) - 0 obs.
+		* Bono Rural (ingtpu08) - 0 obs.
+		* Bono Familiar Universal (ingtpu09) - 0 obs.
+		* Bono 600 (ingtpu15) - 0 obs.
 
 
-egen ingreso_total = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci), missing
-bys idh_ch: egen y_hog = sum(ingreso_total)
+*** Beneficiarios a nivel individual:
+gen byte pnc_ci = .
+gen byte ptmc_ci = .
+gen byte potrot_ci = .
 
-* Beneficiarios 
-gen ptmc_ci=(ingtpu01>0 & ingtpu01!=.)
-bys idh_ch: egen ptmc_ch=max(ptmc_ci)
+*** Beneficiarios a nivel hogar:
+gen byte pnc_ch = (ingtpu03 > 0 & ingtpu03 != .)
+gen byte ptmc_ch = (ingtpu01 > 0 & ingtpu01 != .) | (ingtpu04 > 0 & ingtpu04 != .)
+gen byte potrot_ch = (ingtpu05 > 0 & ingtpu05 != .) | (ingtpu06 > 0 & ingtpu06 != .) | (ingtpu07 > 0 & ingtpu07 != .) | (ingtpu08 > 0 & ingtpu08 != .) | (ingtpu09 > 0 & ingtpu09 != .) | (ingtpu11 > 0 & ingtpu11 != .) | (ingtpu13 > 0 & ingtpu13 != .) | (ingtpu14 > 0 & ingtpu14 != .) | (ingtpu15 > 0 & ingtpu15 != .) | (ingtpu16 > 0 & ingtpu16 != .)
 
-gen pnc_ci=(ingtpu03>0 & ingtpu03!=.)
 
-* Montos
-gen ing_ptmc=ingtpu01/12
-gen ing_pension=ingtpu03/12
+*** Montos de transferencias a nivel individual (mensualizado):
+gen double ing_pnc_ci = .
+gen double ing_ptmc_ci = .
+gen double ing_potrot_ci = .
 
-gen y_pc     = y_hog / nmiembros_ch 
-gen y_pc_net = (y_hog - ing_ptmc - ing_pension) / nmiembros_ch
+*** Montos de transferencias a nivel hogar (mensualizado):
+gen double ing_pnc_ch = (ingtpu03/12)
+gen double ing_ptmc_ch = (ingtpu01/12) + (ingtpu04/12)
+gen double ing_potrot_ch = (ingtpu05/12) + (ingtpu06/12) + (ingtpu07/12) + (ingtpu08/12) + (ingtpu09/12) + (ingtpu11/12) + (ingtpu13/12) + (ingtpu14/12) + (ingtpu15/12) + (ingtpu16/12)
+
+
+*** Ingreso total por transferencias no contributivas (individual & hogar)
+egen double ytnc_ci = rowtotal(ing_pnc_ci ing_ptmc_ci ing_potrot_ci), mi
+egen double ytnc_ch = rowtotal(ing_pnc_ch ing_ptmc_ch ing_potrot_ch) if miembros_ci==1
+
+*** Ingreso Neto: Ingreso Primario + Transferencias privadas
+gen double ynet_ch = (ytot_ch - ytnc_ch) if miembros_ci == 1	// Hogar
+gen double ynet_ch_pc = ynet_ch/nmiembros_ch if miembros_ci == 1	// Hogar per cápita
+
+
 
 * Adultos mayores 
 gen mayor64_ci=(edad>64 & edad!=.)
 
 
-lab def ptmc_ch 1 "Beneficiario PTMC" 0 "No beneficiario PTMC"
-lab val ptmc_ch ptmc_ch
 
-lab def pnc_ci 1 "Beneficiario PNC" 0 "No beneficiario PNC"
-lab val pnc_ci pnc_ci
 
 	
 /*_____________________________________________________________________________________________________*/
@@ -2324,6 +2365,7 @@ lab val grupo_int grupo_int
   aguared_ch aguafconsumo_ch aguafuente_ch aguadist_ch aguadisp1_ch aguadisp2_ch /// Agua y saneamineto
   aguatrat_ch aguamala_ch aguamejorada_ch aguamide_ch bano_ch banoex_ch banomejorado_ch sinbano_ch  /// Agua y saneamineto
   migrante_ci migrantiguo5_ci miglac_ci /// Migración
+  ptmc_ci pnc_ci potrot_ci ptmc_ch pnc_ch potrot_ch ing_ptmc_ci ing_pnc_ci ing_potrot_ci ing_ptmc_ch ing_pnc_ch ing_potrot_ch ytnc_ci ytnc_ch ynet_ch ynet_ch_pc /// Protección social
   salmm_ci lp19_2011 lp31_2011 lp5_2011 lp_ci lpe_ci lp365_2017 lp685_2017 lp14_2017 lp81_2017 tc_c cpi_c cpi2011 cpi2017 ratio_cpi2011 ratio_cpi2017 /// Fuente externa
   ppp_c ppp_2011 ppp_2017 , first /// Fuente externa 
   /// the order was created by regex functions, sph variables are excluded /// Fuente externa 
