@@ -882,11 +882,15 @@ label var autocons_ch "Autoconsumo del Hogar"
 ******************************
 *	remesas_ci & remesas_ch 
 ******************************
-gen remesas_ci=remesas
-label var remesas_ci "Remesas reportadas por el individuo"
+***gen remesas_ci=remesas
+*** El código de remesas_ci se sustituye por missing values y remesas_ch se construye con la variable totayuda que contiene las remesas totales del hogar.
+gen double remesas_ci = .
+label var remesas_ci "Remesas mensuales reportadas por el individuo" 
 
-by idh_ch, sort: gen remesas_ch=sum(remesas_ci) if miembros_ci==1
-label var remesas_ch "Remesas del hogar"
+***by idh_ch, sort: egen double remesas_ch = total(remesas_ci) if miembros_ci == 1
+by idh_ch, sort: gen double remesas_ch = totayuda if miembros_ci == 1
+label var remesas_ch "Remesas mensuales del hogar"
+
 ******************************
 *	durades_ci
 ******************************

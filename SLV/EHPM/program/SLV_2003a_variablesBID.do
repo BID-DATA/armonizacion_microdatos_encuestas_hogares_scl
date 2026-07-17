@@ -1206,7 +1206,10 @@ replace ynlm_ci=. if remesasext==. & ayuda==. & cuotalim==. & alqterr==. & alqui
 ***remesas_ci***
 ****************
 
-gen remesas_ci=remesasext
+***gen remesas_ci=remesasext
+*** El código de remesas_ci se sustituye por missing values y remesas_ch se construye con la variable totayuda que contiene las remesas totales del hogar.
+gen double remesas_ci = .
+label var remesas_ci "Remesas mensuales reportadas por el individuo" 
 
 ************************
 *** HOUSEHOLD INCOME ***
@@ -1281,7 +1284,9 @@ replace remesas_ch=. if remesasi==. & remesash==. & remesasnm==.
 *egen remesas_ch=sum(remesasext) if miembros_ci==1
 
 *Modificación Mayra Sáenz - Septiembre 2013
-by idh_ch, sort: egen remesas_ch=sum(remesasext) if miembros_ci==1
+***by idh_ch, sort: egen remesas_ch=sum(remesasext) if miembros_ci==1
+by idh_ch, sort: gen double remesas_ch = totayuda if miembros_ci == 1
+label var remesas_ch "Remesas mensuales del hogar"
 
 ***************
 *** ynlm_ch ***
