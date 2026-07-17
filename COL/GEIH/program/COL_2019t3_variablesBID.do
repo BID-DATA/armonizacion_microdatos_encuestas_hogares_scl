@@ -765,9 +765,9 @@ la var subemp_ci "Personas en subempleo por horas"
 	replace antiguedad_ci = . if emp_ci == 0 | p6426 == 999
 	la var antiguedad_ci "Antiguedad en la actividad actual en aÃƒÂ±os"
 
-			**************
-			***INGRESOS***
-			**************
+			*************************************************
+			*** VARIABLES DE INGRESOS & PROTECCION SOCIAL ***
+			*************************************************
 /*
 	foreach var in p6500 p6510s1 p6590s1 p6600s1 p6610s1 p6620s1	    ///
 		p6585s1a1 p6585s2a1 p6585s3a1 p6585s4a1	p6545s1	p6580s1		    ///
@@ -818,6 +818,8 @@ la var subemp_ci "Personas en subempleo por horas"
 	g yintereses = p7510s5a1 / 12
 	g ycesantia	 = p7510s6a1 / 12
 */
+
+*** INGRESO LABORAL (MONETARIO Y NO MONETARIO) ***
 
 ***************
 ***ylmpri_ci***
@@ -878,23 +880,121 @@ la var subemp_ci "Personas en subempleo por horas"
 	egen double ylnm_ci = rowtotal(ylnmpri_ci ylnmsec_ci ylnmotros_ci), m
 	la var ylnm_ci "Ingreso laboral NO monetario total"  
 
+
+*** INGRESO NO LABORAL (MONETARIO Y NO MONETARIO) ***
+
+****************
+***ytransf_ci***
+****************
+* Ingreso por transferencias no contributivas 
+	// ytransf_ci = ypnc_ci + yptmc_ci + ypotrot_ci
+
+* PNC - Pensiones sociales no contributivas: 
+		* Colombia mayor (p1661s3a1)
+* PTMC - Programas de transferencias monetarias condicionadas: 
+		* Más familias en acción (p1661s1a1)
+		* Jovenes en acción (p1661s2a1)
+* POTROT - Programas de otras transferencias monetarias no condicionadas: 
+		* Otras ayudas monetarias del gobierno (p1661s4a2)
+
+
+*** Beneficiarios a nivel individual:
+gen byte pnc_ci = (p1661s3 == 1)
+gen byte ptmc_ci = (p1661s1 == 1 | p1661s2 == 1)
+gen byte potrot_ci = (p1661s4 == 1)
+
+
+*** Montos de transferencias a nivel individual (mensualizado):
+
+	// Identificar casos imputados, debido a que el monto declarado es 98 (código especial) o atípico
+	* Cantidad de transferencias que declaró: 
+	egen byte filtro_1661 = rowtotal(p1661s1 p1661s2 p1661s3 p1661s4)
+	
+	* Variables auxiliares
+	foreach x in p1661s1a1 p1661s2a1 p1661s3a1 p1661s4a2  {
+		gen double aux_`x' = `x'
+		replace aux_`x' = 0 if (`x' == 98 | `x' == .)
+		gen double m_`x' = aux_`x'/12 	// mensual
+		}
+
+// Transferencias PNC
+gen double ypnc_ci = p1661s3a1/12 if p1661s3a1 != 98
+replace ypnc_ci = iof3ies if ypnc_ci == . &  p1661s3 == 1 & p1661s3a1 == 98
+replace ypnc_ci = iof3ies if p1661s3 == 1 & (m_p1661s3a1 > iof3ies) & p750s3a1 != 98 & filtro_1661 == 1 
+replace ypnc_ci = iof3ies/2 if  p1661s3 == 1 & (m_p1661s1a1 + m_p1661s2a1 + m_p1661s3a1 + m_p1661s4a2) > iof3ies & p750s2a1 != 98 & filtro_1661 == 2
+
+
+// Transferencias PTMC
+gen double transf_fam = p1661s1a1/12 if p1661s1a1 != 98
+replace transf_fam = iof3ies if transf_fam == . & p1661s1 == 1 & p1661s1a1 == 98
+replace transf_fam = iof3ies if p1661s1 == 1 & (m_p1661s1a1 > iof3ies) & p1661s1a1 != 98 & filtro_1661 == 1
+replace transf_fam = iof3ies/2 if p1661s1 == 1 & ((m_p1661s1a1 + m_p1661s2a1 + m_p1661s3a1 + m_p1661s4a2) > iof3ies) & p1661s1a1 != 98 & filtro_1661 == 2  
+
+gen double transf_jov = p1661s2a1/12 if p1661s2a1 != 98
+replace transf_jov = iof3ies if transf_jov == . & p1661s2 == 1 & p1661s2a1 == 98 	
+replace transf_jov = iof3ies if p1661s2 == 1 & (m_p1661s2a1 > iof3ies) & p1661s2a1 != 98 & filtro_1661 == 1	
+replace transf_jov = iof3ies/2 if p1661s2 == 1 & ((m_p1661s1a1 + m_p1661s2a1 + m_p1661s3a1 + m_p1661s4a2) > iof3ies) & p1661s2a1 != 98 & filtro_1661 == 2 
+
+egen double yptmc_ci = rowtotal(transf_fam transf_jov), mi
+
+// Otras transferencias POTROT
+gen double yotrot_ci = p1661s4a2/12 if p1661s4a2 != 98
+replace yotrot_ci = iof3ies if yotrot_ci == . & p1661s4 == 1 & p1661s4a2 == 98 	// 1 modificaciones
+replace yotrot_ci = iof3ies if p1661s4 == 1 & (m_p1661s4a2 > iof3ies) & p750s2a1 != 98 & filtro_1661 == 1 	// 39 modificaciones
+replace yotrot_ci = iof3ies/2 if p1661s4 == 1 & ((m_p1661s1a1 + m_p1661s2a1 + m_p1661s3a1 + m_p1661s4a2) > iof3ies) & p1661s4a2 != 98 & filtro_1661 == 2  
+
+
+*****************
+*** ytransf_ci : Ingreso individual por transferencias no contributivas
+***************** 
+	egen double ytransf_ci = rowtotal(ypnc_ci yptmc_ci yotrot_ci), mi
+
+
+****************
+***remesas_ci***
+****************
+	g double remesas_ci = p7510s2a1/12 if (p7510s2 == 1 & p7510s2a1 != 98)
+	replace remesas_ci = iof3hes if p7510s2 == 1 & p7510s1 != 1 & iof3h == 0 & p7510s2a1 == 98
+	replace remesas_ci = iof3hes/2 if p7510s2 == 1 & p7510s1 == 1 & iof3h == 0 & p7510s2a1 == 98
+	la var remesas_ci "Remesas mensuales reportadas por el individuo" 
+
+
 *************
 ***ynlm_ci***
 *************
-	egen double ynlm_ci = rowtotal(iof1 iof2  iof3h iof3i iof6 iof1es iof2es  iof3hes iof3ies iof6es), m
-	la var ynlm_ci "Ingreso no laboral monetario"  
-   
+	
+// Desagregar iof3h iof3hes iof3i iof3ies para evitar su doble contabilización:
+gen double aux_remesas = remesas_ci * (-1)
+egen double transf_nac = rowtotal(iof3h iof3hes aux_remesas), m
+
+gen double aux_transf = ytransf_ci * (-1)
+egen double transf_ins = rowtotal(iof3i iof3ies aux_transf), m
+	
+	egen double ynlm_ci = rowtotal(iof1 iof2 transf_nac remesas_ci transf_ins ytransf_ci iof6 iof1es iof2es iof6es), m
+	la var ynlm_ci "Ingreso no laboral monetario"
+	
 **************
-***ylnm_ci***
+***ynlnm_ci***
 **************
 	g ynlnm_ci = .
 	la var ynlnm_ci "Ingreso no laboral no monetario" 
+
+
+*** INGRESO TOTAL LABORAL Y NO LABORAL (MONETARIO Y NO MONETARIO) ***
 
 **************
 ***ytot_ci***
 **************
 	egen double ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci), mi
 
+
+*** INGRESO NETO INDIVIDUAL > INGRESO PRIMARIO + TRANSFERENCIAS PRIVADAS
+
+***************
+*** ynet_ci ***
+***************
+	gen double ynet_ci = (ytot_ci - ytransf_ci)
+	sum ynet_ci if ynet_ci < 0
 
 
 			************************
@@ -927,18 +1027,53 @@ la var subemp_ci "Personas en subempleo por horas"
 ****************
 	bys idh_ch: egen ylmnr_ch = sum(ylm_ci) if miembros_ci == 1
 	replace ylmnr_ch = . if nrylmpri_ch == 1
-	la var ylmnr_ch "Ingreso laboral monetario del hogar"
+
+
+*****************
+*** ytransf_ch : Ingreso del hogar por transferencias no contributivas
+***************** 
+
+*** Beneficiarios a nivel hogar:
+bys idh_ch: egen byte pnc_ch = max(pnc_ci)
+bys idh_ch: egen byte ptmc_ch = max(ptmc_ci)
+bys idh_ch: egen byte potrot_ch = max(potrot_ci)
+
+
+*** Montos de transferencias a nivel hogar (mensualizado):
+bys idh_ch: egen double ypnc_ch = total(ypnc_ci)
+bys idh_ch: egen double yptmc_ch = total(yptmc_ci)
+bys idh_ch: egen double yotrot_ch = total(yotrot_ci)
+
+*** Ingreso del Hogar por transferencias no contributivas
+egen double ytransf_ch = rowtotal(ypnc_ch yptmc_ch yotrot_ch) if miembros_ci == 1
+
+
+****************
+***remesas_ch***
+****************
+	bys idh_ch: egen double remesas_ch = sum(remesas_ci) if miembros_ci == 1
+	la var remesas_ch "Remesas mensuales del hogar" 
+	
 	
 **************
 ***ynlnm_ch***
 **************
 	g ynlnm_ch = .
 	la var ynlnm_ch "Ingreso no laboral no monetario del hogar"
+
 	
 **************
 ***ytot_ch***
 **************
 	egen double ytot_ch = rowtotal(ylm_ch ylnm_ch ynlm_ch ynlnm_ch), mi
+
+	
+***************
+*** ynet_ch ***
+***************
+	gen double ynet_ch = (ytot_ch - ytransf_ch) if miembros_ci == 1
+	gen double ynet_ch_pc = (ytot_ch - ytransf_ch)/nmiembros_ch if miembros_ci == 1
+
 
 ********
 ***NA***
@@ -952,17 +1087,7 @@ la var subemp_ci "Personas en subempleo por horas"
 	g autocons_ch = .
 	la var autocons_ch "Autoconsumo reportado por el hogar"
 
-****************
-***remesas_ci***
-****************
-	g double remesas_ci = p7510s2a1/12 if p7510s2a1>9999 & p7510s2a1!=.
-	la var remesas_ci "Remesas mensuales reportadas por el individuo" 
 
-****************
-***remesas_ch***
-****************
-	bys idh_ch: egen double remesas_ch = sum(remesas_ci) if miembros_ci == 1
-	la var remesas_ch "Remesas mensuales del hogar" 
 
 *****************
 ***ylhopri_ci ***
@@ -1524,82 +1649,6 @@ label var ybenefdes_ci "Monto de seguro de desempleo"
 	label var miglac_ci "=1 si es migrante proveniente de un pais LAC"
 
 
-****************************************
-* VARIABLES DE PROTECCION SOCIAL (SPH) *
-****************************************
-
-* PNC: Pensiones sociales no contributivas: 
-		* Colombia mayor (p1661s3a1)
-* PTMC: Programas de transferencias monetarias condicionadas: 
-		* Más familias en acción (p1661s1a1)
-		* Jovenes en acción (p1661s2a1)
-* POTROT: Programas de otras transferencias monetarias no condicionadas: 
-		* Otras ayudas monetarias del gobierno (p1661s4a2)
-
-
-*** Beneficiarios a nivel individual:
-gen byte pnc_ci = (p1661s3 == 1)
-gen byte ptmc_ci = (p1661s1 == 1 | p1661s2 == 1)
-gen byte potrot_ci = (p1661s4 == 1)
-
-
-*** Beneficiarios a nivel hogar:
-bys idh_ch: egen byte pnc_ch = max(pnc_ci)
-bys idh_ch: egen byte ptmc_ch = max(ptmc_ci)
-bys idh_ch: egen byte potrot_ch = max(potrot_ci)
-
-
-*** Montos de transferencias a nivel individual (mensualizado):
-// Transferencias PNC
-gen double ing_pnc_ci = p1661s3a1/12 if p1661s3a1 != 98
-
-// Transferencias PTMC
-gen double transf1 = p1661s1a1/12 if p1661s1a1 != 98
-gen double transf2 = p1661s2a1/12 if p1661s2a1 != 98
-egen double ing_ptmc_ci = rowtotal(transf1 transf2), mi
-
-// Otras transferencias POTROT
-gen double ing_potrot_ci = p1661s4a2/12 if p1661s4a2 != 98
-
-
-*** Montos de transferencias a nivel hogar (mensualizado):
-bys idh_ch: egen double ing_pnc_ch = total(ing_pnc_ci)
-bys idh_ch: egen double ing_ptmc_ch = total(ing_ptmc_ci)
-bys idh_ch: egen double ing_potrot_ch = total(ing_potrot_ci)
-
-
-*** Ingreso individual por transferencias no contributivas
-egen double ytnc_ci = rowtotal(ing_pnc_ci ing_ptmc_ci ing_potrot_ci)
-
-	// Se realiza un tratamiento para rescatar información que difiere entre lo declarado (p1661s`i') y el agregado (iof3i iof3ies)
-	foreach x in p1661s1a1 p1661s2a1 p1661s3a1 p1661s4a2 iof3i iof3ies  {
-		gen aux_`x' = `x'
-		replace aux_`x' = . if `x' == 98
-		replace aux_`x' = 0 if `x' == .
-		}
-	
-	egen double aux_p1661 = rowtotal(aux_p1661s1a1 aux_p1661s2a1 aux_p1661s3a1 aux_p1661s4a2)
-	gen  double suma_p1661 = aux_p1661/12
-	bys idh_ch: egen double hogar_p1661 = total(suma_p1661)
-	
-	egen double suma_iof = rowtotal(iof3i iof3ies)
-	bys idh_ch: egen double hogar_iof = total(suma_iof)
-	
-	// La variable iof3i agrupa todas las transferencias no contributivas > el reemplazo se realiza a nivel individual (ci)
-	replace ytnc_ci = suma_iof if hogar_p1661 > hogar_iof & suma_p1661 > hogar_iof
-	
-
-*** Ingreso del hogar por transferencias no contributivas
-bys idh_ch: egen double ytnc_ch = total(ytnc_ci) if miembros_ci==1
-
-
-*** Ingreso Neto: Ingreso Primario + Transferencias privadas
-gen double ynet_ch = (ytot_ch - ytnc_ch) if miembros_ci == 1	// Hogar
-gen double ynet_ch_pc = ynet_ch/nmiembros_ch if miembros_ci == 1	// Hogar per cápita
-
-
-* Adultos mayores 
-gen mayor64_ci=(edad>64 & edad!=.)
 
 
 
@@ -1656,6 +1705,7 @@ destring idh_ch, replace
   ylmpri_ci ylnmpri_ci ylmsec_ci ylnmsec_ci ylmotros_ci	ylnmotros_ci  ylm_ci ylnm_ci ynlm_ci ynlnm_ci nrylmpri_ci /// Ingresos individuo 
   ylm_ch ylnm_ch ylmnr_ch ynlm_ch ynlnm_ch ylmhopri_ci ylmho_ci /// Ingresos del hogar 
   nrylmpri_ci nrylmpri_ch /// No respuesta de ingresos  
+  ptmc_ci pnc_ci potrot_ci ptmc_ch pnc_ch potrot_ch yptmc_ci ypnc_ci yotrot_ci yptmc_ch ypnc_ch yotrot_ch ytransf_ci ytransf_ch ynet_ci ynet_ch ynet_ch_pc /// Protección social
   remesas_ci remesas_ch ypen_ci ypensub_ci /// Remesas y pensiones
   aedu_ci eduui_ci eduuc_ci edupre_ci eduac_ci asiste_ci edupub_ci pqnoasis1_ci asispre_ci /// Educación
   luz_ch luzmide_ch combust_ch piso_ch pared_ch techo_ch resid_ch dorm_ch cuartos_ch cocina_ch telef_ch refrig_ch /// Vivienda
@@ -1663,7 +1713,6 @@ destring idh_ch, replace
   aguared_ch aguafconsumo_ch aguafuente_ch aguadist_ch aguadisp1_ch aguadisp2_ch /// Agua y saneamineto
   aguatrat_ch aguamala_ch aguamejorada_ch aguamide_ch bano_ch banoex_ch banomejorado_ch sinbano_ch  /// Agua y saneamineto
   migrante_ci migrantiguo5_ci miglac_ci /// Migración
-  ptmc_ci pnc_ci potrot_ci ptmc_ch pnc_ch potrot_ch ing_ptmc_ci ing_pnc_ci ing_potrot_ci ing_ptmc_ch ing_pnc_ch ing_potrot_ch ytnc_ci ytnc_ch ynet_ch ynet_ch_pc /// Protección social
   salmm_ci lp19_2011 lp31_2011 lp5_2011 lp_ci lpe_ci lp365_2017 lp685_2017 lp14_2017 lp81_2017 tc_c cpi_c cpi2011 cpi2017 ratio_cpi2011 ratio_cpi2017 /// Fuente externa
   ppp_c ppp_2011 ppp_2017 , first /// Fuente externa 
   /// the order was created by regex functions, sph variables are excluded /// Fuente externa 
