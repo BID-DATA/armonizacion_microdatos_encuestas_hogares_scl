@@ -736,8 +736,9 @@ la var autocons_ch "Autoconsumo del Hogar"
 ******************************
 *	remesas_ci & remesas_ch
 ******************************
+/*
 g remesas_ci=.
-/*g temp=remesaevent1
+g temp=remesaevent1
 recode temp (0=.)
 egen remesas_ci=rsum(remesas temp)
 drop temp
@@ -749,10 +750,15 @@ replace remesas_ci=. if remesas==. & temp==.
 compare  r44401a r7041a
 
 *Modificación Mayra Sáenz - Septiembre 2014
-replace remesas_ci  = remesas
+***replace remesas_ci  = remesas
+*** El código de remesas_ci se sustituye por missing values y remesas_ch se construye con la variable totayuda que contiene las remesas totales del hogar.
+gen double remesas_ci = .
+label var remesas_ci "Remesas mensuales reportadas por el individuo" 
 
-by idh_ch, sort: gen remesas_ch=sum(remesas_ci) if miembros_ci==1
-label var remesas_ch "Remesas del hogar"
+***by idh_ch, sort: gen remesas_ch=sum(remesas_ci) if miembros_ci==1
+***label var remesas_ch "Remesas del hogar"
+by idh_ch, sort: gen double remesas_ch = totayuda if miembros_ci == 1
+label var remesas_ch "Remesas mensuales del hogar"
 
 /*
 egen remesas_ci=rsum(remesas remesaevent1(

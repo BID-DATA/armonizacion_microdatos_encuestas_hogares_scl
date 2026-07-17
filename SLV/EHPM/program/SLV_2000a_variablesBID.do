@@ -1082,8 +1082,11 @@ egen ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci)
 ***remesas_ci***
 ****************
 
-gen remesas_ci=remesasext
-replace remesas_ci=. if remesasext==0
+***gen remesas_ci=remesasext
+***replace remesas_ci=. if remesasext==0
+*** El código de remesas_ci se sustituye por missing values y remesas_ch se construye con la variable totayuda que contiene las remesas totales del hogar.
+gen double remesas_ci = .
+label var remesas_ci "Remesas mensuales reportadas por el individuo" 
 
 ************************
 *** HOUSEHOLD INCOME ***
@@ -1134,7 +1137,7 @@ by idh_ch, sort: egen ylnm1_ch=sum(ylnm1_ci) if miembros_ci==1
 ******************
 *** remesas_ch ***
 ******************
-
+/*
 rename r704 frecuna
 rename r705 cantida
 rename r707 ayudaes
@@ -1156,9 +1159,10 @@ by idh_ch, sort: egen remesasi=sum(remesas_ci) if miembros_ci==1
 replace remesasi=. if remesasi==0
 egen remesas_ch=rsum(remesasi remesash remesasnm)
 replace remesas_ch=. if remesasi==. & remesash==. & remesasnm==.
+*/
 
-
-
+by idh_ch, sort: gen double remesas_ch = totayuda if miembros_ci == 1
+label var remesas_ch "Remesas mensuales del hogar"
 
 ***************
 *** ynlm_ch ***
