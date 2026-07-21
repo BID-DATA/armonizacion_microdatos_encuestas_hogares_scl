@@ -585,7 +585,7 @@ use `base_in', clear
 	***************
 	*pensionsub_ci*
 	***************
-	gen pensionsub_ci = (p75 == 1) // Bono de desarollo humano
+	gen pensionsub_ci = .
 
 	************
 	*tipopen_ci*
@@ -598,20 +598,23 @@ use `base_in', clear
 	gen instpen_ci = .
 
 
-		**************************
-		***VARIABLES DE INGRESO***
-		**************************
+		*************************************************
+		*** VARIABLES DE INGRESOS & PROTECCION SOCIAL ***
+		*************************************************
+
 		*fre p63 p64b p65 p66 p67 p68b p69 p70b p71b p72b p73b p74b p76 p78
 		foreach var of varlist p63 p64b p65 p66 p67  ///
 		p68b p69 p70b p71b p72b p74b p76 {
 		replace `var'=. if `var'==999999 
 		}
 
+*** INGRESO LABORAL (MONETARIO Y NO MONETARIO) ***
+
     ***************
 	***ylmpri_ci***
 	***************
 	gen p65b = p65*-1
-	egen ylmpri_ci = rsum(p63 p64b p65b p66 p67) if emp_ci == 1, m
+	egen double ylmpri_ci = rowtotal(p63 p64b p65b p66 p67) if emp_ci == 1, m
 	replace ylmpri_ci =. if p63==. & p64b==. & p65b==. & p66==. & p67==.
 	replace ylmpri_ci =. if ylmpri_ci<0
 	*foreach var of varlist p63 p64b p65b p66 p67 ylmpri_ci {
@@ -621,7 +624,7 @@ use `base_in', clear
 	***************
 	***ylmsec_ci***
 	***************
-	gen ylmsec_ci = p69 if emp_ci == 1
+	gen double ylmsec_ci = p69 if emp_ci == 1
 
 	*****************
 	***ylmotros_ci***
@@ -636,12 +639,12 @@ use `base_in', clear
 	****************
 	***ylnmpri_ci***
 	****************
-	gen ylnmpri_ci = p68b if emp_ci == 1
+	gen double ylnmpri_ci = p68b if emp_ci == 1
 
 	****************
 	***ylnmsec_ci***
 	****************
-	gen ylnmsec_ci = p70b if emp_ci == 1
+	gen double ylnmsec_ci = p70b if emp_ci == 1
 
 	******************
 	***ylnmotros_ci***
@@ -651,61 +654,152 @@ use `base_in', clear
 	*************
 	***ylnm_ci***
 	*************
-	egen double ylnm_ci =rowtotal(ylnmpri_ci ylnmsec_ci ylnmotros_ci), missing
+	egen double ylnm_ci = rowtotal(ylnmpri_ci ylnmsec_ci ylnmotros_ci), missing
+
+
+*** INGRESO NO LABORAL (MONETARIO Y NO MONETARIO) ***
+
+	****************
+	***ytransf_ci***
+	****************
+* PNC - Pensiones sociales no contributivas
+* PTMC - Programas de transferencias monetarias condicionadas:
+		* Bono de Desarrollo Humano (p75 p76)
+* POTROT - Programas de otras transferencias monetarias no condicionadas:
+		* Bono Joaquín Gallegos Lara (p77 p78)
+
+*** Beneficiarios a nivel individual:
+	gen byte pnc_ci = .
+	gen byte ptmc_ci = (p75 == 1) if !missing(p75)
+	gen byte potrot_ci = (p77 == 1) if !missing(p77)
+
+*** Montos de transferencias a nivel individual:
+	// Transferencias PNC
+	gen double ypnc_ci = .
+
+	// Transferencias PTMC
+	gen double yptmc_ci = p76 if p76 != 999999
+
+	// Otras transferencias POTROT
+	gen double yotrot_ci = p78 if p78 != 999999
+
+*** Ingreso individual por transferencias no contributivas
+egen double ytransf_ci = rowtotal(ypnc_ci yptmc_ci yotrot_ci)
+
+	****************
+	***remesas_ci***
+	****************
+	gen remesas_ci = p74b if p74b != 999999
 	
+	*************
+	***ypen_ci***
+	*************
+	gen double ypen_ci = p72b if pension_ci == 1
+	replace ypen_ci = . if ypen_ci == 999999 
+
+	****************
+	***ypensub_ci***
+	****************
+	gen ypensub_ci = .
+
 	*************
 	***ynlm_ci***
 	*************
-	* MGR: agrego ingreso recibido por Bono de Discapacidad Joaquín Gallegos Lara
-	egen ynlm_ci = rsum(p71b p72b p73b p74b p76 p78), m
-	replace ynlm_ci = . if p71b == . & p72b == . & p73b == . & p74b == . & p76 == . & p78 == .
-	replace ynlm_ci = . if ynlm_ci >= 999999
+	egen double ynlm_ci = rowtotal(p71b ypen_ci p73b remesas_ci ytransf_ci), mi
+	replace ynlm_ci = . if p71b == . & ypen_ci == . & p73b == . & remesas_ci == . & ytransf_ci == .
+	replace ynlm_ci = . if p71b == 999999 | ypen_ci == 999999 | p73b == 999999 | remesas_ci == 999999 | ytransf_ci == 999999
 
 	**************
 	***ynlnm_ci***
 	**************
 	gen ynlnm_ci = .
 
+
+*** INGRESO TOTAL LABORAL Y NO LABORAL (MONETARIO Y NO MONETARIO) ***
+
 	*************
 	***ytot_ci***
 	*************
-	egen ytot_ci = rsum(ylm_ci ylnm_ci ynlm_ci ynlnm_ci), m
+	egen double ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci), mi
 
-	************
+
+*** INGRESO NETO INDIVIDUAL > INGRESO PRIMARIO + TRANSFERENCIAS PRIVADAS
+
+	***************
+	*** ynet_ci ***
+	***************
+	gen double ynet_ci = (ytot_ci - ytransf_ci)
+	sum ynet_ci if ynet_ci < 0
+
+
+**************************
+*** INGRESOS DEL HOGAR ***
+**************************
+	
+	************	
 	***ylm_ch***
 	************
-	by idh_ch, sort: egen ylm_ch = sum(ylm_ci) if miembros_ci == 1
+	by idh_ch, sort: egen double ylm_ch = total(ylm_ci) if miembros_ci == 1
 
 	*************
 	***ylnm_ch***
 	*************
-	by idh_ch, sort: egen ylnm_ch = sum(ylnm_ci) if miembros_ci == 1
+	by idh_ch, sort: egen double ylnm_ch = total(ylnm_ci) if miembros_ci == 1
+	
+	******************
+	*** ytransf_ch ***
+	****************** 
+
+*** Beneficiarios a nivel hogar:
+	bys idh_ch: egen byte pnc_ch = max(pnc_ci) if miembros_ci == 1
+	bys idh_ch: egen byte ptmc_ch = max(ptmc_ci) if miembros_ci == 1
+	bys idh_ch: egen byte potrot_ch = max(potrot_ci) if miembros_ci == 1
+
+*** Montos de transferencias a nivel hogar:
+	bys idh_ch: egen double ypnc_ch = total(ypnc_ci) if miembros_ci == 1
+	bys idh_ch: egen double yptmc_ch = total(yptmc_ci) if miembros_ci == 1
+	bys idh_ch: egen double yotrot_ch = total(yotrot_ci) if miembros_ci == 1
+
+*** Ingreso del Hogar por transferencias no contributivas
+egen double ytransf_ch = rowtotal(ypnc_ch yptmc_ch yotrot_ch) if miembros_ci == 1
+
+	****************
+	***remesas_ch***
+	****************
+	by idh_ch, sort: egen double remesas_ch = total(remesas_ci) if miembros_ci == 1
+
+	*************
+	***ynlm_ch***
+	*************
+	by idh_ch, sort: egen double ynlm_ch = total(ynlm_ci) if miembros_ci==1
 
 	**************
 	***ynlnm_ch***
 	**************
 	gen ynlnm_ch = .
-
-	*************
-	***ynlm_ch***
-	*************
-	by idh_ch, sort: egen ynlm_ch = sum(ynlm_ci) if miembros_ci==1
-
+	
 	*************
 	***ytot_ch***
 	*************
-	by idh_ch, sort: egen ytot_ch = sum(ytot_ci) if miembros_ci==1
+	by idh_ch, sort: egen double ytot_ch = total(ytot_ci) if miembros_ci==1
 
+	***************
+	*** ynet_ch ***
+	***************
+	gen double ynet_ch = (ytot_ch - ytransf_ch) if miembros_ci == 1
+	gen double ynet_ch_pc = (ytot_ch - ytransf_ch)/nmiembros_ch if miembros_ci == 1
+
+	
 	*****************
 	***ylmhopri_ci***
 	*****************
-	gen ylmhopri_ci = ylmpri_ci / (4.3 * horaspri_ci)
+	gen double ylmhopri_ci = ylmpri_ci / (4.3 * horaspri_ci)
 	replace ylmhopri_ci = . if ylmhopri_ci <= 0
 
 	**************
 	***ylmho_ci***
 	**************
-	gen ylmho_ci = ylm_ci / (horastot_ci * 4.3)
+	gen double ylmho_ci = ylm_ci / (horastot_ci * 4.3)
 
 	*****************
 	***nrylmpri_ci***
@@ -724,30 +818,7 @@ use `base_in', clear
 	**************
 	by idh_ch, sort: egen ylmnr_ch = sum(ylm_ci) if miembros_ci == 1
 	replace ylmnr_ch = . if nrylmpri_ch == 1
-
-	****************
-	***remesas_ci***
-	****************
-	gen remesas_ci = p74b
-	replace remesas_ci = . if p74b >= 999999
-
-	****************
-	***remesas_ch***
-	****************
-	by idh_ch, sort: egen remesas_ch = sum(remesas_ci) if miembros_ci == 1
 		
-	*************
-	***ypen_ci***
-	*************
-	gen ypen_ci = p72b if pension_ci == 1
-	replace ypen_ci = . if ypen_ci == 999999 
-
-	****************
-	***ypensub_ci***
-	****************
-	gen ypensub_ci = p76 if pensionsub_ci == 1
-	replace ypensub_ci = . if ypensub_ci == 999999
-
 		
 		****************************
 		***VARIABLES DE EDUCACION***
