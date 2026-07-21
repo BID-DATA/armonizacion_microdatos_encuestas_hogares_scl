@@ -891,8 +891,7 @@ label value cotizando_ci cotizando_ci
 
 * Formalidad sin restringir PEA
 * SGR 05/10/2017: se modifica line 1
-gen cotizando_ci1=1 if p04c25a==1 & p04c25b>0 & p04c25a!=.
-gen cotizando_ci1=1 if p05c07a==1 & p05c07b>0 & p05c07b!=.
+gen cotizando_ci1=1 if p10c08a==1 & p10c08b>0 & p10c08b!=.
 recode cotizando_ci1 .=0 if condocup_ci>=1 & condocup_ci<=3
 label var cotizando_ci1 "Cotizante a la Seguridad Social"
 

@@ -632,6 +632,10 @@ gen hpm =.
 replace hpm=1 if e45_cv==4
 replace hpm=0 if e45_cv!=4
 
+gen bps=.
+replace bps=1 if e45_cv==5
+replace bps=0 if e45_cv!=5
+
 gen poli=.
 replace poli=1 if e45_cv==6
 replace poli=0 if e45_cv!=6

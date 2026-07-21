@@ -1413,7 +1413,7 @@ replace afiliado_ci = 1 if (inlist(p4_ssocial, 1, 2) & emp_ci==1)
 replace afiliado_ci = 0 if (p4_ssocial > 2 & inlist(condocup_ci, 1, 2))
 label var afiliado_ci "Afiliado a la Seguridad Social"
 label define afiliado_ci 0 "No"  1 "Si"
-label value afiliado_ci1afiliado_ci
+label value afiliado_ci afiliado_ci
 
 ****************
 *tipopen_ci*****

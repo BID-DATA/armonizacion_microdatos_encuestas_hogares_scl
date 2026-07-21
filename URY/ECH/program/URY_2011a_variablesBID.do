@@ -488,7 +488,8 @@ label value emp_ci emp_ci
 ****************
 ***** El código mantiene como missing values a la poblacion menor de la edad limite de la PET que no forman parte de la población de referencia de la sección laboral de la Encuesta *****.
 gen byte desemp_ci = .
-replace desemp_ci = (condocup_ci == 2) if (condocup_ci != . & condocup_ci != 4)label var desemp_ci "Desocupado (desempleado)"
+replace desemp_ci = (condocup_ci == 2) if (condocup_ci != . & condocup_ci != 4)
+label var desemp_ci "Desocupado (desempleado)"
 label define desemp_ci 0"No " 1"Si", add
 label value desemp_ci desemp_ci
 
@@ -785,12 +786,6 @@ label var salmm_ci "Salario minimo legal"*/
 ************
 
 cap gen byte emp_ci=(condocup_ci==1)
-
-****************
-***desemp_ci***
-****************
-
-gen desemp_ci=(condocup_ci==2)
 
 *************
 ***pea_ci***

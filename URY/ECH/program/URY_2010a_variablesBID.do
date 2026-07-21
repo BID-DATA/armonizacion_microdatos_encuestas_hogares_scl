@@ -529,6 +529,26 @@ label value afiliado_ci afiliado_ci
 *Nota: seguridad social comprende solo los que en el futuro me ofrecen una pension.
 
 ****************
+*cotizando_ci***
+****************
+***** El código mantiene a la poblacion inactiva y a los menores de la edad límite de la PET como missing values en congruencia con la variable formal_ci *****.
+gen byte cotizando_ci = .
+replace cotizando_ci = 1 if ((f82==1 | f96==1) & emp_ci==1)
+replace cotizando_ci = 0 if ((f82==2 | f96==2) & inlist(condocup_ci, 1, 2))
+label var cotizando_ci "Cotizante a la Seguridad Social"
+label define cotizando_ci 0 "No"  1 "Si"
+label value cotizando_ci cotizando_ci
+
+gen cotizapri_ci=0     if condocup_ci==1 | condocup_ci==2 
+replace cotizapri_ci=1 if (f82==1) & cotizando_ci==0 
+label var cotizapri_ci "Cotizante a la Seguridad Social por su trabajo principal"
+
+gen cotizasec_ci=0     if condocup_ci==1 | condocup_ci==2 
+replace cotizasec_ci=1 if (f96==1) & cotizando_ci==0 
+label var cotizasec_ci "Cotizante a la Seguridad Social por su trabajo secundario"
+*MRU - Abril 2014: pego esto porque no estaba copiado correctamente del do-file de la unidad X
+
+****************
 *tipopen_ci*****
 ****************
 gen tipopen_ci=.

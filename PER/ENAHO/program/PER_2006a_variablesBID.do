@@ -456,6 +456,18 @@ label variable miembros_ci "Miembro del hogar"
 ************************************
 /* Esta sección es para los residentes habituales del hogar mayores a 14 años */ 
 
+****************
+***condocup_ci*
+****************
+gen byte condocup_ci = .
+replace condocup_ci = 1 if p501==1 | p502==1 | p503==1    //Ocupados
+replace condocup_ci = 2 if p501==2 & p502==2 & p503==2    //Desocupados
+replace condocup_ci = 3 if condocup_ci == 2 & (p5041==2 & p5042==2 & p5043==2 & p5044==2 & p5045==2 & p5046==2 & p5047==2 & p5048==2 & p5049==2 & p50410==2) //Inactivos
+replace condocup_ci = 4 if edad_ci<14 //Según la encuesta, las preguntas sobre ocupación se hacen a personas de 14 años y más de edad
+label var condocup_ci "Condicion de ocupacion utilizando definicion del pais"
+label define condocup_ci 1"ocupados" 2"desocupados" 3"inactivos" 4"menor de PET"
+label value condocup_ci condocup_ci
+
 ************
 ***emp_ci***
 ************

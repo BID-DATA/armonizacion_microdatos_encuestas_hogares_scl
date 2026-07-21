@@ -32,7 +32,7 @@ end
 capture program drop _survey_loop
 program define _survey_loop
 
-	syntax , FUNCTION(string) [CSV(string) PERSON(string) LOGDIR(string)]
+	syntax , FUNCTION(string) [CSV(string) PERSON(string) PAIS(string) LOGDIR(string)]
 
 	if "`csv'"    == "" local csv    "$running_survey_csv"
 	if "`logdir'" == "" local logdir "$paises_loop_dir"
@@ -44,6 +44,7 @@ program define _survey_loop
 		quietly drop if pais == "Total"
 		quietly keep if availability == "1"
 		if "`person'" != "" quietly keep if person == "`person'"
+		if "`pais'"   != "" quietly keep if pais   == "`pais'"
 		quietly duplicates drop pais year, force
 		quietly sort pais year
 
@@ -104,11 +105,12 @@ end
 capture program drop run_harmonization_loop
 program define run_harmonization_loop
 
-	syntax [, CSV(string) PERSON(string) LOGDIR(string)]
+	syntax [, CSV(string) PERSON(string) PAIS(string) LOGDIR(string)]
 
 	local opts ""
 	if "`csv'"    != "" local opts `"`opts' csv(`"`csv'"')"'
 	if "`person'" != "" local opts `"`opts' person(`"`person'"')"'
+	if "`pais'"   != "" local opts `"`opts' pais(`"`pais'"')"'
 	if "`logdir'" != "" local opts `"`opts' logdir(`"`logdir'"')"'
 	_survey_loop, function(run_harmonization) `opts'
 
@@ -117,11 +119,12 @@ end
 capture program drop open_harmonization_loop
 program define open_harmonization_loop
 
-	syntax [, CSV(string) PERSON(string) LOGDIR(string)]
+	syntax [, CSV(string) PERSON(string) PAIS(string) LOGDIR(string)]
 
 	local opts ""
 	if "`csv'"    != "" local opts `"`opts' csv(`"`csv'"')"'
 	if "`person'" != "" local opts `"`opts' person(`"`person'"')"'
+	if "`pais'"   != "" local opts `"`opts' pais(`"`pais'"')"'
 	if "`logdir'" != "" local opts `"`opts' logdir(`"`logdir'"')"'
 	_survey_loop, function(open_harmonization) `opts'
 

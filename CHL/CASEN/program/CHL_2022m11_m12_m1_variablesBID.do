@@ -1705,7 +1705,7 @@ lab val atencion_ci atencion_ci
 
 gen antiguedad_ci=. // No está la pregunta en la encuesta 2020
 gen durades_ci=. // No está la pregunta en la encuesta 2020
-gen desalent_ci=. // No está la pregunta en la encuesta 2020
+*gen desalent_ci=. // No está la pregunta en la encuesta 2020
 
 
 	**************************

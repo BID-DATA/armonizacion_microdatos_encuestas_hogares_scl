@@ -1707,7 +1707,7 @@ gen dis_ch =. // No está la pregunta en la encuesta 2020
 gen dis_ci =. // No está la pregunta en la encuesta 2020
 gen antiguedad_ci=. // No está la pregunta en la encuesta 2020
 gen durades_ci=. // No está la pregunta en la encuesta 2020
-gen desalent_ci=. // No está la pregunta en la encuesta 2020
+*gen desalent_ci=. // No está la pregunta en la encuesta 2020
 
 
 	**************************
