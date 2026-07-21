@@ -56,7 +56,7 @@ foreach v of varlist _all {
 		**********************************
 		***VARIABLES DEL IDENTIFICACION***
 		**********************************
-		
+	
 	****************
 	* region_BID_c *
 	****************
@@ -413,6 +413,16 @@ replace condocup_ci=4 if edad_ci<5
 label define condocup_ci 1"ocupados" 2"desocupados" 3"inactivos" 4"menor de PET"
 label value condocup_ci condocup_ci
 label var condocup_ci "Condicion de ocupacion utilizando definicion del pais"
+
+************
+***emp_ci***
+************
+***** El código mantiene como missing values a la poblacion menor de la edad limite de la PET que no forman parte de la población de referencia de la sección laboral de la Encuesta *****.
+gen byte emp_ci = .
+replace emp_ci = (condocup_ci == 1) if (condocup_ci != . & condocup_ci != 4)
+label var emp_ci "Ocupado (empleado)"
+label define emp_ci 0"No" 1"Si", add
+label value emp_ci emp_ci
 
 ****************
 ***desemp_ci***

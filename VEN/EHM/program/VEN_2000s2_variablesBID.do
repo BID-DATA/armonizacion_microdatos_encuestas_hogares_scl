@@ -509,7 +509,7 @@ gen byte cotizando_ci = .
 foreach var of varlist  BENEFA  BENEFB BENEFC {
 replace cotizando_ci = 1 if (`var'==3) & emp_ci==1 /*solo a emplead@s y asalariad@s, difiere con los otros paises*/
 }
-replace cotizando_ci = 0 if (cotizando_ci1 != 1 & inlist(condocup_ci, 1, 2))
+replace cotizando_ci = 0 if (cotizando_ci != 1 & inlist(condocup_ci, 1, 2))
 label var cotizando_ci "Cotizante a la Seguridad Social"
 label define cotizando_ci 0 "No"  1 "Si"
 label value cotizando_ci cotizando_ci
