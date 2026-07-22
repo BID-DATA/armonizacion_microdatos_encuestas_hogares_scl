@@ -104,22 +104,16 @@ label variable factor_ch "Factor de expansion del hogar"
 ***************
 ****idh_ch*****
 ***************
-gen upms=string(upm)
-gen nvivis=string(nvivi)
-gen nhogas=string(nhoga)
-gen idh_ch=upms+nvivis+nhogas
-destring idh_ch, replace
-sort idh_ch
+sort upm nvivi nhoga
+egen idh_ch = group(upm nvivi nhoga)
 label variable idh_ch "ID del hogar"
 tostring idh_ch, replace
 
-drop upms nvivis nhogas
 
 **************
 ****idp_ci****
 **************
 
-*cap bysort idh_ch:gen idp_ci=_n 
 gen idp_ci=l02
 label variable idp_ci "ID de la persona en el hogar"
 tostring idp_ci, replace
