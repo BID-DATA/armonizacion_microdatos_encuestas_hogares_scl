@@ -1137,7 +1137,7 @@ by idh_ch, sort: egen ylnm1_ch=sum(ylnm1_ci) if miembros_ci==1
 ******************
 *** remesas_ch ***
 ******************
-/*
+
 rename r704 frecuna
 rename r705 cantida
 rename r707 ayudaes
@@ -1157,6 +1157,8 @@ replace remesasnm=. if ayudaes==999999
 
 by idh_ch, sort: egen remesasi=sum(remesas_ci) if miembros_ci==1
 replace remesasi=. if remesasi==0
+
+/*
 egen remesas_ch=rsum(remesasi remesash remesasnm)
 replace remesas_ch=. if remesasi==. & remesash==. & remesasnm==.
 */
@@ -2371,13 +2373,9 @@ r407 (PQNOBUS)
 ****************
 *afiliado_ci****
 ****************
-***** El código mantiene a la poblacion inactiva y a los menores de la edad límite de la PET como missing values en congruencia con la variable formal_ci *****.
-gen byte afiliado_ci = .
-replace afiliado_ci = 1 if ((r109 >= 1 & r109 <= 2) & emp_ci==1)
-replace afiliado_ci = 0 if (r109 > 2 & inlist(condocup_ci, 1, 2))
+***** No se dispone de la variable constructora (r109a) para generar "afiliado_ci", aunque esta en el cuestionario.
+gen afiliado_ci= .
 label var afiliado_ci "Afiliado a la Seguridad Social"
-label define afiliado_ci 0 "No"  1 "Si"
-label value afiliado_ci afiliado_c1
 *Nota: seguridad social comprende solo los que en el futuro me ofrecen una pension.
 
 ****************

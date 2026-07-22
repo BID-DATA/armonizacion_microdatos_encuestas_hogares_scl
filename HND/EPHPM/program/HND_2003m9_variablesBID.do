@@ -457,11 +457,6 @@ label value condocup_ci condocup_ci
 ************
 ***emp_ci***
 ************
-gen emp_ci=(condocup_ci==1)
-
-************
-***emp_ci***
-************
 ***** El código mantiene como missing values a la poblacion menor de la edad limite de la PET que no forman parte de la población de referencia de la sección laboral de la Encuesta *****.
 gen byte emp_ci = .
 replace emp_ci = (condocup_ci == 1) if (condocup_ci != . & condocup_ci != 4)

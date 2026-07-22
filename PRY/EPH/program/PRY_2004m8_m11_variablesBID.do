@@ -598,10 +598,16 @@ label var afiliado_ci "Afiliado a la Seguridad Social"
 label define afiliado_ci 0 "No"  1 "Si"
 label value afiliado_ci afiliado_ci
 
+***************
+***subemp_ci***
+***************
+gen subemp_ci=0
+egen tothoras=rsum(b03lu b03ma b03mi b03ju b03vi b03sa b03do), missing
+replace subemp_ci=1 if tothoras<=30 & d02==1 & emp_ci==1 
+
 *****************
 ***horaspri_ci***
 *****************
-
 egen hr_seman=rsum(b03lu b03ma b03mi b03ju b03vi b03sa b03do), missing
 gen hr_sem_s=tothoras
 gen horaspri_ci=hr_seman if emp_ci==1 

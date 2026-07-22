@@ -1440,8 +1440,6 @@ gen byte formal_ci=1 if cotizando_ci==1 & (condocup_ci==1 | condocup_ci==2)
 recode formal_ci .=0 if (condocup_ci==1 | condocup_ci==2)
 label var formal_ci "1=afiliado o cotizante / PEA"
 
-g formal_1=cotizando_ci1
-
 *******************
 ***  benefdes_ci  ***
 *******************

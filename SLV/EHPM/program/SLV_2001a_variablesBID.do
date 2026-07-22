@@ -447,6 +447,7 @@ label var condocup_ci "Condicion de ocupacion utilizando definicion del pais
 ************
 ***emp_ci***
 ************
+***** El código mantiene como missing values a la poblacion menor de la edad limite de la PET que no forman parte de la población de referencia de la sección laboral de la Encuesta *****.
 gen byte emp_ci = .
 replace emp_ci = (condocup_ci == 1) if (condocup_ci != . & condocup_ci != 4)
 label var emp_ci "Ocupado (empleado)"
@@ -1140,7 +1141,7 @@ by idh_ch, sort: egen ylnm1_ch=sum(ylnm1_ci) if miembros_ci==1
 ******************
 *** remesas_ch ***
 ******************
-/*
+
 gen remesash=.
 replace remesash=cantida/12 if frecuna==1
 replace remesash=cantida/6 if frecuna==2
@@ -1155,6 +1156,8 @@ replace remesasnm=. if ayudaes==999999
 
 by idh_ch, sort: egen remesasi=sum(remesas_ci) if miembros_ci==1
 replace remesasi=. if remesasi==0
+
+/*
 egen remesas_ch=rsum(remesasi remesash remesasnm)
 replace remesas_ch=. if remesasi==. & remesash==. & remesasnm==.
 */
