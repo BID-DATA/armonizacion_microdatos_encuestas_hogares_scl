@@ -956,9 +956,10 @@ egen double ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci), mi
 ***************
 *** ynet_ci ***
 ***************
-replace ytransf_ci = 0 if ytransf_ci == .
-gen double ynet_ci = (ytot_ci - ytransf_ci)
+gen double aux_ytransf_ci = ytransf_ci*(-1)
+egen double ynet_ci = rowtotal(ytot_ci aux_ytransf_ci), mi
 sum ynet_ci if ynet_ci < 0
+drop aux_ytransf_ci
 
                                                                                                                     
 ************************
@@ -1020,41 +1021,43 @@ label var ylmnr_ch "Ingreso laboral monetario del hogar"
 	bys idh_ch: egen byte potrot_ch = max(potrot_ci) if miembros_ci == 1
 
 *** Montos de transferencias a nivel hogar:
-	bys idh_ch: egen double ypnc_ch = total(ypnc_ci) if miembros_ci == 1
-	bys idh_ch: egen double yptmc_ch = total(yptmc_ci) if miembros_ci == 1
-	bys idh_ch: egen double yotrot_ch = total(yotrot_ci) if miembros_ci == 1
+	bys idh_ch: egen double ypnc_ch = total(ypnc_ci) if miembros_ci == 1, mi
+	bys idh_ch: egen double yptmc_ch = total(yptmc_ci) if miembros_ci == 1, mi
+	bys idh_ch: egen double yotrot_ch = total(yotrot_ci) if miembros_ci == 1, mi
 
 *** Ingreso del Hogar por transferencias no contributivas
-egen double ytransf_ch = rowtotal(ypnc_ch yptmc_ch yotrot_ch) if miembros_ci == 1
+egen double ytransf_ch = rowtotal(ypnc_ch yptmc_ch yotrot_ch) if miembros_ci == 1, mi
 
 ****************
 ***remesas_ch***
 ****************
-bys idh_ch: egen double remesas_ch = total(remesas_ci) if miembros_ci == 1
+bys idh_ch: egen double remesas_ch = total(remesas_ci) if miembros_ci == 1, mi
 label var remesas_ch "Remesas mensuales del hogar" 
 
 ***************
 *** ynlm_ch ***
 ***************
-by idh_ch, sort: egen double ynlm_ch = total(ynlm_ci) if miembros_ci == 1
+by idh_ch, sort: egen double ynlm_ch = total(ynlm_ci) if miembros_ci == 1, mi
 label var ynlm_ch "Ingreso no laboral monetario del hogar"
 
 **************
 ***ynlnm_ch***
 **************
-by idh_ch, sort: egen double ynlnm_ch = total(ynlnm_ci) if miembros_ci == 1
+by idh_ch, sort: egen double ynlnm_ch = total(ynlnm_ci) if miembros_ci == 1, mi
 label var ynlnm_ch "Ingreso no laboral no monetario del hogar"
 
 *************
 ***ytot_ch***
 *************
-by idh_ch, sort: egen double ytot_ch = total(ytot_ci) if miembros_ci == 1
+by idh_ch, sort: egen double ytot_ch = total(ytot_ci) if miembros_ci == 1, mi
 
 ***************
 *** ynet_ch ***
 ***************
-gen double ynet_ch = (ytot_ch - ytransf_ch) if miembros_ci == 1
-gen double ynet_ch_pc = (ytot_ch - ytransf_ch)/nmiembros_ch if miembros_ci == 1
+gen double aux_ytransf_ch = ytransf_ch*(-1)
+egen double ynet_ch = rowtotal(ytot_ch aux_ytransf_ch) if miembros_ci == 1, mi
+gen double ynet_ch_pc = (ynet_ch)/nmiembros_ch if miembros_ci == 1
+drop aux_ytransf_ch
 
 
 ********
@@ -1907,7 +1910,7 @@ lab val grupo_int grupo_int
   ylmpri_ci ylnmpri_ci ylmsec_ci ylnmsec_ci ylmotros_ci	ylnmotros_ci  ylm_ci ylnm_ci ynlm_ci ynlnm_ci ytot_ci nrylmpri_ci /// Ingresos individuo 
   ylm_ch ylnm_ch ylmnr_ch ynlm_ch ynlnm_ch ytot_ch ylmhopri_ci ylmho_ci /// Ingresos del hogar 
   nrylmpri_ci nrylmpri_ch /// No respuesta de ingresos  
-  ptmc_ci pnc_ci potrot_ci ptmc_ch pnc_ch potrot_ch yptmc_ci ypnc_ci yotrot_ci yptmc_ch ypnc_ch yotrot_ch ytransf_ci ytransf_ch ynet_ci ynet_ch ynet_ch_pc /// Protección social
+  pnc_ci ptmc_ci potrot_ci ypnc_ci yptmc_ci yotrot_ci ytransf_ci ynet_ci pnc_ch ptmc_ch potrot_ch ypnc_ch yptmc_ch yotrot_ch ytransf_ch ynet_ch ynet_ch_pc /// Protección social
   remesas_ci remesas_ch ypen_ci ypensub_ci /// Remesas y pensiones
   aedu_ci eduui_ci eduuc_ci edupre_ci eduac_ci asiste_ci edupub_ci pqnoasis1_ci asispre_ci /// Educación
   luz_ch luzmide_ch combust_ch piso_ch pared_ch techo_ch resid_ch dorm_ch cuartos_ch cocina_ch telef_ch refrig_ch /// Vivienda
