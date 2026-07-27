@@ -814,6 +814,41 @@ replace ynlm_ci = . if (ytransf_ci==. &  ydelta_sub==. &  ypen_ci==. & remesas_c
 label var ynlm_ci "Ingreso no laboral monetario"  
 
 
+
+****************
+* ynlnm_ci     * 
+**************** 
+gen ynlnm_ci=.
+label var ynlnm_ci "Ingreso no laboral no monetario" 
+
+
+*** INGRESO TOTAL LABORAL Y NO LABORAL (MONETARIO Y NO MONETARIO) ***
+
+***************
+*** ytot_ci ***
+*************** 
+egen double ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci), mi
+
+
+*** INGRESO NETO INDIVIDUAL > INGRESO PRIMARIO + TRANSFERENCIAS PRIVADAS ***
+
+***************
+*** ynet_ci ***
+***************
+egen double ynet_ci = rowtotal(ytot_ci aux_ytransf_ci), mi
+sum ynet_ci if ynet_ci < 0
+drop aux_ytransf_ci
+
+
+****************
+* nrylmpri_ch  * 
+**************** 
+by idh_ch, sort: egen nrylmpri_ch=sum(nrylmpri_ci) if miembros_ci==1
+replace nrylmpri_ch=1 if nrylmpri_ch>0 & nrylmpri_ch<.
+replace nrylmpri_ch=. if nrylmpri_ch==.
+label var nrylmpri_ch "Hogares con algún miembro que no respondió por ingresos"
+
+
 /****************
 * ynlm_ci      * 
 **************** 
@@ -1003,53 +1038,80 @@ replace ynlm_ci = . if subsidio==. & pension==. & arriendo==. & interes==. & div
 indem==. & dona==. & devolu==. & otros==. & familiar==. 
 */
 
-****************
-* ynlnm_ci     * 
-**************** 
-gen ynlnm_ci=.
-label var ynlnm_ci "Ingreso no laboral no monetario" 
-egen ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci)
 
 
 
-****************
-* nrylmpri_ch  * 
-**************** 
-by idh_ch, sort: egen nrylmpri_ch=sum(nrylmpri_ci) if miembros_ci==1
-replace nrylmpri_ch=1 if nrylmpri_ch>0 & nrylmpri_ch<.
-replace nrylmpri_ch=. if nrylmpri_ch==.
-label var nrylmpri_ch "Hogares con algún miembro que no respondió por ingresos"
+**************************
+*** INGRESOS DEL HOGAR ***
+**************************
 
-****************
-* ylm_ch       * 
-**************** 
-by idh_ch, sort: egen ylm_ch=sum(ylm_ci) if miembros_ci==1, missing
+************
+***ylm_ch***
+************
+by idh_ch, sort: egen double ylm_ch = total(ylm_ci) if miembros_ci==1
 label var ylm_ch "Ingreso laboral monetario del hogar"
 
-****************
-* ylnm_ch      * 
-**************** 
-by idh_ch, sort: egen ylnm_ch=sum(ylnm_ci) if miembros_ci==1, missing
+*************
+***ylnm_ch***
+*************
+by idh_ch, sort: egen double ylnm_ch = total(ylnm_ci) if miembros_ci==1
 label var ylnm_ch "Ingreso laboral no monetario del hogar"
 
-************
-* ylmnr_ch *
-************
-by idh_ch, sort: egen ylmnr_ch=sum(ylm_ci) if miembros_ci==1, missing
+****************
+*** ylmnr_ch ***
+****************
+sort idh_ch 
+by idh_ch, sort: egen ylmnr_ch=sum(ylm_ci) if miembros_ci==1
 replace ylmnr_ch=. if nrylmpri_ch==1
 label var ylmnr_ch "Ingreso laboral monetario del hogar"
 
-***********
-* ynlm_ch *
-***********
-by idh_ch, sort: egen ynlm_ch=sum(ynlm_ci) if miembros_ci==1, missing
+
+******************
+*** ytransf_ch ***
+****************** 
+
+*** Beneficiarios a nivel hogar:
+	bys idh_ch: egen byte pnc_ch = max(pnc_ci) if miembros_ci == 1
+	bys idh_ch: egen byte ptmc_ch = max(ptmc_ci) if miembros_ci == 1
+	bys idh_ch: egen byte potrot_ch = max(potrot_ci) if miembros_ci == 1
+
+*** Montos de transferencias a nivel hogar:
+	bys idh_ch: egen double ypnc_ch = total(ypnc_ci) if miembros_ci == 1
+	bys idh_ch: egen double yptmc_ch = total(yptmc_ci) if miembros_ci == 1
+	bys idh_ch: egen double yotrot_ch = total(yotrot_ci) if miembros_ci == 1
+
+*** Ingreso del Hogar por transferencias no contributivas
+egen double ytransf_ch = rowtotal(ypnc_ch yptmc_ch yotrot_ch) if miembros_ci == 1
+
+****************
+***remesas_ch***
+****************
+gen remesas_ch=.
+label var remesas_ch "Remesas mensuales del hogar" 
+
+***************
+*** ynlm_ch ***
+***************
+by idh_ch, sort: egen double ynlm_ch = total(ynlm_ci) if miembros_ci==1
 label var ynlm_ch "Ingreso no laboral monetario del hogar"
 
-*************
-* ynlnm_ch  *
-*************
+**************
+***ynlnm_ch***
+**************
 gen ynlnm_ch=.
 label var ynlnm_ch "Ingreso no laboral no monetario del hogar"
+
+*************
+***ytot_ch***
+*************
+by idh_ch, sort: egen double ytot_ch = total(ytot_ci) if miembros_ci==1
+
+***************
+*** ynet_ch ***
+***************
+gen double ynet_ch = (ytot_ch - ytransf_ch) if miembros_ci == 1
+gen double ynet_ch_pc = (ytot_ch - ytransf_ch)/nmiembros_ch if miembros_ci == 1
+
 
 *****************
 * ymlhopri_ci   *
@@ -1084,12 +1146,6 @@ gen autocons_ch=.
 label var autocons_ch "Autoconsumo del hogar"
 
 ****************
-* remesas_ch   * 
-**************** 
-gen remesas_ch=.
-label var remesas_ch "Remesas mensuales del hogar"
-
-****************
 * durades_ci   * 
 **************** 
 gen durades_ci=o8/4.3
@@ -1104,6 +1160,7 @@ recode o13 (2016 = 2015)
 gen antiguedad_ci=(2015-o13)+1
 replace antiguedad_ci=. if  emp_ci!=1 | antiguedad_ci>edad_ci
 label var antiguedad_ci "Antiguedad en la actividad actual"
+
 
 		************************
 		* VARIABLES EDUCATIVAS *
@@ -1637,7 +1694,7 @@ egen vejez=rsum(y26_2bm1 y26_2bm2 y26_2c), m
 egen invalidez=rsum(y26_2em1 y26_2em2 y26_2f), m
 gen montepio=y26_2g 
 gen orfandad=y26_2h 
-egen otros=y26_2j
+gen otros=y26_2j
 
 gen tipopen_ci=.
 
@@ -1744,30 +1801,13 @@ gen pension_ci=1 if auxpen>0 & auxpen!=.
 recode pension_ci .=0 
 label var pension_ci "1=Recibe pension contributiva"
 
-*************
-**ypen_ci*
-*************
-gen ypen_ci=auxpen
-replace ypen_ci=. if auxpen<0
-drop auxpen
-label var ypen_ci "Valor de la pension contributiva"
 
 ***************
 *pensionsub_ci*
 ***************
-egen auxpens=rsum(y26_1am  y26_1dm ), missing
-gen pensionsub_ci=1 if auxpens>0 & auxpens!=.
-recode pensionsub_ci .=0 
+gen pensionsub_ci = pnc_ci 
 label var pensionsub_ci "1=recibe pension subsidiada / no contributiva"
 
-*****************
-**ypensub_ci*
-*****************
-
-gen ypensub_ci=auxpens
-replace ypensub_ci=. if auxpens<0
-drop auxpens
-label var ypensub_ci "Valor de la pension subsidiada / no contributiva"
 
 **********
 **tc_ci***
@@ -2054,9 +2094,10 @@ do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&Exter
   condocup_ci categoinac_ci emp_ci cesante_ci desemp_ci subemp_ci durades_ci pea_ci nempleos_ci antiguedad_ci desalent_ci  /// Empleo
   horaspri_ci horastot_ci tiempoparc_ci categopri_ci categosec_ci rama_ci spublico_ci tamemp_ci cotizando_ci instcot_ci	afiliado_ci /// Empleo 
   formal_ci tipocontrato_ci ocupa_ci pension_ci	pensionsub_ci tipopen_ci instpen_ci	ylmpri_ci /// Empleo 
-  ylmpri_ci ylnmpri_ci ylmsec_ci ylnmsec_ci ylmotros_ci	ylnmotros_ci  ylm_ci ylnm_ci ynlm_ci ynlnm_ci nrylmpri_ci /// Ingresos individuo 
-  ylm_ch ylnm_ch ylmnr_ch ynlm_ch ynlnm_ch ylmhopri_ci ylmho_ci /// Ingresos del hogar 
-  nrylmpri_ci nrylmpri_ch /// No respuesta de ingresos  
+  ylmpri_ci ylnmpri_ci ylmsec_ci ylnmsec_ci ylmotros_ci	ylnmotros_ci  ylm_ci ylnm_ci ynlm_ci ynlnm_ci ytot_ci nrylmpri_ci /// Ingresos individuo 
+  ylm_ch ylnm_ch ylmnr_ch ynlm_ch ynlnm_ch ytot_ch ylmhopri_ci ylmho_ci /// Ingresos del hogar 
+  nrylmpri_ci nrylmpri_ch /// No respuesta de ingresos 
+  pnc_ci ptmc_ci potrot_ci ypnc_ci yptmc_ci yotrot_ci ytransf_ci ynet_ci pnc_ch ptmc_ch potrot_ch ypnc_ch yptmc_ch yotrot_ch ytransf_ch ynet_ch ynet_ch_pc /// Protección social
   remesas_ci remesas_ch ypen_ci ypensub_ci /// Remesas y pensiones
   aedu_ci eduui_ci eduuc_ci edupre_ci eduac_ci asiste_ci edupub_ci pqnoasis1_ci asispre_ci /// Educación
   luz_ch luzmide_ch combust_ch piso_ch pared_ch techo_ch resid_ch dorm_ch cuartos_ch cocina_ch telef_ch refrig_ch /// Vivienda
