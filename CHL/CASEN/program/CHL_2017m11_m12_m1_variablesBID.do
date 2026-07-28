@@ -43,7 +43,7 @@ Detalle de procesamientos o modificaciones anteriores:
 ****************************************************************************/
 
 
-use "`base_in'", clear
+use `base_in', clear
 
 		**********************************
 		***VARIABLES DEL IDENTIFICACION***
@@ -660,40 +660,45 @@ label var ylm_ci "Ingreso laboral monetario total"
 gen ylnm_ci=.
 label var ylnm_ci "Ingreso laboral NO monetario total"  
 
+
 *** INGRESO NO LABORAL (MONETARIO Y NO MONETARIO) ***
 
 ******************
 *** ytransf_ci ***
 ******************
 * PNC - Pensiones sociales no contributivas:
-		* Pensión Básica Solidaria Vejez y26_1a y26_1amonto
-		* Pensión por Leyes Especiales (no contributivas) y26_1i y26_2i
+		* 1 Pensión Básica Solidaria Vejez y26_1a y26_1amonto
+		* 2 Aporte previsional solidario vejez y28_1b y26_2bm2
+		
 * PTMC - Programas de transferencias monetarias condicionadas:
-		* Bono de Protección Familiar > (y22a == 1 | y22b == 1 | y22c == 1 | y22d == 1 | y22e==1) y22amonto
-		* Bono Base Familiar y23a>0 & y23a!=99 
-		* Bono Control Niño Sano y23b y23bmonto
-		* Bono Deberes por Asistencia Escolar y23c y23cmonto
-		* Bono por Logro Escolar y25b y25bmonto/12
-		* Subsidio familiar al menor o recién nacido y20a y20amonto
+		* 1 Bono de Protección Familiar > (y22a == 1 | y22b == 1 | y22c == 1 | y22d == 1 | y22e==1) y22amonto
+		* 2 Bono Base Familiar y23a>0 & y23a!=99 
+		* 3 Bono Control Niño Sano y23b y23bmonto
+		* 4 Bono Deberes por Asistencia Escolar y23c y23cmonto
+		* 5 Bono por Logro Escolar y25b y25bmonto/12
+		* 6 Subsidio familiar al menor o recién nacido y20a y20amonto
+		
 * POTROT - Programas de otras transferencias monetarias no condicionadas
-		* Asignación Familiar yfam
-		* Subsidio familiar de asistencia maternal y20b y20bmonto/12
-		* Subsidio familiar a la madre y20c y20cmonto
-		* Subsidio familiar por invalidez y20d y20dmonto		
-		* Subsidio a la discapacidad mental y20e y20emonto		
-		* Aporte Familiar Permanente (Ex Bono Marzo) y25a>0 & y25a<99 y25amonto/12 		
-		* Bono Bodas de Oro y25c y25cmonto/12		
-		* Bono de Invierno y25d y25dmonto/12
-		* Subsidio de Empleo Joven y25e>0 & y25e [y25e/12 si es anual]		
-		* Bono al Trabajo de la Mujer y25f>0 & y25f [y25f/12 si es anual]
-		* Pensión Básica Solidaria Invalidez y26_1d y26_1dmonto
-		* Becas estatales e13b1>=1 & e13b1<=10 (sin monto)
-	  
+		* 1 Asignación Familiar yfam
+		* 2 Subsidio familiar de asistencia maternal y20b y20bmonto/12
+		* 3 Subsidio familiar a la madre y20c y20cmonto
+		* 4 Subsidio familiar por invalidez y20d y20dmonto		
+		* 5 Subsidio a la discapacidad mental y20e y20emonto		
+		* 6 Aporte Familiar Permanente (Ex Bono Marzo) y25a>0 & y25a<99 y25amonto/12 		
+		* 7 Bono Bodas de Oro y25c y25cmonto/12		
+		* 8 Bono de Invierno y25d y25dmonto/12
+		* 9 Subsidio de Empleo Joven y25e>0 & y25e [y25e/12 si es anual]		
+		* 10 Bono al Trabajo de la Mujer y25f>0 & y25f [y25f/12 si es anual]
+		* 11 Pensión Básica Solidaria Invalidez y26_1d y26_1dmonto
+		* 12 Aporte Solidario Invalidez y28_2e2 
+		* 13 Pensión por Leyes Especiales (no contributivas) y28_1i y28_2i
+		
+  
 *** Beneficiarios a nivel individual:
 
 	// PNC > 2 programas
-	gen byte pnc_ci = (y26_1a == 1 | y26_1i == 1)
-	replace pnc_ci = . if y26_1a == 9 & y26_1i == 9
+	gen byte pnc_ci = (y26_1a == 1 | y26 _1b == 1)
+	replace pnc_ci = . if y26_1a == 9 & y26_1b == 9
 	
 	// PTMC > 6 programas	
 	gen byte prot_ci = (y22a == 1 | y22b == 1 | y22c == 1 | y22d == 1 | y22e == 1)
@@ -706,9 +711,9 @@ label var ylnm_ci "Ingreso laboral NO monetario total"
 	gen byte sufmen_ci = (y20a == 1) if y20a != 9
 
 	gen byte ptmc_ci = (prot_ci == 1 | base_ci == 1 | nsano_ci == 1 | deber_ci == 1 | logesc_ci == 1 | sufmen_ci == 1)
-	replace ptmc_ci = . if prot_ci == . & base_ci == . & nsano_ci == . & deber_ci == . & logesc_ci == . & sufmen_ci == 1
+	replace ptmc_ci = . if prot_ci == . & base_ci == . & nsano_ci == . & deber_ci == . & logesc_ci == . & sufmen_ci == .
 	
-	// POTROT > 11 programas
+	// POTROT > 13 programas
 	gen byte afam_ci = (inrange(y19t, 1, 3)) if y19t != 9
 	gen byte sufmat_ci = (y20b == 1) if y20b != 9
 	gen byte sufmadre_ci = (y20c == 1) if y20c != 9
@@ -719,16 +724,19 @@ label var ylnm_ci "Ingreso laboral NO monetario total"
 	gen byte binv_ci = (y25d == 1) if y25d != 9
 	gen byte empjov_ci = (y25e > 0 & y25e < .) if y25e != 99
 	gen byte trabmuj_ci = (y25f > 0 & y25f < .) if y25f != 99
-	gen byte solinv_ci = (y26_1d == 1) if y26_1d != 99
+	gen byte solinv_ci = (y26_1d == 1) if y26_1d != 9
+	gen byte aposolinv_ci = (y26_1e == 1) if y26_1e != 9
+	gen byte leyesp_ci = (y26_1i == 1) if y26_1i != 9
 		
-	gen byte potrot_ci = (afam_ci == 1 | sufmat_ci == 1 | sufmadre_ci == 1 | sufinv_ci == 1 | sufdis_ci == 1 | apfamp_ci == 1 | boro_ci == 1 | binv_ci == 1 | empjov_ci == 1 | trabmuj_ci == 1 | solinv_ci == 1)
-	replace potrot_ci = . if (afam_ci == . & sufmat_ci == . & sufmadre_ci == . & sufinv_ci == . & sufdis_ci == . & apfamp_ci == . & boro_ci == . & binv_ci == . & empjov_ci == . & trabmuj_ci == . & solinv_ci == .)
-	
+	gen byte potrot_ci = (afam_ci == 1 | sufmat_ci == 1 | sufmadre_ci == 1 | sufinv_ci == 1 | sufdis_ci == 1 | apfamp_ci == 1 | boro_ci == 1 | binv_ci == 1 | empjov_ci == 1 | trabmuj_ci == 1 | solinv_ci == 1 | aposolinv_ci == 1 | leyesp_ci == 1)
+	replace potrot_ci = . if (afam_ci == . & sufmat_ci == . & sufmadre_ci == . & sufinv_ci == . & sufdis_ci == . & apfamp_ci == . & boro_ci == . & binv_ci == . & empjov_ci == . & trabmuj_ci == . & solinv_ci == . & aposolinv_ci == . & leyesp_ci == .)
+
+
 *** Montos de transferencias a nivel individual:
 	
 	// Transferencias PNC > 2 programas
-	gen double pleyes = y26_2i if y26_2i != 99
-	egen double ypnc_ci = rowtotal(y26_1amonto pleyes), mi
+	gen double aps_m2 = y26_2bm2  if y26_2bm2  != 99
+	egen double ypnc_ci = rowtotal(y26_1amonto aps_m2), mi
 	
 	// Transferencias PTMC > 6 programas	
 	gen double yprot_ci = y22amonto if y22a == 1 
@@ -764,8 +772,10 @@ label var ylnm_ci "Ingreso laboral NO monetario total"
 	replace ytrabmuj_ci = . if y25f == 99  		  // Declaran frecuencia, pero no saben el monto
 	
 	gen double ysolinv_ci = y26_1dmonto
+	gen byte yaposolinv_ci = y26_2em2 if y26_2em2  != 99
+	gen byte yleyesp_ci = y26_2i if y26_2i != 99
 	
-	egen double yotrot_ci = rowtotal(yafam_ci ysufmat_ci ysufmadre_ci ysufinv_ci ysufdis_ci yapfamp_ci yboro_ci ybinv_ci yempjov_ci ytrabmuj_ci ysolinv_ci), mi
+	egen double yotrot_ci = rowtotal(yafam_ci ysufmat_ci ysufmadre_ci ysufinv_ci ysufdis_ci yapfamp_ci yboro_ci ybinv_ci yempjov_ci ytrabmuj_ci ysolinv_ci yaposolinv_ci yleyesp_ci), mi
 	
 *** Ingreso individual por transferencias no contributivas
 egen double ytransf_ci = rowtotal(ypnc_ci yptmc_ci yotrot_ci), mi
@@ -774,19 +784,19 @@ egen double ytransf_ci = rowtotal(ypnc_ci yptmc_ci yotrot_ci), mi
 *** remesas_ci ***
 ******************
 // y13c - El mes pasado recibió dinero de familiares ajenos al hogar residentes fuera del país? (yfa2)
-gen remesas_ci = yfa2
+gen remesas_ci = yfa2 if y13c != 99
 label var remesas_ci "Remesas mensuales reportadas por el individuo" 
 
 ***************
 *** ypen_ci *** 
 ***************
-// Pension jubilacion/vejez (contributiva y con aporte solidario): y26_2bm1 y26_2bm2 y26_2c
-// Pension invalidez (contributiva y con aporte solidario): y26_2em1 y26_2em2 y26_2f
+// Pension jubilacion/vejez (contributiva y sin aporte solidario): y26_2bm1 y26_2c
+// Pension invalidez (contributiva y sin aporte solidario): y26_2em1 y26_2f
 // Pensión montepío/viudez (contributiva): y26_2g
 // Pensión por orfandad (contributiva): y26_2h
 // Otras pensiones contributivas: y26_2j
 
-egen double ypen_ci = rowtotal(y26_2bm1 y26_2bm2 y26_2c y26_2em1 y26_2em2 y26_2f y26_2g y26_2h y26_2j), mi
+egen double ypen_ci = rowtotal(y26_2bm1 y26_2c y26_2em1 y26_2f y26_2g y26_2h y26_2j), mi
 label var ypen_ci "Valor de la pension contributiva"
 
 ******************
@@ -800,7 +810,7 @@ label var ypensub_ci "Valor de la pension subsidiada / no contributiva"
 *************
 gen double aux_ytransf_ci = ytransf_ci*(-1)
 
-	// A los subsidios les falta el control niño sano:
+	// A los subsidios les falta el control niño sano (y23bmonto):
 	egen double ysub_corr = rowtotal(ysub y23bmonto), mi
 	egen double ydelta_sub = rowtotal(ysub_corr aux_ytransf_ci), mi
 	
@@ -812,7 +822,6 @@ gen double aux_ytransf_ci = ytransf_ci*(-1)
 egen double ynlm_ci = rowtotal(ytransf_ci ydelta_sub ypen_ci remesas_ci yprivado_ci), mi
 replace ynlm_ci = . if (ytransf_ci==. &  ydelta_sub==. &  ypen_ci==. & remesas_ci==. &  yprivado_ci==. )
 label var ynlm_ci "Ingreso no laboral monetario"  
-
 
 
 ****************
@@ -837,7 +846,7 @@ egen double ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci), mi
 ***************
 egen double ynet_ci = rowtotal(ytot_ci aux_ytransf_ci), mi
 sum ynet_ci if ynet_ci < 0
-drop aux_ytransf_ci
+drop aux_ytransf_ci aux_ypriv
 
 
 ****************
@@ -1048,13 +1057,13 @@ indem==. & dona==. & devolu==. & otros==. & familiar==.
 ************
 ***ylm_ch***
 ************
-by idh_ch, sort: egen double ylm_ch = total(ylm_ci) if miembros_ci==1
+by idh_ch, sort: egen double ylm_ch = total(ylm_ci) if miembros_ci==1, mi
 label var ylm_ch "Ingreso laboral monetario del hogar"
 
 *************
 ***ylnm_ch***
 *************
-by idh_ch, sort: egen double ylnm_ch = total(ylnm_ci) if miembros_ci==1
+by idh_ch, sort: egen double ylnm_ch = total(ylnm_ci) if miembros_ci==1, mi
 label var ylnm_ch "Ingreso laboral no monetario del hogar"
 
 ****************
@@ -1076,23 +1085,23 @@ label var ylmnr_ch "Ingreso laboral monetario del hogar"
 	bys idh_ch: egen byte potrot_ch = max(potrot_ci) if miembros_ci == 1
 
 *** Montos de transferencias a nivel hogar:
-	bys idh_ch: egen double ypnc_ch = total(ypnc_ci) if miembros_ci == 1
-	bys idh_ch: egen double yptmc_ch = total(yptmc_ci) if miembros_ci == 1
-	bys idh_ch: egen double yotrot_ch = total(yotrot_ci) if miembros_ci == 1
+	bys idh_ch: egen double ypnc_ch = total(ypnc_ci) if miembros_ci == 1, mi
+	bys idh_ch: egen double yptmc_ch = total(yptmc_ci) if miembros_ci == 1, mi
+	bys idh_ch: egen double yotrot_ch = total(yotrot_ci) if miembros_ci == 1, mi
 
 *** Ingreso del Hogar por transferencias no contributivas
-egen double ytransf_ch = rowtotal(ypnc_ch yptmc_ch yotrot_ch) if miembros_ci == 1
+egen double ytransf_ch = rowtotal(ypnc_ch yptmc_ch yotrot_ch) if miembros_ci == 1, mi
 
 ****************
 ***remesas_ch***
 ****************
-gen remesas_ch=.
+egen double remesas_ch = total(remesas_ci) if miembros_ci == 1, mi
 label var remesas_ch "Remesas mensuales del hogar" 
 
 ***************
 *** ynlm_ch ***
 ***************
-by idh_ch, sort: egen double ynlm_ch = total(ynlm_ci) if miembros_ci==1
+by idh_ch, sort: egen double ynlm_ch = total(ynlm_ci) if miembros_ci==1, mi
 label var ynlm_ch "Ingreso no laboral monetario del hogar"
 
 **************
@@ -1104,13 +1113,15 @@ label var ynlnm_ch "Ingreso no laboral no monetario del hogar"
 *************
 ***ytot_ch***
 *************
-by idh_ch, sort: egen double ytot_ch = total(ytot_ci) if miembros_ci==1
+by idh_ch, sort: egen double ytot_ch = total(ytot_ci) if miembros_ci==1, mi
 
 ***************
 *** ynet_ch ***
 ***************
-gen double ynet_ch = (ytot_ch - ytransf_ch) if miembros_ci == 1
-gen double ynet_ch_pc = (ytot_ch - ytransf_ch)/nmiembros_ch if miembros_ci == 1
+gen double aux_ytransf_ch = ytransf_ch*(-1)
+egen double ynet_ch = rowtotal(ytot_ch aux_ytransf_ch) if miembros_ci == 1, mi
+gen double ynet_ch_pc = (ynet_ch)/nmiembros_ch if miembros_ci == 1
+drop aux_ytransf_ch
 
 
 *****************
@@ -1689,9 +1700,9 @@ label value afiliado_ci afiliado_ci
 ****************
 
 *Esta encuesta sólo incluye 4 tipos de pensiones: jubilación o vejez, invalidez, montepío, pensión de orfandad y otros (y2701aj yinvaj ymonaj  yorfaj)
-* Se incluyen pensiones ocn aporte previsional solidario de vejez e invalidez
-egen vejez=rsum(y26_2bm1 y26_2bm2 y26_2c), m
-egen invalidez=rsum(y26_2em1 y26_2em2 y26_2f), m
+* Se excluye el monto de pensiones con aporte previsional solidario de vejez e invalidez (metodologia de estudio y está sumado en ysub)
+egen vejez=rsum(y26_2bm1 y26_2c), m
+egen invalidez=rsum(y26_2em1 y26_2f), m
 gen montepio=y26_2g 
 gen orfandad=y26_2h 
 gen otros=y26_2j
