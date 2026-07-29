@@ -666,7 +666,7 @@ label var ylnm_ci "Ingreso laboral NO monetario total"
 	replace sufdis_ci = . if y20e == 9
 	
 	gen byte apfamp_ci = (y25a_preg == 1) if !missing(y25a_preg)
-	replace apfamp_ci = . if y25a == 9
+	replace apfamp_ci = . if y25a_preg == 9
 	
 	gen byte boro_ci = (y25c == 1) if !missing(y25c)
 	replace boro_ci = . if y25c == 9
@@ -761,8 +761,8 @@ label var remesas_ci "Remesas mensuales reportadas por el individuo"
 ***************
 *** ypen_ci *** 
 ***************
-// Pension jubilacion/vejez (contributiva y con aporte solidario): y28_2b1 y28_2b2 y28_2c
-// Pension invalidez (contributiva y con aporte solidario): y28_2e1 y28_2e2 y28_2f
+// Pension jubilacion/vejez (contributiva y sin aporte solidario): y28_2b1 y28_2c
+// Pension invalidez (contributiva y sin aporte solidario): y28_2e1 y28_2f
 // Pensión montepío/viudez (contributiva): y28_2g 
 // Pensión por orfandad (contributiva): y28_2h
 // Otras pensiones contributivas: y28_2j
