@@ -1095,7 +1095,7 @@ cou if yotrot_ci > jh_iof & yotrot_ci != .
 *****************
 *** ytransf_ci : Ingreso individual por transferencias no contributivas
 ***************** 
-	egen double ytransf_ci = rowtotal(ypnc_ci yptmc_ci yotrot_ci)
+	egen double ytransf_ci = rowtotal(ypnc_ci yptmc_ci yotrot_ci), mi
 
 
 ****************
@@ -1160,9 +1160,10 @@ replace otraext = iof3ies/filtro_750 if p750s3 == 1  & p750s1a1 == 98 & filtro_7
 replace otraext = iof3i/filtro_750 if p750s3 == 1  & p750s1a1 != 98 & filtro_750 > 1  & iof3ies == . & (m_p750s3a1 > iof3i)
 cou if otraext == . & p750s3 == 1
 
-egen double transf_ins = rowtotal(otrasint otraext)
+egen double transf_ins = rowtotal(otrasint otraext), mi
 
 	egen double ynlm_ci = rowtotal(iof1 iof2 transf_nac remesas_ci transf_ins ytransf_ci iof6 iof1es iof2es iof6es), m
+	replace ynlm_ci = . if ynlm_ci == 0
 	la var ynlm_ci "Ingreso no laboral monetario"    
    
 **************
@@ -1185,8 +1186,10 @@ egen double transf_ins = rowtotal(otrasint otraext)
 ***************
 *** ynet_ci ***
 ***************
-	gen double ynet_ci = (ytot_ci - ytransf_ci)
+	gen double aux_transf_ci = ytransf_ci * (-1)
+	egen double ynet_ci = rowtotal(ytot_ci aux_transf_ci), mi
 	sum ynet_ci if ynet_ci < 0
+	drop aux_transf_ci
 
 
 
@@ -1209,7 +1212,7 @@ egen double transf_ins = rowtotal(otrasint otraext)
 *******************
 
 	foreach i in lm lnm nlm {
-		bys idh_ch: egen double y`i'_ch = sum(y`i'_ci) if miembros_ci == 1
+		bys idh_ch: egen double y`i'_ch = sum(y`i'_ci) if miembros_ci == 1, mi
 	}
 	la var ylm_ch 	"Ingreso laboral monetario del hogar"
 	la var ylnm_ch 	"Ingreso laboral no monetario del hogar"
@@ -1218,7 +1221,7 @@ egen double transf_ins = rowtotal(otrasint otraext)
 ****************
 *** ylmnr_ch ***
 ****************
-	bys idh_ch: egen ylmnr_ch = sum(ylm_ci) if miembros_ci == 1
+	bys idh_ch: egen ylmnr_ch = sum(ylm_ci) if miembros_ci == 1, mi
 	replace ylmnr_ch = . if nrylmpri_ch == 1
 	la var ylmnr_ch "Ingreso laboral monetario del hogar"
 
@@ -1234,18 +1237,18 @@ bys idh_ch: egen byte potrot_ch = max(potrot_ci) if miembros_ci == 1
 
 
 *** Montos de transferencias a nivel hogar (mensualizado):
-bys idh_ch: egen double ypnc_ch = total(ypnc_ci) if miembros_ci == 1
-bys idh_ch: egen double yptmc_ch = total(yptmc_ci) if miembros_ci == 1
-bys idh_ch: egen double yotrot_ch = total(yotrot_ci) if miembros_ci == 1
+bys idh_ch: egen double ypnc_ch = total(ypnc_ci) if miembros_ci == 1, mi
+bys idh_ch: egen double yptmc_ch = total(yptmc_ci) if miembros_ci == 1, mi
+bys idh_ch: egen double yotrot_ch = total(yotrot_ci) if miembros_ci == 1, mi
 
 *** Ingreso del Hogar por transferencias no contributivas
-egen double ytransf_ch = rowtotal(ypnc_ch yptmc_ch yotrot_ch) if miembros_ci == 1
+egen double ytransf_ch = rowtotal(ypnc_ch yptmc_ch yotrot_ch) if miembros_ci == 1, mi
 
 
 ****************
 ***remesas_ch***
 ****************
-	bys idh_ch: egen double remesas_ch = sum(remesas_ci) if miembros_ci == 1
+	bys idh_ch: egen double remesas_ch = sum(remesas_ci) if miembros_ci == 1, mi
 	la var remesas_ch "Remesas mensuales del hogar"
 
 
@@ -1265,8 +1268,10 @@ egen double ytransf_ch = rowtotal(ypnc_ch yptmc_ch yotrot_ch) if miembros_ci == 
 ***************
 *** ynet_ch ***
 ***************
-	gen double ynet_ch = (ytot_ch - ytransf_ch) if miembros_ci == 1
-	gen double ynet_ch_pc = (ytot_ch - ytransf_ch)/nmiembros_ch if miembros_ci == 1
+	gen double aux_ytransf_ch = ytransf_ch*(-1)
+	egen double ynet_ch = rowtotal(ytot_ch aux_ytransf_ch) if miembros_ci == 1, mi
+	gen double ynet_ch_pc = (ynet_ch)/nmiembros_ch if miembros_ci == 1
+	drop aux_ytransf_ch
 
 
 ********
@@ -1889,8 +1894,8 @@ destring idh_ch, replace
   condocup_ci categoinac_ci emp_ci cesante_ci desemp_ci subemp_ci durades_ci pea_ci nempleos_ci antiguedad_ci desalent_ci  /// Empleo
   horaspri_ci horastot_ci tiempoparc_ci categopri_ci categosec_ci rama_ci spublico_ci tamemp_ci cotizando_ci instcot_ci	afiliado_ci /// Empleo 
   formal_ci tipocontrato_ci ocupa_ci pension_ci	pensionsub_ci tipopen_ci instpen_ci	ylmpri_ci /// Empleo 
-  ylmpri_ci ylnmpri_ci ylmsec_ci ylnmsec_ci ylmotros_ci	ylnmotros_ci  ylm_ci ylnm_ci ynlm_ci ynlnm_ci nrylmpri_ci /// Ingresos individuo 
-  ylm_ch ylnm_ch ylmnr_ch ynlm_ch ynlnm_ch ylmhopri_ci ylmho_ci /// Ingresos del hogar 
+  ylmpri_ci ylnmpri_ci ylmsec_ci ylnmsec_ci ylmotros_ci	ylnmotros_ci  ylm_ci ylnm_ci ynlm_ci ynlnm_ci ytot_ci nrylmpri_ci /// Ingresos individuo 
+  ylm_ch ylnm_ch ylmnr_ch ynlm_ch ynlnm_ch ytot_ch ylmhopri_ci ylmho_ci /// Ingresos del hogar 
   nrylmpri_ci nrylmpri_ch /// No respuesta de ingresos  
   ptmc_ci pnc_ci potrot_ci ptmc_ch pnc_ch potrot_ch yptmc_ci ypnc_ci yotrot_ci yptmc_ch ypnc_ch yotrot_ch ytransf_ci ytransf_ch ynet_ci ynet_ch ynet_ch_pc /// Protección social
   remesas_ci remesas_ch ypen_ci ypensub_ci /// Remesas y pensiones
