@@ -72,7 +72,7 @@ label define region_c  ///
 label value region_c region_c
 label var region_c "División política, region de planificacion"
 
-************************** 
+	************************** 
 	** REGIONES **************
 	**************************
 
@@ -472,40 +472,16 @@ label var cesante_ci "Desocupado - definicion oficial del pais"
 *************
 **pension_ci*
 *************
-gen pension_ci=1 if h9h == 1 
-replace pension_ci =0 if h9h == 2 
+gen pension_ci = (h9h == 1) if !missing(h9h)
+replace pension_ci = . if h9h == .
 label var pension_ci "1=Recibe pension contributiva"
-
-*************
-**ypen_ci*
-*************
-recode h9h1 (99999999=.)
-/* para este año sólo hay opción mes
-			1 mes
-           2 bimestre
-           3 trimestre
-           4 cuatrimestre
-           6 semestre
-           8 año
-           9 ignorado
-*/
-
-gen ypen_ci=h9h1 if  h9h2 ==1
-label var ypen_ci "Valor de la pension contributiva"
 
 ***************
 *pensionsub_ci*
 ***************
-gen byte pensionsub_ci= 1 if h9e==1
-replace pensionsub_ci =0 if h9e==2
+gen byte pensionsub_ci = (h9e == 1  & edad_ci >= 65) if !missing(h9e) 
 label var pensionsub_ci "1=recibe pension subsidiada / no contributiva"
 
-*****************
-**ypensub_ci*
-*****************
-
-gen ypensub_ci= h9e1 if h9e2==1
-label var ypensub_ci "Valor de la pension subsidiada / no contributiva"
 
 *************
 **salmm_ci***
@@ -916,9 +892,11 @@ recode formal_ci .=0 if (condocup_ci==1 | condocup_ci==2)
 label var formal_ci "1=afiliado o cotizante / PEA"
 
 
-					**************
-					***INGRESOS***
-					**************
+					*************************************************
+					*** VARIABLES DE INGRESOS & PROTECCION SOCIAL ***
+					*************************************************
+
+*** INGRESO LABORAL (MONETARIO Y NO MONETARIO) ***
 
 ***************************************************************************
 ***25._YLMPRI_CI : Ingreso laboral monetario actividad principal.***
@@ -968,48 +946,160 @@ replace ylnmsec_ci= 0 if ithn == 0
 replace ylnmsec_ci= . if ithn == .
 label var ylnmsec_ci "Ingreso laboral no monetario actividad secundaria"
 
-************************************************************************************
-***30._YLM_CI : Ingreso laboral monetario total. ***
-************************************************************************************
-egen ylm_ci=rsum(ylmpri_ci ylmsec_ci), missing
-replace ylm_ci=. if ylmpri_ci==. & ylmsec_ci==.
-label var ylm_ci "Ingreso laboral monetario total"
-
-***************************************************************************************
-***31._YLNM_CI : Ingreso laboral no monetario total. ***
-***************************************************************************************
-egen ylnm_ci=rsum(ylnmpri_ci ylnmsec_ci), missing
-replace ylnm_ci=. if ylnmpri_ci==. & ylnmsec_ci==.
-label var ylnm_ci "Ingreso laboral no monetario total"
-
 *********************************************************************
 *** 32._YLMOTROS_CI : Ingreso laboral monetario otros trabajos.    ***
 *********************************************************************
-
 gen ylmotros_ci=.
 label var ylmotros_ci "Ingreso laboral monetario otros trabajos"
 
 *********************************************************************
 ***  33._YLNMOTROS_CI : Ingreso laboral no monetario otros trabajos.
 *********************************************************************
-
 gen ylnmotros_ci=.
 label var ylnmotros_ci "Ingreso laboral no monetario otros trabajos"
+
+************************************************************************************
+***30._YLM_CI : Ingreso laboral monetario total. ***
+************************************************************************************
+egen double ylm_ci = rowtotal(ylmpri_ci ylmsec_ci ylmotros_ci), missing
+replace ylm_ci=. if ylmpri_ci==. & ylmsec_ci==. & ylmotros_ci==.
+label var ylm_ci "Ingreso laboral monetario total"
+
+***************************************************************************************
+***31._YLNM_CI : Ingreso laboral no monetario total. ***
+***************************************************************************************
+egen double ylnm_ci = rowtotal(ylnmpri_ci ylnmsec_ci ylnmotros_ci), missing
+replace ylnm_ci=. if ylnmpri_ci==. & ylnmsec_ci==. & ylnmotros_ci==.
+label var ylnm_ci "Ingreso laboral no monetario total"
+
+
+*** INGRESO NO LABORAL (MONETARIO Y NO MONETARIO) ***
+
+************************************************************************
+*** 34._YTRANSF_CI: Ingresos por transferencias no contributivos     ***
+************************************************************************
+
+* PNC - Pensiones sociales no contributivas:
+		* 1 Régimen no contributivo de pensiones (adultos mayores) h9e ==1 & edad_ci>= 65
+		* 1b RNC aguinados (anuales h9p1)
+* PTMC - Programas de transferencias monetarias condicionadas:
+		* 2 Avancemos a9a == 1 a9b
+		* 3 Crecemos a9a== 5 a9b
+		* 4 Becas públicas (a19a==1| a19a==2| a19a==3| a19a==4| a19a==7) a19b a19c
+* POTROT - Programas de otras transferencias monetarias no condicionadas
+		* 5 Otras ayudas $ IMAS a9a == 2 a9b & a9c
+		* 6 Red cuido a9a== 3 (sin monto)
+		* 7 Régimen no contributivo de pensiones (otros) h9e ==1
+		* 7b RNC aguinaldo (anuales h9p1) 
+		* -8 Otras ayudas de subsidio o estatales h9f
+		
+
+*** Beneficiarios a nivel individual:
+	
+	// PNC: Pension NC + Aguinaldo NC (h9e contiene a h9p)
+	gen byte pnc_ci = (h9e == 1  & edad_ci >= 65) if !missing(h9e) 
+
+	// PTMC
+	gen byte avancemos_ci = (a9a == 1) if !missing(a9a)
+	gen byte crecemos_ci = (a9a == 5) if !missing(a9a)
+	gen byte becas_ci = (inlist(a19a, 1, 2, 3, 4, 7)) if !missing(a19a)
+	
+	gen byte ptmc_ci = (avancemos_ci == 1 | crecemos_ci == 1 | becas_ci == 1)
+	replace ptmc_ci = . if avancemos_ci == . & crecemos_ci == . & becas_ci == .
+	
+	// POTROT
+	gen byte otrosimas_ci = (a9a == 2) if !missing(a9a)
+	gen byte redcuido_ci = (a9a == 3) if !missing(a9a)
+	gen byte otrosnc_ci = (h9e == 1  & edad_ci < 65) if !missing(h9e) 	// Otros NC + Otros Aguinaldo NC (h9e contiene a h9p)
+	gen byte otayudas_ci = (h9f == 1) if !missing(h9f)
+	
+	gen byte potrot_ci = (otrosimas_ci == 1 | redcuido_ci == 1 | otrosnc_ci == 1 | otayudas_ci == 1)
+	replace potrot_ci = . if otrosimas_ci == . & redcuido_ci == . & otrosnc_ci == . & otayudas_ci == .
+	
+*** Montos de transferencias a nivel individual:
+
+	// Transferencias PNC: Pension NC + Aguinaldo NC
+	egen double ypnc_ci = rowtotal(trnc taprnc) if pnc_ci == 1, mi		// Las variables ya están mensualizadas (h9e1, h9p1)
+	
+	// Transferencias PTMC
+	gen double yavancemos_ci = timas if a9a == 1
+	gen double ycrecemos_ci = timas if a9a == 5
+	gen double ybecas_ci = tbc if becas_ci == 1
+		
+	egen double yptmc_ci = rowtotal(yavancemos_ci ycrecemos_ci ybecas_ci), mi
+	
+	// Otras transferencias POTROT
+	gen double yotrosimas_ci = timas if a9a == 2
+	egen double yotrosnc_ci = rowtotal(trnc taprnc) if otrosnc_ci == 1, mi	// Las variables ya están mensualizadas (h9e1, h9p1)
+	gen double yotayudas_ci = ts if h9f == 1
+	
+	egen double yotrot_ci = rowtotal(yotrosimas_ci yotrosnc_ci yotayudas_ci), mi
+
+
+*** Ingreso individual por transferencias no contributivas
+egen double ytransf_ci = rowtotal(ypnc_ci yptmc_ci yotrot_ci), mi
+
+**********************************************************************************
+** 36._ YPEN_CI: Ingreso pension contributiva Vejez y otras (pensión/aguinaldo) **
+**********************************************************************************
+gen ypen_ci = ttpn	// Incluye el aguinaldo (h9h + h9s)
+replace ypen_ci = . if ithn == 99999999 
+replace ypen_ci = 0 if ithn == 0
+label var ypen_ci "Valor de la pension contributiva"
+
+*********************************************************************************
+** 37._YPENSUB_CI: Ingreso por pension contributiva Vejez (pensión/aguinaldo)  **
+*********************************************************************************
+gen ypensub_ci = ypnc_ci
+replace ypensub_ci = . if ithn == 99999999 
+replace ypensub_ci = 0 if ithn == 0
+label var ypensub_ci "Valor de la pension subsidiada / no contributiva"
+
+**********************************************************************
+***38._REMESAS_CI : Remesas reportadas por el individuo.***
+**********************************************************************
+g remesas_ci= te
+replace remesas_ci= . if ithn == 99999999 
+replace remesas_ci= 0 if ithn == 0
+label var remesas_ci "Remesas reportadas por el individuo"
 
 ***********************************************************************
 ***34._YNLM_CI : Ingreso no laboral monetario (otras fuentes).      ***
 ***********************************************************************
 
 *Se da preferencia al agregado oficial 
-*Ingreso por renta de la propiedad, transferencias monetarias
+*Ingreso por renta de la propiedad + transferencias monetarias
+/* Según metodología de construcción de variables:
+	irp = (ia + ii + id +ib)
+		> ia ingresos alquileres
+		> ii ingresos intereses 
+		> id ingresos dividendos
+		> ib ingresos por beneficios
+	ttm = (trnc + taprnc + timas +ts + tbc + tpa + tapa + tsepa + tpn + tapn + tpe + tape + te + tdp + ot)
+		> trnc transferencias regimen no contributivo ytransf_ci
+		> taprnc transferencias aguinaldo regimen no contributivo ytransf_ci
+		> timas transferencias IMAS (Avancemos, Otras ayudas $ IMAS, Crecemos) ytransf_ci
+		> ts transferencias subsidios ytransf_ci 
+		> tbc transferencias becas ytransf_ci & ybecasprivada_ci
+		> tpa transferencias pension alimentos
+		> tapa transferencias aguinaldo pension alimentos
+		> tsepa transferencias salario escolar pension alimentos
+		> tpn transferencias pension nacional ypen_ci
+		> tapn transferencias aguinaldo pension nacional ypen_ci
+		> tpe transferencias pension extranjera
+		> tape transferencias aguinaldo pension extranjera
+		> te transferencias del extranjero
+		> tdp transferencias dentro del pais
+		> ot otras transferencias */
 
-*egen ynlm_ci=rsum(ia ii id ib trnc timas ts tbc tpa tpn tpe tap te tdp ot), missing
-*ModificaciÃ³n SCGR 05/02/2017 Se agregan las variables tapa tapn tape, y elinima la tap
-egen ynlm_ci=rsum(ia ii id ib trnc timas ts tbc tpa tpn tpe tapa tapn tape taprnc te tdp ot), missing
+* Becas privadas (las becas publicas están en yptmc_ci): 
+gen double ybecasprivada_ci = tbc if (inlist(a19a, 5, 6, 8))
+
+egen double ynlm_ci = rowtotal(ia ii id ib ypen_ci ytransf_ci ybecasprivada_ci tpa tapa tsepa tpe tape remesas_ci tdp ot), mi
 replace ynlm_ci= . if ithn == 99999999 
 replace ynlm_ci= 0 if ithn == 0
-replace ynlm_ci= . if ithn == .
 label var ynlm_ci "Ingreso no laboral monetario (otras fuentes)"
+
 **********************************************************************
 *** 35._YNLNM_CI : Ingreso no laboral no monetario (otras fuentes).***
 **********************************************************************
@@ -1021,19 +1111,29 @@ replace ynlnm_ci= . if ithn == .
 label var ynlnm_ci "Ingreso no laboral no monetario"
 egen ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci)
 
-**********************************************************************
-***36._REMESAS_CI : Remesas reportadas por el individuo.***
-**********************************************************************
-*gen remesas_ci=ing_15
-*drop ing_3-ing_15
-*Modificación Mayra Sáenz - Abril 2014
-*Transferencias del extranjero
-g remesas_ci= te
-replace remesas_ci= . if ithn == 99999999 
-replace remesas_ci= 0 if ithn == 0
-replace remesas_ci= . if ithn == .
-label var remesas_ci "Remesas reportadas por el individuo"
 
+*** INGRESO TOTAL LABORAL Y NO LABORAL (MONETARIO Y NO MONETARIO) ***
+
+***************
+*** ytot_ci ***
+***************
+	egen double ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci), mi
+	
+
+*** INGRESO NETO INDIVIDUAL > INGRESO PRIMARIO + TRANSFERENCIAS PRIVADAS ***
+
+***************
+*** ynet_ci ***
+***************
+	gen double aux_ytransf_ci = ytransf_ci*(-1)
+	egen double ynet_ci = rowtotal(ytot_ci aux_ytransf_ci), mi
+	sum ynet_ci if ynet_ci < 0
+
+
+		**************************
+		*** INGRESOS DEL HOGAR ***
+		**************************
+		
 ***********************************************************************************
 ***37._NRYLMPRI_CH : Identificador de los hogares en donde alguno de los miembros
 ***No Sabe/No Responde el ingreso de la actividad principal. 
@@ -1060,7 +1160,7 @@ label var tcylmpri_ci "Identificador de top-code del ingreso de la actividad pri
 ********************************************************
 ***40._YLM_CH : Ingreso laboral monetario del Hogar.***
 ********************************************************
-by idh_ch, sort: egen ylm_ch=sum(ylm_ci) if miembros_ci==1, missing
+by idh_ch, sort: egen double ylm_ch = total(ylm_ci) if miembros_ci==1, missing
 label var ylm_ch "Ingreso laboral monetario del Hogar"
 
 **********************************************************
@@ -1071,30 +1171,58 @@ replace ylmnr_ch=. if nrylmpri_ch==1
 label var ylmnr_ch "Ingreso laboral monetario del Hogar considera No respuesta"
 
 ************************************************************
-*** 42._YNLM_CH : Ingreso no laboral monetario del Hogar.***
-************************************************************
-by idh_ch, sort: egen ynlm_ch=sum(ynlm_ci) if miembros_ci==1, missing
-label var ynlm_ch "Ingreso no laboral monetario del Hogar"
-
-************************************************************
 *** 43._YLNM_CH : Ingreso laboral no monetario del Hogar.***
 ************************************************************
 by idh_ch, sort: egen ylnm_ch=sum(ylnm_ci) if miembros_ci==1, missing
 label var ylnm_ch  "Ingreso laboral no monetario del Hogar"
 
+************************************************************************
+*** 43._YTRANSF_CH: Ingresos por transferencias no contributivos     ***
+************************************************************************
+
+*** Beneficiarios a nivel hogar:
+	bys idh_ch: egen byte pnc_ch = max(pnc_ci) if mie== 1
+	bys idh_ch: egen byte ptmc_ch = max(ptmc_ci) if miembros_ci == 1
+	bys idh_ch: egen byte potrot_ch = max(potrot_ci) if miembros_ci == 1
+
+*** Montos de transferencias a nivel hogar:
+	bys idh_ch: egen double ypnc_ch = total(ypnc_ci) if miembros_ci == 1, mi
+	bys idh_ch: egen double yptmc_ch = total(yptmc_ci) if miembros_ci == 1, mi
+	bys idh_ch: egen double yotrot_ch = total(yotrot_ci) if miembros_ci == 1, mi
+
+*** Ingreso del Hogar por transferencias no contributivas
+egen double ytransf_ch = rowtotal(ypnc_ch yptmc_ch yotrot_ch) if miembros_ci == 1, mi
+
 ************************************************************
 ***44._REMESAS_CH : Remesas del Hogar.                   ***
 ************************************************************
-by idh_ch, sort: egen remesas_ch=sum(remesas_ci) if miembros_ci==1, missing
+bys idh_ch: egen double remesas_ch = total(remesas_ci) if miembros_ci == 1, missing
 label var remesas_ch "Remesas del Hogar"
 
-* N/A*
 ************************************************************
-***45._YNLNM_CH : Ingreso no laboral no monetario del Hogar.
+*** 45._YNLM_CH : Ingreso no laboral monetario del Hogar.***
 ************************************************************
-gen ynlnm_ch=.
+by idh_ch, sort: egen double ynlm_ch = total(ynlm_ci) if miembros_ci==1, missing
+label var ynlm_ch "Ingreso no laboral monetario del Hogar"
+
+************************************************************
+***46._YNLNM_CH : Ingreso no laboral no monetario del Hogar.
+************************************************************
+by idh_ch, sort: egen double ynlnm_ch = total(ynlnm_ci) if miembros_ci==1, missing
 label var ynlnm_ch "Ingreso no laboral no monetario del Hogar" 
 
+***************
+*** YTOT_CH ***
+***************
+by idh_ch, sort: egen double ytot_ch = total(ytot_ci) if miembros_ci==1, mi
+
+***************
+*** YNET_CH ***
+***************
+gen double aux_ytransf_ch = ytransf_ch*(-1)
+egen double ynet_ch = rowtotal(ytot_ch aux_ytransf_ch) if miembros_ci == 1, mi
+gen double ynet_ch_pc = (ynet_ch)/nmiembros_ch if miembros_ci == 1
+drop aux_ytransf_ch
 
 ************************************************************
 ***47._AUTOCONS_CH : Autoconsumo del Hogar.
@@ -1111,13 +1239,13 @@ label var autocons_ci "Autoconsumo reportado por el individuo"
 ********************************************************************
 ***49._YLMHOPRI_CI : Salario  monetario de la actividad principal.
 ********************************************************************
-gen ylmhopri_ci=ylmpri_ci/(horaspri_ci*4.3)
+gen double ylmhopri_ci = ylmpri_ci/(horaspri_ci*4.3)
 label var ylmhopri_ci "Salario  monetario de la actividad principal"
 
 *********************************************************************
 *** 50._YLMHO_CI : Salario  monetario de todas las actividades.***
 *********************************************************************
-gen ylmho_ci=ylm_ci/(horastot_ci*4.3)
+gen double ylmho_ci = ylm_ci/(horastot_ci*4.3)
 label var ylmho_ci "Salario  monetario de todas las actividades"
 
 ******************
@@ -1729,95 +1857,25 @@ label var ybenefdes_ci "Monto de seguro de desempleo"
 do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&ExternalVars_Harmonized_DataBank.do"
 
 
-**************************************
-*** VARIABLES DE PROTECCION SOCIAL ***
-**************************************
-
-* MIEMBROS DEL HOGAR
-	gen x = 1
-	bys idh_ch: egen nmiembros_sph_ch= sum(x)
-
-* BENEFICIARIOS Y MONTOS
-
-	*****************
-	**** ptmc_ch ****
-	*****************
-	
-	gen 	ing_ptmc_ci = . 
-	replace ing_ptmc_ci = a9b   if a9a == 1 & a9b <= 300000 & a9c != 9 & a9c != .
-	replace ing_ptmc_ci = a9b   if a9a == 5 & a9b <= 300000 & a9c != 9 & a9c != .
-	replace ing_ptmc_ci = ing_ptmc_ci / 3  if a9c == 3
-	replace ing_ptmc_ci = ing_ptmc_ci / 12 if a9c == 8
-	
-		gen 	ing_becas_ci = a19b   if inlist(a19a,1,2,3,4,7) & a19b <= 300000 & a19c == 1
-		replace ing_becas_ci = a19b/2 if inlist(a19a,1,2,3,4,7) & a19b <= 300000 & a19c == 2
-		replace ing_becas_ci = a19b/3 if inlist(a19a,1,2,3,4,7) & a19b <= 300000 & a19c == 3
-		replace ing_becas_ci = a19b/4 if inlist(a19a,1,2,3,4,7) & a19b <= 300000 & a19c == 4
-	
-	replace ing_ptmc_ci = ing_ptmc_ci + ing_becas_ci
-	bys idh_ch: egen ing_ptmc_ch = sum(ing_ptmc_ci)
-	
-	gen 	ptmc_ci = a9a == 1
-	replace ptmc_ci = 1 if a9a == 5 
-	replace ptmc_ci = 1 if inlist(a19a,1,2,3,4,7) 
-	replace ptmc_ci = 1 if ing_ptmc_ci != . & ing_ptmc_ci > 0
-	bys idh_ch: egen ptmc_ch = max(ptmc_ci)
-	
-	*****************
-	**** pnc_ch *****
-	*****************
-	gen pnc_elegible_ci = 0
-	replace pnc_elegible_ci = 1 if edad_ci > 65
-	
-	gen 	ing_pnc_ci = h9e1
-	replace ing_pnc_ci = . if h9e == .
-	replace ing_pnc_ci = . if pnc_elegible_ci == 0
-	bys idh_ch: egen ing_pnc_ch = sum(ing_pnc_ci)
-	
-	gen 	pnc_ci = h9e == 1
-	replace pnc_ci = 1 if ing_pnc_ci != . & ing_pnc_ci > 0
-	replace pnc_ci = . if pnc_elegible_ci == 0
-	bys idh_ch: egen pnc_ch = max(pnc_ci)
-	
-	*****************
-	*** otrot_ch ****
-	*****************
-	gen 	ing_otrot_ci = .
-	replace ing_otrot_ci = a9b if a9a == 2 & a9b <= 300000 & a9c != 9 & a9c != .
-	replace ing_otrot_ci = ing_otrot_ci / 3  if a9c == 3
-	replace ing_otrot_ci = ing_otrot_ci / 6  if a9c == 6
-	replace ing_otrot_ci = ing_otrot_ci / 12 if a9c == 8
-	bys idh_ch: egen ing_otrot_ch = sum(ing_otrot_ci)
-	
-	gen 	potrot_ci = a9a == 2
-	replace potrot_ci = 1 if h9e == 1 & pnc_ci != . 
-	replace potrot_ci = 1 if potrot_ci == 0 & ing_otrot_ci != .
-	bys idh_ch: egen potrot_ch = max(potrot_ci)
+**************************************************************************************************
+*** LINEAS DE POBREZA RECALCULADO CON EL INGRESO NETO PER CÁPITA (SIN TRANSFERENCIAS PÚBLICAS) ***
+**************************************************************************************************
 	
 	*****************
 	*** pcasht_ch ***
 	*****************
-	egen    ing_pcasht_ch = rowtotal(ing_ptmc_ch ing_pnc_ch ing_otrot_ch)
+	// ytransf_ch >>> egen    ing_pcasht_ch = rowtotal(ing_ptmc_ch ing_pnc_ch ing_otrot_ch)
 	egen 	pcasht_ch = rowtotal(ptmc_ch pnc_ch potrot_ch)
 	replace pcasht_ch = 1 if pcasht_ch > 0
 	
 
 * COBERTURA Y DISTRIBUCION
 	
-	* Ingreso neto del hogar
-	egen 	y_hog_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci), missing
-	replace y_hog_ci = 0 if y_hog_ci < 0
-	gen 	y_pc_ci = y_hog_ci / nmiembros_sph_ch 
-	
-	bys idh_ch: egen y_hog_ch = sum(y_hog_ci), missing
-	gen 	y_pc_net_ch = (y_hog_ch - ing_pcasht_ch) / nmiembros_sph_ch
-	replace y_pc_net_ch = 0 if y_pc_net_ch < 0
-	
 	* Grupos
-	gen     grupo_int = 1 if (y_pc_net_ch <  lp31_2011         & y_pc_net_ch != .)
-	replace grupo_int = 2 if (y_pc_net_ch >= lp31_2011  	     & y_pc_net_ch < (lp31_2011 * 1.6) & y_pc_net_ch != .)
-	replace grupo_int = 3 if (y_pc_net_ch >= (lp31_2011 * 1.6) & y_pc_net_ch < (lp31_2011 * 4)   & y_pc_net_ch != .)
-	replace grupo_int = 4 if (y_pc_net_ch >= (lp31_2011 * 4)   & y_pc_net_ch < .               & y_pc_net_ch != .)
+	gen     grupo_int = 1 if (ynet_ch_pc <  lp31_2011         & ynet_ch_pc != .)
+	replace grupo_int = 2 if (ynet_ch_pc >= lp31_2011  	      & ynet_ch_pc < (lp31_2011 * 1.6) & ynet_ch_pc != .)
+	replace grupo_int = 3 if (ynet_ch_pc >= (lp31_2011 * 1.6) & ynet_ch_pc < (lp31_2011 * 4)   & ynet_ch_pc != .)
+	replace grupo_int = 4 if (ynet_ch_pc >= (lp31_2011 * 4)   & ynet_ch_pc < .                 & ynet_ch_pc != .)
 
 	****************************
 	***** pcasht_coverage_ *****
@@ -1848,9 +1906,10 @@ do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&Exter
   condocup_ci categoinac_ci emp_ci cesante_ci desemp_ci subemp_ci durades_ci pea_ci nempleos_ci antiguedad_ci desalent_ci  /// Empleo
   horaspri_ci horastot_ci tiempoparc_ci categopri_ci categosec_ci rama_ci spublico_ci tamemp_ci cotizando_ci instcot_ci	afiliado_ci /// Empleo 
   formal_ci tipocontrato_ci ocupa_ci pension_ci	pensionsub_ci tipopen_ci instpen_ci	ylmpri_ci /// Empleo 
-  ylmpri_ci ylnmpri_ci ylmsec_ci ylnmsec_ci ylmotros_ci	ylnmotros_ci  ylm_ci ylnm_ci ynlm_ci ynlnm_ci nrylmpri_ci /// Ingresos individuo 
-  ylm_ch ylnm_ch ylmnr_ch ynlm_ch ynlnm_ch ylmhopri_ci ylmho_ci /// Ingresos del hogar 
+  ylmpri_ci ylnmpri_ci ylmsec_ci ylnmsec_ci ylmotros_ci	ylnmotros_ci  ylm_ci ylnm_ci ynlm_ci ynlnm_ci ytot_ci nrylmpri_ci /// Ingresos individuo 
+  ylm_ch ylnm_ch ylmnr_ch ynlm_ch ynlnm_ch ytot_ch ylmhopri_ci ylmho_ci /// Ingresos del hogar 
   nrylmpri_ci nrylmpri_ch /// No respuesta de ingresos  
+  pnc_ci ptmc_ci potrot_ci ypnc_ci yptmc_ci yotrot_ci ytransf_ci ynet_ci pnc_ch ptmc_ch potrot_ch ypnc_ch yptmc_ch yotrot_ch ytransf_ch ynet_ch ynet_ch_pc /// Protección social
   remesas_ci remesas_ch ypen_ci ypensub_ci /// Remesas y pensiones
   aedu_ci eduui_ci eduuc_ci edupre_ci eduac_ci asiste_ci edupub_ci pqnoasis1_ci asispre_ci /// Educación
   luz_ch luzmide_ch combust_ch piso_ch pared_ch techo_ch resid_ch dorm_ch cuartos_ch cocina_ch telef_ch refrig_ch /// Vivienda
