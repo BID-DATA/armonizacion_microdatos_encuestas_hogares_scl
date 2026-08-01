@@ -943,8 +943,10 @@ replace durades_ci=. if f116==2
 gen antiguedad_ci =.
 
 *********************************************************************************************************
-*                                       INGRESOS                                                        *
+*                 	 VARIABLES DE INGRESOS & PROTECCION SOCIAL                                          *
 *********************************************************************************************************
+
+*** INGRESO LABORAL (MONETARIO Y NO MONETARIO) ***
 
 *29. Ingreso laboral monetario actividad principal
 
@@ -1119,24 +1121,74 @@ gen nrylmpri=.
 
 gen tcylmpri_ci=.
 
-****************
-*** ynlnm_ch ***
-****************
-
-gen ynlnm_ch=.
 
 *37. Ingreso laboral monetario total
 
-egen ylm_ci = rsum(ylmpri_ci ylmsec_ci ylmotros_ci) 
+egen double ylm_ci = rowtotal(ylmpri_ci ylmsec_ci ylmotros_ci), mi
 replace ylm_ci=. if ylmpri_ci==. & ylmsec_ci==. & ylmotros_ci==.
+
+*38. Ingreso laboral no monetario total
+
+egen double ylnm_ci = rowtotal(ylnmpri_ci ylnmsec_ci ylnmotros_ci), mi
+replace ylnm_ci=. if ylnmpri_ci==. & ylnmsec_ci==. & ylnmotros_ci==.
 
 * Nota Marcela G. Rubio - Abril 2014
 * Incluyo ingreso laboral monetario otros como parte del ingreso laboral monetario total ya que no había sido incluido
 
-*38. Ingreso laboral no monetario total
+********************************************************
+*** ytransf_ci: Transferencias de programas sociales ***
+********************************************************
 
-egen ylnm_ci = rsum(ylnmpri_ci ylnmsec_ci ylnmotros_ci) 
-replace ylnm_ci=. if ylnmpri_ci==. & ylnmsec_ci==. & ylnmotros_ci==.
+* PNC - Pensiones sociales no contributivas:
+		* 1 Pensiones de vejez f125 == 1
+* PTMC - Programas de transferencias monetarias condicionadas:
+		* 2 Asignaciones familiares - Plan de Equidad del MIDES g255== 1 
+* POTROT - Programas de otras transferencias monetarias no condicionadas
+		* 3 Pensión por invalidez f125==3
+		* 4 Pensión a las víctimas de delitos violentos f125== 5
+		* 5 Pensión para hijos de fallecidos por violencia doméstica f125== 6
+		* 6 Pensión Especial Reparatoria f125== 7
+		* 7 Pensión Reparatoria Ley Integral para Personas Trans f125== 8
+		* 8 Tarjeta Uruguay Social (TUS) - MIDES & INDA (e560_1==1 | e560_2==1) ??
+		* Canasta ??
+
+*** Beneficiarios a nivel individual:
+	
+	// PNC
+	gen byte pnc_ci = (f125 == 1) if !missing(f125)
+
+	// PTMC
+	gen byte ptmc_ci = (g255 == 1) if !missing(g255)
+	replace ptmc_ci = 1 if g257 > 0 & g257 != .
+	replace ptmc_ci = 0 if g257 == 0
+	
+	// POTROT
+	gen byte otrosimas_ci = (a9a == 2) if !missing(a9a)
+	gen byte redcuido_ci = (a9a == 3) if !missing(a9a)
+	
+	gen byte potrot_ci = (otrosimas_ci == 1 | redcuido_ci == 1 | otrosnc_ci == 1 | otayudas_ci == 1)
+	replace potrot_ci = . if otrosimas_ci == . & redcuido_ci == . & otrosnc_ci == . & otayudas_ci == .
+	
+*** Montos de transferencias a nivel individual:
+
+	// Transferencias PNC
+	egen double ypnc_ci = rowtotal(g148_2_1 g148_2_2 g148_2_3) if pnc_ci == 1, mi
+		
+	// Transferencias PTMC
+	egen double yptmc_ci = g257 if ptmc_ci == 1
+	
+	// Otras transferencias POTROT
+	gen double yotrosimas_ci = timas if a9a == 2
+	egen double yotrosnc_ci = rowtotal(trnc taprnc) if otrosnc_ci == 1, mi	// Las variables ya están mensualizadas (h9e1, h9p1)
+	gen double yotayudas_ci = ts if h9f == 1
+	
+	egen double yotrot_ci = rowtotal(yotrosimas_ci yotrosnc_ci yotayudas_ci), mi
+
+
+*** Ingreso individual por transferencias no contributivas
+egen double ytransf_ci = rowtotal(ypnc_ci yptmc_ci yotrot_ci), mi
+
+
 
 * Nota Marcela G. Rubio - Abril 2014
 * Incluyo ingreso laboral no monetario otros como parte del ingreso laboral no monetario total ya que no había sido incluido
@@ -1307,6 +1359,11 @@ replace ylmnr_ch=. if nrylmpri_ch==1
 
 by idh_ch: egen ylnm_ch=sum(ylnm_ci)if relacion_ci!=6
 
+****************
+*** ynlnm_ch ***
+****************
+
+gen ynlnm_ch=.
 
 *45. Ingreso no laboral monetario del hogar
 
