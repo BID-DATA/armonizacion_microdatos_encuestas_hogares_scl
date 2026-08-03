@@ -460,10 +460,10 @@ label var instpen_ci "Institucion proveedora de la pension - variable original d
 ***********************
 *llave lp nacionales***
 ***********************
-/*encode dominio, gen(llave_lp)
+encode dominio, gen(llave_lp)
 
 *********
-*lp_ci***
+*ln_ci***
 *********
 gen lp_ci =lp
 label var lp_ci "Linea de pobreza oficial del pais"
@@ -473,7 +473,7 @@ label var lp_ci "Linea de pobreza oficial del pais"
 *********
 gen lpe_ci =li
 label var lpe_ci "Linea de indigencia oficial del pais"
-
+/*
 *************
 **salmm_ci***
 *************
@@ -1905,7 +1905,7 @@ destring idh_ch, replace
   aguared_ch aguafconsumo_ch aguafuente_ch aguadist_ch aguadisp1_ch aguadisp2_ch /// Agua y saneamineto
   aguatrat_ch aguamala_ch aguamejorada_ch aguamide_ch bano_ch banoex_ch banomejorado_ch sinbano_ch  /// Agua y saneamineto
   migrante_ci migrantiguo5_ci miglac_ci /// Migración
-  salmm_ci lp19_2011 lp31_2011 lp5_2011 lp_ci lpe_ci lp365_2017 lp685_2017 lp14_2017 lp81_2017 tc_c cpi_c cpi2011 cpi2017 ratio_cpi2011 ratio_cpi2017 /// Fuente externa
+  lp19_2011 lp31_2011 lp5_2011 lp_ci lpe_ci lp365_2017 lp685_2017 lp14_2017 lp81_2017 tc_c cpi_c cpi2011 cpi2017 ratio_cpi2011 ratio_cpi2017 /// Fuente externa
   ppp_c ppp_2011 ppp_2017 , first /// Fuente externa 
   /// the order was created by regex functions, sph variables are excluded /// Fuente externa 
   /// the order was created by regex functions, sph variables are excluded
