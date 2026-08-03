@@ -42,7 +42,7 @@ Detalle de procesamientos o modificaciones anteriores:
 *************************************************************************** */
 
 
-use `base_in', clear
+use "`base_in'", clear
 
 
 	****************
@@ -515,7 +515,7 @@ label value tamemp tamemp
 *** pension_ci ***
 ******************
 // Variable auxiliar de filtro de pensiones contributivas (vejez, benemerito, invalidez, viudez)
-egen aux_pc = rowtotal(s05a_01a s05a_01b s05a_01c s05a_01d), missing
+egen double aux_pc = rowtotal(s05a_01a s05a_01b s05a_01c s05a_01d), missing
 
 gen pension_ci = 1 if aux_pc > 0 & aux_pc != .
 replace pension_ci = 0 if aux_pc == 0
@@ -1314,6 +1314,8 @@ G. OTRO
 https://www.bcb.gob.bo/?q=cotizaciones_tc
 Al 2 DE ENERO DE 2018
 */
+
+* a) Remesas monetarias: 
 destring s05c_*, replace i("NA")
 gen s6_112= .
 replace s6_112 =  s05c_09a 			 if s05c_09b==1 /*bolivianos*/
@@ -1324,17 +1326,28 @@ replace s6_112 =  s05c_09a*2.07094   if s05c_09b==5 /*real*/
 replace s6_112 =  s05c_09a*0.01115	 if s05c_09b==6 /*peso chileno*/
 *replace s6_112 =  s07c_08a*2.00961   if s07c_08b==7 /*soles*/ En la 201 es Otro
 
-* se suman remesas monetarias y en especie
-egen rem = rsum(s05c_10 s6_112), m
+gen rem = s6_112
 
-gen yremesas = .
-replace yremesas= rem*4.3		if s05c_08==2
-replace yremesas= rem*2		    if s05c_08==3
-replace yremesas= rem			if s05c_08==4
-replace yremesas= rem/2			if s05c_08==5
-replace yremesas= rem/3			if s05c_08==6
-replace yremesas= rem/6			if s05c_08==7
-replace yremesas= rem/12		if s05c_08==8
+gen yremesas_m = .
+replace yremesas_m = rem*4.3		if s05c_08==2
+replace yremesas_m = rem*2		    if s05c_08==3
+replace yremesas_m = rem			if s05c_08==4
+replace yremesas_m = rem/2			if s05c_08==5
+replace yremesas_m = rem/3			if s05c_08==6
+replace yremesas_m = rem/6			if s05c_08==7
+replace yremesas_m = rem/12			if s05c_08==8
+
+* b) Remesas en especie
+gen rem_nm = s05c_10
+
+gen yremesas_nm  = .
+replace yremesas_nm = rem_nm*4.3		if s05c_08==2
+replace yremesas_nm = rem_nm*2		    if s05c_08==3
+replace yremesas_nm = rem_nm 			if s05c_08==4
+replace yremesas_nm = rem_nm/2			if s05c_08==5
+replace yremesas_nm = rem_nm/3			if s05c_08==6
+replace yremesas_nm = rem_nm/6			if s05c_08==7
+replace yremesas_nm = rem_nm/12			if s05c_08==8
 
 /* 
 ylm:
@@ -1531,7 +1544,7 @@ egen double ytransf_ci = rowtotal(ypnc_ci yptmc_ci yotrot_ci), mi
 ***remesas_ci***
 *****************
 
-gen double remesas_ci = yremesas
+gen double remesas_ci = yremesas_m
 label var remesas_ci "Remesas mensuales reportadas por el individuo" 
 
 ***************
@@ -1574,7 +1587,7 @@ ybono > ypnc_ci
 yotring  
 yasistfam 
 ytransmon > asistencia familiar, dinero de otros hogares del pais, otros bonos
-yremesas > remesas_ci
+yremesas_m > separé las remesas monetarias de las no monetarias > remesas_ci
 yinvers 
 yhipotec 
 ybonos 
@@ -1598,8 +1611,8 @@ label var ynlm_ci "Ingreso no laboral monetario"
 *** ynlnm_ci: Ingreso no laboral no monetario ***
 *************************************************
 *Modificación SGR Julio 2019: En esta encuesta se pregunta por transferencia en alimentos u otras especies.
-egen double ynlnm_ci = rowtotal(yalimento yotro_bono2), missing
-replace ynlnm_ci=. if yalimento==. & yotro_bono2==.
+egen double ynlnm_ci = rowtotal(yalimento yotro_bono2 yremesas_nm), missing
+replace ynlnm_ci=. if yalimento==. & yotro_bono2==. & yremesas_nm == .
 label var ynlnm_ci "Ingreso no laboral no monetario" 
 
 
@@ -1689,6 +1702,19 @@ label var ynlm_ch "Ingreso no laboral monetario del hogar"
 *Modificación SGR Julio 2019: En esta encuesta se pregunta por transferencia en alimentos u otras especies.
 by idh_ch, sort: egen double ynlnm_ch = total(ynlnm_ci) if miembros_ci==1, missing
 label var ynlnm_ch "Ingreso no laboral no monetario del hogar"
+
+*************
+***ytot_ch***
+*************
+egen double ytot_ch = rowtotal(ylm_ch ylnm_ch ynlm_ch ynlnm_ch) if miembros_ci==1, mi
+
+***************
+*** ynet_ch ***
+***************
+gen double aux_ytransf_ch = ytransf_ch*(-1)
+egen double ynet_ch = rowtotal(ytot_ch aux_ytransf_ch) if miembros_ci == 1, mi
+gen double ynet_ch_pc = (ynet_ch)/nmiembros_ch if miembros_ci == 1
+drop aux_ytransf_ch
 
 *******************
 *** autocons_ci ***
