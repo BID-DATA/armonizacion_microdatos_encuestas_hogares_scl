@@ -683,15 +683,29 @@ label var cesante_ci "Desocupado - definicion oficial del pais"
 *************
 **pension_ci*
 *************
-gen pension_ci = (g_it_1 == 1) if g_it_1 != 0
-replace pension_ci = 0 if g148_1_11 == 1 & pension_ci == 1
+// Existe un filtro para la sección de jubilados, pero hay inconsistencias entre f124_1, f125 & g148_1*:
+egen double aux_jub = rowtotal(g148_1_1 g148_1_2 g148_1_3 g148_1_5 g148_1_6 g148_1_7 g148_1_8 g148_1_9 g148_1_12 g148_1_10 g148_1_11), mi
+gen byte f_jub = 1 if aux_jub > 0 	// Reportó algun monto en la sección de jubilaciones
+replace f_jub = 0 if aux_jub == 0
+
+tab f124_1 f_jub, m 	// Revisar si la inconsitencia con variable original se mantiene 
+
+gen pension_ci = f_jub
+replace pension_ci = 0 if g148_1_11 > 0 & pension_ci == 1	 // Se excluyen jubilaciones extranjeras
 label var pension_ci "1=Recibe pension contributiva"
 
 ***************
 *pensionsub_ci*
 ***************
-gen pensionsub_ci = (f125 == 1) if g_it_2 != 0
-replace pensionsub_ci = 0 if (pensionsub_ci == 1 & (g_it_1 == 1 | g148_2_11 > 0))
+// Existe un filtro para la sección de pensionista, pero hay inconsistencias entre f124_2, f125 & g148_2*:
+egen double aux_pens = rowtotal(g148_2_1 g148_2_2 g148_2_3 g148_2_5 g148_2_6 g148_2_7 g148_2_8 g148_2_9 g148_2_12 g148_2_10 g148_2_11), mi
+gen byte f_pens = 1 if aux_pens > 0 	// Reportó algun monto en la sección de pensiones
+replace f_pens = 0 if aux_pens == 0
+
+tab f124_2 f_pens, m 	// Revisar si la inconsitencia con variable original se mantiene 
+
+gen pensionsub_ci = (f125 == 1 & f_pens == 1) 
+replace pensionsub_ci = 0 if g148_2_11 > 0 & pensionsub_ci == 1 	// Se excluyen pensiones extranjeras
 label var pensionsub_ci "1=recibe pension subsidiada / no contributiva"
 
 *************
@@ -1116,12 +1130,18 @@ replace ylnm_ci=. if ylnmpri_ci==. & ylnmsec_ci==. & ylnmotros_ci==.
 		* 6 Pensión Especial Reparatoria f125== 7
 		* 7 Pensión Reparatoria Ley Integral para Personas Trans f125== 8
 		* 8 Tarjeta Uruguay Social (TUS) - MIDES & INDA (e560_1==1 | e560_2==1) ynlnm?
+		
+/*Nota: Existe inconsistencias entre los filtros y montos de la seccion de pensiones no
+contributivas: f124_2, f125, g148_2*. En la seccion laboral se creó un filtro auxiliar
+para identificar a las personas que declaran al menos un monto en esta sección.
+	* Variable filtro auxiliar jubilados f_jub & suma de monto aux_jub (+g148_1*)
+	* Variable filtro auxiliar pensiones f_pens & suma de monto aux_pens (+g148_2*) */
 
 *** Beneficiarios a nivel individual:
 	
 	// PNC
-	gen byte pnc_ci = (f125 == 1) if g_it_2 != 0
-	replace pnc_ci = 0 if pnc_ci == 1 & g_it_1 == 1 // Reclasificar las contributivas
+	gen byte pnc_ci = (f125 == 1 & f_pens == 1) if g_it_2 != 0
+	replace pnc_ci = 0 if pnc_ci == 1 & f_jub == 1 // Reclasificar las contributivas
 
 	// PTMC
 	gen byte ptmc_ci = (g255 == 1) if g255 != 0
@@ -1129,24 +1149,22 @@ replace ylnm_ci=. if ylnmpri_ci==. & ylnmsec_ci==. & ylnmotros_ci==.
 	replace ptmc_ci = 0 if g257 == 0
 	
 	// POTROT	
-	gen byte inval_ci = (f125 == 3) if g_it_2 != 0
-	replace inval_ci = 0 if inval_ci == 1 & g_it_1 == 1 // Reclasificar las contributivas
-		forvalues y = 5/12 {
-		replace inval_ci = 0 if inval_ci == 1 & g148_2_`y' > 0 & (g148_2_1 == 0 & g148_2_2 == 0 & g148_2_3 == 0)  // Se les reclasifica como no beneficiarios, ya que solo reciben dinero de otras fuentes 
-		}
+	gen byte inval_ci = (f125 == 3 & f_pens == 1)
+	replace inval_ci = 0 if inval_ci == 1 & f_jub == 1 // Reclasificar las contributivas
+	replace inval_ci = 0 if inval_ci == 1 & aux_pens > 0 & (g148_2_1 == 0 & g148_2_2 == 0 & g148_2_3 == 0)  // Se les reclasifica como no beneficiarios, ya que solo reciben dinero de otras fuentes 
 		
-	gen byte vdelit_ci = (f125 == 5) if g_it_2 != 0
-	replace vdelit_ci = 0 if vdelit_ci == 1 & g_it_1 == 1 // Reclasificar las contributivas
+	gen byte vdelit_ci = (f125 == 5 & f_pens == 1)
+	replace vdelit_ci = 0 if vdelit_ci == 1 & f_jub == 1 // Reclasificar las contributivas
 	
-	gen byte violdom_ci = (f125 == 6) if g_it_2 != 0
-	replace violdom_ci = 0 if violdom_ci == 1 & g_it_1 == 1 // Reclasificar las contributivas
+	gen byte violdom_ci = (f125 == 6 & f_pens == 1)
+	replace violdom_ci = 0 if violdom_ci == 1 & f_jub == 1 // Reclasificar las contributivas
 	
-	gen byte pesprep_ci = (f125 == 7) if g_it_2 != 0
-	replace pesprep_ci = 0 if pesprep_ci == 1 & g_it_1 == 1 // Reclasificar las contributivas
+	gen byte pesprep_ci = (f125 == 7 & f_pens == 1)
+	replace pesprep_ci = 0 if pesprep_ci == 1 & f_jub == 1 // Reclasificar las contributivas
 	replace pesprep_ci = 0 if pesprep_ci== 1 & g148_2_10 > 0 & (g148_2_1 == 0 & g148_2_2 == 0 & g148_2_3 == 0)  // Se les reclasifica como no beneficiarios a personas que indican "otra"
 	
-	gen byte petrans_ci = (f125 == 8) if g_it_2 != 0
-	replace petrans_ci = 0 if petrans_ci == 1 & g_it_1 == 1 // Reclasificar las contributivas
+	gen byte petrans_ci = (f125 == 8 & f_pens == 1)
+	replace petrans_ci = 0 if petrans_ci == 1 & f_jub == 1 // Reclasificar las contributivas
 	replace petrans_ci = 0 if petrans_ci== 1 & g148_2_10 > 0 & (g148_2_1 == 0 & g148_2_2 == 0 & g148_2_3 == 0)  // Se les reclasifica como no beneficiarios a personas que indican "otra"
 		
 	gen byte tus_ci = (e560_1 == 1 | e560_2 == 1)
@@ -1185,8 +1203,7 @@ gen remesas_ci = .
 *******************************************
 *** ypen_ci. Jubilaciones contributivas ***
 *******************************************
-egen double ypen_ci = rowtotal(g148_1_1 g148_1_2 g148_1_3 g148_1_5 g148_1_6 g148_1_7 g148_1_8 g148_1_9 g148_1_10 g148_1_12) if g_it_1 != 0, mi  // Se excluyen pensiones del exterior (g148_1_11)
-replace ypen_ci = . if ypen_ci == 0 & g_it_1 == 0
+egen double ypen_ci = rowtotal(g148_1_1 g148_1_2 g148_1_3 g148_1_5 g148_1_6 g148_1_7 g148_1_8 g148_1_9 g148_1_10 g148_1_12) if f_jub != 0, mi  // Se excluyen pensiones del exterior (g148_1_11)
 
 *******************************************************
 *** ypensub_ci. Pensiones no contributivas de vejez ***
