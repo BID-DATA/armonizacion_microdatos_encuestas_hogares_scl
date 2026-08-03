@@ -436,8 +436,7 @@ label var lp_ci "Linea de pobreza oficial del pais"
 *********
 *lpe_ci***
 *********
-gen lpe_ci =.
-replace lpe_ci= lp
+gen lpe_ci =li
 label var lpe_ci "Linea de indigencia oficial del pais"
 
 *************
