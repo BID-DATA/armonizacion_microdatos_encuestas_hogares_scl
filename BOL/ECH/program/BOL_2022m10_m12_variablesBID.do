@@ -40,7 +40,7 @@ Detalle de procesamientos o modificaciones anteriores:
 *************************************************************************** */
 
 
-use "`base_in'", clear
+use `base_in', clear
 
 duplicates re folio nro // Verifico que no tenga duplicados
 

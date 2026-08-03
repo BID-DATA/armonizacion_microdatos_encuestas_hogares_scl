@@ -42,7 +42,7 @@ Detalle de procesamientos o modificaciones anteriores:
 *************************************************************************** */
 
 
-use "`base_in'", clear
+use `base_in', clear
 
 
 	****************
