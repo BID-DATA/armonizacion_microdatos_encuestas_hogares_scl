@@ -749,6 +749,8 @@ label var ylnm_ci "Ingreso laboral NO monetario total"
 		// r917. ¿ALGUNA PERSONA EN EL HOGAR RECIBE AYUDA BONOS SOLIDARIAS RURALES? (Monto $ r919)
 		// r920. ¿ALGUNA PERSONA EN EL HOGAR RECIBE AYUDA BONOS SOLIDARIAS URBANAS? (Monto $ r922)
 * POTROT - Programas de otras transferencias monetarias no condicionadas
+	* 4 Otras ayudas del gobierno en efectivo
+		// r44506. QUÉ OTROS INGRESOS HA TENIDO (…) DURANTELOS ÚLTIMOS 12 MESES QUE NO HAYA MENCIONADO ANTERIORMENTE? 06. Ayuda del gobierno en efectivo
 
 *** Beneficiarios a nivel individual:
 	
@@ -766,21 +768,13 @@ label var ylnm_ci "Ingreso laboral NO monetario total"
 	replace ptmc_ci = . if becaesc_ci == . & becagob_ci == . & solidario_ci == .
 	
 	// POTROT
-	gen byte potrot_ci = .
+	gen byte potrot_ci = (r44506 > 0) if !missing(r44506)
 	
 *** Montos de transferencias a nivel individual:
 
-	// Transferencias PNC
-	gen double ypnc_ci = .
-	
-	// Transferencias PTMC (No hay montos individuales disponibles)
-	gen ybecas_ci = .
-	gen ybecagob_ci = .
-	gen ysolidario_ci = .
-	gen yptmc_ci = . 
-	
-	// Otras transferencias POTROT
-	gen yotrot_ci = .
+	gen ypnc_ci = .			// Transferencias PNC
+	gen yptmc_ci = . 		// Transferencias PTMC (No hay montos individuales disponibles)
+	gen yotrot_ci = r44506/12 if potrot_ci == 1 		// Otras transferencias POTROT
 
 *** Ingreso individual por transferencias no contributivas
 egen double ytransf_ci = rowtotal(ypnc_ci yptmc_ci yotrot_ci), mi
@@ -827,7 +821,7 @@ gen double dividendos   = r44502/12
 gen double intereses    = r44503/12
 gen double herencias    = r44504/12
 gen double indemnizacion= r44505/12
-gen double ayudagob     = r44506/12
+gen double ayudagob     = r44506/12 	// ytransf_ci
 gen double acteventual  = r44507/12
 gen double arrendamiento= r44508/12
 gen double remesaevent1 = r44509/12  
@@ -837,9 +831,9 @@ gen double otrosy       = r44512/12
 
 // Con remesas_ci = ., se debe sacar del ynlm_ci: remesas remesaevent1 remesaevent2 (para que no sea una doble sumatoria en el ingreso por hogar)
 
-egen double ynlm_ci = rowtotal(ayuda cuotalim alqui alqneg alqterr ypen_ci deveh pension ahorros otros utilidades dividendos intereses herencias indemnizacion ayudagob acteventual arrendamiento aguinaldo otrosy ytransf_ci), mi
-egen miss = rowmiss(remesas-otrosy)
-replace ynlm_ci = . if miss == 23
+egen double ynlm_ci = rowtotal(ayuda cuotalim alqui alqneg alqterr ypen_ci deveh pension ahorros otros utilidades dividendos intereses herencias indemnizacion acteventual arrendamiento aguinaldo otrosy ytransf_ci), mi
+egen miss = rowmiss(ayuda cuotalim alqui alqneg alqterr ypen_ci deveh pension ahorros otros utilidades dividendos intereses herencias indemnizacion acteventual arrendamiento aguinaldo otrosy ytransf_ci)
+replace ynlm_ci = . if miss == 20
 label var ynlm_ci "Ingreso no laboral monetario" 
 drop ayuda-otrosy miss 
 
@@ -913,7 +907,7 @@ label var ylmnr_ch "Ingreso laboral monetario del hogar"
 	gen byte ptmc_ch = (becaesc_ch == 1 | becagob_ch == 1 | solidario_ch == 1) if miembros_ci == 1
 	replace ptmc_ch = (becaesc_ch == . & becagob_ch == . & solidario_ch == .)
 	
-	gen byte potrot_ch = .
+	bys idh_ch: egen byte potrot_ch = max(potrot_ci) if miembros_ci == 1
 	
 	gen byte pcasht_ch = (ptmc_ch == 1 | pnc_ch == 1 | potrot_ch == 1)
 	
@@ -930,7 +924,7 @@ label var ylmnr_ch "Ingreso laboral monetario del hogar"
 	replace ysolidario_ch = r922/r921 if r921 != . & ysolidario_ch == .
 	egen double yptmc_ch = rowtotal(ypnc_ch ybecagob_ch ysolidario_ch) if miembros_ci == 1, mi
 	
-	gen yotrot_ch = .
+	bys idh_ch: egen double yotrot_ch = total(yotrot_ci) if miembros_ci == 1, mi
 
 *** Ingreso del Hogar por transferencias no contributivas
 egen double ytransf_ch = rowtotal(ypnc_ch yptmc_ch yotrot_ch) if miembros_ci == 1, mi
