@@ -778,7 +778,7 @@ egen ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci)
 	****************
 	***remesas_ch***
 	****************
-	bys idh_ch: egen remesas_ch=sum(remesas_ci) if miembros_ci==1, missing
+	bys idh_ch: egen double remesas_ch=sum(remesas_ci) if miembros_ci==1, missing
 	label var remesas_ch "Remesas mensuales del hogar" 
 
 	*************

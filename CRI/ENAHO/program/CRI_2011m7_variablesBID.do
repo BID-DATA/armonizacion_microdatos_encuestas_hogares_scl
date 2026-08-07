@@ -1474,7 +1474,7 @@ by idh_ch, sort: egen ylnm_ch=sum(ylnm_ci) if miembros_ci==1, missing
 ************************************************************
 ***44._REMESAS_CH : Remesas del Hogar.                   ***
 ************************************************************
-by idh_ch, sort: egen remesas_ch=sum(remesas_ci) if miembros_ci==1, missing
+by idh_ch, sort: egen double remesas_ch=sum(remesas_ci) if miembros_ci==1, missing
 
 * N/A*
 ************************************************************

@@ -308,9 +308,9 @@ label variable miembros_ci "Miembro del hogar"
 	*noafroind_ci*
 	**************
 	gen byte noafroind_ci =.   // se queda como missing (.) si no existe la pregunta
-	replace noafroind_ci =1 if (afro_ci==0 | ind_ci==0)	 // Personas que NO se identifican como afro o indígenas
-	replace noafroind_ci =0 if (afro_ci==1 | ind_ci==1)  // Personas que se identifican como afro o indígenas
-	replace noafroind_ci =. if (afro_ci==. & ind_ci==.)
+	replace noafroind_ci =1 if (afro_ci==0 & ind_ci==0)
+	replace noafroind_ci =0 if (afro_ci==1 | ind_ci==1)
+	replace noafroind_ci =. if (afro_ci==. | ind_ci==.) //Esto solo en el caso que se tenga ambas opciones no disponibles. 
 	ta noafroind_ci,m
 
 	************
@@ -785,7 +785,7 @@ label var remesas_ci "Remesas mensuales reportadas por el individuo"
 ****************
 * remesas_ch   * 
 **************** 
-gen remesas_ch=.
+bys idh_ch: egen double remesas_ch=sum(remesas_ci) if miembros_ci==1, missing
 label var remesas_ch "Remesas mensuales del hogar"
 
 ****************
@@ -1443,11 +1443,10 @@ label var salmm_ci "Salario minimo legal"
 **categoinac_ci*
 **************
 
-gen categoinac_ci=.
-replace categoinac_ci=1 if q2_20==4 & condocup_ci==3
-replace categoinac_ci=2 if q2_20==1 & condocup_ci==3
-replace categoinac_ci=3 if q2_20==2 & condocup_ci==3
-replace categoinac_ci=4 if (categoinac_ci!=1 & categoinac_ci!=2 & categoinac_ci!=3) & condocup_ci==3
+gen categoinac_ci=1 if q2_20==4
+replace categoinac_ci=2 if q2_20==1
+replace categoinac_ci=3 if q2_20==2
+replace categoinac_ci=4 if (q2_20==3 | q2_20==5 | q2_20==6 | q2_20==7 | q2_20==8)
 
 label var categoinac_ci "Condición de inactividad"
 label define categoinac_ci 1 "jubilado/pensionado" 2 "estudiante" 3 "quehaceres_domesticos" 4 "otros_inactivos" 

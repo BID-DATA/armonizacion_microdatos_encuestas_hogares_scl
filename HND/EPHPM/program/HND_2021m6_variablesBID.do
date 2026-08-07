@@ -819,13 +819,13 @@ label var ylmho_ci "Salario monetario de todas las actividades"
 ****************
 ***remesas_ci***
 ****************
-egen remesas_ci = rsum(oih12_lps oih12_lps_esp), missing
+egen double remesas_ci = rsum(oih12_lps oih12_lps_esp), missing
 label var remesas_ci "Remesas Individuales"
 
 ****************
 ***remesas_ch***
 ****************
-bys idh_ch: egen remesas_ch = sum(remesas_ci) if miembros_ci==1, missing
+bys idh_ch: egen double remesas_ch = sum(remesas_ci) if miembros_ci==1, missing
 label var remesas_ch "Remesas mensuales del hogar"
 
 *************

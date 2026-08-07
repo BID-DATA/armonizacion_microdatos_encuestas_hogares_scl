@@ -882,7 +882,7 @@ label var remesas_ci "Remesas en moneda local"
 ************************************
 * REMESES EN MONEDA LOCAL DEL HOGAR*
 ************************************
-by idh_ch: gen remesas_ch=.
+bys idh_ch: egen double remesas_ch=sum(remesas_ci) if miembros_ci==1, missing
 label var remesas_ch "Remesas en moneda local"
 
 ************************************

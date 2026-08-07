@@ -1050,15 +1050,14 @@ la var autocons_ch "Autoconsumo del Hogar"
 ************
 *remesas_ci*
 ************
-gen remesas_ci=remesaext_efec
+gen double remesas_ci=remesaext_efec
 replace remesas_ci=. if remesaext_efec==.
-
 
 ****************
 ***remesas_ch***
 ****************
 
-by idh_ch, sort: egen remesas_ch=sum(remesas_ci) if miembros_ci==1, missing 
+by idh_ch, sort: egen double remesas_ch=sum(remesas_ci) if miembros_ci==1, missing 
 label var remesas_ch "Remesas mensuales del hogar" 
 
 *****************

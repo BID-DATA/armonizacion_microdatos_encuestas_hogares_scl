@@ -4140,7 +4140,7 @@ bys idh_ch: egen ylnm_ch=sum(ylnm_ci) if miembros_ci==1, missing
 *** remesas_ch & remesasnm_ch ***
 **********************************
 
-bys idh_ch: egen remesas_ch=sum(remesas_ci) if miembros_ci==1, missing
+bys idh_ch: egen double remesas_ch=sum(remesas_ci) if miembros_ci==1, missing
 
 
 ***************

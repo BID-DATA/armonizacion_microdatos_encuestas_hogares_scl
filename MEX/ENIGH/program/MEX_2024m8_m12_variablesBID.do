@@ -719,7 +719,7 @@ use `base_in', clear
 	*************
 	* remesas_ch *
 	*************
-	bys idh_ch: egen remesas_ch=sum(remesas_ci) if miembros_ci==1, missing
+	bys idh_ch: egen double remesas_ch=sum(remesas_ci) if miembros_ci==1, missing
 
 	**********
 	* ypen_ci *
