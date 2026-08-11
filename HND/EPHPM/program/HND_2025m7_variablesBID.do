@@ -744,8 +744,6 @@ use `base_in', clear
 	replace aedu_ci=11+ED13 - 1 if (ED10==7 | ED10==8 | ED10==9) //Terciario
 	replace aedu_ci=15+ED13 - 1 if (ED10==10) & ED13<99 //Post
 
-			
-
 	**********
 	*eduui_ci*
 	**********
@@ -774,14 +772,7 @@ use `base_in', clear
 	*edupre_ci*
 	***********
 	gen byte edupre_ci=.
-
-	************
-	*asispre_ci*
-	************
-	g asispre_ci=.
-	replace asispre_ci = 1 if ED10==3
-	*replace asispre_ci = 0 if ED03==0
-
+	
 	***********
 	*asiste_ci*
 	***********
@@ -789,6 +780,12 @@ use `base_in', clear
 	replace asiste_ci=1 if ED03==1 
 	replace asiste_ci=0 if ED03==2
 
+	************
+	*asispre_ci*
+	************
+	gen byte asispre_ci = (ED10==3) if asiste_ci==1
+	*replace asispre_ci = 0 if ED03==0
+	
 	*************
 	*pqnoasis1_ci*
 	**************
@@ -797,8 +794,7 @@ use `base_in', clear
 	replace razonesnoasis_ci =  2 if inlist(ED04,3)
 	replace razonesnoasis_ci =  3 if  inlist(ED04,4, 12, 6)
 	replace razonesnoasis_ci =  4 if inlist(ED04,5)
-	replace razonesnoasis_ci =  5 if inlist(ED04,1,	2, 7, 9, 10, 11,12,14,15)
-	
+	replace razonesnoasis_ci =  5 if inlist(ED04,1,	2, 7, 9, 10, 11,14,15)
 
 	***********
 	*edupub_ci*
@@ -817,14 +813,11 @@ use `base_in', clear
 	gen luz_ch=.
 	replace luz_ch=1 if V07<5 & V07!=.	
 	replace luz_ch=0 if V07>4 & V07!=.	
-	
-	
-	
+		
 	***********
 	*luzmide_ch*
 	***********
 	gen luzmide_ch=.
-	
 	
 	***********
 	*combust_ch*
