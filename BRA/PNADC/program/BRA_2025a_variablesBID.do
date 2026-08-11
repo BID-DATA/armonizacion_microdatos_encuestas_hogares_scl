@@ -696,10 +696,11 @@ rename *, lower
 	replace ypensub_ci = . if ypensub_ci <= 0
 
 ****************************
-***VARIABLES DE EDUCACION***
+***	VARIABLES EDUCATIVAS ***
 ****************************
 
 /*
+
 # Historial de modificaciones #
 #=============================#
 
@@ -747,136 +748,143 @@ v3014: ... concluiu este curso que frequentou anteriormente
 - Doctorado. Se imputa maestría completa. Desde el nivel 9 y superior no se les pregunta en que anio o trimestre están
 - grado_asist_sup: pasa de semestres a años para superior para el grupo de personas que están cursando
 - grado_asist_sup_v2: pasa de semestres a años para superior para el grupo de personas que ya terminaron sus estudios
+
 */
 
+*************
+***aedu_ci***
+*************
 
-	*********
-	*aedu_ci*
-	*********
-	gen aedu_ci = .
+gen grado_asist = v3006
+replace grado_asist = . if v3006 == 13 
 
-	* Auxiliares
-	gen nivel_asist = v3003a // curso que asiste
-	gen grado_asist = v3006 // grado/año/semestre que asiste
-	gen nivel_no_asist = v3009a // curso más alto al que asistió (no asiste)
-	gen grado_no_asist = v3013 // último grado completo con aprobación
-	gen finalizo = v3014 // concluyó ese curso (1 sí)
-	gen finalizo_1 = v3012 // concluyó al menos la 1ra serie del curso
+* Para quienes asisten actualmente a superior en semestres se convierte a años
+gen grado_asist_sup = round(grado_asist/2) if v3005a == 1 & v3003a == 8
 
-	* PARA LOS QUE ASISTEN
-	replace aedu_ci = 0 if nivel_asist == 2 // Preescola
-	replace aedu_ci = 0 if nivel_asist == 3 // Alfabetización jóvenes/adultos
-	replace aedu_ci = grado_asist - 1 if nivel_asist == 4 // Fundamental (preguntan grado al que asiste)
-	replace aedu_ci = 0 if (nivel_asist == 4 & grado_asist == 13) // limpia grado no clasificado
-	replace aedu_ci = grado_asist + 9 - 1 if nivel_asist == 6 // Médio (tras 9 de fundamental)
-	replace aedu_ci = 9 if (nivel_asist == 6 & grado_asist == 13)
-	replace aedu_ci = grado_asist - 1 if nivel_asist == 5 // EJA fundamental
-	replace aedu_ci = grado_asist + 9 - 1 if nivel_asist == 7 // EJA médio
-	replace aedu_ci = 9 if (nivel_asist == 7 & grado_asist == 13)
-	replace grado_asist = round(grado_asist / 2) if v3005a == 1 & nivel_asist == 8  // semestres a años
-	replace aedu_ci = grado_asist + 12 - 1 if nivel_asist == 8 // Superior (tras 12)
-	replace aedu_ci = 12 + 4 if nivel_asist == 9 // Especialización (imputa pregrado completo)
-	replace aedu_ci = 12 + 4 if nivel_asist == 10 // Maestría
-	replace aedu_ci = 12 + 4 + 2 if nivel_asist == 11 // Doctorado (imputa maestría completa)
-	replace aedu_ci = . if grado_asist == 13 & nivel_asist == .
+* Para quienes ya no asisten pero cursaron superior en semestres se convierte a años
+gen grado_asist_sup_v2 = round(v3013/2) if v3011a == 1 & v3009a == 12
 
-	* PARA LOS QUE NO ASISTEN
-	replace aedu_ci = 0 if v3008 == 2 // Nunca asistió
-	replace aedu_ci = 0 if inlist(nivel_no_asist, 1, 2, 3, 4) // Creche/preescola/alfabetización
-	replace aedu_ci = grado_no_asist if nivel_no_asist == 5 // Antigo primário
-	replace aedu_ci = grado_no_asist + 4 if nivel_no_asist == 6 // Antigo ginásio
-	replace aedu_ci = grado_no_asist + 4 + 4 if nivel_no_asist == 9 & finalizo_1 == 1 // Antigo científico
-	replace aedu_ci = grado_no_asist if nivel_no_asist == 7 // Fundamental regular
-	replace aedu_ci = grado_no_asist + 9 if nivel_no_asist == 10 // Médio regular (tras 9)
-	replace aedu_ci = grado_no_asist if nivel_no_asist == 8 // EJA fundamental
-	replace aedu_ci = grado_no_asist + 9 if nivel_no_asist == 11 // EJA médio
-	replace grado_no_asist = round(grado_no_asist / 2) if v3011a == 1 & nivel_no_asist == 12  // semestres a años
-	replace aedu_ci = grado_no_asist + 12 if nivel_no_asist == 12 // Superior graduação (crédito por año cursado)
-	replace aedu_ci = 12 + 4 if nivel_no_asist == 13 & inlist(finalizo, 2, 3, .) // Especialización no terminada
-	replace aedu_ci = 12 + 4 + 2 if nivel_no_asist == 13 & finalizo == 1 // Especialización terminada
-	replace aedu_ci = 12 + 4 if nivel_no_asist == 14 & inlist(finalizo, 2, 3, .) // Maestría no terminada
-	replace aedu_ci = 12 + 4 + 2 if nivel_no_asist == 14 & finalizo == 1 // Maestría terminada
-	replace aedu_ci = 12 + 4 + 2 if nivel_no_asist == 15 & inlist(finalizo, 2, 3, .) // Doctorado no terminado
-	replace aedu_ci = 12 + 4 + 2 + 4 if nivel_no_asist == 15 & finalizo == 1 // Doctorado terminado
+gen aedu_ci = .
 
-	* Imputación cuando el año está perdido pero está el nivel
-	replace aedu_ci = 0 if nivel_asist == 2 & aedu_ci == .
-	replace aedu_ci = 0 if nivel_asist == 3 & aedu_ci == .
-	replace aedu_ci = 0 if nivel_asist == 4 & aedu_ci == .
-	replace aedu_ci = 0 if nivel_asist == 5 & aedu_ci == .
-	replace aedu_ci = 9 if nivel_asist == 6 & aedu_ci == .
-	replace aedu_ci = 9 if nivel_asist == 7 & aedu_ci == .
-	replace aedu_ci = 12 if nivel_asist == 8 & aedu_ci == .
-	replace aedu_ci = 16 if nivel_asist == 9 & aedu_ci == .
-	replace aedu_ci = 16 if nivel_asist == 10 & aedu_ci == .
-	replace aedu_ci = 18 if nivel_asist == 11 & aedu_ci == .
-	replace aedu_ci = 4 if nivel_no_asist == 6 & aedu_ci == .
-	replace aedu_ci = 0 if nivel_no_asist == 7 & aedu_ci == .
-	replace aedu_ci = 0 if nivel_no_asist == 8 & aedu_ci == .
-	replace aedu_ci = 8 if nivel_no_asist == 9 & aedu_ci == .
-	replace aedu_ci = 9 if nivel_no_asist == 10 & aedu_ci == .
-	replace aedu_ci = 9 if nivel_no_asist == 11 & aedu_ci == .
-	replace aedu_ci = 12 if nivel_no_asist == 12 & aedu_ci == .
-	replace aedu_ci = 16 if nivel_no_asist == 13 & aedu_ci == .
-	replace aedu_ci = 16 if nivel_no_asist == 14 & aedu_ci == .
-	replace aedu_ci = 18 if nivel_no_asist == 15 & aedu_ci == .
+* Construcción para quienes están estudiando
+replace aedu_ci = 0 if v3003a == 2 | v3003a == 3                   						// Sin años de educación
+replace aedu_ci = grado_asist - 1 if v3003a == 4                   						// Ensinio fundamental 
+replace aedu_ci = 9 + grado_asist - 1 if v3003a == 6               						// Ensinio medio
+replace aedu_ci = grado_asist - 1 if v3003a == 5                   						// Ensinio fundamental jóvenes y adultos
+replace aedu_ci = 9 + grado_asist - 1 if v3003a == 7               						// Ensinio medio    
+replace aedu_ci = 12 + grado_asist_sup - 1 if v3003a == 8          						// Ensinio superior
+replace aedu_ci = 12 + 4 if v3003a == 9                            						// Especialização de nível superior
+replace aedu_ci = 12 + 4 if v3003a == 10                           						// Mestrado
+replace aedu_ci = 12 + 4 + 2 if v3003a == 11                       						// Doutorado
+						
+* Construcción para quienes NO están estudiando						
+replace aedu_ci=0 if v3008==2                                      						// Nunca asistieron 
+replace aedu_ci = 0 if inlist(v3009a, 2, 3, 4)                     						// Creche, prescola, Alfabetizacion de jovenes y adultos, Classe de alfabetização - CA.
+replace aedu_ci = v3013 if v3009a == 5                             						// Antigo primário. No se resta 1 porque la variable indica si lo concluyo o no
+replace aedu_ci = v3013 + 4 if v3009a == 6                         						// Antigo ginásio. Despues de antigo primário (4 anios)
+replace aedu_ci = v3013 if v3009a == 7                             						// Regular do ensino fundamental ou do 1º grau. No se resta 1 porque la variable indica si lo concluyo o no
+replace aedu_ci = v3013 if v3009a == 8                             						// Nivelacion de primaria para adultos
+replace aedu_ci = v3013 + 4 + 4 if v3009a == 9  & v3012 == 1       						// Antigo científico, clássico, etc. Despues de antigo primário y antigo ginásio (8 anios)
+replace aedu_ci = v3013 + 9 if v3009a == 10                        						// Regular do ensino médio óu do 2º grau. Despues de ensinio fundamental (9 anios)
+replace aedu_ci = v3013 + 9 if v3009a == 11                        						// Nivelacion de adultos secundaria
+replace aedu_ci = grado_asist_sup_v2 + 12 if v3009a == 12          						// Universitario pregrado
+replace aedu_ci = 12 + 4 if v3009a == 13 & (v3014 != 1 | missing(v3014)) 				// Especializacion o diplomado, no terminado
+replace aedu_ci = 12 + 4 + 2 if v3009a == 13 & v3014 == 1          						// Especializacion o diplomado, terminado
+replace aedu_ci = 12 + 4 if v3009a == 14 & (v3014 != 1 | missing(v3014))              	// Maestria, no terminado
+replace aedu_ci = 12 + 4 + 2 if v3009a == 14 & v3014 == 1          						// Maestria, terminado
+replace aedu_ci = 12 + 4 + 2 if v3009a == 15 & (v3014 != 1 | missing(v3014))  			// Doctorado, no terminado    
+replace aedu_ci = 12 + 4 + 2 + 4 if v3009a == 15 & v3014 == 1      						// Doctorado, terminado 
 
-	replace aedu_ci = 0 if aedu_ci < 0
-	replace aedu_ci = 22 if aedu_ci > 22 & aedu_ci != .
+* Reemplazo cuando el grado está missing pero el nivel se reporta (para quienes están estudiando)
+replace aedu_ci = 0  if missing(aedu_ci) & v3003a >= 2 & v3003a <= 5
+replace aedu_ci = 9  if missing(aedu_ci) & (v3003a == 6 | v3003a == 7)
+replace aedu_ci = 12 if missing(aedu_ci) & v3003a == 8
+replace aedu_ci = 16 if missing(aedu_ci) & (v3003a == 9 | v3003a == 10)
+replace aedu_ci = 18 if missing(aedu_ci) & v3003a == 11
 
-	drop nivel_asist grado_asist nivel_no_asist grado_no_asist finalizo finalizo_1
+* Reemplazo cuando el grado está missing pero el nivel se reporta (para quienes NO están estudiando)
+replace aedu_ci = 0  if missing(aedu_ci) & v3009a >= 2 & v3009a <= 5
+replace aedu_ci = 4  if missing(aedu_ci) & v3009a == 6
+replace aedu_ci = 4  if missing(aedu_ci) & (v3009a == 7 | v3009a == 8)
+replace aedu_ci = 8  if missing(aedu_ci) & v3009a == 9
+replace aedu_ci = 9  if missing(aedu_ci) & (v3009a == 10 | v3009a == 11)
+replace aedu_ci = 12 if missing(aedu_ci) & v3009a == 12
+replace aedu_ci = 16 if missing(aedu_ci) & (v3009a == 13 | v3009a == 14)
+replace aedu_ci = 18 if missing(aedu_ci) & v3009a == 15
 
-	**************
-	*** eduui_ci ***
-	**************
-	gen byte eduui_ci = 0
-	replace eduui_ci = 1 if v3002 == 1 & inlist(v3003a, 8) /* asiste, superior en curso */
-	replace eduui_ci = 1 if v3002 == 2 & inlist(v3009a, 12) & v3014 == 2 /* superior no concluido */
-	replace eduui_ci = . if (v3002 == . | v3003a == .) & v3009a == .
+***************
+***edupre_ci***
+***************
 
-	**************
-	*** eduuc_ci ***
-	**************
-	gen byte eduuc_ci = 0
-	replace eduuc_ci = 1 if v3002 == 1 & inlist(v3003a, 9, 10, 11, 13)
-	replace eduuc_ci = 1 if v3002 == 2 & inlist(v3009a, 12, 13, 14, 15) & v3014 == 1
-	replace eduuc_ci = 1 if v3002 == 2 & inlist(v3009a, 13, 14, 15) & v3014 == 2
-	replace eduuc_ci = 0 if ((v3002 == 1 & inlist(v3003a, 2, 3, 4, 5, 6, 7)) | (v3002 == 2 & inlist(v3009a, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11) & v3014 == 1) | (v3002 == 2 & inlist(v3009a, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11) & v3014 == 2))
-	replace eduuc_ci = . if (v3002 == . | v3003a == .) & v3009a == .
+* NOTA: No cuenta con preguntas para esta variable
 
-	**********
-	*eduac_ci*
-	**********
-	gen byte eduac_ci = . /* sin fuente en PNADC */
+gen byte edupre_ci=.
 
-	***********
-	*edupre_ci*
-	***********
-	gen byte edupre_ci = . /* sin fuente en PNADC */
+**************
+***eduui_ci***
+**************
 
-	***********
-	*asiste_ci*
-	***********
-	gen byte asiste_ci = (v3002 == 1)
-	replace asiste_ci = . if v3002 == .
+gen eduui_ci = .
+replace eduui_ci = 1 if !missing(aedu_ci) & (v3003a == 8 | (v3009a == 12 & v3014 == 2))
+replace eduui_ci = 0 if !missing(aedu_ci) & !(v3003a == 8 | (v3009a == 12 & v3014 == 2))
 
-	***********
-	*edupub_ci*
-	***********
-	gen byte edupub_ci = .
-	replace edupub_ci = 1 if asiste_ci == 1 & v3002a == 2 /* red pública */
-	replace edupub_ci = 0 if asiste_ci == 1 & v3002a == 1 /* red privada */
+**************
+***eduuc_ci***
+**************
 
-	************
-	*asispre_ci*
-	************
-	gen byte asispre_ci = 0
-	replace asispre_ci = 1 if v3002==1 & v3003a==2
+gen eduuc_ci = .
+replace eduuc_ci = 1 if !missing(aedu_ci) & (                           
+                        (v3009a == 12 & v3014 == 1) |                             
+                        inlist(v3003a, 9, 10, 11) |                             
+                        inlist(v3009a, 13, 14, 15)                               
+                      )
+replace eduuc_ci = 0 if !missing(aedu_ci) & !(                                    
+                        (v3009a == 12 & v3014 == 1) |                            
+                        inlist(v3003a, 9, 10, 11) |                              
+                        inlist(v3009a, 13, 14, 15)                              
+                      )
 
-	*************
-	*razonesnoasis_ci*
-	**************
-	gen byte razonesnoasis_ci = . /* sin fuente en PNADC */
+**************
+***eduac_ci***
+**************
+
+* NOTA: No cuenta con preguntas para esta variable
+
+gen byte eduac_ci=.
+
+**************
+**asiste_ci***
+**************
+
+gen asiste_ci = .
+replace asiste_ci = 1 if !missing(v3002) & v3002 == 1
+replace asiste_ci = 0 if !missing(v3002) & v3002 != 1
+
+***************
+***edupub_ci***
+***************
+
+gen edupub_ci = .
+replace edupub_ci = 1 if !missing(v3002a) & v3002a == 2
+replace edupub_ci = 0 if !missing(v3002a) & v3002a != 2
+
+****************
+***asispre_ci***
+****************
+
+*Creación de la variable asistencia a preescolar por Iván Bornacelly - 01/12/17
+
+gen asispre_ci = 0
+replace asispre_ci = 1 if v2009 >= 4 & v3003a == 2
+
+
+******************
+***pqnoasis1_ci***
+******************
+
+* NOTA: No cuenta con preguntas para esta variable
+
+gen pqnoasis1_ci = .
 
 ****************************
 ***VARIABLES DE VIVIENDA***
