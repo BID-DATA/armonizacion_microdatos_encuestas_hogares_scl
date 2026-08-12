@@ -944,7 +944,7 @@ egen double ynlnm_ci = rowtotal(e01lde viv_priv), mi
 	***************
 	gen double aux_ytransf_ci = ytransf_ci*(-1)
 	egen double ynet_ci = rowtotal(ytot_ci aux_ytransf_ci), mi	
-	sum ynet_ci if ynet_ci < 0
+	drop aux_ytransf_ci
 
 
 ************************
@@ -989,6 +989,8 @@ by idh_ch, sort: egen double ylnm_ch = total(ylnm_ci) if miembros_ci==1, missing
 	bys idh_ch: egen byte pnc_ch = max(pnc_ci) if miembros_ci == 1
 	bys idh_ch: egen byte ptmc_ch = max(ptmc_ci) if miembros_ci == 1
 	bys idh_ch: egen byte potrot_ch = max(potrot_ci) if miembros_ci == 1
+	gen byte pcasht_ch = (pnc_ch == 1 | ptmc_ch == 1 | potrot_ch == 1)
+	replace pcasht_ch = . if pnc_ch == . & ptmc_ch == . & potrot_ch == .
 
 *** Montos de transferencias a nivel hogar:
 	bys idh_ch: egen double ypnc_ch = total(ypnc_ci) if miembros_ci == 1, mi
@@ -1713,9 +1715,6 @@ replace grupo_int = 2 if (ynet_ch_pc >=lp31_2011 		& ynet_ch_pc <lp31_2011*1.6 &
 replace grupo_int = 3 if (ynet_ch_pc >=lp31_2011*1.6 	& ynet_ch_pc <lp31_2011*4 	& ynet_ch_pc !=.) 
 replace grupo_int = 4 if (ynet_ch_pc >=lp31_2011*4 		& ynet_ch_pc  < .			& ynet_ch_pc !=.) 	
 
-*Beneficiario por PTMC PNC u Otros
-gen pcasht_ch = (ptmc_ch == 1 | pnc_ch == 1 | potrot_ch == 1)
-replace pcasht_ch = . if ptmc_ch == . & pnc_ch == . & potrot_ch == .
 
 ********************************
 *********pcash_coverage_************
