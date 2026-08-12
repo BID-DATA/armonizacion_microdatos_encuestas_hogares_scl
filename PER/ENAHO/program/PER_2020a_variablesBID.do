@@ -1358,7 +1358,7 @@ egen double ylnm_ci = rowtotal(ylnmpri_ci ylnmsec_ci ylnmotros_ci), missing
 	gen byte pnc_ci = (p5567a == 1) if ! missing(p5567a)
 
 	// PTMC
-	gen byte juntos_ci = (p5567a == 1) if ! missing(p5567a)
+	gen byte juntos_ci = (p5566a == 1) if ! missing(p5566a)
 	gen byte beca_ci = (p55610a == 1) if ! missing(p55610a)
 	gen byte ptmc_ci = (juntos_ci == 1 | beca_ci == 1)
 	replace ptmc_ci = . if juntos_ci == . & beca_ci == .
