@@ -1075,6 +1075,8 @@ label var ylmnr_ch "Ingreso laboral monetario del hogar"
 	bys idh_ch: egen byte pnc_ch = max(pnc_ci) if miembros_ci == 1
 	bys idh_ch: egen byte ptmc_ch = max(ptmc_ci) if miembros_ci == 1
 	bys idh_ch: egen byte potrot_ch = max(potrot_ci) if miembros_ci == 1
+	gen byte pcasht_ch = (pnc_ch == 1 | ptmc_ch == 1 | potrot_ch == 1)
+	replace pcasht_ch = . if pnc_ch == . & ptmc_ch == . & potrot_ch == .
 
 *** Montos de transferencias a nivel hogar:
 	bys idh_ch: egen double ypnc_ch = total(ypnc_ci) if miembros_ci == 1, mi
@@ -1087,7 +1089,7 @@ egen double ytransf_ch = rowtotal(ypnc_ch yptmc_ch yotrot_ch) if miembros_ci == 
 ****************
 ***remesas_ch***
 ****************
-egen double remesas_ch = total(remesas_ci) if miembros_ci == 1, mi
+bys idh_ch: egen double remesas_ch = total(remesas_ci) if miembros_ci == 1, mi
 label var remesas_ch "Remesas mensuales del hogar" 
 
 ***************
