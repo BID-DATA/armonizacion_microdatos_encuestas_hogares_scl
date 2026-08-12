@@ -722,7 +722,7 @@ egen double ytransf_ci = rowtotal(ypnc_ci yptmc_ci yotrot_ci)
 	*************
 	***ytot_ci***
 	*************
-	egen double ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci), m
+	egen double ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci), mi
 
 
 *** INGRESO NETO INDIVIDUAL > INGRESO PRIMARIO + TRANSFERENCIAS PRIVADAS
@@ -730,8 +730,9 @@ egen double ytransf_ci = rowtotal(ypnc_ci yptmc_ci yotrot_ci)
 	***************
 	*** ynet_ci ***
 	***************
-	gen double ynet_ci = (ytot_ci - ytransf_ci)
-	sum ynet_ci if ynet_ci < 0
+	gen double aux_ytransf_ci = ytransf_ci*(-1)
+	egen double ynet_ci = rowtotal(ytot_ci aux_ytransf_ci), mi
+	drop aux_ytransf_ci
 
 
 **************************
@@ -741,12 +742,12 @@ egen double ytransf_ci = rowtotal(ypnc_ci yptmc_ci yotrot_ci)
 	************
 	***ylm_ch***
 	************
-	by idh_ch, sort: egen double ylm_ch = total(ylm_ci) if miembros_ci == 1
+	by idh_ch, sort: egen double ylm_ch = total(ylm_ci) if miembros_ci == 1, mi
 
 	*************
 	***ylnm_ch***
 	*************
-	by idh_ch, sort: egen double ylnm_ch = total(ylnm_ci) if miembros_ci == 1
+	by idh_ch, sort: egen double ylnm_ch = total(ylnm_ci) if miembros_ci == 1, mi
 
 	******************
 	*** ytransf_ch ***
@@ -756,26 +757,28 @@ egen double ytransf_ci = rowtotal(ypnc_ci yptmc_ci yotrot_ci)
 	bys idh_ch: egen byte pnc_ch = max(pnc_ci) if miembros_ci == 1
 	bys idh_ch: egen byte ptmc_ch = max(ptmc_ci) if miembros_ci == 1
 	bys idh_ch: egen byte potrot_ch = max(potrot_ci) if miembros_ci == 1
+	gen byte pcasht_ch = (pnc_ch == 1 | ptmc_ch == 1 | potrot_ch == 1)
+	replace pcasht_ch = . if pnc_ch == . & ptmc_ch == . & potrot_ch == .
 
 
 *** Montos de transferencias a nivel hogar:
-	bys idh_ch: egen double ypnc_ch = total(ypnc_ci) if miembros_ci == 1
-	bys idh_ch: egen double yptmc_ch = total(yptmc_ci) if miembros_ci == 1
-	bys idh_ch: egen double yotrot_ch = total(yotrot_ci) if miembros_ci == 1
+	bys idh_ch: egen double ypnc_ch = total(ypnc_ci) if miembros_ci == 1, mi
+	bys idh_ch: egen double yptmc_ch = total(yptmc_ci) if miembros_ci == 1, mi
+	bys idh_ch: egen double yotrot_ch = total(yotrot_ci) if miembros_ci == 1, mi
 
 
 *** Ingreso del Hogar por transferencias no contributivas
-egen double ytransf_ch = rowtotal(ypnc_ch yptmc_ch yotrot_ch) if miembros_ci == 1
+egen double ytransf_ch = rowtotal(ypnc_ch yptmc_ch yotrot_ch) if miembros_ci == 1, mi
 
 	****************
 	***remesas_ch***
 	****************
-	by idh_ch, sort: egen double remesas_ch = total(remesas_ci) if miembros_ci == 1
+	by idh_ch, sort: egen double remesas_ch = total(remesas_ci) if miembros_ci == 1, mi
 
 	*************
 	***ynlm_ch***
 	*************
-	by idh_ch, sort: egen double ynlm_ch = total(ynlm_ci) if miembros_ci==1
+	by idh_ch, sort: egen double ynlm_ch = total(ynlm_ci) if miembros_ci == 1, mi
 
 	**************
 	***ynlnm_ch***
@@ -785,13 +788,15 @@ egen double ytransf_ch = rowtotal(ypnc_ch yptmc_ch yotrot_ch) if miembros_ci == 
 	*************
 	***ytot_ch***
 	*************
-	by idh_ch, sort: egen double ytot_ch = total(ytot_ci) if miembros_ci==1
+	by idh_ch, sort: egen double ytot_ch = total(ytot_ci) if miembros_ci == 1, mi
 
 	***************
 	*** ynet_ch ***
 	***************
-	gen double ynet_ch = (ytot_ch - ytransf_ch) if miembros_ci == 1
-	gen double ynet_ch_pc = (ytot_ch - ytransf_ch)/nmiembros_ch if miembros_ci == 1
+	gen double aux_ytransf_ch = ytransf_ch*(-1)
+	egen double ynet_ch = rowtotal(ytot_ch aux_ytransf_ch) if miembros_ci == 1, mi
+	gen double ynet_ch_pc = (ynet_ch)/nmiembros_ch if miembros_ci == 1
+	drop aux_ytransf_ch
 
 
 	*****************
