@@ -953,9 +953,8 @@ label var ylnm_ci "Ingreso laboral no monetario total"
 		* 6 Red cuido a9a== 3 (sin monto)
 		* 7 Régimen no contributivo de pensiones (otros) h9e ==1
 		* 7b RNC aguinaldo (anuales h9p1) 
-		* -8 Otras ayudas de subsidio o estatales h9f		
-		* 9 Bono proteger p11_1==1 (monto disponible en alternativas p11_4)
-		* 10 Ayudas económicas del gobierno (por la pandemia) p15b1==2 & p15b3_1==2, p15b3_1
+		* 8 Bono proteger p11_1==1 (monto disponible en alternativas p11_4)
+		* 9 Ayudas económicas del gobierno (por la pandemia) p15b1==2 & p15b3_1==2, p15b3_1
 			
 
 *** Beneficiarios a nivel individual:
@@ -975,14 +974,13 @@ label var ylnm_ci "Ingreso laboral no monetario total"
 	gen byte otrosimas_ci = (a9a == 2) if !missing(a9a)
 	gen byte redcuido_ci = (a9a == 3) if !missing(a9a)
 	gen byte otrosnc_ci = (h9e == 1  & edad_ci < 65) if !missing(h9e) 	// Otros NC + Otros Aguinaldo NC (h9e contiene a h9p)
-	gen byte otayudas_ci = (h9f == 1) if !missing(h9f)
 	gen byte protege_ci = (p11_1 == 1) if !missing(p11_1)
 	
 	gen byte ayudagob_ci = (p15b1 == 2 & p15b3_1 == 2)
 	replace ayudagob_ci = . if p15b1 == . & p15b3_1 == .
 	
-	gen byte potrot_ci = (otrosimas_ci == 1 | redcuido_ci == 1 | otrosnc_ci == 1 | otayudas_ci == 1 | protege_ci == 1 | ayudagob_ci == 1)
-	replace potrot_ci = . if otrosimas_ci == . & redcuido_ci == . & otrosnc_ci == . & otayudas_ci == . & protege_ci == . & ayudagob_ci == .
+	gen byte potrot_ci = (otrosimas_ci == 1 | redcuido_ci == 1 | otrosnc_ci == 1 | protege_ci == 1 | ayudagob_ci == 1)
+	replace potrot_ci = . if otrosimas_ci == . & redcuido_ci == . & otrosnc_ci == . & protege_ci == . & ayudagob_ci == .
 	
 *** Montos de transferencias a nivel individual:
 
@@ -999,11 +997,10 @@ label var ylnm_ci "Ingreso laboral no monetario total"
 	// Otras transferencias POTROT
 	gen double yotrosimas_ci = timas if a9a == 2
 	egen double yotrosnc_ci = rowtotal(trnc taprnc) if otrosnc_ci == 1, mi	// Las variables ya están mensualizadas (h9e1, h9p1)
-	gen double yotayudas_ci = ts if h9f == 1
 	gen double yprotege_ci = covid_tbp if p11_1 == 1
 	gen mn_ayudagob_ci = p15b2 if ayudagob_ci == 1  // Podria ser covid_tme (pero incluye transferencias de municipios)
 	
-	egen double yotrot_ci = rowtotal(yotrosimas_ci yotrosnc_ci yotayudas_ci yprotege_ci mn_ayudagob_ci), mi
+	egen double yotrot_ci = rowtotal(yotrosimas_ci yotrosnc_ci yprotege_ci mn_ayudagob_ci), mi
 
 
 *** Ingreso individual por transferencias no contributivas
@@ -1050,7 +1047,7 @@ label var remesas_ci "Remesas reportadas por el individuo"
 		> trnc transferencias regimen no contributivo ytransf_ci
 		> taprnc transferencias aguinaldo regimen no contributivo ytransf_ci
 		> timas transferencias IMAS (Avancemos, Otras ayudas $ IMAS, Crecemos) ytransf_ci
-		> ts transferencias subsidios ytransf_ci 
+		> ts transferencias subsidios  
 		> tbc transferencias becas ytransf_ci & ybecasprivada_ci
 		> tpa transferencias pension alimentos
 		> tapa transferencias aguinaldo pension alimentos
@@ -1068,7 +1065,7 @@ label var remesas_ci "Remesas reportadas por el individuo"
 
 gen double ybecasprivada_ci = tbc if (inlist(a19a, 5, 6, 8))
 
-egen double ynlm_ci = rowtotal(ia ii id ib ypen_ci ytransf_ci ybecasprivada_ci tpa tapa tsepa tpe tape remesas_ci tdp ot), mi
+egen double ynlm_ci = rowtotal(ia ii id ib ypen_ci ytransf_ci ts ybecasprivada_ci tpa tapa tsepa tpe tape remesas_ci tdp ot), mi
 replace ynlm_ci= . if ithn == 99999999 
 replace ynlm_ci= 0 if ithn == 0
 label var ynlm_ci "Ingreso no laboral monetario (otras fuentes)"
@@ -1155,6 +1152,8 @@ label var ylnm_ch  "Ingreso laboral no monetario del Hogar"
 	bys idh_ch: egen byte pnc_ch = max(pnc_ci) if miembros_ci == 1
 	bys idh_ch: egen byte ptmc_ch = max(ptmc_ci) if miembros_ci == 1
 	bys idh_ch: egen byte potrot_ch = max(potrot_ci) if miembros_ci == 1
+	gen byte pcasht_ch = (pnc_ch == 1 | ptmc_ch == 1 | potrot_ch == 1)
+	replace pcasht_ch = . if pnc_ch == . & ptmc_ch == . & potrot_ch == .
 
 *** Montos de transferencias a nivel hogar:
 	bys idh_ch: egen double ypnc_ch = total(ypnc_ci) if miembros_ci == 1, mi

@@ -991,7 +991,6 @@ label var ylnm_ci "Ingreso laboral no monetario total"
 		* 6 Red cuido a9a== 3 (sin monto)
 		* 7 Régimen no contributivo de pensiones (otros) h9e ==1
 		* 7b RNC aguinaldo (anuales h9p1) 
-		* -8 Otras ayudas de subsidio o estatales h9f
 		
 
 *** Beneficiarios a nivel individual:
@@ -1011,10 +1010,9 @@ label var ylnm_ci "Ingreso laboral no monetario total"
 	gen byte otrosimas_ci = (a9a == 2) if !missing(a9a)
 	gen byte redcuido_ci = (a9a == 3) if !missing(a9a)
 	gen byte otrosnc_ci = (h9e == 1  & edad_ci < 65) if !missing(h9e) 	// Otros NC + Otros Aguinaldo NC (h9e contiene a h9p)
-	gen byte otayudas_ci = (h9f == 1) if !missing(h9f)
 	
-	gen byte potrot_ci = (otrosimas_ci == 1 | redcuido_ci == 1 | otrosnc_ci == 1 | otayudas_ci == 1)
-	replace potrot_ci = . if otrosimas_ci == . & redcuido_ci == . & otrosnc_ci == . & otayudas_ci == .
+	gen byte potrot_ci = (otrosimas_ci == 1 | redcuido_ci == 1 | otrosnc_ci == 1)
+	replace potrot_ci = . if otrosimas_ci == . & redcuido_ci == . & otrosnc_ci == .
 	
 *** Montos de transferencias a nivel individual:
 
@@ -1031,9 +1029,8 @@ label var ylnm_ci "Ingreso laboral no monetario total"
 	// Otras transferencias POTROT
 	gen double yotrosimas_ci = timas if a9a == 2
 	egen double yotrosnc_ci = rowtotal(trnc taprnc) if otrosnc_ci == 1, mi	// Las variables ya están mensualizadas (h9e1, h9p1)
-	gen double yotayudas_ci = ts if h9f == 1
-	
-	egen double yotrot_ci = rowtotal(yotrosimas_ci yotrosnc_ci yotayudas_ci), mi
+		
+	egen double yotrot_ci = rowtotal(yotrosimas_ci yotrosnc_ci), mi
 
 
 *** Ingreso individual por transferencias no contributivas
@@ -1079,7 +1076,7 @@ label var remesas_ci "Remesas reportadas por el individuo"
 		> trnc transferencias regimen no contributivo ytransf_ci
 		> taprnc transferencias aguinaldo regimen no contributivo ytransf_ci
 		> timas transferencias IMAS (Avancemos, Otras ayudas $ IMAS, Crecemos) ytransf_ci
-		> ts transferencias subsidios ytransf_ci 
+		> ts transferencias subsidios (h9f) 
 		> tbc transferencias becas ytransf_ci & ybecasprivada_ci
 		> tpa transferencias pension alimentos
 		> tapa transferencias aguinaldo pension alimentos
@@ -1095,7 +1092,7 @@ label var remesas_ci "Remesas reportadas por el individuo"
 * Becas privadas (las becas publicas están en yptmc_ci): 
 gen double ybecasprivada_ci = tbc if (inlist(a19a, 5, 6, 8))
 
-egen double ynlm_ci = rowtotal(ia ii id ib ypen_ci ytransf_ci ybecasprivada_ci tpa tapa tsepa tpe tape remesas_ci tdp ot), mi
+egen double ynlm_ci = rowtotal(ia ii id ib ypen_ci ytransf_ci ts ybecasprivada_ci tpa tapa tsepa tpe tape remesas_ci tdp ot), mi
 replace ynlm_ci= . if ithn == 99999999 
 replace ynlm_ci= 0 if ithn == 0
 label var ynlm_ci "Ingreso no laboral monetario (otras fuentes)"
@@ -1109,7 +1106,6 @@ replace ynlnm_ci= . if ithn == 99999999
 replace ynlnm_ci= 0 if ithn == 0
 replace ynlnm_ci= . if ithn == .
 label var ynlnm_ci "Ingreso no laboral no monetario"
-egen ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci)
 
 
 *** INGRESO TOTAL LABORAL Y NO LABORAL (MONETARIO Y NO MONETARIO) ***
@@ -1127,8 +1123,7 @@ egen ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci)
 ***************
 	gen double aux_ytransf_ci = ytransf_ci*(-1)
 	egen double ynet_ci = rowtotal(ytot_ci aux_ytransf_ci), mi
-	sum ynet_ci if ynet_ci < 0
-
+	
 
 		**************************
 		*** INGRESOS DEL HOGAR ***
@@ -1184,6 +1179,8 @@ label var ylnm_ch  "Ingreso laboral no monetario del Hogar"
 	bys idh_ch: egen byte pnc_ch = max(pnc_ci) if mie== 1
 	bys idh_ch: egen byte ptmc_ch = max(ptmc_ci) if miembros_ci == 1
 	bys idh_ch: egen byte potrot_ch = max(potrot_ci) if miembros_ci == 1
+	gen byte pcasht_ch = (pnc_ch == 1 | ptmc_ch == 1 | potrot_ch == 1)
+	replace pcasht_ch = . if pnc_ch == . & ptmc_ch == . & potrot_ch == .
 
 *** Montos de transferencias a nivel hogar:
 	bys idh_ch: egen double ypnc_ch = total(ypnc_ci) if miembros_ci == 1, mi
@@ -1861,14 +1858,6 @@ do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&Exter
 *** LINEAS DE POBREZA RECALCULADO CON EL INGRESO NETO PER CÁPITA (SIN TRANSFERENCIAS PÚBLICAS) ***
 **************************************************************************************************
 	
-	*****************
-	*** pcasht_ch ***
-	*****************
-	// ytransf_ch >>> egen    ing_pcasht_ch = rowtotal(ing_ptmc_ch ing_pnc_ch ing_otrot_ch)
-	egen 	pcasht_ch = rowtotal(ptmc_ch pnc_ch potrot_ch)
-	replace pcasht_ch = 1 if pcasht_ch > 0
-	
-
 * COBERTURA Y DISTRIBUCION
 	
 	* Grupos
