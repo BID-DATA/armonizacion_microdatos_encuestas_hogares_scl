@@ -1325,22 +1325,21 @@ egen double ylnm_ci = rowtotal(ylnmpri_ci ylnmsec_ci ylnmotros_ci), missing
 ********************************************************
 
 * PNC: Pensiones sociales no contributivas: 
-		* Pensión 65 (ingtpu03)
+		* Pensión 65 (d5567)
 * PTMC: Programas de transferencias monetarias condicionadas: 
-		* Juntos (ingtpu01)
-		* Beca 18 (ingtpu04)
+		* Juntos (d5566)
+		* Beca 18 (d55610)
 * POTROT: Programas de otras transferencias monetarias no condicionadas: 
-		* Bono gas (ingtpu05)		
-		* Bono Yo me quedo en casa (ingtpu06)
-		* Bono Independiente (ingtpu07)
-		* Bono Rural (ingtpu08)
-		* Bono Familiar Universal (ingtpu09)
-		* Bono Niño Universal (ingtpu11)
-		* Programa social Contigo (ingtpu13)
-		* Bono Yanapay (ingtpu14)
-		* Bono 600 (ingtpu15)
-		* Bono alimentario (ingtpu16)
-			
+		* Bono gas (d55611)		
+		* Bono Yo me quedo en casa (d55616)
+		* Bono Independiente (d55617)
+		* Bono Rural (d55618)
+		* Bono Familiar Universal (d55619)
+		* Bono Niño Universal (d55621)
+		* Programa social Contigo (d55623)
+		* Bono Yanapay (d55624)
+		* Bono 600 (d55625)
+		* Bono alimentario (d55626)	
 
 *** Beneficiarios a nivel individual:
 
@@ -1576,12 +1575,19 @@ bys idh_ch: egen double ynlm_ch = total(ynlm_ci) if miembros_ci == 1, mi
 ****************
 *** ynlnm_ch ***
 ****************
-
-egen double tnm_pub = rowtotal(gru13hd1 gru23hd1 gru33hd1 gru43hd1 gru53hd1 gru63hd1 gru73hd1 gru83hd1 gru14hd3), mi
-egen double tnm_priv = rowtotal(gru13hd2 gru23hd2 gru33hd2 gru43hd2 gru53hd2 gru63hd2 gru73hd2 gru83hd2 gru14hd4), mi
-egen double tnm_otros = rowtotal(ig06hd ig08hd sig24 sig26 gru13hd3 gru23hd3 gru24hd gru33hd3 gru34hd gru43hd3 gru44hd gru53hd3 gru54hd gru63hd3 gru64hd gru73hd3 gru74hd gru83hd3 gru84hd gru14hd5 sg42d sg42d1 sg42d2 sg42d3), mi
-egen double tnm = rowtotal(tnm_pub tnm_priv tnm_otros), mi
-gen double ynlnm_ch = tnm/12 if miembros_ci == 1
+/* bienes y servicios no monetarios del hogar — módulos 612 y afines, /12 (mensual) */
+gen double ing_nm = (ig06hd + ig08hd + sig24 + sig26 + ///
+		gru13hd1 + gru13hd2 + gru13hd3 + ///
+		gru23hd1 + gru23hd2 + gru23hd3 + gru24hd + ///
+		gru33hd1 + gru33hd2 + gru33hd3 + (gru34hd - ga04hd) + ///
+		gru43hd1 + gru43hd2 + gru43hd3 + gru44hd + ///
+		gru53hd1 + gru53hd2 + gru53hd3 + gru54hd + ///
+		gru63hd1 + gru63hd2 + gru63hd3 + gru64hd + ///
+		gru73hd1 + gru73hd2 + gru73hd3 + gru74hd + ///
+		gru83hd1 + gru83hd2 + gru83hd3 + gru84hd + ///
+		gru14hd3 + gru14hd4 + gru14hd5 + ///
+		sg42d + sg42d1 + sg42d2 + sg42d3)
+gen double ynlnm_ch = ing_nm/12 if miembros_ci == 1
 
 
 *************
