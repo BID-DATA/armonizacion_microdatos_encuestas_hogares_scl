@@ -1225,32 +1225,103 @@ use "`base_in'", clear
 	**********************
 	*** tipo_bienestar ***
 	**********************
-	gen byte tipo_bienestar = 1			/* ingreso */
+	gen byte tipo_bienestar = 1
+	
+	**********************
+	* bienestar_agregado *
+	**********************
+	gen bienestar_agregado = itf
+	
+	*Metodología oficial de cálculo de las líneas de pobreza INDEC https://www.indec.gob.ar/uploads/informesdeprensa/eph_pobreza_03_269225CA3217.pdf
 
-	**************************
-	*** bienestar_agregado ***
-	**************************
-	/* itf = ingreso total familiar. itf=0 y pondih=0 en los hogares donde algún
-	miembro no declaró ingresos: son hogares excluidos del cálculo oficial, no 
-	hogares sin ingreso */
-	gen double bienestar_agregado = itf
-	replace bienestar_agregado = . if itf == -9
-	replace bienestar_agregado = . if pondih == 0
+	*Adulto equivalente por persona (tabla INDEC; ch06=edad, ch04: 1=varón, 2=mujer)
+	gen double adequiv = .
+	replace adequiv = 0.35 if ch06==0       
+	replace adequiv = 0.37 if ch06==1
+	replace adequiv = 0.46 if ch06==2
+	replace adequiv = 0.51 if ch06==3
+	replace adequiv = 0.55 if ch06==4
+	replace adequiv = 0.60 if ch06==5
+	replace adequiv = 0.64 if ch06==6
+	replace adequiv = 0.66 if ch06==7
+	replace adequiv = 0.68 if ch06==8
+	replace adequiv = 0.69 if ch06==9
+	* Varones 10+
+	replace adequiv = 0.79 if ch04==1 & ch06==10
+	replace adequiv = 0.82 if ch04==1 & ch06==11
+	replace adequiv = 0.85 if ch04==1 & ch06==12
+	replace adequiv = 0.90 if ch04==1 & ch06==13
+	replace adequiv = 0.96 if ch04==1 & ch06==14
+	replace adequiv = 1.00 if ch04==1 & ch06==15
+	replace adequiv = 1.03 if ch04==1 & ch06==16
+	replace adequiv = 1.04 if ch04==1 & ch06==17
+	replace adequiv = 1.02 if ch04==1 & inrange(ch06,18,29)
+	replace adequiv = 1.00 if ch04==1 & inrange(ch06,30,60)
+	replace adequiv = 0.83 if ch04==1 & inrange(ch06,61,75)
+	replace adequiv = 0.74 if ch04==1 & inrange(ch06,76,98)
+	* Mujeres 10+
+	replace adequiv = 0.70 if ch04==2 & ch06==10
+	replace adequiv = 0.72 if ch04==2 & ch06==11
+	replace adequiv = 0.74 if ch04==2 & ch06==12
+	replace adequiv = 0.76 if ch04==2 & inrange(ch06,13,14)
+	replace adequiv = 0.77 if ch04==2 & inrange(ch06,15,17)
+	replace adequiv = 0.76 if ch04==2 & inrange(ch06,18,29)
+	replace adequiv = 0.77 if ch04==2 & inrange(ch06,30,45)
+	replace adequiv = 0.76 if ch04==2 & inrange(ch06,46,60)
+	replace adequiv = 0.67 if ch04==2 & inrange(ch06,61,75)
+	replace adequiv = 0.63 if ch04==2 & inrange(ch06,76,98)
+	* (ch06==99 = Ns/Nr queda en missing a propósito)
+	
+	*Adultos equivalentes del hogar
+	bysort codusu nro_hogar: egen double adeq_hogar = total(adequiv)
+	
+	*******
+	*ln_ci*
+	*******
+	gen double cbt_ae = .
+	replace cbt_ae =302605.6233  if region==1  & trimestre==3
+	replace cbt_ae = 286923.3833 if region==42 & trimestre==3
+	replace cbt_ae = 252282.6967 if region==41 & trimestre==3
+	replace cbt_ae =244736  if region==40 & trimestre==3
+	replace cbt_ae = 299050.19 if region==43 & trimestre==3
+	replace cbt_ae =353498.3267  if region==44 & trimestre==3
+	replace cbt_ae = 407749.85 if region==1  & trimestre==4
+	replace cbt_ae = 387545.02 if region==42 & trimestre==4
+	replace cbt_ae = 342567.19 if region==41 & trimestre==4
+	replace cbt_ae = 328204.11 if region==40 & trimestre==4
+	replace cbt_ae = 402749.32 if region==43 & trimestre==4
+	replace cbt_ae = 477519.42 if region==44 & trimestre==4
+	
+	gen double ln_ci = cbt_ae * adeq_hogar
+	
+	********
+	*lpe_ci*
+	********
+	gen double cba_ae = .
+	replace cba_ae = 135479.06 if region==1  & trimestre==3
+	replace cba_ae = 120706.4567 if region==42 & trimestre==3
+	replace cba_ae = 120881.8267 if region==41 & trimestre==3
+	replace cba_ae = 118023.7067 if region==40 & trimestre==3
+	replace cba_ae = 133886.9367 if region==43 & trimestre==3
+	replace cba_ae = 139523.1033 if region==44 & trimestre==3
+	replace cba_ae = 183406.61  if region==1  & trimestre==4
+	replace cba_ae = 163537.54 if region==42 & trimestre==4
+	replace cba_ae = 164443.07 if region==41 & trimestre==4
+	replace cba_ae = 159074.04 if region==40 & trimestre==4
+	replace cba_ae = 181157.15 if region==43 & trimestre==4
+	replace cba_ae = 189251.96 if region==44 & trimestre==4
 
-	**************
-	*** lpe_ci ***
-	**************
-	gen lpe_ci = .
-
-	*************
-	*** ln_ci ***
-	*************
-	gen ln_ci = .
-
-	*********************
-	*** pobre_ine_ci ***
-	*********************
-	gen byte pobre_ine_ci = .
+	gen double lpe_ci = cba_ae * adeq_hogar
+	
+	****************
+	* pobre_ine_ci*
+	**************** 
+	gen byte pobre_ci = (bienestar_agregado < ln_ci) if !missing(bienestar_agregado, ln_ci)
+	
+	*******************
+	* pobre_ine_ext_ci*
+	******************* 
+	gen byte pobre_ine_ext_ci = (bienestar_agregado < lpe_ci) if !missing(bienestar_agregado, lpe_ci)
 
 	
 
@@ -1290,7 +1361,7 @@ use "`base_in'", clear
 	  aguared_ch aguafconsumo_ch aguafuente_ch aguadist_ch aguadisp1_ch aguadisp2_ch /// Agua y saneamineto
 	  aguatrat_ch aguamala_ch aguamejorada_ch aguamide_ch bano_ch banoex_ch banomejorado_ch sinbano_ch  /// Agua y saneamineto
 	  migrante_ci migrantiguo5_ci miglac_ci /// Migración  
-	  miembros_one_ci tipo_bienestar pobre_ine_ci bienestar_agregado lpe_ci  ln_ci /// Pobreza  
+	  miembros_one_ci tipo_bienestar pobre_ine_ci bienestar_agregado lpe_ci  ln_ci pobre_ine_ci pobre_ine_ext_ci /// Pobreza  
       lp19_2011 lp31_2011 lp5_2011  lp365_2017 lp685_2017 lp14_2017 lp81_2017 tc_c ratio_cpi2011 ratio_cpi2017 cpi_c cpi2011 cpi2017 ppp_c ppp_2011 ppp_2017, first /// Fuente externa
 
 
