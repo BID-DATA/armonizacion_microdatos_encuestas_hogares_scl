@@ -449,7 +449,7 @@ label var pension_ci "1=Recibe pension contributiva"
 *pensionsub_ci*
 ***************
 /*AJAM, nuevo módulo de programas sociales especifica BPC -y BF-, Parte 5*/
-gen pensionsub_ci = (v5001a == 1) 
+gen pensionsub_ci = (v5001a == 1 & edad_ci >= 65) 
 replace pensionsub_ci = . if v5001a == .
 label var pensionsub_ci "1=recibe pension subsidiada / no contributiva"
 
@@ -885,7 +885,6 @@ label var ylnm_ci "Ingreso laboral NO monetario total"
 	
 	gen byte otrogob_ci = (v5003a == 1) if !missing(v5003a)
 	gen byte discap_ci = (v5001a == 1 & edad_ci < 65) if !missing(v5001a)
-	
 	gen byte potrot_ci = (otrogob_ci == 1 | discap_ci == 1)
 	replace potrot_ci = . if otrogob_ci == . & discap_ci == .
 
@@ -903,7 +902,7 @@ label var ylnm_ci "Ingreso laboral NO monetario total"
 	egen double yotrot_ci = rowtotal(yotrogob_ci ydis_ci), mi
 	
 *** Ingreso individual por transferencias no contributivas
-egen double ytransf_ci = rowtotal(ypnc_ci yptmc_ci yotrot_ci)
+egen double ytransf_ci = rowtotal(ypnc_ci yptmc_ci yotrot_ci), mi
 
 ****************
 ***remesas_ci***
@@ -914,13 +913,13 @@ label var remesas_ci "Remesas mensuales reportadas por el individuo"
 *************
 ***ypen_ci***
 *************
-gen double ypen_ci = v5004a2
+gen double ypen_ci = v5004a2 if v5004a2 != .
 label var ypen_ci "Valor de la pension contributiva"
 
 ******************
 *** ypensub_ci ***
 ******************
-gen double ypensub_ci = v5001a2
+gen double ypensub_ci = ypnc_ci
 label var ypensub_ci "Valor de la pension subsidiada / no contributiva"
 
 *************
@@ -930,12 +929,13 @@ label var ypensub_ci "Valor de la pension subsidiada / no contributiva"
 	* v5002a2 Rend recebido de bolsa familia > yptmc_ci
 	* v5003a2 Rend recebido de outro prog social > yotros_ci
 	* v5004a2 Rend recebido de aposentadoria e pensão > ypen_ci
+	* v5005a2 Rend de seguro-desemprego, seguro-defeso
 	* v5006a2 Rend recebido por pensão alimentícia doação etc
 	* v5007a2 Rend recebido aluguel e arrendamento
 	* v5008a2 Rend recebido de outros rendimentos
 
-egen double ynlm_ci = rowtotal(ytransf_ci ypen_ci v5006a2 v5007a2 v5008a2 remesas_ci), mi
-replace ynlm_ci = . if (ytransf_ci == . &  ypen_ci==. &  v5006a2==. & v5007a2==. &  v5008a2==. &  remesas_ci == .)
+egen double ynlm_ci = rowtotal(ytransf_ci ypen_ci v5005a2 v5006a2 v5007a2 v5008a2 remesas_ci), mi
+replace ynlm_ci = . if (ytransf_ci == . &  ypen_ci==. & v5005a2 == . & v5006a2==. & v5007a2==. &  v5008a2==. &  remesas_ci == .)
 label var ynlm_ci "Ingreso no laboral monetario"  
 
 **************
@@ -944,16 +944,10 @@ label var ynlm_ci "Ingreso no laboral monetario"
 gen ynlnm_ci=.
 label var ynlnm_ci "Ingreso no laboral no monetario"
 
-
-*** INGRESO TOTAL LABORAL Y NO LABORAL (MONETARIO Y NO MONETARIO) ***
-
 ***************
 *** ytot_ci ***
 *************** 
 egen double ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci), mi
-
-
-*** INGRESO NETO INDIVIDUAL > INGRESO PRIMARIO + TRANSFERENCIAS PRIVADAS ***
 
 ***************
 *** ynet_ci ***
@@ -997,6 +991,7 @@ label var ylmnr_ch "Ingreso laboral monetario del hogar"
 	bys idh_ch: egen byte pnc_ch = max(pnc_ci) if miembros_ci == 1
 	bys idh_ch: egen byte ptmc_ch = max(ptmc_ci) if miembros_ci == 1
 	bys idh_ch: egen byte potrot_ch = max(potrot_ci) if miembros_ci == 1
+	
 	gen byte pcasht_ch = (pnc_ch == 1 | ptmc_ch == 1 | potrot_ch == 1)
 	replace pcasht_ch = . if pnc_ch == . & ptmc_ch == . & potrot_ch == .
 
