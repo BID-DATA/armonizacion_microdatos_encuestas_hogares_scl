@@ -970,16 +970,8 @@ replace eduui_ci = 0 if !missing(aedu_ci) & !(v3003a == 8 | (v3009a == 12 & v301
 **************
 
 gen eduuc_ci = .
-replace eduuc_ci = 1 if !missing(aedu_ci) & (                           
-                        (v3009a == 12 & v3014 == 1) |                             
-                        inlist(v3003a, 9, 10, 11) |                             
-                        inlist(v3009a, 13, 14, 15)                               
-                      )
-replace eduuc_ci = 0 if !missing(aedu_ci) & !(                                    
-                        (v3009a == 12 & v3014 == 1) |                            
-                        inlist(v3003a, 9, 10, 11) |                              
-                        inlist(v3009a, 13, 14, 15)                              
-                      )
+replace eduuc_ci = 1 if !missing(aedu_ci) & ((v3009a == 12 & v3014 == 1) | inlist(v3003a, 9, 10, 11) | inlist(v3009a, 13, 14, 15))
+replace eduuc_ci = 0 if !missing(aedu_ci) & !((v3009a == 12 & v3014 == 1) | inlist(v3003a, 9, 10, 11) | inlist(v3009a, 13, 14, 15))
 
 **************
 ***eduac_ci***
@@ -1021,7 +1013,7 @@ replace asispre_ci = 1 if v2009 >= 4 & v3003a == 2
 
 * NOTA: No cuenta con preguntas para esta variable
 
-gen pqnoasis1_ci = .
+gen razonesnoasis_ci = .
 	
 ****************************
 ***VARIABLES DE VIVIENDA***

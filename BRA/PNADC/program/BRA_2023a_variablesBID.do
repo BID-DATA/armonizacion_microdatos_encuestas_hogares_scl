@@ -1050,16 +1050,8 @@ replace eduui_ci = 0 if !missing(aedu_ci) & !(v3003a == 8 | (v3009a == 12 & v301
 **************
 
 gen eduuc_ci = .
-replace eduuc_ci = 1 if !missing(aedu_ci) & (                           
-                        (v3009a == 12 & v3014 == 1) |                             
-                        inlist(v3003a, 9, 10, 11) |                             
-                        inlist(v3009a, 13, 14, 15)                               
-                      )
-replace eduuc_ci = 0 if !missing(aedu_ci) & !(                                    
-                        (v3009a == 12 & v3014 == 1) |                            
-                        inlist(v3003a, 9, 10, 11) |                              
-                        inlist(v3009a, 13, 14, 15)                              
-                      )
+replace eduuc_ci = 1 if !missing(aedu_ci) & ((v3009a == 12 & v3014 == 1) | inlist(v3003a, 9, 10, 11) | inlist(v3009a, 13, 14, 15))
+replace eduuc_ci = 0 if !missing(aedu_ci) & !((v3009a == 12 & v3014 == 1) | inlist(v3003a, 9, 10, 11) | inlist(v3009a, 13, 14, 15))
 
 **************
 ***eduac_ci***
@@ -1096,12 +1088,12 @@ replace asispre_ci = 1 if v2009 >= 4 & v3003a == 2
 
 
 ******************
-***pqnoasis1_ci***
+***razonesnoasis_ci***
 ******************
 
 * NOTA: No cuenta con preguntas para esta variable
 
-gen pqnoasis1_ci = .
+gen razonesnoasis_ci = .
 
 	**********************************
 	**** VARIABLES DE LA VIVIENDA ****
@@ -1607,7 +1599,7 @@ do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&Exter
   ylm_ch ylnm_ch ylmnr_ch ynlm_ch ynlnm_ch ylmhopri_ci ylmho_ci /// Ingresos del hogar 
   nrylmpri_ci nrylmpri_ch /// No respuesta de ingresos  
   remesas_ci remesas_ch ypen_ci ypensub_ci /// Remesas y pensiones
-  aedu_ci eduui_ci eduuc_ci edupre_ci eduac_ci asiste_ci edupub_ci pqnoasis1_ci asispre_ci /// Educación
+  aedu_ci eduui_ci eduuc_ci edupre_ci eduac_ci asiste_ci edupub_ci razonesnoasis_ci asispre_ci /// Educación
   luz_ch luzmide_ch combust_ch piso_ch pared_ch techo_ch resid_ch dorm_ch cuartos_ch cocina_ch telef_ch refrig_ch /// Vivienda
   freez_ch auto_ch compu_ch internet_ch cel_ch vivi1_ch vivi2_ch viviprop_ch vivitit_ch vivialq_ch vivialqimp_ch /// Vivienda
   aguared_ch aguafconsumo_ch aguafuente_ch aguadist_ch aguadisp1_ch aguadisp2_ch /// Agua y saneamineto
