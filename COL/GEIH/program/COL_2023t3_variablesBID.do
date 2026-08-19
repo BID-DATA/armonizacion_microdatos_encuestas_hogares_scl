@@ -1063,114 +1063,240 @@ label var ypeoficial_ch "Ingreso per cápita generado por el país"
 			****************************
 			***VARIABLES DE EDUCACION***
 			****************************
+			
 **************
 ***aedu_ci***
 **************	
-	g aedu_ci = . 
-* 0 años de educacion 
-	replace aedu_ci = 0 if p3042 == 1 | p3042 == 2 
-	replace aedu_ci = 0 if p3042 == 3 & p3042s1 == 0 
-*Primaria
-	replace aedu_ci = 1 if p3042 == 3 & p3042s1 == 1
-	replace aedu_ci = 2 if p3042 == 3 & p3042s1 == 2
-	replace aedu_ci = 3 if p3042 == 3 & p3042s1 == 3
-	replace aedu_ci = 4 if p3042 == 3 & p3042s1 == 4
-	replace aedu_ci = 5 if p3042 == 3 & p3042s1 == 5
-	replace aedu_ci = 5 if p3042 == 4 & p3042s1 == 0
-*Secundaria (se incluye normalista como otra modalidad de secundaria)
-	replace aedu_ci = 6  if p3042 == 4 & p3042s1 == 1
-	replace aedu_ci = 7  if p3042 == 4 & p3042s1 == 2
-	replace aedu_ci = 8  if p3042 == 4 & p3042s1 == 3
-	replace aedu_ci = 9  if p3042 == 4 & p3042s1 == 4	
-	replace aedu_ci = 9  if p3042 == 5 & p3042s1 == 0	
-	replace aedu_ci = 9  if p3042 == 6 & p3042s1 == 0
-	replace aedu_ci = 9  if p3042 == 7 & p3042s1 == 0
-	replace aedu_ci = 9  if p3042 == 7 & p3042s1 == 1
-		
-	replace aedu_ci = 10 if p3042 == 5 & p3042s1 == 1
-	replace aedu_ci = 10 if p3042 == 6 & p3042s1 == 1
-	replace aedu_ci = 10 if p3042 == 7 & p3042s1 == 2
-	replace aedu_ci = 10 if p3042 == 7 & p3042s1 == 3
-	replace aedu_ci = 11 if p3042 == 5 & p3042s1 == 2
-	replace aedu_ci = 11 if p3042 == 6 & p3042s1 == 2
-	replace aedu_ci = 11 if p3042 == 7 & p3042s1 == 4
+
+/*
+
+Modificado: Manuel Marcos (2026-08-19)
+
+P3042: ¿Cuál es el mayor nivel educativo alcanzado y el último grado o semestre aprobado por …...?
+
+1	Ninguno
+2	Preescolar 
+3	Básica primaria (1o - 5o)
+4	Básica secundaria (6o - 9o)
+5	Media académica (Bachillerato clásico)
+6	Media técnica (Bachillerato técnico)
+7	Normalista. NOTA: normalista es una modalidad especial que no hace parte de superior pero es postsecundaria
+8	Técnica profesional
+9	Tecnológica 
+10	Universitaria
+11	Especialización 
+12	Maestría 
+13	Doctorado 
+99	No sabe, no informa
+
+p3042s1: Grado al que asiste
+
+# NOTAS METODOLÓGICAS #
+#=====================#
+
+- La educación normalista se toma como terciaria corta (post-secundaria)
+
+- (06/07/2026): La Ley 2481 de 2025 estableció el marco normativo de las escuelas normales superiores 
+como instituciones autorizadas para la oferta de educación superior, y define expresamente que estas operan 
+mediante ciclos propedéuticos en la educación superior, otorgando el título de normalista superior en el 
+Programa de Formación Complementaria y el título de licenciado en el programa de formación de maestros. Es 
+decir, con la normativa vigente el normalista superior ya está formalmente incorporado como parte de la 
+oferta de educación superior, aunque con un régimen especial. En este sentido, hay que evaluar si se ingresa 
+como superior o no ya que esto podría afectar la comparabilidad.
+
+- La educación secundaria se compone por básica secundaria + media (todo ello 
+hace el bachillerato) que tiene en total 6 años de escolaridad (4 de básica secundaria +
+2 de media)
 	
-*Superior
-	replace aedu_ci = 12 if p3042 == 7 & p3042s1 == 5
-	replace aedu_ci = 11+ trunc(p3042s1/2) if p3042>=8 & p3042<=13
+- p3042s1 para niveles 7-13 está en semestres, por ello se divide entre 2 para convertir a años y
+	se trunca hacia abajo cuando haya decimales. Si el valor es 3.9 años, se trunca a 3 años.
 	
-*Missing
-	replace aedu_ci =. if p3042==99
-	replace aedu_ci =. if p3042s1==99
+- La educación normalista suelen durar 4 semestres. La educación técnica profesional y la tecnológica  
+puede llegar a durar 6 semestres. Cuando se ven 6 semestres asociados a lo "técnico", casi siempre se trata 
+del ciclo completo técnico + tecnólogo sumados: los técnicos profesionales cuentan con una duración de cuatro 
+a cinco semestres, y si se continúa con la tecnología esta agrega dos semestres más, totalizando seis semestres 
+para llegar al título de tecnólogo.
+
+- La educación universitaria tiene como máximo 12 semestres en el caso de Medicina y 10 para las demás.
+Considerando esto, todos los valores mayores a 12 se truncarán a 12 semestres asumiendo que corresponden a 
+la carrera profesional de medicina (esto es un supuesto práctico).
+
+- La especialización es conceptualmente diferente a maestría y doctorado. Esta suele tener duración 
+de entre 2 a 4 semestres, aunque para el caso de medicina puede durar 10 semestres incluso (especializaciones 
+médico-quirúrgicas). Por ello, se divide entre 2 sin modificaciones y se hacen arreglos según corresponda.
+	
+- Los doctorados en colombia pueden tener duración de 10 semestre (5 años) como máximo. Todos los 
+valores mayores a 10 se truncarán a 10 semestres (5 años).
+
+*/
+
+
+* Truncar los semestres a años para educación superior
+gen sup_año = .
+replace sup_año = trunc(p3042s1/2) if inrange(p3042, 7, 13)
+
+gen aedu_ci = .
+
+* Missing y no precisa
+replace aedu_ci = . if p3042 == 99
+replace aedu_ci = . if missing(p3042)
+
+* Primaria incompleta
+replace aedu_ci = 0 if inlist(p3042, 1, 2)          /*No ha terminado ningún nivel educativo*/
+replace aedu_ci = 0 if p3042 == 3 & p3042s1 == 0    /*Recién inició el nivel*/
+replace aedu_ci = 1 if p3042 == 3 & p3042s1 == 1    /*Primer grado de primaria*/
+replace aedu_ci = 2 if p3042 == 3 & p3042s1 == 2	/*Segundo grado de primaria*/
+replace aedu_ci = 3 if p3042 == 3 & p3042s1 == 3	/*Tercer grado de primaria*/
+replace aedu_ci = 4 if p3042 == 3 & p3042s1 == 4	/*Cuarto grado de primaria*/
+replace aedu_ci = 5 if p3042 == 3 & p3042s1 == 5	/*Quinto grado de primaria*/
+replace aedu_ci = 5 if p3042 == 4 & p3042s1 == 0	/*Quinto grado de primaria*/
+
+* Primaria completa (p3042==4) y grados de secundaria
+
+replace aedu_ci = 6 if p3042 == 4 & p3042s1 == 1     /*Sexto grado de secundaria*/
+replace aedu_ci = 7 if p3042 == 4 & p3042s1 == 2     /*Séptimo grado de secundaria*/
+replace aedu_ci = 8 if p3042 == 4 & p3042s1 == 3     /*Octavo grado de secundaria*/
+replace aedu_ci = 9 if p3042 == 4 & p3042s1 == 4     /*Noveno grado de secundaria*/
+replace aedu_ci = 9 if p3042 == 5 & p3042s1 == 0     /*Noveno grado de secundaria*/
+replace aedu_ci = 9 if p3042 == 6 & p3042s1 == 0     /*Noveno grado de secundaria*/
+
+* Bachillerato
+
+replace aedu_ci = 10 if p3042 == 5 & p3042s1 == 1    /*Primero de bachillerato*/
+replace aedu_ci = 11 if p3042 == 5 & p3042s1 == 2    /*Segundo de bachillerato*/
+replace aedu_ci = 10 if p3042 == 6 & p3042s1 == 1    /*Primero de bachillerato*/
+replace aedu_ci = 11 if p3042 == 6 & p3042s1 == 2    /*Segundo de bachillerato*/
+replace aedu_ci = 11 if p3042 == 7 & sup_año == 0    /*Bachiller terminado*/
+replace aedu_ci = 11 if p3042 == 8 & sup_año == 0    /*Bachiller terminado*/
+replace aedu_ci = 11 if p3042 == 9 & sup_año == 0    /*Bachiller terminado*/
+replace aedu_ci = 11 if p3042 == 10 & sup_año == 0   /*Bachiller terminado*/
+
+* Educación superior (normal, técnica, tecnológica, universitaria, etc.)
+
+replace aedu_ci = 11 + sup_año if p3042 == 7 & sup_año == 1           /*Normalista primer año*/
+replace aedu_ci = 11 + 2 if p3042 == 7 & sup_año >= 2                 /*Normalista segundo año*/
+
+replace aedu_ci = 11 + sup_año if p3042 == 8 & sup_año == 1           /*Técnica profesional primer año*/
+replace aedu_ci = 11 + sup_año if p3042 == 8 & sup_año == 2           /*Técnica profesional segundo año*/
+replace aedu_ci = 11 + 3 if p3042 == 8 & sup_año >= 3                 /*Técnica profesional tercer año*/
+
+replace aedu_ci = 11 + sup_año if p3042 == 9 & sup_año == 1           /*Tecnológica primer año*/
+replace aedu_ci = 11 + sup_año if p3042 == 9 & sup_año == 2           /*Tecnológica segundo año*/
+replace aedu_ci = 11 + 3 if p3042 == 9 & sup_año >= 3                 /*Tecnológica tercer año*/
+
+replace aedu_ci = 11 + sup_año if p3042 == 10 & inrange(sup_año, 1, 5)    /*Universitario de 1 a 5 años*/
+replace aedu_ci = 11 + 5 if p3042 == 10 & sup_año > 5                     /*Universitario 5 años*/
+
+replace aedu_ci = 16 if p3042 == 11                                       /*Si hizo especializaciones se asume que tiene universitario 5 años*/
+replace aedu_ci = 16 if p3042 == 12 & sup_año == 0                        /*Universitario 5 años*/
+replace aedu_ci = 16 + sup_año if p3042 == 12 & sup_año == 1              /*Maestría 1 año*/
+replace aedu_ci = 16 + 2 if p3042 == 12 & sup_año >= 2                    /*Maestría 2 años*/
+
+replace aedu_ci = 18 if p3042 == 13 & sup_año == 0                        /*Maestría 2 años*/
+replace aedu_ci = 18 + sup_año if p3042 == 13 & inrange(sup_año, 1, 2)    /*Doctorado 1 a 3 años*/
+replace aedu_ci = 18 + 3 if p3042 == 13 & sup_año >= 3                    /*Doctorado 3 años*/
 
 ***************
 ***edupre_ci***
 ***************
-	g byte edupre_ci =.
-	la var edupre_ci "Educación preescolar"
 
+gen edupre_ci = .
 
 **************
 ***eduui_ci***
 **************
-* Nota: normalista es una modalidad especial que no hace parte de superior pero es postsecundaria
 
-	g byte eduui_ci = (inlist(p3042, 8, 9, 10, 11, 12, 13) & inlist(p3043, 2, 3, 4)) 
-	replace eduui_ci = . if aedu_ci == .
-	label variable eduui_ci "Superior incompleto"
-
+gen eduui_ci = 0
+replace eduui_ci = . if p3042 == 99
+replace eduui_ci = . if missing(p3042)
+replace eduui_ci = 1 if p3042 == 7 & sup_año == 1
+replace eduui_ci = 1 if p3042 == 8 & sup_año == 1
+replace eduui_ci = 1 if p3042 == 8 & sup_año == 2
+replace eduui_ci = 1 if p3042 == 9 & sup_año == 1
+replace eduui_ci = 1 if p3042 == 9 & sup_año == 2
+replace eduui_ci = 1 if p3042 == 10 & inrange(sup_año, 1, 4)
 
 ***************
 ***eduuc_ci***
 ***************
-* Nota: normalista es una modalidad especial que no hace parte de superior pero es postsecundaria
 
-	g byte eduuc_ci = (inlist(p3042, 8, 9, 10, 11, 12, 13) & inlist(p3043, 5, 6, 7, 8, 9, 10))
-	replace eduuc_ci = . if aedu_ci == .
-	label variable eduuc_ci "Superior completo"
+gen eduuc_ci = 0
+replace eduuc_ci = . if p3042 == 99
+replace eduuc_ci = . if missing(p3042)
+replace eduuc_ci = 1 if p3042 == 7 & sup_año == 1
+replace eduuc_ci = 1 if p3042 == 7 & sup_año >= 2
+replace eduuc_ci = 1 if p3042 == 8 & sup_año == 1
+replace eduuc_ci = 1 if p3042 == 8 & sup_año == 2
+replace eduuc_ci = 1 if p3042 == 8 & sup_año >= 3
+replace eduuc_ci = 1 if p3042 == 9 & sup_año == 1
+replace eduuc_ci = 1 if p3042 == 9 & sup_año == 2
+replace eduuc_ci = 1 if p3042 == 9 & sup_año >= 3
+replace eduuc_ci = 1 if p3042 == 10 & inrange(sup_año, 1, 5)
+replace eduuc_ci = 1 if p3042 == 10 & sup_año > 5
+replace eduuc_ci = 1 if p3042 == 11
+replace eduuc_ci = 1 if p3042 == 12 & sup_año == 0
+replace eduuc_ci = 1 if p3042 == 12 & sup_año == 1
+replace eduuc_ci = 1 if p3042 == 12 & sup_año >= 2
+replace eduuc_ci = 1 if p3042 == 13 & sup_año == 0
+replace eduuc_ci = 1 if p3042 == 13 & inrange(sup_año, 1, 2)
+replace eduuc_ci = 1 if p3042 == 13 & sup_año >= 3
 
 **************
 ***eduac_ci***
 **************
 
-	gen byte eduac_ci = .
-	replace eduac_ci = 1 if (inlist(p3042, 10, 11, 12, 13) & inlist(p3043, 7, 8, 9, 10))
-	replace eduac_ci = 0 if (inlist(p3042, 8, 9 ) & inlist(p3043, 5, 6))
-	label variable eduac_ci "Superior universitario vs superior no universitario"
-
+gen eduac_ci = 0
+replace eduac_ci = . if p3042 == 99
+replace eduac_ci = . if missing(p3042)
+replace eduac_ci = 1 if p3042 == 10 & inrange(sup_año, 1, 5)
+replace eduac_ci = 1 if p3042 == 10 & sup_año > 5
+replace eduac_ci = 1 if p3042 == 11
+replace eduac_ci = 1 if p3042 == 12 & sup_año == 0
+replace eduac_ci = 1 if p3042 == 12 & sup_año == 1
+replace eduac_ci = 1 if p3042 == 12 & sup_año >= 2
+replace eduac_ci = 1 if p3042 == 13 & sup_año == 0
+replace eduac_ci = 1 if p3042 == 13 & inrange(sup_año, 1, 2)
+replace eduac_ci = 1 if p3042 == 13 & sup_año >= 3
 
 ***************
 ***asiste_ci***
 ***************
-	g asiste_ci = 1 if p6170 == 1
-	replace asiste_ci = 0 if p6170 == 2
-	la var asiste_ci "Asiste actualmente a la escuela"
-	
+
+gen asiste_ci = .
+replace asiste_ci = 1 if p6170 == 1
+replace asiste_ci = 0 if p6170 == 2
 
 ***************
 ***edupub_ci***
 ***************
-	g edupub_ci =.
-	replace edupub=1 if p3041 == 1 & p6170==1
-	replace edupub_ci = 0 if p3041 == 2 & p6170==1
-	la var edupub_ci "Asiste a un centro de enseñanza público"
 
+/*
+p6170: ¿Actualmente asiste a alguna institución educativa (por ejemplo: jardín, escuela, colegio, universidad)?		
+p3041: La institución a la que asiste es: 1. Pública o 2. privada	
+*/
 
+gen edupub_ci = .
+replace edupub_ci = 1 if p6170 == 1 & p3041 == 1
+replace edupub_ci = 0 if p6170 == 1 & p3041 == 2
 	
 ***************
 ***asispre_ci**
 ***************
-	g asispre_ci= (p6170==1 & p3042==2 & p3042s1 <2)
-	la var asispre_ci "Asiste a educación prescolar"
 
+gen asispre_ci = 0
+replace asispre_ci = 1 if p6170 == 1 & p3042 == 1
 		
 **************
 *pqnoasis1_ci*
 **************
+
+* No cuenta con preguntas para esta variable
+
 g pqnoasis1_ci = .
 
-	
-	
+
+			
+
 
 		**********************************
 		**** VARIABLES DE WASH ****
