@@ -1086,23 +1086,87 @@ label var ylmho_ci "Salario monetario de todas las actividades"
 ******************************************************************************
 *	EDUCATION 
 ******************************************************************************
-*Javier
 
-*******************************************
-*	aedu_ci
-*******************************************
+* Convertir variables a numéricas
+destring p03a02 p03a03 p03a04a p03a05a p03a05b p03a06, replace force
 
-gen aedu_ci=.
-replace	 aedu_ci=0  if p03a05a==0
-replace	 aedu_ci=0  if p03a05a==1
-replace aedu_ci=p03a05b if p03a05a==2
-replace aedu_ci=6+p03a05b if p03a05a==3
-replace aedu_ci=6+p03a05b if p03a05a==4
-replace aedu_ci=11+p03a05b if p03a05a==5
-replace aedu_ci=16+p03a05b if p03a05a==6  
-replace aedu_ci=18+p03a05b if p03a05a==7  
-label var aedu_ci "Anios de educacion aprobados"
+**************
+***aedu_ci***
+**************
 
+gen aedu_ci = .
+replace aedu_ci = 0 if inlist(p03a05a, 0, 1)
+replace aedu_ci = p03a05b if p03a05a == 2 & !missing(p03a05b)
+replace aedu_ci = 6 + p03a05b if p03a05a == 3 & !missing(p03a05b)
+replace aedu_ci = 6 + p03a05b if p03a05a == 4 & p03a05b == 4 & !missing(p03a05b)
+replace aedu_ci = 11 if p03a05a == 4 & p03a05b >= 5 & !missing(p03a05b)
+replace aedu_ci = 11 + p03a05b if p03a05a == 5 & inrange(p03a05b, 1, 5) & !missing(p03a05b)
+replace aedu_ci = 16 if p03a05a == 5 & p03a05b >= 6 & !missing(p03a05b)
+replace aedu_ci = 16 + p03a05b if p03a05a == 6 & !missing(p03a05b)
+replace aedu_ci = 18 + p03a05b if p03a05a == 7 & !missing(p03a05b)
+
+***************
+***edupre_ci***
+***************
+
+gen edupre_ci = .
+
+**************
+***eduui_ci***
+**************
+
+gen eduui_ci = 0
+replace eduui_ci = 1 if p03a04a == 5 & p03a05a == 4
+replace eduui_ci = 1 if p03a05a == 5 & p03a05b < 5 & !missing(p03a05b)
+
+***************
+***eduuc_ci***
+***************
+gen eduuc_ci = 0
+replace eduuc_ci = 1 if p03a05a == 5 & inrange(p03a06, 1001, 1099)
+replace eduuc_ci = 1 if p03a05a == 5 & p03a05b >= 5 & !missing(p03a05b)
+replace eduuc_ci = 1 if inlist(p03a05a, 6, 7)
+replace eduuc_ci = 1 if p03a05a == 5 & inlist(p03a04a, 6, 7)
+
+**************
+***eduac_ci***
+**************
+
+gen eduac_ci = .
+replace eduac_ci = 0 if p03a05a == 5 & inrange(p03a06, 1001, 1099)
+replace eduac_ci = 1 if inlist(p03a05a, 6, 7)
+replace eduac_ci = 1 if p03a05a == 5 & inlist(p03a04a, 6, 7)
+replace eduac_ci = 1 if p03a05a == 5 & inrange(p03a06, 2000, 7100)
+replace eduac_ci = 1 if p03a05a == 5 & p03a05b >= 5 & !missing(p03a05b)
+
+***************
+***asiste_ci***
+***************
+
+gen asiste_ci = .
+replace asiste_ci = 1 if p03a02 == 1
+replace asiste_ci = 0 if p03a02 == 2
+
+***************
+***edupub_ci***
+***************
+
+gen edupub_ci = .
+replace edupub_ci = 1 if p03a03 == 1
+replace edupub_ci = 0 if p03a03 == 2
+
+***************
+***asispre_ci**
+***************
+
+gen asispre_ci = 0
+replace asispre_ci = 1 if p03a04a == 1
+
+**************
+*pqnoasis1_ci*
+**************
+
+gen razonesnoasis_ci = .
 
 ******************************
 * Line of code with indicator eduno_ci was deleted******************************
@@ -1131,73 +1195,19 @@ label var aedu_ci "Anios de educacion aprobados"
 ******************************
 * Line of code with indicator edus2c_ci was deleted******************************
 * Line of code with indicator edus2c_ci was deleted* Line of code with indicator edus2c_ci was deleted
-**************
-***eduui_ci***
-**************
-gen eduui_ci = (((p03a04a == 5 & p03a05a == 4) | p03a05a == 5) &  inrange(p03a06, 103, 499)) 
-replace eduui_ci = . if aedu_ci == .
-lab var eduui_ci "Superior Incompleto"
-
-**************
-***eduuc_ci***
-**************
-gen eduuc_ci = ((p03a05a == 5 & inrange(p03a06, 500, 7100)) | inlist(p03a04a, 6, 7) |  inlist(p03a05a, 6, 7))
-replace eduuc_ci = . if aedu_ci == .
-lab var eduuc_ci "Superior Completo"
-
-**************
-***eduac_ci***
-**************
-gen eduac_ci = (inrange(p03a06, 2000, 7100))
-replace eduac_ci = . if (p03a06 == . |  p03a06 <= 499)
-label variable eduac_ci "Superior universitario vs superior no universitario"
-
-******************************
-*	edupre_ci 
-******************************
-g byte edupre_ci=.
-label variable edupre_ci "Educacion preescolar"
-******************************
-*	asispre_ci:
-******************************
-/* 
-Proxy de asistencia p03a04a
-¿En qué nivel y grado se inscribió (……...) para el presente ciclo escolar?
-*/
-g byte asispre_ci = 0 
-replace asispre_ci = 1 if p03a04a == 1
-la var asispre_ci "Asiste a Educacion preescolar"
-
-
-******************************
-*	asiste_ci: 
-******************************
-/*
-Como proxy de asistencia se usa la variable p03a02
-(….), ¿Se inscribió en algún plantel educativo para el presente ciclo escolar?
-*/
-g asiste_ci = (p03a02 == 1)
-replace asiste_ci = 0 if p03a02 == 2
-replace asiste_ci = . if p03a02 == .
-lab var asiste_ci "Asiste a Centro educativo"
-
 ******************************
 * Line of code with indicator pqnoasis_ci was deleted******************************
 * Line of code with indicator pqnoasis_ci was deleted
-**************
-*pqnoasis1_ci*
-**************
-
-g       pqnoasis1_ci = .
-
 ******************************
 * Line of code with indicator repite_ci was deleted******************************
 * Line of code with indicator repite_ci was deleted******************************
 * Line of code with indicator repiteult was deleted* Line of code with indicator repiteult was deleted*	edupub_ci 
 ******************************
-g edupub_ci=.
-replace edupub_ci=1 if p03a03==1 // asiste y es publico
-replace edupub_ci=0 if p03a03==2 // asiste y es privado
+
+
+
+
+
 
 
 
