@@ -1178,118 +1178,95 @@ label var ylmho_ci "Salario monetario de todas las actividades"
          *** VARIABLES DE EDUCACIÓN  **
          ******************************
 
-******************************
-*	asiste_ci: Definida aqui como inscritos en plantel educativo en el presente anio escolar  OK
-******************************
-* P03A02 2021 es p04a02 en 2022: Inscripción escolar
-g asiste_ci = (p04a02 == 1)
-replace asiste_ci = . if p04a02 == .
-notes: asiste is defined as enrolled in the current school year
+* Convertir variables a numéricas
+destring p04a02 p04a03 p04a04a p04a05a p04a05b p04a06, replace force
 
-*******************************************
-*	aedu_ci: Anios de educacion COMPLETADOS
-*******************************************
+**************
+***aedu_ci***
+**************
 
-/* 2021 p03a01 y 2022 p04a01: analfabetos (2) que no contestan sobre nivel y grado
-   202 la variabla p03a05b va de 1-6 y en el 2022 p04a05b va de 1-26:
-           1 1ro primaria
-           2 2do primaria
-           3 3ro primaria
-           4 4to primaria
-           5 5to primaria
-           6 6to primaria
-           7 1ro básico
-           8 2do básico
-           9 3ro básico
-          10 4to diversificado
-          11 5to diversificado
-          12 6to diversificado
-          13 7mo diversificado
-          14 1er año universidad
-          15 2do año universidad
-          16 3er año universidad
-          17 4to año universidad
-          18 5to año universidad
-          19 6to año universidad
-          20 1er año maestría
-          21 2do año maestría
-          22 3er año maestría
-          23 1er año doctorado
-          24 2do año doctorado
-          25 3er año doctorado
-          26 4to año doctorado 
-		  
-		  tab p04a05b p04a05a*/
+gen aedu_ci = .
+replace aedu_ci = 0 if inlist(p04a05a, 0, 1) & missing(aedu_ci)
+replace aedu_ci = p04a05b if p04a05a == 2 & !missing(p04a05b) & missing(aedu_ci)
+replace aedu_ci = p04a05b if p04a05a == 3 & !missing(p04a05b) & missing(aedu_ci)
+replace aedu_ci = p04a05b if p04a05a == 4 & p04a05b == 10 & !missing(p04a05b) & missing(aedu_ci)
+replace aedu_ci = 11      if p04a05a == 4 & p04a05b >= 11 & !missing(p04a05b) & missing(aedu_ci)
+replace aedu_ci = 11+1 if p04a05b == 14 & !missing(p04a05b) & missing(aedu_ci)   
+replace aedu_ci = 11+2 if p04a05b == 15 & !missing(p04a05b) & missing(aedu_ci)   
+replace aedu_ci = 11+3 if p04a05b == 16 & !missing(p04a05b) & missing(aedu_ci)    
+replace aedu_ci = 11+4 if p04a05b == 17 & !missing(p04a05b) & missing(aedu_ci)   
+replace aedu_ci = 11+5 if inlist(p04a05b, 18, 19) & !missing(p04a05b) & missing(aedu_ci)  
+replace aedu_ci = 11+5+1 if p04a05b == 20 & !missing(p04a05b) & missing(aedu_ci)   
+replace aedu_ci = 11+5+2 if inlist(p04a05b, 21, 22) & !missing(p04a05b) & missing(aedu_ci)  
+replace aedu_ci = 11+5+2+1 if p04a05b == 23 & !missing(p04a05b) & missing(aedu_ci)   
+replace aedu_ci = 11+5+2+2 if p04a05b == 24 & !missing(p04a05b) & missing(aedu_ci)   
+replace aedu_ci = 11+5+2+3 if p04a05b == 25 & !missing(p04a05b) & missing(aedu_ci)   
+replace aedu_ci = 11+5+2+4 if p04a05b == 26 & !missing(p04a05b) & missing(aedu_ci)   
 
-/* Antes del 2022 el código era así:
-gen aedu_ci=.
-replace	 aedu_ci=0  if p03a05a==1
+***************
+***edupre_ci***
+***************
 
-*Modificación Mayra Sáenz Agosto 2015: Aunque en el cuestionario consta la categoría 0 = ninguno
-*En la base de datos no se incluye la categoría. Por lo tanto, se considera ningun tipo de educación
-*a los que no saben leer ni escribir y no responden ls preguntas de educación.
-replace aedu_ci=0  if p03a01 ==2 & (p03a05a==. & p03a05b==.)
+gen edupre_ci = .
 
-*Primaria 
-replace aedu_ci=1  if (p03a05a==2 & p03a05b==1)
-replace aedu_ci=2  if (p03a05a==2 & p03a05b==2)
-replace aedu_ci=3  if (p03a05a==2 & p03a05b==3)
-replace aedu_ci=4  if (p03a05a==2 & p03a05b==4)
-replace aedu_ci=5  if (p03a05a==2 & p03a05b==5)
-replace aedu_ci=6  if (p03a05a==2 & p03a05b==6) 
+**************
+***eduui_ci***
+**************
 
-*Secundaria
-replace aedu_ci=7  if (p03a05a==3 & p03a05b==1) 
-replace aedu_ci=8 if (p03a05a==3 & p03a05b==2) 
-replace aedu_ci=9 if (p03a05a==3 & p03a05b==3) 
-replace aedu_ci=10 if (p03a05a==4 & (p03a05b==2 | p03a05b==4)) 
-replace aedu_ci=11 if (p03a05a==4 & p03a05b==5) 
-replace aedu_ci=12 if (p03a05a==4 & p03a05b==6) 
+gen eduui_ci = 0
+replace eduui_ci = 1 if p04a04a == 5 & p04a05a == 4
+replace eduui_ci = 1 if p04a05a == 5 & inlist(p04a05b, 14, 15, 16, 17) & !missing(p04a05b)
 
-*Superior
-replace aedu_ci=13 if (p03a05a==5 & p03a05b==1)
-replace aedu_ci=14 if (p03a05a==5 & p03a05b==2)
-replace aedu_ci=15 if (p03a05a==5 & p03a05b==3)
-replace aedu_ci=16 if (p03a05a==5 & p03a05b==4)
-replace aedu_ci=17 if (p03a05a==5 & p03a05b==5) 
-replace aedu_ci=18 if (p03a05a==5 & p03a05b==6) //ingenierias duran 6 años.  
-replace aedu_ci=19 if (p03a05a==5 & p03a05b==7) //quizas es medicina
+***************
+***eduuc_ci***
+***************
 
-*Postgrado
-replace aedu_ci=12+6 if (p03a05a==6 & p03a05b==1) 
-replace aedu_ci=12+6+1 if (p03a05a==6 & p03a05b==2)
+gen eduuc_ci = 0
+replace eduuc_ci = 1 if p04a05a == 5 & inrange(p04a06, 1001, 1099)
+replace eduuc_ci = 1 if p04a05a == 5 & inlist(p04a05b, 18, 19) & !missing(p04a05b)
+replace eduuc_ci = 1 if inlist(p04a05a, 6, 7)
+replace eduuc_ci = 1 if p04a05a == 5 & inlist(p04a04a, 6, 7)
 
-replace aedu_ci=12+6+2 + p03a05b if (p03a05a==7) // doctorado
-//imputando los valores perdidos
-replace aedu_ci=0 if p03a05a==0 & p03a05b==. 
-*replace aedu_ci=.  if p03a05a==. & p03a05b ==. // Mayra Sáenz- Agosto 2014 Desactivo esta opción porque elimina a los de ninguna educación.
-label var aedu_ci "Anios de educacion aprobados"
-*/
+**************
+***eduac_ci***
+**************
 
-* Sin embargo para el 2022, se cambia por este código:
-*primaria, básico y diversificado
-gen aedu_ci=p04a05b if p04a05b <= 13 //max grado alcanzado
-*universitaria
-replace aedu_ci= 11+1 if p04a05b ==14
-replace aedu_ci= 11+2 if p04a05b ==15
-replace aedu_ci= 11+3 if p04a05b ==16
-replace aedu_ci= 11+4 if p04a05b ==17
-replace aedu_ci= 11+5 if p04a05b ==18 
-replace aedu_ci= 11+6 if p04a05b ==19
-*maestria
-replace aedu_ci= 11+5+1 if p04a05b ==20
-replace aedu_ci= 11+5+2 if p04a05b ==21
-replace aedu_ci= 11+5+3 if p04a05b ==22
-*doctorado
-replace aedu_ci= 11+5+3+1 if p04a05b ==23
-replace aedu_ci= 11+5+3+2 if p04a05b ==24
-replace aedu_ci= 11+5+3+3 if p04a05b ==25
-replace aedu_ci= 11+5+3+4 if p04a05b ==26
+gen eduac_ci = .
+replace eduac_ci = 0 if p04a05a == 5 & inrange(p04a06, 1001, 1099)
+replace eduac_ci = 1 if inlist(p04a05a, 6, 7) & missing(eduac_ci)
+replace eduac_ci = 1 if p04a05a == 5 & inlist(p04a04a, 6, 7) & missing(eduac_ci)
+replace eduac_ci = 1 if p04a05a == 5 & inrange(p04a06, 2000, 7100) & missing(eduac_ci)
+replace eduac_ci = 1 if p04a05a == 5 & inlist(p04a05b, 18, 19) & !missing(p04a05b) & missing(eduac_ci)
 
-replace	 aedu_ci=0  if p04a05a==1 //max grado preprimaria
-replace aedu_ci=0  if p04a01 ==2 & (p04a05a==. & p04a05b==.) //analfabetos que no contestan sobre nivel y grado
-replace aedu_ci=0 if p04a05a==0 & p04a05b==. //ningún nivel y sin info en grado
-label var aedu_ci "Anios de educacion aprobados"
+***************
+***asiste_ci***
+***************
+
+gen asiste_ci = .
+replace asiste_ci = 1 if p04a02 == 1
+replace asiste_ci = 0 if p04a02 == 2
+
+***************
+***edupub_ci***
+***************
+
+gen edupub_ci = .
+replace edupub_ci = 1 if inlist(p04a03, 1, 2)
+replace edupub_ci = 0 if inlist(p04a03, 3, 4, 98)
+
+***************
+***asispre_ci**
+***************
+
+gen asispre_ci = 0
+replace asispre_ci = 1 if p04a04a == 1
+
+**************
+*pqnoasis1_ci*
+**************
+
+gen razonesnoasis_ci = .
+		 
 
 
 ******************************
@@ -1319,74 +1296,14 @@ label var aedu_ci "Anios de educacion aprobados"
 ******************************
 * Line of code with indicator edus2c_ci was deleted******************************
 * Line of code with indicator edus2c_ci was deleted* Line of code with indicator edus2c_ci was deleted* Line of code with indicator edus2c_ci was deleted
-**************
-***eduui_ci***
-**************
-gen eduui_ci = (((p04a04a == 5 & p04a05a == 4) | p04a05a == 5) &  inrange(p04a06, 101, 499)) 
-replace eduui_ci = . if aedu_ci == .
-lab var eduui_ci "Superior Incompleto"
-
-**************
-***eduuc_ci***
-**************
-gen eduuc_ci = ((p04a05a == 5 & inrange(p04a06, 500, 7100)) | inlist(p04a05a, 6, 7) | inlist(p04a04a, 6, 7))
-replace eduuc_ci = . if aedu_ci == .
-lab var eduuc_ci "Superior Completo"
-
-**************
-***eduac_ci***
-************** 
-gen eduac_ci = (inrange(p04a06, 2000, 7100))
-replace eduac_ci = . if (p04a06 == . |  p04a06 <= 499)
-label variable eduac_ci "Superior universitario vs superior no universitario"
-
-******************************
-*	edupre_ci 
-******************************
-g byte edupre_ci=.
-label variable edupre_ci "Educacion preescolar"
-
-******************************
-*	asispre_ci
-******************************
-* 2021 p03a04a y 2022 p04a04a
-g byte asispre_ci=p04a04a==1
-la var asispre_ci "Asiste a Educacion preescolar"
-
-******************************
-* Line of code with indicator pqnoasis_ci was deleted******************************
-* Line of code with indicator pqnoasis_ci was deleted
-**************
-*pqnoasis1_ci*
-**************
-**Daniela Zuluaga- Enero 2018: Se agrega la variable pqnoasis1_ci cuya sintaxis fue elaborada por Mayra Saenz**
-g       pqnoasis1_ci = .
-
 ******************************
 * Line of code with indicator repite_ci was deleted******************************
 * Line of code with indicator repite_ci was deleted******************************
 * Line of code with indicator repiteult was deleted* Line of code with indicator repiteult was deleted*	edupub_ci 
 ******************************
-/*se cambia categoría
-P03A02 2021 y p04a02 2022 (1=si)
-P03A03 2021
-           1 Público
-           2 Privado
-           3 Municipal
-           4 Cooperativa
-p04a03 2022
-           1 Municipal
-           2 Público
-           3 Privado
-           4 Cooperativa
-          98 Otro
-*/		  
-g edupub_ci=(p04a02==1 & p04a03==2) // asiste y es publico
-replace edupub_ci=0 if p04a02==1 & p04a03==3 // asiste y es privado
-replace edupub_ci=. if p04a02!=1 // no asiste
-label define edupub_ci 1 "Público" 0 "Privado"
-label value edupub_ci edupub_ci
-la var edupub_ci "Personas que asisten a centros de ensenanza publicos"
+
+
+
 
          ******************************
          ***  VARIABLES DE VIVIENDA  **
