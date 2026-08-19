@@ -833,15 +833,15 @@ replace eduui_ci = 0 if !missing(aedu_ci) & !(v3003a == 8 | (v3009a == 12 & v301
 **************
 
 gen eduuc_ci = .
-replace eduuc_ci = 1 if !missing(aedu_ci) & (                           
-                        (v3009a == 12 & v3014 == 1) |                             
-                        inlist(v3003a, 9, 10, 11) |                             
-                        inlist(v3009a, 13, 14, 15)                               
+replace eduuc_ci = 1 if !missing(aedu_ci) & (                     ///      
+                        (v3009a == 12 & v3014 == 1) |            ///                 
+                        inlist(v3003a, 9, 10, 11) |              ///               
+                        inlist(v3009a, 13, 14, 15)               ///                
                       )
-replace eduuc_ci = 0 if !missing(aedu_ci) & !(                                    
-                        (v3009a == 12 & v3014 == 1) |                            
-                        inlist(v3003a, 9, 10, 11) |                              
-                        inlist(v3009a, 13, 14, 15)                              
+replace eduuc_ci = 0 if !missing(aedu_ci) & !(                   ///                 
+                        (v3009a == 12 & v3014 == 1) |            ///                
+                        inlist(v3003a, 9, 10, 11) |              ///                
+                        inlist(v3009a, 13, 14, 15)               ///               
                       )
 
 **************
@@ -879,12 +879,12 @@ replace asispre_ci = 1 if v2009 >= 4 & v3003a == 2
 
 
 ******************
-***pqnoasis1_ci***
+***razonesnoasis_ci***
 ******************
 
 * NOTA: No cuenta con preguntas para esta variable
 
-gen pqnoasis1_ci = .
+gen razonesnoasis_ci = .
 
 ****************************
 ***VARIABLES DE VIVIENDA***
@@ -1216,11 +1216,9 @@ horaspri_ci horastot_ci tiempoparc_ci categopri_ci categosec_ci rama_ci spublico
 	  aguared_ch aguafconsumo_ch aguafuente_ch aguadist_ch aguadisp1_ch aguadisp2_ch /// Agua y saneamineto
 	  aguatrat_ch aguamala_ch aguamejorada_ch aguamide_ch bano_ch banoex_ch banomejorado_ch sinbano_ch  /// Agua y saneamineto
 	  migrante_ci migrantiguo5_ci miglac_ci /// Migración  
-	  miembros_one_ci tipo_bienestar pobre_ine_ci bienestar_agregado lpe_ci  ln_ci pobre_ext_ine_ci /// Pobreza  
+	  miembros_one_ci tipo_bienestar pobre_ine_ci bienestar_agregado lpe_ci  ln_ci  /// Pobreza  
       lp19_2011 lp31_2011 lp5_2011  lp365_2017 lp685_2017 lp14_2017 lp81_2017 tc_c ratio_cpi2011 ratio_cpi2017 ///
 	  cpi_c cpi2011 cpi2017 ppp_c ppp_2011 ppp_2017, first /// Fuente externa
-
-
 
 
 saveold "`base_out'", version(12) replace
