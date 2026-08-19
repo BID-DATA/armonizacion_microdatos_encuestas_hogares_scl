@@ -1147,13 +1147,13 @@ gen pqnoasis1_ci = .
 	gen byte miglac_ci = .
 
 ****************************
-*** VARIABLES EXTERNAS  ***
+*** VARIABLES DE POBREZA ***
 ****************************
 
 	****************
 	* tipo_bienestar *
 	****************
-	gen byte tipo_bienestar = . /* PNADC reporta ingreso */
+	gen byte tipo_bienestar = 1  /* PNADC reporta ingreso */
 
 
 	****************
@@ -1179,10 +1179,6 @@ gen pqnoasis1_ci = .
 	****************
 	gen byte pobre_ine_ci=.
 
-	*******************
-	* pobre_ext_ine_ci*
-	*******************	
-	gen byte pobre_ext_ine_ci=.
 
 	/*_____________________________________________________________________________________________________*/
 
