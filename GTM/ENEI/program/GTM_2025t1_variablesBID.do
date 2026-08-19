@@ -802,66 +802,79 @@ use `base_in', clear
 ***VARIABLES DE EDUCACION***
 ****************************
 
-	*********	
-	*aedu_ci*
-	*********
-	gen aedu_ci=.
-	replace aedu_ci = 0            if inlist(p03a03a, 0, 1) // ninguno, preprimaria
-    replace aedu_ci = p03a03b      if p03a03a==2  		    // primaria
-    replace aedu_ci = 6  + p03a03b if p03a03a==3 			// básico
-    replace aedu_ci = 6  + p03a03b if p03a03a==4 			// diversificado
-    replace aedu_ci = 11 +  p03a03b if p03a03a==5 			// superior
-    replace aedu_ci = 16 + p03a03b if p03a03a==6 			// maestría
-    replace aedu_ci = 18 + p03a03b if p03a03a==7		 	// doctorado
+* Convertir variables a numéricas
+
+destring p03a02 p03a03a p03a03b, replace force
+
+**************
+***aedu_ci***
+**************
+
+gen aedu_ci = .
+replace aedu_ci = 0 if inlist(p03a03a, 0, 1) & missing(aedu_ci)
+replace aedu_ci = p03a03b if p03a03a == 2 & !missing(p03a03b) & missing(aedu_ci)
+replace aedu_ci = 6 + p03a03b if p03a03a == 3 & !missing(p03a03b) & missing(aedu_ci)
+replace aedu_ci = 6 + p03a03b if p03a03a == 4 & inlist(p03a03b, 4, 5) & !missing(p03a03b) & missing(aedu_ci)
+replace aedu_ci = 11 if p03a03a == 4 & p03a03b >= 6 & !missing(p03a03b) & missing(aedu_ci)
+replace aedu_ci = 11 + p03a03b if p03a03a == 5 & inrange(p03a03b, 1, 5) & !missing(p03a03b) & missing(aedu_ci)
+replace aedu_ci = 16 if p03a03a == 5 & p03a03b >= 6 & !missing(p03a03b) & missing(aedu_ci)
+replace aedu_ci = 16 + p03a03b if p03a03a == 6 & inlist(p03a03b, 1, 2) & !missing(p03a03b) & missing(aedu_ci)
+replace aedu_ci = 18 if p03a03a == 6 & p03a03b >= 3 & !missing(p03a03b) & missing(aedu_ci)
+replace aedu_ci = 18 + p03a03b if p03a03a == 7 & !missing(p03a03b) & missing(aedu_ci)
+
+***************
+***edupre_ci***
+***************
+
+gen edupre_ci = .
+
+**************
+***eduui_ci***
+**************
+
+gen eduui_ci  = .
+
+***************
+***eduuc_ci***
+***************
+
+gen eduuc_ci  = .
+
+**************
+***eduac_ci***
+**************
+
+gen eduac_ci  = .
+
+***************
+***asiste_ci***
+***************
+
+gen asiste_ci = .
+replace asiste_ci = 1 if p03a02 == 1 & missing(asiste_ci)
+replace asiste_ci = 0 if p03a02 == 2 & missing(asiste_ci)
+
+***************
+***edupub_ci***
+***************
+
+gen edupub_ci = .
+
+***************
+***asispre_ci**
+***************
+
+gen asispre_ci = .
+
+******************
+*razonesnoasis_ci*
+*****************
+
+gen razonesnoasis_ci = .
 
 
-	**********
-	*eduui_ci*
-	**********
-	gen byte eduui_ci = .
 
-	**********
-	*eduuc_ci*
-	**********
-	gen byte eduuc_ci = .
-	
 
-	**********
-	*eduac_ci*
-	**********
-	gen byte eduac_ci = .
-		
-	***********
-	*edupre_ci*
-	***********
-	gen byte edupre_ci = .
-
-	************
-	*asispre_ci*
-	************
-	gen byte asispre_ci = .
-	
-	***********
-	*asiste_ci*
-	***********
-	// No incluye pregunta sobre asistencia. Pregunta sobre inscripción. 
-	gen byte asiste_ci = (p03a02 == 1) if p03a02 !=.
-
-	*************
-	*razonesnoasis_ci*
-	**************
-	gen razonesnoasis_ci=.  				// No incluye pregunta sobre asistencia. 
-	*replace pqnoasis1_ci =  1 if ...
-	*replace pqnoasis1_ci =  2 if ...
-	*replace pqnoasis1_ci =  3 if ...
-	*replace pqnoasis1_ci =  4 if ...
-	*replace pqnoasis1_ci =  5 if ...
-    
-	***********
-	*edupub_ci*
-	***********
-	gen edupub_ci =.
-	
 
 ****************************
 ***VARIABLES DE VIVIENDA***
