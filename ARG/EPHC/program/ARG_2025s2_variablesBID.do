@@ -1218,6 +1218,277 @@ use "`base_in'", clear
 	replace miglac_ci = . if migrante_ci == 0
 
 
+	***************
+	*** mig_pais_ci ***
+	***************
+
+	*país del migrante (código INDEC)
+	gen mig_pais_code = ch15_cod
+	gen str40 mig_pais_ci = ""
+	* Rellenar según código (fuente: codigo_paises.xls, códigos INDEC)
+	replace mig_pais_ci = "Angola" if mig_pais_code==149
+	replace mig_pais_ci = "Argelia" if mig_pais_code==102
+	replace mig_pais_ci = "Benin" if mig_pais_code==112
+	replace mig_pais_ci = "Botswana" if mig_pais_code==103
+	replace mig_pais_ci = "Burkina Faso" if mig_pais_code==101
+	replace mig_pais_ci = "Burundi" if mig_pais_code==104
+	replace mig_pais_ci = "Cabo Verde" if mig_pais_code==150
+	replace mig_pais_ci = "Camerún" if mig_pais_code==105
+	replace mig_pais_ci = "Chad" if mig_pais_code==111
+	replace mig_pais_ci = "Comoras" if mig_pais_code==155
+	replace mig_pais_ci = "Congo" if mig_pais_code==108
+	replace mig_pais_ci = "Côte d'Ivoire" if mig_pais_code==110
+	replace mig_pais_ci = "Djibouti" if mig_pais_code==153
+	replace mig_pais_ci = "Egipto" if mig_pais_code==113
+	replace mig_pais_ci = "Eritrea" if mig_pais_code==160
+	replace mig_pais_ci = "España, territorios vinculados en África" if mig_pais_code==146
+	replace mig_pais_ci = "Etiopía" if mig_pais_code==161
+	replace mig_pais_ci = "Francia, territorios vinculados en África" if mig_pais_code==147
+	replace mig_pais_ci = "Gabón" if mig_pais_code==115
+	replace mig_pais_ci = "Gambia" if mig_pais_code==116
+	replace mig_pais_ci = "Ghana" if mig_pais_code==117
+	replace mig_pais_ci = "Guinea" if mig_pais_code==118
+	replace mig_pais_ci = "Guinea Bissau" if mig_pais_code==156
+	replace mig_pais_ci = "Guinea Ecuatorial" if mig_pais_code==119
+	replace mig_pais_ci = "Indeterminado (África)" if mig_pais_code==198
+	replace mig_pais_ci = "Kenya" if mig_pais_code==120
+	replace mig_pais_ci = "Lesotho" if mig_pais_code==121
+	replace mig_pais_ci = "Liberia" if mig_pais_code==122
+	replace mig_pais_ci = "Libia" if mig_pais_code==123
+	replace mig_pais_ci = "Madagascar" if mig_pais_code==124
+	replace mig_pais_ci = "Malawi" if mig_pais_code==125
+	replace mig_pais_ci = "Malí" if mig_pais_code==126
+	replace mig_pais_ci = "Marruecos" if mig_pais_code==127
+	replace mig_pais_ci = "Mauricio" if mig_pais_code==128
+	replace mig_pais_ci = "Mauritania" if mig_pais_code==129
+	replace mig_pais_ci = "Mozambique" if mig_pais_code==151
+	replace mig_pais_ci = "Namibia" if mig_pais_code==158
+	replace mig_pais_ci = "Níger" if mig_pais_code==130
+	replace mig_pais_ci = "Nigeria" if mig_pais_code==131
+	replace mig_pais_ci = "Reino Unido, territorios vinculados en África" if mig_pais_code==145
+	replace mig_pais_ci = "República Centroafricana" if mig_pais_code==107
+	replace mig_pais_ci = "República Democrática del Congo" if mig_pais_code==109
+	replace mig_pais_ci = "Rwanda" if mig_pais_code==133
+	replace mig_pais_ci = "Santo Tomé y Príncipe" if mig_pais_code==157
+	replace mig_pais_ci = "Senegal" if mig_pais_code==134
+	replace mig_pais_ci = "Seychelles" if mig_pais_code==152
+	replace mig_pais_ci = "Sierra Leona" if mig_pais_code==135
+	replace mig_pais_ci = "Somalia" if mig_pais_code==136
+	replace mig_pais_ci = "Sudáfrica" if mig_pais_code==159
+	replace mig_pais_ci = "Sudán" if mig_pais_code==162
+	replace mig_pais_ci = "Sudán del Sur" if mig_pais_code==163
+	replace mig_pais_ci = "Swazilandia" if mig_pais_code==137
+	replace mig_pais_ci = "Tanzanía" if mig_pais_code==139
+	replace mig_pais_ci = "Togo" if mig_pais_code==140
+	replace mig_pais_ci = "Túnez" if mig_pais_code==141
+	replace mig_pais_ci = "Uganda" if mig_pais_code==142
+	replace mig_pais_ci = "Zambia" if mig_pais_code==144
+	replace mig_pais_ci = "Zimbabwe" if mig_pais_code==132
+	replace mig_pais_ci = "Resto  (África)" if mig_pais_code==197
+	replace mig_pais_ci = "Sin declarar (África)" if mig_pais_code==199
+	replace mig_pais_ci = "Antigua y Barbuda" if mig_pais_code==237
+	replace mig_pais_ci = "Argentina" if mig_pais_code==200
+	replace mig_pais_ci = "Aruba" if mig_pais_code==242
+	replace mig_pais_ci = "Bahamas" if mig_pais_code==239
+	replace mig_pais_ci = "Barbados" if mig_pais_code==201
+	replace mig_pais_ci = "Belice" if mig_pais_code==236
+	replace mig_pais_ci = "Bolivia" if mig_pais_code==202
+	replace mig_pais_ci = "Bolivia, zona franca Winner" if mig_pais_code==271
+	replace mig_pais_ci = "Brasil" if mig_pais_code==203
+	replace mig_pais_ci = "Brasil, zona franca Manaos" if mig_pais_code==291
+	replace mig_pais_ci = "Canadá" if mig_pais_code==204
+	replace mig_pais_ci = "Chile" if mig_pais_code==208
+	replace mig_pais_ci = "Chile, zona franca Iquique" if mig_pais_code==260
+	replace mig_pais_ci = "Chile, zona franca Punta Arenas" if mig_pais_code==261
+	replace mig_pais_ci = "Colombia" if mig_pais_code==205
+	replace mig_pais_ci = "Colombia, zona franca del Pacífico" if mig_pais_code==272
+	replace mig_pais_ci = "Costa Rica" if mig_pais_code==206
+	replace mig_pais_ci = "Cuba" if mig_pais_code==207
+	replace mig_pais_ci = "Dinamarca, territorios vinculados en América" if mig_pais_code==228
+	replace mig_pais_ci = "Dominica" if mig_pais_code==233
+	replace mig_pais_ci = "Ecuador" if mig_pais_code==210
+	replace mig_pais_ci = "El Salvador" if mig_pais_code==211
+	replace mig_pais_ci = "Estados Unidos" if mig_pais_code==212
+	replace mig_pais_ci = "Estados Unidos, territorios vinculados en América" if mig_pais_code==231
+	replace mig_pais_ci = "Francia, territorios vinculados en América" if mig_pais_code==229
+	replace mig_pais_ci = "Granada" if mig_pais_code==240
+	replace mig_pais_ci = "Guatemala" if mig_pais_code==213
+	replace mig_pais_ci = "Guyana" if mig_pais_code==214
+	replace mig_pais_ci = "Haití" if mig_pais_code==215
+	replace mig_pais_ci = "Honduras" if mig_pais_code==216
+	replace mig_pais_ci = "Indeterminado (América)" if mig_pais_code==298
+	replace mig_pais_ci = "Jamaica" if mig_pais_code==217
+	replace mig_pais_ci = "México" if mig_pais_code==218
+	replace mig_pais_ci = "Nicaragua" if mig_pais_code==219
+	replace mig_pais_ci = "Países Bajos, territorios vinculados en América" if mig_pais_code==230
+	replace mig_pais_ci = "Panamá" if mig_pais_code==220
+	replace mig_pais_ci = "Panamá, zona franca Colón" if mig_pais_code==270
+	replace mig_pais_ci = "Paraguay" if mig_pais_code==221
+	replace mig_pais_ci = "Perú" if mig_pais_code==222
+	replace mig_pais_ci = "Puerto Rico" if mig_pais_code==223
+	replace mig_pais_ci = "Reino Unido, territorios vinculados en América" if mig_pais_code==227
+	replace mig_pais_ci = "República Dominicana" if mig_pais_code==209
+	replace mig_pais_ci = "San Cristóbal y Nevis" if mig_pais_code==238
+	replace mig_pais_ci = "San Vicente y Las Granadinas" if mig_pais_code==235
+	replace mig_pais_ci = "Santa Lucía" if mig_pais_code==234
+	replace mig_pais_ci = "Suriname" if mig_pais_code==232
+	replace mig_pais_ci = "Trinidad y Tobago" if mig_pais_code==224
+	replace mig_pais_ci = "Uruguay" if mig_pais_code==225
+	replace mig_pais_ci = "Uruguay, zona franca Colonia" if mig_pais_code==280
+	replace mig_pais_ci = "Uruguay, zona franca Florida" if mig_pais_code==281
+	replace mig_pais_ci = "Uruguay, zona franca Libertad" if mig_pais_code==282
+	replace mig_pais_ci = "Uruguay, zona franca Nueva Helvecia" if mig_pais_code==284
+	replace mig_pais_ci = "Uruguay, zona franca Nueva Palmira" if mig_pais_code==285
+	replace mig_pais_ci = "Uruguay, zona franca Punta Pereira" if mig_pais_code==289
+	replace mig_pais_ci = "Uruguay, zona franca Río Negro" if mig_pais_code==286
+	replace mig_pais_ci = "Uruguay, zona franca Rivera" if mig_pais_code==287
+	replace mig_pais_ci = "Uruguay, zona franca San José" if mig_pais_code==288
+	replace mig_pais_ci = "Uruguay, zona franca Zonamérica" if mig_pais_code==283
+	replace mig_pais_ci = "Venezuela" if mig_pais_code==226
+	replace mig_pais_ci = "Antillas Holandesas" if mig_pais_code==241
+	replace mig_pais_ci = "Zona Franca Área Aduanera Especial Tierra del Fuego (Argentina)" if mig_pais_code==250
+	replace mig_pais_ci = "Zona Franca La Plata (Bs.As. - Argentina)" if mig_pais_code==251
+	replace mig_pais_ci = "Zona Franca Justo Daract (San Luis - Argentina)" if mig_pais_code==252
+	replace mig_pais_ci = "Zona Franca Río Gallegos (Santa Cruz - Argentina)" if mig_pais_code==253
+	replace mig_pais_ci = "Islas Malvinas" if mig_pais_code==254
+	replace mig_pais_ci = "Zona Franca Tucumán (Argentina)" if mig_pais_code==255
+	replace mig_pais_ci = "Zona Franca Córdoba (Argentina)" if mig_pais_code==256
+	replace mig_pais_ci = "Zona Franca Mendoza (Argentina)" if mig_pais_code==257
+	replace mig_pais_ci = "Zona Franca Gral.Pico (La Pampa - Argentina)" if mig_pais_code==258
+	replace mig_pais_ci = "Zona Franca Comodoro Rivadavia (Chubut - Argentina)" if mig_pais_code==259
+	replace mig_pais_ci = "Zona Franca Salta (Argentina)" if mig_pais_code==262
+	replace mig_pais_ci = "Zona Franca Paso de los Libres (Corrientes - Argentina)" if mig_pais_code==263
+	replace mig_pais_ci = "Zona Franca Puerto Iguazú (Misiones - Argentina)" if mig_pais_code==264
+	replace mig_pais_ci = "Mar Territorial Argentino y/o Zona Económica Exclusiva" if mig_pais_code==295
+	replace mig_pais_ci = "Ríos Nacionales Argentinos de Navegación Internacional" if mig_pais_code==296
+	replace mig_pais_ci = "Resto (América)" if mig_pais_code==297
+	replace mig_pais_ci = "Sin declarar (América)" if mig_pais_code==299
+	replace mig_pais_ci = "Afganistán" if mig_pais_code==301
+	replace mig_pais_ci = "Arabia Saudita" if mig_pais_code==302
+	replace mig_pais_ci = "Armenia" if mig_pais_code==349
+	replace mig_pais_ci = "Azerbaiyán" if mig_pais_code==350
+	replace mig_pais_ci = "Bahrein" if mig_pais_code==303
+	replace mig_pais_ci = "Bangladesh" if mig_pais_code==345
+	replace mig_pais_ci = "Bhután" if mig_pais_code==305
+	replace mig_pais_ci = "Brunei" if mig_pais_code==346
+	replace mig_pais_ci = "Camboya" if mig_pais_code==306
+	replace mig_pais_ci = "China" if mig_pais_code==310
+	replace mig_pais_ci = "Corea" if mig_pais_code==309
+	replace mig_pais_ci = "Corea Democrática y Popular" if mig_pais_code==308
+	replace mig_pais_ci = "Emiratos Árabes Unidos" if mig_pais_code==331
+	replace mig_pais_ci = "Filipinas" if mig_pais_code==312
+	replace mig_pais_ci = "Georgia" if mig_pais_code==351
+	replace mig_pais_ci = "Hong Kong (región administrativa especial de China)" if mig_pais_code==341
+	replace mig_pais_ci = "Indeterminado (Asia)" if mig_pais_code==398
+	replace mig_pais_ci = "India" if mig_pais_code==315
+	replace mig_pais_ci = "Indonesia" if mig_pais_code==316
+	replace mig_pais_ci = "Irán" if mig_pais_code==318
+	replace mig_pais_ci = "Iraq" if mig_pais_code==317
+	replace mig_pais_ci = "Israel" if mig_pais_code==319
+	replace mig_pais_ci = "Japón" if mig_pais_code==320
+	replace mig_pais_ci = "Jordania" if mig_pais_code==321
+	replace mig_pais_ci = "Kazajstán" if mig_pais_code==352
+	replace mig_pais_ci = "Kirguistán" if mig_pais_code==353
+	replace mig_pais_ci = "Kuwait" if mig_pais_code==323
+	replace mig_pais_ci = "Laos" if mig_pais_code==324
+	replace mig_pais_ci = "Líbano" if mig_pais_code==325
+	replace mig_pais_ci = "Macao (región administrativa especial de China)" if mig_pais_code==344
+	replace mig_pais_ci = "Malasia" if mig_pais_code==326
+	replace mig_pais_ci = "Maldivas" if mig_pais_code==327
+	replace mig_pais_ci = "Mongolia" if mig_pais_code==329
+	replace mig_pais_ci = "Myanmar" if mig_pais_code==304
+	replace mig_pais_ci = "Nepal" if mig_pais_code==330
+	replace mig_pais_ci = "Omán" if mig_pais_code==328
+	replace mig_pais_ci = "Pakistán" if mig_pais_code==332
+	replace mig_pais_ci = "Palestina" if mig_pais_code==357
+	replace mig_pais_ci = "Qatar" if mig_pais_code==322
+	replace mig_pais_ci = "Singapur" if mig_pais_code==333
+	replace mig_pais_ci = "Siria" if mig_pais_code==334
+	replace mig_pais_ci = "Sri Lanka" if mig_pais_code==307
+	replace mig_pais_ci = "Tailandia" if mig_pais_code==335
+	replace mig_pais_ci = "Taiwan" if mig_pais_code==313
+	replace mig_pais_ci = "Tayikistán" if mig_pais_code==354
+	replace mig_pais_ci = "Timor Leste" if mig_pais_code==358
+	replace mig_pais_ci = "Turkmenistán" if mig_pais_code==355
+	replace mig_pais_ci = "Uzbekistán" if mig_pais_code==356
+	replace mig_pais_ci = "Viet Nam" if mig_pais_code==337
+	replace mig_pais_ci = "Yemen" if mig_pais_code==348
+	replace mig_pais_ci = "Resto ( Asia )" if mig_pais_code==397
+	replace mig_pais_ci = "Sin declarar (Asia)" if mig_pais_code==399
+	replace mig_pais_ci = "Albania" if mig_pais_code==401
+	replace mig_pais_ci = "Alemania" if mig_pais_code==438
+	replace mig_pais_ci = "Andorra" if mig_pais_code==404
+	replace mig_pais_ci = "Austria" if mig_pais_code==405
+	replace mig_pais_ci = "Belarús" if mig_pais_code==439
+	replace mig_pais_ci = "Bélgica" if mig_pais_code==406
+	replace mig_pais_ci = "Bosnia y Herzegovina" if mig_pais_code==446
+	replace mig_pais_ci = "Bulgaria" if mig_pais_code==407
+	replace mig_pais_ci = "Chipre" if mig_pais_code==435
+	replace mig_pais_ci = "Croacia" if mig_pais_code==447
+	replace mig_pais_ci = "Dinamarca" if mig_pais_code==409
+	replace mig_pais_ci = "Eslovaquia" if mig_pais_code==448
+	replace mig_pais_ci = "Eslovenia" if mig_pais_code==449
+	replace mig_pais_ci = "España" if mig_pais_code==410
+	replace mig_pais_ci = "Estonia" if mig_pais_code==440
+	replace mig_pais_ci = "Finlandia" if mig_pais_code==411
+	replace mig_pais_ci = "Francia" if mig_pais_code==412
+	replace mig_pais_ci = "Grecia" if mig_pais_code==413
+	replace mig_pais_ci = "Hungría" if mig_pais_code==414
+	replace mig_pais_ci = "Indeterminado (Europa)" if mig_pais_code==498
+	replace mig_pais_ci = "Irlanda" if mig_pais_code==415
+	replace mig_pais_ci = "Islandia" if mig_pais_code==416
+	replace mig_pais_ci = "Italia" if mig_pais_code==417
+	replace mig_pais_ci = "Letonia" if mig_pais_code==441
+	replace mig_pais_ci = "Liechtenstein" if mig_pais_code==418
+	replace mig_pais_ci = "Lituania" if mig_pais_code==442
+	replace mig_pais_ci = "Luxemburgo" if mig_pais_code==419
+	replace mig_pais_ci = "Macedonia" if mig_pais_code==450
+	replace mig_pais_ci = "Malta" if mig_pais_code==420
+	replace mig_pais_ci = "Moldova" if mig_pais_code==443
+	replace mig_pais_ci = "Mónaco" if mig_pais_code==421
+	replace mig_pais_ci = "Montenegro" if mig_pais_code==453
+	replace mig_pais_ci = "Noruega" if mig_pais_code==422
+	replace mig_pais_ci = "Países Bajos" if mig_pais_code==423
+	replace mig_pais_ci = "Polonia" if mig_pais_code==424
+	replace mig_pais_ci = "Portugal" if mig_pais_code==425
+	replace mig_pais_ci = "Reino Unido de Gran Bretaña e Irlanda del Norte" if mig_pais_code==426
+	replace mig_pais_ci = "Reino Unido, territorios vinculados en Europa" if mig_pais_code==433
+	replace mig_pais_ci = "República Checa" if mig_pais_code==451
+	replace mig_pais_ci = "Rumania" if mig_pais_code==427
+	replace mig_pais_ci = "Rusia" if mig_pais_code==444
+	replace mig_pais_ci = "San Marino" if mig_pais_code==428
+	replace mig_pais_ci = "Serbia" if mig_pais_code==454
+	replace mig_pais_ci = "Serbia y Montenegro" if mig_pais_code==452
+	replace mig_pais_ci = "Suecia" if mig_pais_code==429
+	replace mig_pais_ci = "Suiza" if mig_pais_code==430
+	replace mig_pais_ci = "Turquía" if mig_pais_code==436
+	replace mig_pais_ci = "Ucrania" if mig_pais_code==445
+	replace mig_pais_ci = "Vaticano" if mig_pais_code==431
+	replace mig_pais_ci = "Resto (Europa)" if mig_pais_code==497
+	replace mig_pais_ci = "Sin declarar (Europa)" if mig_pais_code==499
+	replace mig_pais_ci = "Australia" if mig_pais_code==501
+	replace mig_pais_ci = "Australia, territorios vinculados en Oceanía" if mig_pais_code==507
+	replace mig_pais_ci = "Estados Unidos, territorios vinculados en Oceanía" if mig_pais_code==511
+	replace mig_pais_ci = "Fiji" if mig_pais_code==512
+	replace mig_pais_ci = "Francia, territorios vinculados en Oceanía" if mig_pais_code==509
+	replace mig_pais_ci = "Indeterminado (Oceanía)" if mig_pais_code==598
+	replace mig_pais_ci = "Islas Marianas" if mig_pais_code==521
+	replace mig_pais_ci = "Islas Marshall" if mig_pais_code==520
+	replace mig_pais_ci = "Islas Salomón" if mig_pais_code==518
+	replace mig_pais_ci = "Kiribati" if mig_pais_code==514
+	replace mig_pais_ci = "Micronesia" if mig_pais_code==515
+	replace mig_pais_ci = "Nauru" if mig_pais_code==503
+	replace mig_pais_ci = "Nueva Zelandia" if mig_pais_code==504
+	replace mig_pais_ci = "Nueva Zelandia, territorios vinculados en Oceanía" if mig_pais_code==510
+	replace mig_pais_ci = "Palau" if mig_pais_code==516
+	replace mig_pais_ci = "Papua Nueva Guinea" if mig_pais_code==513
+	replace mig_pais_ci = "Reino Unido, territorios vinculados en Oceanía" if mig_pais_code==508
+	replace mig_pais_ci = "Samoa" if mig_pais_code==506
+	replace mig_pais_ci = "Tonga" if mig_pais_code==519
+	replace mig_pais_ci = "Tuvalu" if mig_pais_code==517
+	replace mig_pais_ci = "Vanuatu" if mig_pais_code==505
+	replace mig_pais_ci = "Resto  (Oceanía)" if mig_pais_code==597
+	replace mig_pais_ci = "Sin declarar (Oceanía)" if mig_pais_code==599
 ************************
 ***VARIABLES EXTERNAS***
 ************************
