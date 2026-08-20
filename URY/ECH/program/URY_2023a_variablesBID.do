@@ -38,7 +38,7 @@ Detalle de procesamientos o modificaciones anteriores:
 
 ****************************************************************************/
 
-use `base_in', clear 
+use "`base_in'", clear 
 
 /************************************************************************/
 /*				VARIABLES DEL HOGAR			*/
@@ -830,8 +830,21 @@ gen tcylmpri_ci=.
 
 *37. Ingreso laboral monetario total
 
-egen double ylm_ci = rowtotal(ylmpri_ci ylmsec_ci ylmotros_ci), mi
-replace ylm_ci=. if ylmpri_ci==. & ylmsec_ci==. & ylmotros_ci==.
+egen double ing_lab = rowtotal(ylmpri_ci ylmsec_ci ylmotros_ci), mi
+replace ing_lab=. if ylmpri_ci==. & ylmsec_ci==. & ylmotros_ci==.
+
+	* 37b. Tratamiento asignaciones familiares del Plan de Equidad (evitar doble contabilización con transferencia no contributiva)
+	gen afam_sueldo = (g150 == 1 & g255 == 1 & g256 == 1)
+	replace afam_sueldo = . if g150 == 0
+	
+	// Se resta del ingreso laboral SÓLO en caso que ylm_ci > g257
+	gen indica = 1 if (ing_lab < g257) & ing_lab != . & g257 != 0 & afam_sueldo == 1
+	replace indica = 2 if (ing_lab > g257) & ing_lab != . & g257 != 0 & afam_sueldo == 1 & indica == .
+	gen double aux_afam = g257*(-1) if indica == 2
+	
+// El ingreso laboral principal sin la asignacion familiar del Plan Equidad (incluida en el sueldo):
+egen double ylm_ci = rowtotal(ing_lab aux_afam), mi	
+	
 
 * Nota Marcela G. Rubio - Abril 2014
 * Incluyo ingreso laboral monetario otros como parte del ingreso laboral monetario total ya que no había sido incluido
