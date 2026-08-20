@@ -1010,12 +1010,12 @@ gen asispre_ci = 0
 replace asispre_ci = 1 if p6170 == 1 & p3042 == 1
 		
 **************
-*pqnoasis1_ci*
+*razonesnoasis_ci*
 **************
 
 * No cuenta con preguntas para esta variable
 
-g pqnoasis1_ci = .
+g razonesnoasis_ci = .
 
 
 
