@@ -669,7 +669,18 @@ label value region_c region_c
 	*********
 	* ylm_ci *
 	*********
-	egen double ylm_ci = rowtotal(ylmpri_ci ylmsec_ci ylmotros_ci), mi
+	egen double ing_lab = rowtotal(ylmpri_ci ylmsec_ci ylmotros_ci), missing
+	
+		// Tratamiento asignaciones familiares del Plan de Equidad (evitar doble contabilización con transferencia no contributiva)
+		gen afam_sueldo = (g150 == 1 & g255 == 1 & g256 == 1) if g150 != 0
+			
+		// Se resta del ingreso laboral SÓLO en caso que ylm_ci > g257
+		gen indica = 1 if (ing_lab < g257) & ing_lab != . & g257 != 0 & afam_sueldo == 1
+		replace indica = 2 if (ing_lab > g257) & ing_lab != . & g257 != 0 & afam_sueldo == 1 & indica == .
+		gen double aux_afam = g257*(-1) if indica == 2
+	
+	// El ingreso laboral principal sin la asignacion familiar del Plan Equidad (incluida en el sueldo):
+	egen double ylm_ci = rowtotal(ing_lab aux_afam), mi	
 
 	**************
 	* ylnmpri_ci *
