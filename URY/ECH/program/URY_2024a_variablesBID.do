@@ -677,7 +677,8 @@ label value region_c region_c
 		// Se resta del ingreso laboral SÓLO en caso que ylm_ci > g257
 		gen indica = 1 if (ing_lab < g257) & ing_lab != . & g257 != 0 & afam_sueldo == 1
 		replace indica = 2 if (ing_lab > g257) & ing_lab != . & g257 != 0 & afam_sueldo == 1 & indica == .
-		gen double aux_afam = g257*(-1) if indica == 2
+		gen double aux_afam = g257*(-1) if indica == 2 & g152 == 1  // Mensual
+		replace aux_afam = (g257*(-1))/2 if indica == 2 & g152 == 2		// Bimestral
 	
 	// El ingreso laboral principal sin la asignacion familiar del Plan Equidad (incluida en el sueldo):
 	egen double ylm_ci = rowtotal(ing_lab aux_afam), mi	
@@ -768,18 +769,16 @@ label value region_c region_c
 		
 		// POTROT	
 		gen byte inval_ci = (f125 == 3 & f_pens == 1) if !missing(f_pens)
-		replace inval_ci = 0 if inval_ci == 1 & aux_pens > 0 & (g148_2_1 == 0 & g148_2_2 == 0 & g148_2_3 == 0)  // Se les reclasifica como no beneficiarios, ya que solo reciben dinero de otras fuentes 
-			
 		gen byte vdelit_ci = (f125 == 5 & f_pens == 1) if !missing(f_pens)
-			
 		gen byte violdom_ci = (f125 == 6 & f_pens == 1) if !missing(f_pens)
-			
 		gen byte pesprep_ci = (f125 == 7 & f_pens == 1) if !missing(f_pens)
-		replace pesprep_ci = 0 if pesprep_ci== 1 & g148_2_10 > 0 & (g148_2_1 == 0 & g148_2_2 == 0 & g148_2_3 == 0)  // Se les reclasifica como no beneficiarios a personas que indican "otra"
+		gen byte petrans_ci = (f125 == 8 & f_pens == 1) if !missing(f_pens)
+	
+		// Se les reclasifica como no beneficiarios, ya que sólo reciben dinero de otros ingresos no contributivas (g148_2_*)
+		foreach x in inval vdelit violdom pesprep petrans {
+			replace `x'_ci = 0 if `x'_ci == 1 & aux_pens > 0 & (g148_2_1 == 0 & g148_2_2 == 0 & g148_2_3 == 0) 
+		}
 		
-		gen byte petrans_ci = (f125 == 8 & f_pens == 1)
-		replace petrans_ci = 0 if petrans_ci== 1 & g148_2_10 > 0 & (g148_2_1 == 0 & g148_2_2 == 0 & g148_2_3 == 0)  // Se les reclasifica como no beneficiarios a personas que indican "otra"
-			
 		gen byte tus_ci = (e584 == 1) if e584 != 0
 				
 		gen byte potrot_ci = (inval_ci == 1 | vdelit_ci == 1 | violdom_ci == 1 | pesprep_ci == 1 | petrans_ci == 1 |tus_ci == 1)
@@ -791,7 +790,8 @@ label value region_c region_c
 		egen double ypnc_ci = rowtotal(g148_2_1 g148_2_2 g148_2_3) if pnc_ci == 1, mi
 			
 		// Transferencias PTMC
-		gen double yptmc_ci = g257 if ptmc_ci == 1
+		gen double yptmc_ci = g257 if ptmc_ci == 1 & g152 == 1 	// Mensual	
+		replace yptmc_ci = 	g257/2 if ptmc_ci == 1 & g152 == 2	// Bimestral
 		
 		// Otras transferencias POTROT
 		foreach x in inval vdelit violdom pesprep petrans{
@@ -842,7 +842,7 @@ label value region_c region_c
 	
 	// Se agregan los ingresos no laborales: transferencias del extranjero, becas, desemeplo
 	
-	egen double ynlm_ci = rowtotal(ypen_ci g148_1_11 tr_hogc ytransf_ci otras_pension148 g148_2_11 g148_3 g148_4 g148_5_1 g148_5_2 g153_1 g153_2 g154_1 remesas_ci), mi
+	egen double ynlm_ci = rowtotal(ypen_ci g148_1_11 ytransf_ci otras_pension148 g148_2_11 g148_3 g148_4 g148_5_1 g148_5_2 tr_hogc g153_1 g153_2 g154_1 remesas_ci), mi
 
 	***********
 	* ynlnm_ci *

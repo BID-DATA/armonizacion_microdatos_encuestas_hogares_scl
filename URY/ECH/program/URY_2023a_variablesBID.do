@@ -840,7 +840,8 @@ replace ing_lab=. if ylmpri_ci==. & ylmsec_ci==. & ylmotros_ci==.
 	// Se resta del ingreso laboral SÓLO en caso que ylm_ci > g257
 	gen indica = 1 if (ing_lab < g257) & ing_lab != . & g257 != 0 & afam_sueldo == 1
 	replace indica = 2 if (ing_lab > g257) & ing_lab != . & g257 != 0 & afam_sueldo == 1 & indica == .
-	gen double aux_afam = g257*(-1) if indica == 2
+	gen double aux_afam = g257*(-1) if indica == 2 & g152 == 1		//  Mensual
+	replace aux_afam = (g257*(-1))/2 if indica == 2 & g152 == 2		// Bimestral
 	
 // El ingreso laboral principal sin la asignacion familiar del Plan Equidad (incluida en el sueldo):
 egen double ylm_ci = rowtotal(ing_lab aux_afam), mi	
@@ -898,17 +899,15 @@ para identificar a las personas que declaran al menos un monto en esta sección.
 	
 	// POTROT	
 	gen byte inval_ci = (f125 == 3 & f_pens == 1) if !missing(f_pens)
-	replace inval_ci = 0 if inval_ci == 1 & aux_pens > 0 & (g148_2_1 == 0 & g148_2_2 == 0 & g148_2_3 == 0)  // Se les reclasifica como no beneficiarios, ya que solo reciben dinero de otras fuentes 
-		
 	gen byte vdelit_ci = (f125 == 5 & f_pens == 1) if !missing(f_pens)
-		
 	gen byte violdom_ci = (f125 == 6 & f_pens == 1) if !missing(f_pens)
-		
 	gen byte pesprep_ci = (f125 == 7 & f_pens == 1) if !missing(f_pens)
-	replace pesprep_ci = 0 if pesprep_ci== 1 & g148_2_10 > 0 & (g148_2_1 == 0 & g148_2_2 == 0 & g148_2_3 == 0)  // Se les reclasifica como no beneficiarios a personas que indican "otra"
+	gen byte petrans_ci = (f125 == 8 & f_pens == 1) if !missing(f_pens)
 	
-	gen byte petrans_ci = (f125 == 8 & f_pens == 1)
-	replace petrans_ci = 0 if petrans_ci== 1 & g148_2_10 > 0 & (g148_2_1 == 0 & g148_2_2 == 0 & g148_2_3 == 0)  // Se les reclasifica como no beneficiarios a personas que indican "otra"
+	// Se les reclasifica como no beneficiarios, ya que sólo reciben dinero de otros ingresos no contributivas (g148_2_*)
+	foreach x in inval vdelit violdom pesprep petrans {
+		replace `x'_ci = 0 if `x'_ci == 1 & aux_pens > 0 & (g148_2_1 == 0 & g148_2_2 == 0 & g148_2_3 == 0) 
+	}
 		
 	gen byte tus_ci = (e560_1 == 1 | e560_2 == 1 | e560_3 == 1)
 	replace tus_ci = . if e560_1 == 0 & e560_2 == 0 & e560_3 == 0
@@ -923,6 +922,8 @@ para identificar a las personas que declaran al menos un monto en esta sección.
 		
 	// Transferencias PTMC
 	gen double yadicional_ci = g261_1 if g261 == 2
+	gen double yafam_ci = g257 if g152 == 1 	// Mensual	
+	replace yafam_ci = 	g257/2 if g152 == 2		// Bimestral
 	egen double yptmc_ci = rowtotal(g257 yadicional_ci) if ptmc_ci == 1
 	
 	// Otras transferencias POTROT
