@@ -1106,8 +1106,21 @@ gen tcylmpri_ci=.
 
 *37. Ingreso laboral monetario total
 
-egen double ylm_ci = rowtotal(ylmpri_ci ylmsec_ci ylmotros_ci), mi
-replace ylm_ci=. if ylmpri_ci==. & ylmsec_ci==. & ylmotros_ci==.
+egen double ing_lab = rowtotal(ylmpri_ci ylmsec_ci ylmotros_ci), mi
+replace ing_lab=. if ylmpri_ci==. & ylmsec_ci==. & ylmotros_ci==.
+
+	* 37b. Tratamiento asignaciones familiares del Plan de Equidad (evitar doble contabilización con transferencia no contributiva)
+	gen afam_sueldo = (g150 == 1 & g255 == 1 & g256 == 1)
+	replace afam_sueldo = . if g150 == 0
+	
+	// Se resta del ingreso laboral SÓLO en caso que ylm_ci > g257
+	gen indica = 1 if (ing_lab < g257) & ing_lab != . & g257 != 0 & afam_sueldo == 1
+	replace indica = 2 if (ing_lab > g257) & ing_lab != . & g257 != 0 & afam_sueldo == 1 & indica == .
+	gen double aux_afam = g257*(-1) if indica == 2 & g152 == 1
+	replace aux_afam = g257*(-1) if indica == 2 & g152 == 2
+	
+// El ingreso laboral principal sin la asignacion familiar del Plan Equidad (incluida en el sueldo):
+egen double ylm_ci = rowtotal(ing_lab aux_afam), mi	
 
 *38. Ingreso laboral no monetario total
 
@@ -1129,7 +1142,7 @@ replace ylnm_ci=. if ylnmpri_ci==. & ylnmsec_ci==. & ylnmotros_ci==.
 		* 5 Pensión para hijos de fallecidos por violencia doméstica f125== 6
 		* 6 Pensión Especial Reparatoria f125== 7
 		* 7 Pensión Reparatoria Ley Integral para Personas Trans f125== 8
-		* 8 Tarjeta Uruguay Social (TUS) - MIDES & INDA (e560_1==1 | e560_2==1) ynlnm?
+		* 8 Tarjeta Uruguay Social (TUS) - MIDES & INDA (e560_1==1 | e560_2==1)
 		
 /*Nota: Existe inconsistencias entre los filtros y montos de la seccion de pensiones no
 contributivas: f124_2, f125, g148_2*. En la seccion laboral se creó un filtro auxiliar
@@ -1141,7 +1154,6 @@ para identificar a las personas que declaran al menos un monto en esta sección.
 	
 	// PNC
 	gen byte pnc_ci = (f125 == 1 & f_pens == 1) if g_it_2 != 0
-	replace pnc_ci = 0 if pnc_ci == 1 & f_jub == 1 // Reclasificar las contributivas
 
 	// PTMC
 	gen byte ptmc_ci = (g255 == 1) if g255 != 0
@@ -1150,23 +1162,16 @@ para identificar a las personas que declaran al menos un monto en esta sección.
 	
 	// POTROT	
 	gen byte inval_ci = (f125 == 3 & f_pens == 1)
-	replace inval_ci = 0 if inval_ci == 1 & f_jub == 1 // Reclasificar las contributivas
-	replace inval_ci = 0 if inval_ci == 1 & aux_pens > 0 & (g148_2_1 == 0 & g148_2_2 == 0 & g148_2_3 == 0)  // Se les reclasifica como no beneficiarios, ya que solo reciben dinero de otras fuentes 
-		
 	gen byte vdelit_ci = (f125 == 5 & f_pens == 1)
-	replace vdelit_ci = 0 if vdelit_ci == 1 & f_jub == 1 // Reclasificar las contributivas
-	
 	gen byte violdom_ci = (f125 == 6 & f_pens == 1)
-	replace violdom_ci = 0 if violdom_ci == 1 & f_jub == 1 // Reclasificar las contributivas
-	
 	gen byte pesprep_ci = (f125 == 7 & f_pens == 1)
-	replace pesprep_ci = 0 if pesprep_ci == 1 & f_jub == 1 // Reclasificar las contributivas
-	replace pesprep_ci = 0 if pesprep_ci== 1 & g148_2_10 > 0 & (g148_2_1 == 0 & g148_2_2 == 0 & g148_2_3 == 0)  // Se les reclasifica como no beneficiarios a personas que indican "otra"
-	
 	gen byte petrans_ci = (f125 == 8 & f_pens == 1)
-	replace petrans_ci = 0 if petrans_ci == 1 & f_jub == 1 // Reclasificar las contributivas
-	replace petrans_ci = 0 if petrans_ci== 1 & g148_2_10 > 0 & (g148_2_1 == 0 & g148_2_2 == 0 & g148_2_3 == 0)  // Se les reclasifica como no beneficiarios a personas que indican "otra"
-		
+	
+	// Se les reclasifica como no beneficiarios, ya que sólo reciben dinero de otros ingresos no contributivas (g148_2_*)
+	foreach x in inval vdelit violdom pesprep petrans {
+		replace `x'_ci = 0 if `x'_ci == 1 & aux_pens > 0 & (g148_2_1 == 0 & g148_2_2 == 0 & g148_2_3 == 0) 
+	}
+	
 	gen byte tus_ci = (e560_1 == 1 | e560_2 == 1)
 	
 	gen byte potrot_ci = (inval_ci == 1 | vdelit_ci == 1 | violdom_ci == 1 | pesprep_ci == 1 | petrans_ci == 1 |tus_ci == 1)
@@ -1182,11 +1187,9 @@ para identificar a las personas que declaran al menos un monto en esta sección.
 	replace yptmc_ci = g257/2 if ptmc_ci == 1 & g152 == 2	// Bimestral
 	
 	// Otras transferencias POTROT
-	egen double yinval_ci = rowtotal(g148_2_1 g148_2_2 g148_2_3) if inval_ci == 1, mi	
-	egen double yvdelit_ci = rowtotal(g148_2_1 g148_2_2 g148_2_3) if vdelit_ci == 1, mi
-	egen double yvioldom_ci = rowtotal(g148_2_1 g148_2_2 g148_2_3) if violdom_ci == 1, mi
-	egen double ypesprep_ci = rowtotal(g148_2_1 g148_2_2 g148_2_3) if pesprep_ci == 1, mi
-	egen double ypetrans_ci = rowtotal(g148_2_1 g148_2_2 g148_2_3) if petrans_ci == 1, mi
+	foreach x in inval vdelit violdom pesprep petrans{
+		egen double y`x'_ci = rowtotal(g148_2_1 g148_2_2 g148_2_3) if `x'_ci == 1, mi	
+	}
 	egen double ytus_ci = rowtotal(e560_1_1 e560_2_1) if tus_ci == 1, mi
 		
 	egen double yotrot_ci = rowtotal(yinval_ci yvdelit_ci yvioldom_ci ypesprep_ci ypetrans_ci ytus_ci), mi
@@ -1247,12 +1250,16 @@ COMPENSACIONES POR ACCIDENTE, MATERNIDAD O ENFERMEDAD	g148_4	$
 BECAS, SUBSIDIOS, DONACIONES	g148_5_1	$	Del país
 	g148_5_2	$	Del extranjero
 
+COBRA HOGAR CONSTITUIDO g149 $ mto_hogcon 
+
 RECIBE PENSIÓN ALIMENTICIA O ALGUNA CONTRIBUCIÓN POR DIVORCIO O SEPARACIÓN		
 	g153_1	$	Del país
 	g153_2	$	Del extranjero
 G4 OTROS INGRESOS			
 	g154_1	$	Monto que cobró el mes pasado */
 
+// Variable para el beneficio social de "hogar constituido" (y no está declarado en el sueldo)
+gen double tr_hogc = mto_hogcon if g149 == 1 & g149_1 == 2
 
 // Otras pensiones no contributivas: policial, militar, profesionales, notarial, bancario, AFAP, Otra 
 egen double aux_pnc = rowtotal(g148_2_1 g148_2_2 g148_2_3 g148_2_5 g148_2_6 g148_2_7 g148_2_8 g148_2_9 g148_2_10 g148_2_12)
@@ -1267,7 +1274,7 @@ drop pnc_2 inval_2 vdelit_2 violdom_2 pesprep_2 petrans_2
 
 // Se agrega la cascada de ingresos no laborales: transferencias del extranjero, becas, desemeplo
 
-egen double ynlm_ci = rowtotal(ypen_ci g148_1_11 ytransf_ci otras_pension148 g148_2_11 g148_3 g148_4 g148_5_1 g148_5_2 g153_1 g153_2 g154_1 remesas_ci), mi
+egen double ynlm_ci = rowtotal(ypen_ci g148_1_11 ytransf_ci otras_pension148 g148_2_11 g148_3 g148_4 g148_5_1 g148_5_2 tr_hogc g153_1 g153_2 g154_1 remesas_ci), mi
 
 
 *************************************************
@@ -1286,22 +1293,16 @@ egen double ynlnm_ci = rowtotal(canasta_celi canasta_emer), mi
 label var ynlnm_ci "Ingreso no laboral no monetario" 
 
 
-*** INGRESO TOTAL LABORAL Y NO LABORAL (MONETARIO Y NO MONETARIO) ***
-
 ***************
 *** ytot_ci ***
 *************** 
 egen double ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci), mi
-
-
-*** INGRESO NETO INDIVIDUAL > INGRESO PRIMARIO + TRANSFERENCIAS PRIVADAS ***
 
 ***************
 *** ynet_ci ***
 ***************
 gen double aux_ytransf_ci = ytransf_ci*(-1)
 egen double ynet_ci = rowtotal(ytot_ci aux_ytransf_ci), mi
-sum ynet_ci if ynet_ci < 0
 drop aux_ytransf_ci
 
 
@@ -1356,7 +1357,9 @@ by idh_ch: egen double ylnm_ch = total(ylnm_ci) if miembros_ci == 1, mi
 	bys idh_ch: egen byte pnc_ch = max(pnc_ci) if miembros_ci == 1
 	bys idh_ch: egen byte ptmc_ch = max(ptmc_ci) if miembros_ci == 1
 	bys idh_ch: egen byte potrot_ch = max(potrot_ci) if miembros_ci == 1
+	
 	gen byte pcasht_ch = (ptmc_ch == 1 | pnc_ch == 1 | potrot_ch == 1)
+	replace pcasht_ch = . if ptmc_ch == . & pnc_ch == . & potrot_ch == .
 
 *** Montos de transferencias a nivel hogar:
 	bys idh_ch: egen double ypnc_ch = total(ypnc_ci) if miembros_ci == 1, mi
@@ -1403,12 +1406,12 @@ label var remesas_ch "Remesas mensuales del hogar"
 foreach i in h160_1 h160_2 h163_1 h163_2 h164 h165 h166 h167_1_1 h167_1_2 h170_1 h170_2 h171_1 h173_1 {
 gen double `i'm = `i'/12  
 }
-egen double otrosing_nmh = rowtotal(mto_hogcon h155_1 h160_1m h160_2m h163_1m h163_2m h164m h165m h166m h167_1_1m h167_1_2m h170_1m h170_2m h171_1m h172_1m h173_1m), mi
+egen double otrosing_nlh = rowtotal(mto_hogcon h155_1 h160_1m h160_2m h163_1m h163_2m h164m h165m h166m h167_1_1m h167_1_2m h170_1m h170_2m h171_1m h173_1m), mi
 drop  h160_1m h160_2m h163_1m h163_2m h164m h165m h166m h167_1_1m h167_1_2m h170_1m h170_2m h171_1m h172_1m h173_1m
 
-by idh_ch, sort: egen double aux_nm_ch1 = total(ynlm_ci) if miembros_ci == 1, mi
+by idh_ch, sort: egen double ing_nlm = total(ynlm_ci) if miembros_ci == 1, mi
 
-egen double ynlm_ch = rowtotal(remesas_ch aux_nm_ch1 otrosing_nmh) if miembros_ci == 1, mi
+egen double ynlm_ch = rowtotal(ing_nlm otrosing_nlh remesas_ch) if miembros_ci == 1, mi
 
 
 ****************
@@ -1418,9 +1421,9 @@ egen double ynlm_ch = rowtotal(remesas_ch aux_nm_ch1 otrosing_nmh) if miembros_c
 /* Preguntas nivel de HOGAR:
 RECIBE AYUDA EN ESPECIE DE ALGÚN FAMILIAR U OTRO HOGAR DEL PAÍS h156_1 $ */
 
-by idh_ch, sort: egen double aux_nmnl_ch1 = total(ynlnm_ci) if miembros_ci == 1, mi
+by idh_ch, sort: egen double ing_nlnm = total(ynlnm_ci) if miembros_ci == 1, mi
 
-egen double ynlnm_ch = rowtotal(aux_nmnl_ch1 h156_1) if miembros_ci == 1, mi
+egen double ynlnm_ch = rowtotal(ing_nlnm h156_1) if miembros_ci == 1, mi
 
 
 *************
