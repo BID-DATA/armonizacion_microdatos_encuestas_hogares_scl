@@ -685,10 +685,8 @@ label var cesante_ci "Desocupado - definicion oficial del pais"
 *************
 // Existe un filtro para la sección de jubilados, pero hay inconsistencias entre f124_1, f125 & g148_1*:
 egen double aux_jub = rowtotal(g148_1_1 g148_1_2 g148_1_3 g148_1_5 g148_1_6 g148_1_7 g148_1_8 g148_1_9 g148_1_12 g148_1_10 g148_1_11), mi
-gen byte f_jub = 1 if aux_jub > 0 	// Reportó algun monto en la sección de jubilaciones
-replace f_jub = 0 if aux_jub == 0
-
-tab f124_1 f_jub, m 	// Revisar si la inconsitencia con variable original se mantiene 
+gen byte f_jub = (aux_jub > 0) if !missing(aux_jub) 	// Reportó algun monto en la sección de jubilaciones
+replace f_jub = . if f124_1 == 0 & f_jub == 0		    // Se excluye a quienes no se les realiza la pregunta
 
 gen pension_ci = f_jub
 replace pension_ci = 0 if g148_1_11 > 0 & pension_ci == 1	 // Se excluyen jubilaciones extranjeras
@@ -699,12 +697,10 @@ label var pension_ci "1=Recibe pension contributiva"
 ***************
 // Existe un filtro para la sección de pensionista, pero hay inconsistencias entre f124_2, f125 & g148_2*:
 egen double aux_pens = rowtotal(g148_2_1 g148_2_2 g148_2_3 g148_2_5 g148_2_6 g148_2_7 g148_2_8 g148_2_9 g148_2_12 g148_2_10 g148_2_11), mi
-gen byte f_pens = 1 if aux_pens > 0 	// Reportó algun monto en la sección de pensiones
-replace f_pens = 0 if aux_pens == 0
+gen byte f_pens = (aux_pens > 0) if !missing(aux_pens) 		// Reportó algun monto en la sección de pensiones
+replace f_pens = . if f124_2 == 0 & f_pens == 0		    // Se excluye a quienes no se les realiza la pregunta
 
-tab f124_2 f_pens, m 	// Revisar si la inconsitencia con variable original se mantiene 
-
-gen pensionsub_ci = (f125 == 1 & f_pens == 1) 
+gen pensionsub_ci = (f125 == 1 & f_pens == 1) if !missing(f_pens)
 replace pensionsub_ci = 0 if g148_2_11 > 0 & pensionsub_ci == 1 	// Se excluyen pensiones extranjeras
 label var pensionsub_ci "1=recibe pension subsidiada / no contributiva"
 
@@ -1116,9 +1112,9 @@ replace ing_lab=. if ylmpri_ci==. & ylmsec_ci==. & ylmotros_ci==.
 	// Se resta del ingreso laboral SÓLO en caso que ylm_ci > g257
 	gen indica = 1 if (ing_lab < g257) & ing_lab != . & g257 != 0 & afam_sueldo == 1
 	replace indica = 2 if (ing_lab > g257) & ing_lab != . & g257 != 0 & afam_sueldo == 1 & indica == .
-	gen double aux_afam = g257*(-1) if indica == 2 & g152 == 1
-	replace aux_afam = g257*(-1) if indica == 2 & g152 == 2
-	
+	gen double aux_afam = g257*(-1) if indica == 2 & g152 == 1		// Mensual
+	replace aux_afam = (g257*(-1))/2 if indica == 2 & g152 == 2		// Bimestral
+
 // El ingreso laboral principal sin la asignacion familiar del Plan Equidad (incluida en el sueldo):
 egen double ylm_ci = rowtotal(ing_lab aux_afam), mi	
 
@@ -1153,7 +1149,7 @@ para identificar a las personas que declaran al menos un monto en esta sección.
 *** Beneficiarios a nivel individual:
 	
 	// PNC
-	gen byte pnc_ci = (f125 == 1 & f_pens == 1) if g_it_2 != 0
+	gen byte pnc_ci = (f125 == 1 & f_pens == 1) if !missing(f_pens)
 
 	// PTMC
 	gen byte ptmc_ci = (g255 == 1) if g255 != 0
@@ -1161,11 +1157,11 @@ para identificar a las personas que declaran al menos un monto en esta sección.
 	replace ptmc_ci = 0 if g257 == 0
 	
 	// POTROT	
-	gen byte inval_ci = (f125 == 3 & f_pens == 1)
-	gen byte vdelit_ci = (f125 == 5 & f_pens == 1)
-	gen byte violdom_ci = (f125 == 6 & f_pens == 1)
-	gen byte pesprep_ci = (f125 == 7 & f_pens == 1)
-	gen byte petrans_ci = (f125 == 8 & f_pens == 1)
+	gen byte inval_ci = (f125 == 3 & f_pens == 1) if !missing(f_pens)
+	gen byte vdelit_ci = (f125 == 5 & f_pens == 1) if !missing(f_pens)
+	gen byte violdom_ci = (f125 == 6 & f_pens == 1) if !missing(f_pens)
+	gen byte pesprep_ci = (f125 == 7 & f_pens == 1) if !missing(f_pens)
+	gen byte petrans_ci = (f125 == 8 & f_pens == 1) if !missing(f_pens)
 	
 	// Se les reclasifica como no beneficiarios, ya que sólo reciben dinero de otros ingresos no contributivas (g148_2_*)
 	foreach x in inval vdelit violdom pesprep petrans {

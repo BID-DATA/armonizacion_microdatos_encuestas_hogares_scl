@@ -685,10 +685,8 @@ label var cesante_ci "Desocupado - definicion oficial del pais"
 *Alvaro, mayo 2019, incluí ingresos por jubilación AFAP (g148_#_12). 
 // Existe un filtro para la sección de jubilados, pero hay inconsistencias entre f124_1, f125 & g148_1*:
 egen double aux_jub = rowtotal(g148_1_1 g148_1_2 g148_1_3 g148_1_4 g148_1_5 g148_1_6 g148_1_7 g148_1_8 g148_1_9 g148_1_12 g148_1_10 g148_1_11), mi
-gen byte f_jub = 1 if aux_jub > 0 	// Reportó algun monto en la sección de jubilaciones
-replace f_jub = 0 if aux_jub == 0
-
-tab f124_1 f_jub, m 	// Revisar si la inconsitencia con variable original se mantiene 
+gen byte f_jub = (aux_jub > 0) if !missing(aux_jub) 	// Reportó algun monto en la sección de jubilaciones
+replace f_jub = . if f124_1 == 0 & f_jub == 0		    // Se excluye a quienes no se les realiza la pregunta
 
 gen pension_ci = f_jub
 replace pension_ci = 0 if g148_1_11 > 0 & pension_ci == 1	 // Se excluyen jubilaciones extranjeras
@@ -699,12 +697,10 @@ label var pension_ci "1=Recibe pension contributiva"
 ***************
 // Existe un filtro para la sección de pensionista, pero hay inconsistencias entre f124_2 & g148_2*, además para el 2019 no existe la variable que distribuye a los pensionistas (f125):
 egen double aux_pens = rowtotal(g148_2_1 g148_2_2 g148_2_3 g148_2_4 g148_2_5 g148_2_6 g148_2_7 g148_2_8 g148_2_9 g148_2_12 g148_2_10 g148_2_11), mi
-gen byte f_pens = 1 if aux_pens > 0 	// Reportó algun monto en la sección de pensiones
-replace f_pens = 0 if aux_pens == 0
+gen byte f_pens = (aux_pens > 0) if !missing(aux_pens) 		// Reportó algun monto en la sección de pensiones
+replace f_pens = . if f124_2 == 0 & f_pens == 0		    // Se excluye a quienes no se les realiza la pregunta
 
-tab f124_2 f_pens, m 	// Revisar si la inconsitencia con variable original se mantiene 
-
-gen pensionsub_ci = (f124_2 == 1 & f_pens == 1 & edad_ci >= 70)  // Se utiliza la edad con proxy
+gen pensionsub_ci = (f124_2 == 1 & f_pens == 1 & edad_ci >= 70) if !missing(f_pens) // Se utiliza la edad con proxy
 replace pensionsub_ci = 0 if g148_2_11 > 0 & pensionsub_ci == 1 	// Se excluyen pensiones extranjeras
 label var pensionsub_ci "1=recibe pension subsidiada / no contributiva"
 
@@ -1100,8 +1096,8 @@ replace ing_lab=. if ylmpri_ci==. & ylmsec_ci==. & ylmotros_ci==.
 	// Se resta del ingreso laboral SÓLO en caso que ylm_ci > g257
 	gen indica = 1 if (ing_lab < g257) & ing_lab != . & g257 != 0 & afam_sueldo == 1
 	replace indica = 2 if (ing_lab > g257) & ing_lab != . & g257 != 0 & afam_sueldo == 1 & indica == .
-	gen double aux_afam = g257*(-1) if indica == 2 & g152 == 1
-	replace aux_afam = g257*(-1) if indica == 2 & g152 == 2
+	gen double aux_afam = g257*(-1) if indica == 2 & g152 == 1		// Mensual
+	replace aux_afam = (g257*(-1))/2 if indica == 2 & g152 == 2		// Bimestral
 	
 // El ingreso laboral principal sin la asignacion familiar del Plan Equidad (incluida en el sueldo):
 egen double ylm_ci = rowtotal(ing_lab aux_afam), mi	
@@ -1134,7 +1130,7 @@ declaran al menos un monto en esta sección.
 *** Beneficiarios a nivel individual:
 	
 	// PNC
-	gen byte pnc_ci = (f124_2 == 1 & f_pens == 1 & edad_ci > 70)  
+	gen byte pnc_ci = (f124_2 == 1 & f_pens == 1 & edad_ci > 70) if !missing(f_pens)
 	replace pnc_ci = 0 if pnc_ci == 1 & f_jub == 1 // Reclasificar las contributivas
 
 	// PTMC
@@ -1143,7 +1139,7 @@ declaran al menos un monto en esta sección.
 	replace ptmc_ci = 0 if g257 == 0
 	
 	// POTROT	
-	gen byte otraspens_ci = (f124_2 == 1 & f_pens == 1 & edad_ci <= 70)
+	gen byte otraspens_ci = (f124_2 == 1 & f_pens == 1 & edad_ci <= 70) if !missing(f_pens)
 	replace otraspens_ci = 0 if otraspens_ci == 1 & aux_pens > 0 & (g148_2_1 == 0 & g148_2_2 == 0 & g148_2_3 == 0)  // Se les reclasifica como no beneficiarios, ya que solo reciben dinero de otras fuentes 
 			
 	gen byte tus_ci = (e560_1 == 1 | e560_2 == 1)
