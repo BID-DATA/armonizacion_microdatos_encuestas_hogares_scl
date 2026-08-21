@@ -571,16 +571,12 @@ use `base_in', clear
 	**************
 	**pension_ci***
 	**************
-	gen byte pension_ci = .
-	replace pension_ci = 1 if jubilacion > 0					  // recibe
-	replace pension_ci = 0 if jubilacion== 0 | jubilacion == . // no recibe
+	gen byte pension_ci = (ypension > 0) if !missing(ypension)
 		
 	***************
 	**pensionsub_ci**
 	***************
-	gen byte pensionsub_ci = .
-	replace pensionsub_ci = 1 if trat_pu > 0 & trat_pu < . & (edad >= 65 )
-	replace pensionsub_ci = 0 if (trat_pu == 0 | trat_pu == .) & (edad >= 65 )
+	gen byte pensionsub_ci = (P_P104 > 0) if !missing(P_P104)
 		
 	***************
 	**tipopen_ci**
@@ -592,9 +588,12 @@ use `base_in', clear
 	***************
 	gen byte instpen_ci = .
 	
-****************************
-***VARIABLES DE INGRESO***
-****************************
+
+************************************************
+*** VARIABLES DE INGRESO & PROTECCION SOCIAL ***
+************************************************
+
+*A. INGRESOS LABORALES (MONETARIOS Y NO MONETARIOS) ***
 
 	*************
 	* ylmpri_ci *
@@ -620,7 +619,7 @@ use `base_in', clear
 	*********
 	* ylm_ci *
 	*********
-	egen double ylm_ci = rsum(ylmpri_ci ylmsec_ci ylmotros_ci), mi
+	egen double ylm_ci = rowtotal(ylmpri_ci ylmsec_ci ylmotros_ci), mi
 
 	**************
 	* ylnmpri_ci *
@@ -642,53 +641,200 @@ use `base_in', clear
 	**********
 	egen double ylnm_ci = rsum(ylnmpri_ci ylnmsec_ci ylnmotros_ci), mi
 
-	**********
-	* ynlm_ci *
-	**********
-	egen double ynlm_ci=rsum(ing_rent ing_tran otros), missing //CONEVAL no incluye otros
 
-	***********
-	* ynlnm_ci *
-	***********
-	*No se incluye el alquiler estimado
-	egen ynlnm = rsum(pago_esp reg_esp), missing
+*B. INGRESOS NO LABORALES (MONETARIOS Y NO MONETARIOS) ***
 
-	gen ynlnm_ci= ynlnm/nmiembros_ch
+	********************************************************
+	*** ytransf_ci: Transferencias de programas sociales ***
+	********************************************************
 	
-	**********
-	* ytot_ci *
-	**********
+	* PNC - Pensiones sociales no contributivas:
+		* 1 Pensión para el Bienestar de las Personas Adultas Mayores (antes Programa 65 y más) P_P104
+	* PTMC - Programas de transferencias monetarias condicionadas:
+		* 2 Becas provenientes del gobierno P_P038> 0 & P_P038!= . 
+		* 3 Beca Universal de Educación Básica para el Bienestar Benito Juárez (antes PROSPERA) P_P101
+		* 4 Beca Universal de Educación Media Superior para el Bienestar Benito Juárez (antes PROSPERA) P_P102
+		* 5 Jóvenes Construyendo el Futuro P_P108
+		* 6 Jóvenes Escribiendo el Futuro (Educación Superior) P_P103
+	* POTROT - Programas de otras transferencias monetarias no condicionadas
+		* -7 Otros beneficios de programas para adultos mayores del gobierno P_P045
+		* -8 Beneficios de otros programas sociales gubernamentales P_P048
+		* 9 Pensión para el Bienestar por Discapacidad Permanente P_P105
+		* 10 Programa de Apoyo para el Bienestar de las Niñas y Niños, Hijos de Madres Trabajadoras (antes Estancias infantiles) P_P106
+		* 11 Seguro de Vida para Jefas de Familia P_P107
+		
+	*** Beneficiarios a nivel individual:
+		
+		// PNC
+		gen byte pnc_ci = (P_P104 > 0) if !missing(P_P104)
+	
+		// PTMC
+		gen byte becasgob_ci = (P_P038 > 0) if !missing(P_P038)
+		gen byte becaedubas_ci = (P_P101 > 0) if !missing(P_P101)
+		gen byte becaedumedia_ci = (P_P102 > 0) if !missing(P_P102)
+		gen byte construyendo_ci = (P_P108 > 0) if !missing(P_P108)
+		gen byte escribiendo_ci = (P_P103 > 0) if !missing(P_P103)
+		
+		gen byte ptmc_ci = (becasgob_ci == 1 | becaedubas_ci == 1 | becaedumedia_ci == 1 | construyendo_ci == 1 | escribiendo_ci == 1)
+		replace ptmc_ci = . if becasgob_ci == . & becaedubas_ci == . & becaedumedia_ci == . & construyendo_ci == . & escribiendo_ci == .
+		
+		// POTROT
+		gen byte opadultom_ci = (P_P045 > 0) if !missing(P_P045)
+		gen byte progsoc_ci = (P_P048 > 0) if !missing(P_P048)
+		gen byte pensdisc_ci = (P_P105 > 0) if !missing(P_P105)
+		gen byte trabajadora_ci = (P_P106 > 0) if !missing(P_P106)
+		gen byte segjefa_ci = (P_P107 > 0) if !missing(P_P107)
+	
+		gen byte potrot_ci = (opadultom_ci == 1 | progsoc_ci == 1 | pensdisc_ci == 1 | trabajadora_ci == 1 | segjefa_ci == 1)
+		replace potrot_ci = . if opadultom_ci == . & progsoc_ci == . & pensdisc_ci == . & trabajadora_ci == . & segjefa_ci == .
+	
+	*** Montos de transferencias a nivel individual: (No hay montos disponibles para este año)
+		
+		// Transferencias PNC
+		gen double ypnc_ci = P_P104		
+		
+		// Transferencias PTMC 
+		gen double ybecasgob_ci = P_P038
+		gen double ybecaedubas_ci = P_P101
+		gen double ybecaedumedia_ci = P_P102
+		gen double yconstruyendo_ci = P_P108
+		gen double yescribiendo_ci = P_P103
+		egen double yptmc_ci = rowtotal(ybecasgob_ci ybecaedubas_ci ybecaedumedia_ci yconstruyendo_ci yescribiendo_ci), mi
+		
+		// Otras transferencias POTROT
+		gen double yopadultom_ci = P_P045
+		gen double yprogsoc_ci = P_P048
+		gen double ypensdisc_ci = P_P105
+		gen double ytrabajadora_ci = P_P106
+		gen double ysegjefa_ci = P_P107
+		egen double yotrot_ci = rowtotal(yopadultom_ci yprogsoc_ci ypensdisc_ci ytrabajadora_ci ysegjefa_ci), mi
+	
+	*** Ingreso individual por transferencias no contributivas
+	egen double ytransf_ci = rowtotal(ypnc_ci yptmc_ci yotrot_ci), mi
+
+	******************
+	*** remesas_ci ***
+	******************
+	gen double remesas_ci = remesas
+		
+	***************
+	*** ypen_ci ***
+	***************
+	gen double ypen_ci = ypension  if pension_ci == 1
+	label var ypen_ci "Valor de la pension contributiva"
+		
+	******************
+	*** ypensub_ci ***
+	******************
+	gen double ypensub_ci = ypnc_ci
+	label var ypensub_ci "Valor de la pension subsidiada / no contributiva"
+
+	***********
+	* ynlm_ci *
+	***********
+	* Nota sobre el uso de la variable ing_tran desde el 2020: no contiene los programas gubernamentales de P101-P108
+
+	/* Componentes del ingreso por transferencias "ing_tran":
+	P_P032: Jubilacion contributiva dentro del país >> ypen_ci
+	P_P033: Jubilacion contributiva proveniente de otros del países
+	P_P034: Indemnización contra riesgos
+	P_P035: Indemnización por accidente de trabajo
+	P_P036: Indemnización por despido y retiro voluntario
+	P_P037: Becas privadas 
+	P_P038: Becas públicas >> ytransf_ci
+	P_P039: Donativos de ONG
+	P_P040: Donativos en $ de otros hogares
+	P_P041: Ingresos desde otros países >> remesas_ci
+	P_P043: Beneficio de PROCAMPO
+	P_P045: Beneficio de otros programas para adultos mayores  >> ytransf_ci
+	P_P048: Beneficios de otros programas sociales  >> ytransf_ci */
+	
+	egen double ynlm_ci = rowtotal(ing_rent ypen_ci P_P033 P_P034 P_P035 P_P036 P_P037 P_P039 P_P040 remesas_ci P_P043 ytransf_ci otros), mi   //CONEVAL no incluye otros
+	drop prospera  // No existe la programa P042. Podría ser la suma de P101 & P102
+	
+	****************
+	*** ynlnm_ci ***
+	****************
+	*No se incluye el alquiler estimado
+	gen ynlnm_ci = . 		// Información disponible sólo a nivel hogar
+	
+	***************
+	*** ytot_ci ***
+	*************** 
 	egen double ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci), mi
+	
+	***************
+	*** ynet_ci ***
+	***************
+	gen double aux_ytransf_ci = ytransf_ci*(-1)
+	egen double ynet_ci = rowtotal(ytot_ci aux_ytransf_ci), mi
+	drop aux_ytransf_ci
+
+
+*C. INGRESOS DEL HOGAR ***
 
 	*********
 	* ylm_ch *
 	*********
-	bysort idh_ch: egen double ylm_ch = total(ylm_ci) if miembros_ci==1, mi
+	bys idh_ch: egen double ylm_ch = total(ylm_ci) if miembros_ci==1, mi
 
 	**********
 	* ylnm_ch *
 	**********
-	bysort idh_ch: egen double ylnm_ch = total(ylnm_ci) if miembros_ci==1, mi
+	bys idh_ch: egen double ylnm_ch = total(ylnm_ci) if miembros_ci==1, mi
+
+	******************
+	*** ytransf_ch ***
+	****************** 
+	
+	*** Beneficiarios a nivel hogar:
+		bys idh_ch: egen byte pnc_ch = max(pnc_ci) if miembros_ci == 1
+		bys idh_ch: egen byte ptmc_ch = max(ptmc_ci) if miembros_ci == 1
+		bys idh_ch: egen byte potrot_ch = max(potrot_ci) if miembros_ci == 1
+		
+		gen byte pcasht_ch = (ptmc_ch == 1 | pnc_ch == 1 | potrot_ch == 1)
+		replace pcasht_ch = . if ptmc_ch == . & pnc_ch == . & potrot_ch == .
+	
+	*** Montos de transferencias a nivel hogar:
+		bys idh_ch: egen double ypnc_ch = total(ypnc_ci) if miembros_ci == 1, mi
+		bys idh_ch: egen double yptmc_ch = total(yptmc_ci) if miembros_ci == 1, mi
+		bys idh_ch: egen double yotrot_ch = total(yotrot_ci) if miembros_ci == 1, mi
+	
+	*** Ingreso del Hogar por transferencias no contributivas
+	egen double ytransf_ch = rowtotal(ypnc_ch yptmc_ch yotrot_ch) if miembros_ci == 1, mi
+	
+	**************
+	* remesas_ch *
+	**************
+	bys idh_ch: egen double remesas_ch = total(remesas_ci) if miembros_ci == 1, mi
 
 	***********
+	* ynlm_ch *
+	***********
+	bys idh_ch: egen double ynlm_ch = total(ynlm_ci) if miembros_ci==1, mi
+ 
+ 	***********
 	* ynlnm_ch *
 	***********
-	bysort idh_ch: egen double ynlnm_ch = total(ynlnm_ci) if miembros_ci==1, mi
-
-	*********
-	* ynlm_ch *
-	*********
-	bys idh_ch: egen ynlm_ch=sum(ynlm_ci) if miembros_ci==1, missing
+	egen double ynlnm_ch = rowtotal(pago_esp reg_esp) if miembros_ci == 1, mi
  
-	**********
+	***********
 	* ytot_ch *
-	**********
-	egen double ytot_ch = rowtotal(ylm_ch ylnm_ch ynlm_ch ynlnm_ch), mi
+	***********
+	egen double ytot_ch = rowtotal(ylm_ch ylnm_ch ynlm_ch ynlnm_ch) if miembros_ci == 1, mi
+
+	***********
+	* ynet_ch *
+	***********
+	gen double aux_ytransf_ch = ytransf_ch*(-1)
+	egen double ynet_ch = rowtotal(ytot_ch aux_ytransf_ch) if miembros_ci == 1, mi
+	gen double ynet_ch_pc = (ynet_ch)/nmiembros_ch if miembros_ci == 1
+	drop aux_ytransf_ch
 
 	***************
 	* ylmhopri_ci *
 	***************
-	gen byte ylmhopri_ci = ylmpri_ci / (4.3 * horaspri_ci)
+	gen double ylmhopri_ci = ylmpri_ci / (4.3 * horaspri_ci)
 	replace ylmhopri_ci = . if ylmhopri_ci <= 0
  
 	**********
@@ -711,26 +857,8 @@ use `base_in', clear
 	replace nrylmpri_ch = 1 if nrylmpri_ch > 0 & nrylmpri_ch < .
 	replace nrylmpri_ch = . if nrylmpri_ch == .
 
-	*************
-	* remesas_ci *
-	*************
-    generate double remesas_ci = remesas
 
-	*************
-	* remesas_ch *
-	*************
-	bys idh_ch: egen remesas_ch=sum(remesas_ci) if miembros_ci==1, missing
 
-	**********
-	* ypen_ci *
-	**********
-	generate double ypen_ci = jubilacion if pension_ci==1
-
-	*************
-	* ypensub_ci *
-	*************
-	gen ypensub_ci= trat_pu if pensionsub_ci==1
-	
 ****************************
 ***VARIABLES DE EDUCACION***
 ****************************
@@ -1204,9 +1332,10 @@ do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&Exter
 	  horaspri_ci horastot_ci tiempoparc_ci categopri_ci categosec_ci rama_ci spublico_ci tamemp_ci cotizando_ci instcot_ci	afiliado_ci /// Empleo
 	  formal_ci tipocontrato_ci ocupa_ci pension_ci	pensionsub_ci tipopen_ci instpen_ci	ylmpri_ci /// Empleo
 	  ylmpri_ci ylnmpri_ci ylmsec_ci ylnmsec_ci ylmotros_ci	ylnmotros_ci ylm_ci ylnm_ci ynlm_ci ynlnm_ci ytot_ci   /// Ingresos individuo
-	  ylm_ch ylnm_ch ynlm_ch ynlnm_ch   ytot_ch /// Ingresos del hogar
+	  ylm_ch ylnm_ch ynlm_ch ynlnm_ch ytot_ch /// Ingresos del hogar
 	  ylmhopri_ci ylmho_ci /// ingreso por hora
 	  nrylmpri_ci nrylmpri_ch /// No respuesta de ingresos 
+	  pnc_ci ptmc_ci potrot_ci ypnc_ci yptmc_ci yotrot_ci ytransf_ci ynet_ci pnc_ch ptmc_ch potrot_ch ypnc_ch yptmc_ch yotrot_ch ytransf_ch ynet_ch ynet_ch_pc /// Protección social
 	  remesas_ci remesas_ch ypen_ci ypensub_ci /// Remesas y pensiones
           aedu_ci eduui_ci eduuc_ci edupre_ci eduac_ci asiste_ci edupub_ci pqnoasis1_ci asispre_ci /// Educación 
 	  luz_ch luzmide_ch combust_ch piso_ch pared_ch techo_ch resid_ch dorm_ch cuartos_ch cocina_ch telef_ch refrig_ch /// Vivienda 
