@@ -736,8 +736,7 @@ gen afroind_ano_c=.
 /****************************
 Variables del Mercado Laboral
 *************************** */
-gen desalent_ci=(s5p6==12 | s5p6==13)
-replace desalent_ci=. if emp_ci==1
+
 
 gen subemp_ci=0
 replace subemp_ci=1 if (horaspri_ci>=1 & horaspri_ci<=30 & s5p49==1)
