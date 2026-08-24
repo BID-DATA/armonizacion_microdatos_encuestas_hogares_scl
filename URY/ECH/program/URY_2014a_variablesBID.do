@@ -1365,7 +1365,7 @@ label var remesas_ci "Remesas mensuales reportadas por el individuo"
 	****************
 	***remesas_ch***
 	****************
-	by idh_ch, sort: egen remesas_ch=sum(remesas_ci) if miembros_ci==1
+	by idh_ch, sort: egen double remesas_ch1=sum(remesas_ci) if miembros_ci==1, missing
 	label var remesas_ch "Remesas mensuales del hogar"	
 
 

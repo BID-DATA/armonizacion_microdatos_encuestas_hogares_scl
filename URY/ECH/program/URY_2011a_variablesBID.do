@@ -20,8 +20,8 @@ local ronda a
 
 
 local log_file = "$ruta\harmonized\\`PAIS'\\`ENCUESTA'\\log\\`PAIS'_`ANO'`ronda'_variablesBID.log"
-local base_in  = "$ruta\survey\\`PAIS'\\`ENCUESTA'\\`ANO'\\`ronda'\data_orig\\`PAIS'_`ANO'`ronda'.dta"
-*local base_in  = "$ruta\survey\\`PAIS'\\`ENCUESTA'\\`ANO'\\`ronda'\data_merge\\`PAIS'_`ANO'`ronda'.dta"
+*local base_in  = "$ruta\survey\\`PAIS'\\`ENCUESTA'\\`ANO'\\`ronda'\data_orig\\`PAIS'_`ANO'`ronda'.dta"
+local base_in  = "$ruta\survey\\`PAIS'\\`ENCUESTA'\\`ANO'\\`ronda'\data_merge\\`PAIS'_`ANO'`ronda'.dta"
 local base_out = "$ruta\harmonized\\`PAIS'\\`ENCUESTA'\data_arm\\`PAIS'_`ANO'`ronda'_BID.dta"
                                                     
 capture log close
@@ -107,7 +107,7 @@ A partir de 2006 se incluye una muestra rural, sin embargo en 2006-2009 sÃÂ�
  (3) interior con menos de 5000 habitantes y (4) rural. 
  Por lo tanto, para hacer comparables los datos se genera la variable zona considerando a las zonas de
  menos de 5000 habitantes como rural. Es decir, zona rural=interior con menos de 5000 habitantes y rural.*/
-rename región region
+rename región region 
 gen zona_c=.
 replace zona_c=1 if region == 1 | region == 2  
 replace zona_c=0 if region == 3 | region == 4
@@ -1464,10 +1464,8 @@ la var autocons_ch "Autoconsumo del Hogar"
 	****************
 	***remesas_ch***
 	****************
-	by idh_ch, sort: egen remesas_ch=sum(remesas_ci) if miembros_ci==1
+	by idh_ch, sort: egen double remesas_ch=sum(remesas_ci) if miembros_ci==1, missing
 	label var remesas_ch "Remesas mensuales del hogar"	
-
-
 
 
 /*

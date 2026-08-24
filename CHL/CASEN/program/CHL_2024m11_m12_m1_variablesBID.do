@@ -784,13 +784,16 @@ Estado a través de los programas sociales.
 	*************
 	* remesas_ci *
 	*************
-    generate double remesas_ci =.
+    generate double remesas_ci = y13c if (y13c_preg == 1)
+	mvdecode remesas_ci, mv(-88 = .a)
+	label values remesas_ci remesas_ci
+	label define remesas_ci .a  "No sabe", replace
 
 	*************
 	* remesas_ch *
 	*************
-    generate double remesas_ch = .
-
+    by idh_ch, sort: egen double remesas_ch = sum(remesas_ci) if miembros_ci == 1, missing 
+	
 	**********
 	* ypen_ci *
 	**********

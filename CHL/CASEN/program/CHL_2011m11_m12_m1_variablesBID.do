@@ -819,15 +819,15 @@ label var autocons_ch "Autoconsumo del hogar"
 ****************
 * remesas_ci   * 
 **************** 
-gen remesas_ci=.
+generate double remesas_ci = yfa2haj
 label var remesas_ci "Remesas mensuales reportadas por el individuo" 
 
 ****************
 * remesas_ch   * 
 **************** 
-gen remesas_ch=.
+by idh_ch, sort: egen double remesas_ch = sum(remesas_ci) if miembros_ci == 1, missing 
 label var remesas_ch "Remesas mensuales del hogar"
-
+	
 ****************
 * durades_ci   * 
 **************** 

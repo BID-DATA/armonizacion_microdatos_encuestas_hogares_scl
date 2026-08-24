@@ -952,8 +952,8 @@ label var ylnm_ci "Ingreso laboral NO monetario total"
  
 
 *ModificaciÃ³n SGR la variable correcta es p05a18b, la p05a17b es el total
-*egen rem=rsum( p05a17b p05a18b p05a19b), missing
-egen rem=rsum( p05a18b p05a19b p05a20b), missing
+*egen rem=rsum(p05a18b p05a19b p05a20b), missing //La variable "p05a20b" contiene el gasto de la compra de todos los alimentos del mes pasado.
+egen double rem=rsum(p05a17b p05a18b p05a19b), missing
 
 foreach var of varlist p05a01b p05a02b p05a03b p05a04b p05a05b p05a06b p05a07b rem{
 g `var'tdp3=`var'/3
@@ -1065,12 +1065,11 @@ la var autocons_ch "Autoconsumo del Hogar"
 g remesas_ci=remtdp3
 la var remesas_ci "Cash remittances from abroad"
 
-
 ****************
 ***remesas_ch***
 ****************
 
-by idh_ch, sort: egen remesas_ch=sum(remesas_ci) if miembros_ci==1, missing
+by idh_ch, sort: egen double remesas_ch=sum(remesas_ci) if miembros_ci==1, missing
 label var remesas_ch "Remesas mensuales del hogar" 
 
 *****************

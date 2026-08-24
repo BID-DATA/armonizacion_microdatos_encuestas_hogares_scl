@@ -1403,10 +1403,6 @@ replace ylmnr_ch=. if nrylmpri_ch==1
 by idh_ch, sort: egen ynlm_ch=sum(ynlm_ci) if miembros_ci==1, missing
 
 ***************
-
-
-
-
 *** ylnm_ch ***
 ***************
 by idh_ch, sort: egen ylnm_ch=sum(ylnm_ci) if miembros_ci==1, missing
@@ -1414,7 +1410,8 @@ by idh_ch, sort: egen ylnm_ch=sum(ylnm_ci) if miembros_ci==1, missing
 ****************
 ***remesas_ch***
 ****************
-by idh_ch, sort: egen remesas_ch=sum(remesas_ci) if miembros_ci==1, missing
+by idh_ch, sort: egen double remesas_ch=sum(remesas_ci) if miembros_ci==1, missing
+label var remesas_ch "Remesas del Hogar"
 
 * N/A*
 gen ynlnm_ch=.

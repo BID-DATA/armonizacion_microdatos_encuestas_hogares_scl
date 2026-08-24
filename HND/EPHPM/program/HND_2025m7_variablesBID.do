@@ -700,14 +700,29 @@ use `base_in', clear
 	*************
 	* remesas_ci *
 	*************
-    generate double remesas_ci = .
-
+	***generate double remesas_ci = .
+	*** Tipo de cambio en JUNIO, 2025:
+	*** FUENTE: https://www.bch.hn/estadisticos/GIE/_layouts/15/WopiFrame.aspx?sourcedoc=%7B94042F58-F872-415C-913F-C8A44BC09906%7D&file=Tipo%20de%20Cambio%20Serie%20Mensual.xlsx&action=default
+	gen tc_c1=26.1939
+	
+	*** Remesas del exterior yhreme 
+	gen remesa = OIH12_LPS/3 
+	gen remesad = (OIH12_US*tc_c1)/3
+	*especies
+	gen remesp = OIH12_LPS_ESP/3
+	gen remespd = (OIH12_US_ESP*tc_c1)/3
+	
+	egen remesas_ci = rsum(remesa remesad remesp remespd), missing
+	label var remesas_ci "Remesas Individuales"
+	
 	*************
 	* remesas_ch *
 	*************
-    generate double remesas_ch = yhReme
+    ***generate double remesas_ch = yhReme
 
-
+	by idh_ch, sort: egen double remesas_ch = sum(remesas_ci) if miembros_ci == 1, missing
+	label var remesas_ch "Remesas mensuales del hogar" 
+	
 	**********
 	* ypen_ci *
 	**********

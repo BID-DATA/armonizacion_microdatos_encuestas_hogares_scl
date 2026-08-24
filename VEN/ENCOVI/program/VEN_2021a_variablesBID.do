@@ -905,8 +905,9 @@ label var autocons_ch "Autoconsumo del Hogar"
 ******************
 *** remesas_ch ***
 ******************
-egen remesas_ch=sum(remesas_ci) if miembros_ci==1, by(idh_ch)
+by idh_ch, sort: egen double remesas_ch = sum(remesas_ci) if miembros_ci==1, missing
 label var remesas_ch "Remesas del Hogar (monetario + especies)"
+
 
 
 *******************

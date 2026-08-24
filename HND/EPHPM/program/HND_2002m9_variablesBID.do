@@ -1035,7 +1035,7 @@ replace remesasm_ci=. if yremesa2==. & yremesad2==.
 replace remesasm_ci=0 if v53gu3m==0 & v53gum==0 & v53fu3m==0 & v53fum==0 
 label var remesasm_ci "Remesas Individuales (monetario)"
 
-egen remesas_ci=rsum(yremesa2 yremesad2 yremesade yremesae), missing
+egen double remesas_ci=rsum(yremesa2 yremesad2 yremesade yremesae), missing
 replace remesas_ci=. if yremesa2==. & yremesad2==. & yremesade==. & yremesae==.
 replace remesas_ci=0 if v53gu3m==0 & v53gum==0 & v53fu3m==0 & v53fum==0 & v53fu3e==0 & v53fue==0 & v53gu3e==0 & v53gue==0 
 label var remesas_ci "Remesas Individuales (monetario + especies)"
@@ -1045,7 +1045,7 @@ label var remesas_ci "Remesas Individuales (monetario + especies)"
 ***remesas_ch***
 ****************
 
-by idh_ch, sort: egen remesas_ch=sum(remesas_ci) if miembros_ci==1, missing 
+by idh_ch, sort: egen double remesas_ch=sum(remesas_ci) if miembros_ci==1, missing 
 label var remesas_ch "Remesas mensuales del hogar" 
 
 *****************

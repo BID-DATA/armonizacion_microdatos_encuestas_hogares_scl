@@ -717,12 +717,12 @@ use `base_in', clear
 	*************
 	* remesas_ci *
 	*************
-    generate double remesas_ci = .
-
+    gen double remesas_ci = Remesas
+	
 	*************
 	* remesas_ch *
 	*************
-    generate double remesas_ch =Rentaimp
+	by idh_ch, sort: egen double remesas_ch = sum(remesas_ci) if miembros_ci==1, missing
 
 	**********
 	* ypen_ci *

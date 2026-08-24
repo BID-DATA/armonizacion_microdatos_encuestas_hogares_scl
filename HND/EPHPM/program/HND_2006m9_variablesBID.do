@@ -1037,13 +1037,13 @@ la var autocons_ch "Autoconsumo del Hogar"
 ************
 *remesas_ci*
 ************
-egen remesas_ci=rsum(ymensual_remefe ymensual_remesp), missing
+egen double remesas_ci=rsum(ymensual_remefe ymensual_remesp), missing
 
 ****************
 ***remesas_ch***
 ****************
 
-by idh_ch, sort: egen remesas_ch=sum(remesas_ci) if miembros_ci==1, missing 
+by idh_ch, sort: egen double remesas_ch=sum(remesas_ci) if miembros_ci==1, missing 
 label var remesas_ch "Remesas mensuales del hogar" 
 
 *****************

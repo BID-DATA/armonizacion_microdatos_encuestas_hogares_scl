@@ -1372,7 +1372,7 @@ label var ynlnm_ch "Ingreso No Laboral No Monetario del Hogar"
 egen autocons_ch=sum(autocons_ci) if miembros_ci==1, by(idh_ch) missing
 label var autocons_ch "Autoconsumo del Hogar"
 
-egen remesas_ch=sum(remesas_ci) if miembros_ci==1, by(idh_ch) missing
+by idh_ch, sort: egen double remesas_ch1 = sum(remesas_ci) if miembros_ci == 1, missing
 label var remesas_ch "Remesas del Hogar (monetario + especies)"
 
 replace ynlnm_ch=. if ynlnm_ci==.

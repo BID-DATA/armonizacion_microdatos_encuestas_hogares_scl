@@ -647,7 +647,7 @@ gen rentaimp_ch=s1p19
 gen autocons_ci=.
 gen autocons_ch=s8p27b
 gen remesas_ci=.
-egen remesas_ch=rsum(bienesext* remesasext*) /*Solo toma en cuenta las remesas del exterior*/
+egen double remesas_ch=rsum(bienesext* remesasext*), missing /*Solo toma en cuenta las remesas del exterior*/
 /*drop *c_c *c_d*/
 
 

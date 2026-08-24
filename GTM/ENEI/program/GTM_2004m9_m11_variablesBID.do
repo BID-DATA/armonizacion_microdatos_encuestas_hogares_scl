@@ -1223,12 +1223,11 @@ label var autocons_ch "Autoconsumo reportado por el hogar"
 gen remesas_ci=remesas1
 label var remesas_ci "Remesas mensuales reportadas por el individuo" 
 
-
 ****************
 ***remesas_ch***
 ****************
 
-by idh_ch, sort: egen remesas_ch=sum(remesas_ci) if miembros_ci==1, missing
+by idh_ch, sort: egen double remesas_ch=sum(remesas_ci) if miembros_ci==1, missing
 label var remesas_ch "Remesas mensuales del hogar" 
 
 *****************

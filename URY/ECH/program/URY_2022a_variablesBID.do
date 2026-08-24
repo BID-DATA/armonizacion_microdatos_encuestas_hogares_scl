@@ -24,7 +24,7 @@ local base_out = "$ruta\harmonized\\`PAIS'\\`ENCUESTA'\data_arm\\`PAIS'_`ANO'`ro
 
                                                 
 capture log close
-log using `log_file', replace 
+log using "`log_file'", replace 
 
 
 /***************************************************************************
@@ -1359,9 +1359,9 @@ label var remesas_ci "Remesas mensuales reportadas por el individuo"
 	****************
 	***remesas_ch***
 	****************
-	by idh_ch, sort: egen remesas_ch=sum(remesas_ci) if miembros_ci==1
+	by idh_ch, sort: egen double remesas_ch=sum(remesas_ci) if miembros_ci==1, missing
 	label var remesas_ch "Remesas mensuales del hogar"	
-
+	
 
 *55. Antigüedad en la actividad actual
 

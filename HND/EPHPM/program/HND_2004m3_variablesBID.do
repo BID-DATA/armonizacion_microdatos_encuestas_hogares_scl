@@ -1106,8 +1106,8 @@ la var autocons_ch "Autoconsumo del Hogar"
 ***remesas_ci***
 ****************
 
-egen remesas_ci=rsum(p5209c02	p5210c02	p5211c02	p5212c02), missing
-replace remesas_ci=0 if p5209c02==0 &	p5210c02==0 &	p5211c02==0 & p5212c02==0  
+egen double remesas_ci=rsum(p5209c02 p5210c02 p5211c02 p5212c02), missing
+replace remesas_ci=0 if p5209c02==0 & p5210c02==0 &	p5211c02==0 & p5212c02==0  
 label var remesas_ci "Remesas Individuales (monetario + especies)"
 
 
@@ -1115,7 +1115,7 @@ label var remesas_ci "Remesas Individuales (monetario + especies)"
 ***remesas_ch***
 ****************
 
-by idh_ch, sort: egen remesas_ch=sum(remesas_ci) if miembros_ci==1, missing 
+by idh_ch, sort: egen double remesas_ch=sum(remesas_ci) if miembros_ci==1, missing 
 label var remesas_ch "Remesas mensuales del hogar" 
 
 *****************

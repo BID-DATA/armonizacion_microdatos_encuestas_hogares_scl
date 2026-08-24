@@ -911,12 +911,12 @@ egen ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci)
 	******************
 		gen remesas_loc = d5563c/12
 		gen remesas_ext = d5563e/12
-		egen remesas_ci=rowtotal(remesas_loc remesas_ext), missing
+		egen double remesas_ci=rowtotal(remesas_loc remesas_ext), missing
 		
 	******************
 	*** remesas_ch ***
 	******************
-		by idh_ch, sort: egen remesas_ch=sum(remesas_ci) if miembros_ci==1
+		by idh_ch, sort: egen double remesas_ch=sum(remesas_ci) if miembros_ci==1, missing
 	
 /****** Variables de educacion ******/
 

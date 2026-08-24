@@ -947,13 +947,13 @@ la var autocons_ch "Autoconsumo del Hogar"
 *remesas_ci*
 ************
 *Los valores en dólares ya fueron convertidos a lempiras para el cálculo del ingreso no laboral monetario.
-egen remesas_ci=rsum(y_p00l06c5 y_p00l06c6 y_p00l06c7 y_p00l06c8 ), missing
+egen double remesas_ci=rsum(y_p00l06c5 y_p00l06c6 y_p00l06c7 y_p00l06c8 ), missing
 
 ****************
 ***remesas_ch***
 ****************
 
-by idh_ch, sort: egen remesas_ch=sum(remesas_ci) if miembros_ci==1, missing 
+by idh_ch, sort: egen double remesas_ch=sum(remesas_ci) if miembros_ci==1, missing 
 label var remesas_ch "Remesas mensuales del hogar" 
 
 *****************

@@ -770,7 +770,7 @@ generate double remesas_ci = p7510s2a1/12 if p7510s2a1>9999 & p7510s2a1!=.
 *************
 * remesas_ch *
 *************
-by idh_ch, sort: egen byte remesas_ch = sum(remesas_ci) if miembros_ci == 1
+by idh_ch, sort: egen double remesas_ch = sum(remesas_ci) if miembros_ci == 1, missing
 
 **********
 * ypen_ci *

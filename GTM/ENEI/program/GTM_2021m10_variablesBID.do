@@ -1030,12 +1030,11 @@ la var autocons_ch "Autoconsumo del Hogar"
 g remesas_ci=remtdp3
 la var remesas_ci "Cash remittances from abroad"
 
-
 ****************
 ***remesas_ch***
 ****************
 
-by idh_ch, sort: egen remesas_ch=sum(remesas_ci) if miembros_ci==1, missing
+by idh_ch, sort: egen double remesas_ch=sum(remesas_ci) if miembros_ci==1, missing
 label var remesas_ch "Remesas mensuales del hogar" 
 
 *****************

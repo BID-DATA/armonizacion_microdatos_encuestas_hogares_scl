@@ -491,21 +491,6 @@ gen salmm_ci=355.00
 label var salmm_ci "Salario minimo legal"
 
 ****************
-*cotizando_ci***
-****************
-gen cotizando_ci=.
-
-*recode cotizando_ci .=0 if condact>=1 & condact<=3
-label var cotizando_ci "Cotizante a la Seguridad Social"
-
-****************
-*afiliado_ci****
-****************
-gen afiliado_ci= 1 if   afilafp ==1	
-recode afiliado_ci .=0 if condact>=1 & condact<=3
-label var afiliado_ci "Afiliado a la Seguridad Social"
-
-****************
 *tipopen_ci*****
 ****************
 gen tipopen_ci=.

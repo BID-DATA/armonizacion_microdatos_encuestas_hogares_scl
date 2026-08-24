@@ -1048,7 +1048,7 @@ label var ylnm_ch  "Ingreso laboral no monetario del Hogar"
 ************************************************************
 ***44._REMESAS_CH : Remesas del Hogar.                   ***
 ************************************************************
-by idh_ch, sort: egen remesas_ch=sum(remesas_ci) if miembros_ci==1, missing
+by idh_ch, sort: egen double remesas_ch=sum(remesas_ci) if miembros_ci==1, missing
 label var remesas_ch "Remesas del Hogar"
 
 * N/A*

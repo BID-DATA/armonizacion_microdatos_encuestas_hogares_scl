@@ -686,10 +686,8 @@ replace p55_total=. if p55_total==99998
 gen remesas_ci=.
 replace remesas_ci= p55_total/12 if p53_dinero == 1
 
-
-by idh_ch, sort: egen remesas_ch=sum(remesas_ci) if miembros_ci==1, missing 
+by idh_ch, sort: egen double remesas_ch=sum(remesas_ci) if miembros_ci==1, missing 
 label var remesas_ch "Remesas del hogar"
-
 
 ******************************
 *	ynlm_ch 
