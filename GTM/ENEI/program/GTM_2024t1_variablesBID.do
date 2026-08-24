@@ -777,13 +777,13 @@ use `base_in', clear
 	*************
 	* remesas_ci *
 	*************
-	egen suma_rem = rowtotal(p06c02b p06c03b p06c04b)
-    generate double remesas_ci = suma_rem/3
+	egen double suma_rem = rowtotal(p06c02b p06c03b p06c04b), missing
+    generate double remesas_ci = suma_rem1/3
 
 	*************
 	* remesas_ch *
 	*************
-	by idh_ch, sort: egen byte remesas_ch = sum(remesas_ci) if miembros_ci == 1
+	by idh_ch, sort: egen double remesas_ch = sum(remesas_ci) if miembros_ci == 1, missing
 
 	**********
 	* ypen_ci *

@@ -1245,7 +1245,7 @@ e02tde	Ingreso mensual que recibe de ayuda familiar del exterior (deflactado)
 	* remesas_ch: Variable continua que indica el monto mensual por remesas del hogar. Esta variable se genera a partir de la variable remesas_ci.*
 	*************
 	*Codigo extraído del manual 
-	by idh_ch, sort: egen byte remesas_ch = sum(remesas_ci) if miembros_ci == 1
+	by idh_ch, sort: egen double remesas_ch = sum(remesas_ci) if miembros_ci == 1, missing
 	
 	**********
 	* ypen_ci: Ingreso por pensión contributiva: Variable continua que indica el monto mensual en moneda local corriente efectivamente recibido por el individuo por pensiones contributivas en sus distintas modalidades (jubilación, vejez, pensión, etc).*

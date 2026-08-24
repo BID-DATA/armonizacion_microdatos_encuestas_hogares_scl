@@ -1238,13 +1238,13 @@ use `base_in', clear
 */
 	gen remesas_loc = d5563c/12 //Monto mensual de remesas nacionales
 	gen remesas_ext = d5563e/12 //Monto mensual de remesas extranjeras
-	egen remesas_ci=rowtotal(remesas_loc remesas_ext), missing
+	egen double remesas_ci=rowtotal(remesas_loc remesas_ext), missing
 	
 	*************
 	* remesas_ch: Variable continua que indica el monto mensual por remesas del hogar. Esta variable se genera a partir de la variable remesas_ci.*
 	*************
 	*Codigo extraído del manual 
-	by idh_ch, sort: egen byte remesas_ch = sum(remesas_ci) if miembros_ci == 1
+	by idh_ch, sort: egen double remesas_ch = sum(remesas_ci) if miembros_ci == 1, missing
 	
 	**********
 	* ypen_ci: Ingreso por pensión contributiva: Variable continua que indica el monto mensual en moneda local corriente efectivamente recibido por el individuo por pensiones contributivas en sus distintas modalidades (jubilación, vejez, pensión, etc).*

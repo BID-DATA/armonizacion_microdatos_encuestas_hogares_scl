@@ -1272,8 +1272,8 @@ egen ylnm_ci = rowtotal(ylnmprid ylnmprii ylnmsecd ylnmseci), missing
 
 gen transltot = d556t1 /3
 gen transetot = d556t2 /3
-gen remesas_ci= d556t2 /3 if p5563a==1
-recode remesas_ci (.=0)
+gen remesas_ci= d556t2/3 if (p5563a==1 & d556t2 != 0)
+***recode remesas_ci (.=0) //No recodificar el ingreso a "0" los valores missing cuando se no reportan ingresos.
 gen d557t_1 = d557t/3 
 gen d558t_1 = d558t/3
 egen ynlm_ci  = rowtotal(transltot transetot d557t_1 d558t_1), missing  // d557t es renta de propiedad y d558t ing extraord
@@ -1373,8 +1373,7 @@ gen ylnmotros_ci=.
 *** remesas_ch ***
 *******************
 
-by idh_ch, sort: egen remesas_ch=sum(remesas_ci) if miembros_ci==1
-
+by idh_ch, sort: egen double remesas_ch = sum(remesas_ci) if miembros_ci == 1, missing
 
 ***************
 *** ynlm_ch ***

@@ -1142,8 +1142,9 @@ la var autocons_ch "Autoconsumo del Hogar"
 	****************
 	***remesas_ch***
 	****************
-	by idh_ch, sort: egen remesas_ch=sum(remesas_ci) if miembros_ci==1
-	label var remesas_ch "Remesas mensuales del hogar"	
+	by idh_ch, sort: egen double remesas_ch=sum(remesas_ci) if miembros_ci==1, missing
+	label var remesas_ch "Remesas mensuales del hogar"
+	
 /*
 gen g2_3mo=g2_3/12 /*Esta en base anual*/
 

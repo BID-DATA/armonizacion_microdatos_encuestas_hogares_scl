@@ -893,9 +893,9 @@ la var subemp_ci "Personas en subempleo por horas"
 ****************
 ***remesas_ch***
 ****************
-	bys idh_ch: egen remesas_ch = sum(remesas_ci) if miembros_ci == 1
-	la var remesas_ch "Remesas mensuales del hogar" 
-
+	bys idh_ch: egen double remesas_ch = sum(remesas_ci) if miembros_ci == 1
+	la var remesas_ch "Remesas mensuales del hogar"
+	
 *****************
 ***ylhopri_ci ***
 *****************

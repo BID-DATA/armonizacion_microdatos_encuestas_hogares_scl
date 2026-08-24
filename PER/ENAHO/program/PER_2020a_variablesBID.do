@@ -1447,7 +1447,7 @@ by idh_ch, sort: egen ylnm_ch=sum(ylnm_ci) if miembros_ci==1
 *** remesas_ch ***
 *******************
 
-by idh_ch, sort: egen remesas_ch=sum(remesas_ci) if miembros_ci==1
+by idh_ch, sort: egen double remesas_ch=sum(remesas_ci) if miembros_ci==1, missing
 
 ***************
 *** ynlm_ch ***

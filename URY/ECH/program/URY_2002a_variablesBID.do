@@ -18,8 +18,8 @@ local ronda a
 
 
 local log_file = "$ruta\harmonized\\`PAIS'\\`ENCUESTA'\\log\\`PAIS'_`ANO'`ronda'_variablesBID.log"
-local base_in  = "$ruta\survey\\`PAIS'\\`ENCUESTA'\\`ANO'\\`ronda'\data_orig\\`PAIS'_`ANO'`ronda'.dta"
-*local base_in  = "$ruta\survey\\`PAIS'\\`ENCUESTA'\\`ANO'\\`ronda'\data_merge\\`PAIS'_`ANO'`ronda'.dta"
+*local base_in  = "$ruta\survey\\`PAIS'\\`ENCUESTA'\\`ANO'\\`ronda'\data_orig\\`PAIS'_`ANO'`ronda'.dta"
+local base_in  = "$ruta\survey\\`PAIS'\\`ENCUESTA'\\`ANO'\\`ronda'\data_merge\\`PAIS'_`ANO'`ronda'.dta"
 local base_out = "$ruta\harmonized\\`PAIS'\\`ENCUESTA'\data_arm\\`PAIS'_`ANO'`ronda'_BID.dta"
                                                     
 capture log close
@@ -1062,8 +1062,9 @@ la var autocons_ch "Autoconsumo del Hogar"
 	****************
 	***remesas_ch***
 	****************
-	by idh_ch, sort: egen remesas_ch=sum(remesas_ci) if miembros_ci==1
-	label var remesas_ch "Remesas mensuales del hogar"	
+	by idh_ch, sort: egen double remesas_ch=sum(remesas_ci) if miembros_ci==1, missing
+	label var remesas_ch "Remesas mensuales del hogar"
+	
 /*
 
 gen g2_3mo=g2_3/12 /*Esta en base anual*/

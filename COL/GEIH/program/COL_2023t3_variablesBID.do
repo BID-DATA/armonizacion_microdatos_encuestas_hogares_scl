@@ -1031,9 +1031,8 @@ egen ytot_ci = rsum(ylm_ci ylnm_ci ynlm_ci ynlnm_ci), m
 ****************
 ***remesas_ch***
 ****************
-	bys idh_ch: egen remesas_ch = sum(remesas_ci) if miembros_ci == 1
+	bys idh_ch: egen double remesas_ch = sum(remesas_ci) if miembros_ci == 1, missing
 	la var remesas_ch "Remesas mensuales del hogar" 
-
 
 ********
 ***NA***
