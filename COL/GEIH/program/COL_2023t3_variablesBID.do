@@ -986,19 +986,25 @@ label val ramasec_ci ramasec_ci
 	replace m_`var' = . if `var'a1 == 99 | `var'a1 == 98
 	}
 	
-	gen double yarriendo  = m_p7500s1 
-	replace yarriendo = iof6es if iof6es != . & iof6es < m_p7500s1 & iof6 == 0
+	gen double yarriendo  = m_p7500s1 	// iof6*
+	replace yarriendo = iof6es if iof6 == 0 & iof6es != . & (p7500s1a1 == 98 | p7500s1 == 9)
+	replace yarriendo = iof6es if iof6 == 0 & iof6es != . & iof6es < m_p7500s1 
 	
-	gen double yjubilacion = m_p7500s2	// = ypen_ci
-	replace yjubilacion = iof2 if iof2 != . & iof2 < m_p7500s2 & p7500s2a1 == 98
-	replace yjubilacion = iof2es if iof2 == 0 & iof2es < m_p7500s2 & p7500s2 == 9
+	gen double yjubilacion = m_p7500s2	// iof2* // = ypen_ci
+	replace yjubilacion = iof2   if iof2 != . & iof2es == . & p7500s2a1 == 98 
+	replace yjubilacion = iof2es if iof2 == 0 & iof2es != . & p7500s2   == 9
 	replace yjubilacion = iof2es if iof2 == 0 & iof2es < m_p7500s2 & p7500s2 == 1
 	
-	gen double ypenalimento  = m_p7500s3	
-	gen double yayudafamil  = m_p7510s1/12
-	gen double yremesas	  = m_p7510s2/12	// = remesas_ci
-	gen double yayudainsti = m_p7510s3/12
-	gen double yintereses = m_p7510s5/12
+	gen double ypenalimento  = m_p7500s3	// iof3h*
+	gen double yayudafamil  = m_p7510s1/12	// iof3h*
+	gen double yremesas	  = m_p7510s2/12	// iof3h* // = remesas_ci
+	
+	gen double yayudainsti = m_p7510s3/12	// iof3i*
+	
+	gen double yintereses = m_p7510s5/12	// iof1*
+	replace yintereses = iof1es if iof1 == 0 & iof1es != . & (p7510s5a1 == 98 | p7510s5 == 9)
+	replace yintereses = iof1es if iof1 == 0 & iof1es != . & iof1es < m_p7510s5 
+	
 	gen double ycesantia  = m_p7510s6/12
 	gen double yotros	  = m_p7510s7/12
 	
@@ -1006,9 +1012,10 @@ label val ramasec_ci ramasec_ci
 	gen double aux_ytransf_ci = ytransf_ci*(-1)
 	egen double delta_transf = rowtotal(yayudainsti aux_ytransf_ci), mi
 	
-	*egen ynlm_ci = rsum(iof1 iof2  iof3h iof3i iof6 iof1es iof2es  iof3hes iof3ies iof6es), m // Programación previo al 2020
-	egen double ynlm_ci = rowtotal(yarriendo ypen_ci ypenalimento yayudafamil remesas_ci ytransf_ci delta_transf yintereses ycesantia yotros), mi
-	la var ynlm_ci "Ingreso no laboral monetario"	
+	egen double ynlm_ci = rowtotal(yarriendo yjubilacion ypenalimento yayudafamil remesas_ci ytransf_ci delta_transf yintereses ycesantia yotros), mi
+	la var ynlm_ci "Ingreso no laboral monetario"
+	*egen double ynlm_ci = rsum(iof1 iof2  iof3h iof3i iof6 iof1es iof2es  iof3hes iof3ies iof6es), m // Para contrastar programación previa al 2020
+	drop m_p7500s1 m_p7500s2 m_p7500s3 m_p7510s1 m_p7510s2 m_p7510s3 m_p7510s5 m_p7510s6 m_p7510s7	
 	
 **************
 ***ynlnm_ci***
@@ -1061,6 +1068,13 @@ label val ramasec_ci ramasec_ci
 	la var ynlm_ch 	"Ingreso no laboral monetario del hogar"
 	
 ****************
+*** ylmnr_ch ***
+****************
+	bys idh_ch: egen ylmnr_ch = sum(ylm_ci) if miembros_ci == 1
+	replace ylmnr_ch = . if nrylmpri_ch == 1
+	la var ylmnr_ch "Ingreso laboral monetario del hogar"
+
+****************
 ***ytransf_ch***
 ****************
 
@@ -1079,13 +1093,6 @@ label val ramasec_ci ramasec_ci
 
 *** Ingreso del Hogar por transferencias no contributivas
 egen double ytransf_ch = rowtotal(ypnc_ch yptmc_ch yotrot_ch) if miembros_ci == 1, mi
-		
-****************
-*** ylmnr_ch ***
-****************
-	bys idh_ch: egen ylmnr_ch = sum(ylm_ci) if miembros_ci == 1
-	replace ylmnr_ch = . if nrylmpri_ch == 1
-	la var ylmnr_ch "Ingreso laboral monetario del hogar"
 	
 **************
 ***ynlnm_ch***

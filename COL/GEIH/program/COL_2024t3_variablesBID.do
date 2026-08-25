@@ -794,12 +794,8 @@ gen double aux_ytransf_ci = ytransf_ci*(-1)
 egen double delta_transf = rowtotal(yayudainsti aux_ytransf_ci), mi
 	
 egen double ynlm_ci = rowtotal(yarriendo yjubilacion ypenalimento yayudafamil remesas_ci ytransf_ci delta_transf yintereses ycesantia yotros), mi
-	
-*bys idh_ch: egen ing_nl = total(ynlm_ci), mi
-*egen ynlm_ci_orig = rsum(iof1 iof2  iof3h iof3i iof6 iof1es iof2es  iof3hes iof3ies iof6es), m // Programacion previo al 2020
-*bys idh_ch: egen ing_nlorig = total(ynlm_ci_orig), mi
-* drop m_p7500s1 m_p7500s2 m_p7500s3 m_p7510s1 m_p7510s2 m_p7510s3 m_p7510s5 m_p7510s6 m_p7510s7
-	
+*egen double ynlm_ci = rsum(iof1 iof2  iof3h iof3i iof6 iof1es iof2es  iof3hes iof3ies iof6es), m // Para contrastar programación previa al 2020
+drop m_p7500s1 m_p7500s2 m_p7500s3 m_p7510s1 m_p7510s2 m_p7510s3 m_p7510s5 m_p7510s6 m_p7510s7	
 
 ***********
 * ynlnm_ci *
@@ -875,8 +871,8 @@ by idh_ch, sort: egen double ytot_ch = total(ytot_ci) if miembros_ci==1, mi
 ***************
 *** ynet_ch ***
 ***************
-gen aux_ytransf_ch = ytransf_ch*(-1)
-egen ynet_ch = rowtotal(ytot_ch aux_ytransf_ch) if miembros_ci == 1, mi
+gen double aux_ytransf_ch = ytransf_ch*(-1)
+egen double ynet_ch = rowtotal(ytot_ch aux_ytransf_ch) if miembros_ci == 1, mi
 gen double ynet_ch_pc = (ynet_ch)/nmiembros_ch if miembros_ci == 1
 drop aux_ytransf_ch
 
