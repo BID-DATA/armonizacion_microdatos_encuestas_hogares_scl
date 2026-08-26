@@ -723,7 +723,7 @@ replace tiempoparc_ci = . if emp_ci == 0
 	* ypen_ci *
 	**********
 	gen double ypen_ci = p7500s2a1 if pension_ci == 1
-	replace ypen_ci = . if p7500s2a1 == 98 | p7500s2a1 == 99
+	replace ypen_ci = . if p7500s2a1 == 98 | p7500s2a1 == 99 | p7500s2a1 == 9999
 
 	*************
 	* ypensub_ci *
@@ -734,24 +734,26 @@ replace tiempoparc_ci = . if emp_ci == 0
 	* remesas_ci *
 	*************
 	gen double remesas_ci = p7510s2a1/12 if p7510s2 == 1
-	replace remesas_ci = . if p7510s2a1 == 98 | p7510s2a1 == 99
+	replace remesas_ci = . if p7510s2a1 == 98 | p7510s2a1 == 99 | p7510s2a1 == 9999
+
 
 	**********
 	* ynlm_ci *
 	**********
 	foreach var in p7500s1 p7500s2 p7500s3 p7510s1 p7510s2 p7510s3 p7510s5 p7510s6 p7510s7 { 
 	gen m_`var' = `var'a1
-	replace m_`var' = . if `var'a1 == 99 | `var'a1 == 98
+	replace m_`var' = . if `var'a1 == 99 | `var'a1 == 98 | `var'a1 == 9999
 	}
 	
 	gen double yarriendo  = m_p7500s1 	// iof6*
-	replace yarriendo = iof6es if iof6 == 0 & iof6es != . & (p7500s1a1 == 98 | p7500s1 == 9)
+	replace yarriendo = iof6es if iof6 == 0 & iof6es != . & (p7500s1a1 == 98 | p7500s1a1 == 9999 | p7500s1 == 9)
 	replace yarriendo = iof6es if iof6 == 0 & iof6es != . & iof6es < m_p7500s1 
 	
 	gen double yjubilacion = m_p7500s2	// iof2* // = ypen_ci
-	replace yjubilacion = iof2   if iof2 != . & iof2es == . & p7500s2a1 == 98 
+	replace yjubilacion = iof2   if iof2 != . & iof2es == . & (p7500s2a1 == 98 | p7500s2a1 == 9999)
 	replace yjubilacion = iof2es if iof2 == 0 & iof2es != . & p7500s2   == 9
 	replace yjubilacion = iof2es if iof2 == 0 & iof2es < m_p7500s2 & p7500s2 == 1
+	replace yjubilacion = iof2   if iof2 != . & iof2es == . & p7500s2 == 1 & iof2 < m_p7500s2 & m_p7500s2 > 7000000
 	
 	gen double ypenalimento  = m_p7500s3	// iof3h*
 	gen double yayudafamil  = m_p7510s1/12	// iof3h*
@@ -760,7 +762,7 @@ replace tiempoparc_ci = . if emp_ci == 0
 	gen double yayudainsti = m_p7510s3/12	// iof3i*
 	
 	gen double yintereses = m_p7510s5/12	// iof1*
-	replace yintereses = iof1es if iof1 == 0 & iof1es != . & (p7510s5a1 == 98 | p7510s5 == 9)
+	replace yintereses = iof1es if iof1 == 0 & iof1es != . & (p7510s5a1 == 98 | p7510s5a1 == 9999 | p7510s5 == 9)
 	replace yintereses = iof1es if iof1 == 0 & iof1es != . & iof1es < m_p7510s5 
 	
 	gen double ycesantia  = m_p7510s6/12
