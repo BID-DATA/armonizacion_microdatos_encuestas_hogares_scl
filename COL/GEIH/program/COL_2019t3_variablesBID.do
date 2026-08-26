@@ -488,8 +488,8 @@ label value tamemp_ci tamemp_ci
 
 *MGD30/11/2015: segun el documento metodologico se genera condicionada a si recibe ingreso por pension.  VarÃƒÂ­a ligeramente el resultado.
 * La serie hacia atrÃƒÂ¡s se genera condicionando al ingreso no con la variable binaria.
-gen pension_ci=1 if p7500s2a1>0 & p7500s2a1!=.
-recode pension_ci .=0 
+gen byte pension_ci = (p7500s2 == 1) if !missing(p7500s2)
+replace pension_ci = . if p7500s2 == 9
 *Yl -> ok que incluya a los que tienen codigo 98 (si recieben pero no se sabe el valor)
 label var pension_ci "1=Recibe pension contributiva"
 
@@ -499,31 +499,12 @@ label var pension_ci "1=Recibe pension contributiva"
 gen tipopen_ci=.
 label var tipopen_ci "Tipo de pension - variable original de cada pais" 
 
-*************
-*ypen_ci*
-*************
-replace p7500s2a1=. if p7500s2a1==98
-gen ypen_ci=p7500s2a1
-replace ypen_ci=. if pension_ci==0
-label var ypen_ci "Valor de la pension contributiva"
-
 ***************
 *pensionsub_ci*
 ***************
 *DZ Octubre 2017-Se crea la variable de pension subsidiada*
-gen pensionsub_ci=(p1661s3==1)
+gen byte pensionsub_ci = (p1661s3 == 1) if !missing(p1661s3)
 label var pensionsub_ci "1=recibe pension subsidiada / no contributiva"
-
-*****************
-**ypensub_ci*
-*****************
-*DZ Octubre 2017-Se crea la variable valor de la pension subsidiada*
-
-gen ypensub_ci=  p1661s3a1
-replace ypensub_ci=. if p1661s3a1==98
-replace ypensub_ci= ypensub_ci/12
-label var ypensub_ci "Valor de la pension subsidiada / no contributiva"
- 
 
 ****************
 *categoinac_ci**
@@ -819,7 +800,7 @@ la var subemp_ci "Personas en subempleo por horas"
 	g ycesantia	 = p7510s6a1 / 12
 */
 
-*** INGRESO LABORAL (MONETARIO Y NO MONETARIO) ***
+*A. INGRESOS LABORALES A NIVEL DE INDIVIDUO
 
 ***************
 ***ylmpri_ci***
@@ -881,138 +862,107 @@ la var subemp_ci "Personas en subempleo por horas"
 	la var ylnm_ci "Ingreso laboral NO monetario total"  
 
 
-*** INGRESO NO LABORAL (MONETARIO Y NO MONETARIO) ***
+* B. INGRESOS NO LABORALES A NIVEL DE INDIVIDUO	
 
 ****************
 ***ytransf_ci***
 ****************
-* Ingreso por transferencias no contributivas 
-	// ytransf_ci = ypnc_ci + yptmc_ci + ypotrot_ci
-	// p750s2a1 = p1661s1a1 + p1661s2a1 + p1661s3a1 + p1661s4a2 
+		* PNC - Pensiones sociales no contributivas: 
+				* Colombia mayor (p1661s3a1)
+		* PTMC - Programas de transferencias monetarias condicionadas: 
+				* Más familias en acción (p1661s1a1)
+				* Jovenes en acción (p1661s2a1)
+		* POTROT - Programas de otras transferencias monetarias no condicionadas: 
+				* Otras ayudas monetarias del gobierno (p1661s4a2)
 
-* PNC - Pensiones sociales no contributivas: 
-		* Colombia mayor (p1661s3a1)
-* PTMC - Programas de transferencias monetarias condicionadas: 
-		* Más familias en acción (p1661s1a1)
-		* Jovenes en acción (p1661s2a1)
-* POTROT - Programas de otras transferencias monetarias no condicionadas: 
-		* Otras ayudas monetarias del gobierno (p1661s4a2)
-
-
-*** Beneficiarios a nivel individual:
-gen byte pnc_ci = (p1661s3 == 1) if !missing(p1661s3)
-gen byte ptmc_ci = (p1661s1 == 1 | p1661s2 == 1) if !missing(p1661s1) | !missing(p1661s2)
-gen byte potrot_ci = (p1661s4 == 1) if !missing(p1661s4)
-
-
-*** Montos de transferencias a nivel individual (mensualizado):
-
-	// Identificar casos imputados, debido a que el monto declarado es 98 (código especial) o atípico
+	*** Beneficiarios a nivel individual:
+		gen byte pnc_ci = (p1661s3 == 1) if !missing(p1661s3)
+		gen byte ptmc_ci = (p1661s1 == 1 | p1661s2 == 1)
+		replace ptmc_ci  = . if p1661s1 == .  & p1661s2 == .
+		gen byte potrot_ci = (p1661s4 == 1) if !missing(p1661s4)
 	
-	* Cantidad de transferencias del gobierno declaradas:
-	gen byte filtro_1661 = (p1661s1 == 1) + (p1661s2 == 1) + (p1661s3 == 1) + (p1661s4 == 1)
-	gen byte filtro_750 = (p750s1 == 1) + (p750s2 == 1) + (p750s3 == 1)
-	bys idh_ch: egen double filtro_h = total(filtro_1661)
+	*** Montos de transferencias a nivel individual (mensualizado):
 	
-	* Variables auxiliares: montos declarados (anuales)
-	foreach x in p1661s1a1 p1661s2a1 p1661s3a1 p1661s4a2 p750s1a1 p750s2a1 p750s3a1 p7510s1a1 p7510s2a1 p7510s3a1  {
-		gen double aux_`x' = `x'
-		replace aux_`x' = 0 if (`x' == 98 | `x' == .)
-		gen double m_`x' = aux_`x'/12 	// mensual
-		drop aux_`x'
-		}
+		// Transferencia por PNC
+		gen double ypnc_ci = p1661s3a1/12
+		replace ypnc_ci = . if p1661s3a1 == 99 | p1661s3a1 == 98
+		
+		// Transferencia por PTMC	
+		gen double yfamac_ci = p1661s1a1/12
+		replace yfamac_ci = . if p1661s1a1 == 99 | p1661s1a1 == 98
+		
+		gen double yjovac_ci = p1661s2a1/12
+		replace yjovac_ci = . if p1661s2a1 == 99 | p1661s2a1 == 98
+		
+		egen double yptmc_ci = rowtotal(yfamac_ci yjovac_ci) if ptmc_ci == 1, mi
+			
+		// Transferencia por OTROT
+		gen double yotrot_ci = p1661s4a2/12
+		replace yotrot_ci = . if p1661s4a2 == 99 | p1661s4a2 == 98
 
-// Transferencias PNC
-gen double ypnc_ci = p1661s3a1/12 if p1661s3a1 != 98 & !missing(p1661s3a1)
-replace ypnc_ci = iof3ies if ypnc_ci == . & p1661s3 == 1 & p1661s3a1 == 98 & filtro_1661 == 1 &filtro_750 == 1
-replace ypnc_ci = iof3ies if p1661s3 == 1 & (m_p1661s3a1 > iof3ies) & p750s3a1 != 98 & filtro_1661 == 1 & filtro_750 == 1
-replace ypnc_ci = iof3ies/filtro_1661 if p1661s3 == 1 & (m_p750s2a1 > iof3ies) & p750s2a1 != 98 & filtro_1661 > 1  & filtro_750 == 1
+	*** Ingreso individual por transferencias no contributivas:	
+	egen double ytransf_ci = rowtotal(ypnc_ci yptmc_ci yotrot_ci), mi	// Transferencias declaradas
+	drop yfamac_ci yjovac_ci
+	
+***************
+*** ypen_ci ***
+***************
+	gen double ypen_ci = p7500s2a1 if pension_ci == 1
+	replace ypen_ci = . if p7500s2a1 == 98 | p7500s2a1 == 9999
+	label var ypen_ci "Valor de la pension contributiva"
 
-* Revision
-cou if ypnc_ci == . & pnc_ci == 1
-cou if ypnc_ci > (iof3i + iof3ies) & ypnc_ci != .
+******************
+*** ypensub_ci ***
+******************
+*DZ Octubre 2017-Se crea la variable valor de la pension subsidiada*
+	gen ypensub_ci = ypnc_ci
+	label var ypensub_ci "Valor de la pension subsidiada / no contributiva"
 
-// Transferencias PTMC
-gen double transf_fam = p1661s1a1/12 if p1661s1a1 != 98 & !missing(p1661s1a1)
-replace transf_fam = iof3ies if transf_fam == . & p1661s1 == 1 & p1661s1a1 == 98 & filtro_1661 == 1 &filtro_750 == 1
-replace transf_fam = iof3ies if p1661s1 == 1 & (m_p1661s1a1 > iof3ies) & p1661s1a1 != 98 & filtro_1661 == 1 & filtro_750 == 1
-replace transf_fam = iof3ies/filtro_1661 if p1661s1 == 1 & (m_p750s2a1 > iof3ies) & p1661s1a1 != 98 & filtro_1661 > 1 & filtro_750 == 1
-
-* Revision
-cou if transf_fam == . & p1661s1 == 1
-cou if transf_fam > (iof3i + iof3ies) & transf_fam != .
-
-gen double transf_jov = p1661s2a1/12 if p1661s2a1 != 98 & !missing(p1661s2a1)
-replace transf_jov = iof3ies if transf_jov == . & p1661s2 == 1 & p1661s2a1 == 98 & filtro_1661 == 1 & filtro_750 == 1
-replace transf_jov = iof3ies if p1661s2 == 1 & (m_p1661s2a1 > iof3ies) & p1661s2a1 != 98 & filtro_1661 == 1	& filtro_750 == 1
-replace transf_jov = iof3ies/filtro_1661 if p1661s2 == 1 & (m_p750s2a1 > iof3ies) & p1661s2a1 != 98 & filtro_1661 > 1 & filtro_750 == 1	
-
-* Revisión
-cou if transf_jov == . & p1661s2 == 1
-cou if transf_jov > (iof3i + iof3ies) & transf_jov != .
-
-*** Transferencias condicionadas:
-egen double yptmc_ci = rowtotal(transf_fam transf_jov), mi
-
-// Otras transferencias POTROT
-gen double yotrot_ci = p1661s4a2/12 if p1661s4a2 != 98 & !missing(p1661s4a1)
-replace yotrot_ci = iof3ies if yotrot_ci == . & p1661s4 == 1 & p1661s4a2 == 98 & filtro_1661 == 1 & filtro_750 == 1
-replace yotrot_ci = iof3ies if p1661s4 == 1 & (m_p1661s4a2 > iof3ies) & p750s2a1 != 98 & filtro_1661 == 1 & filtro_750 == 1
-replace yotrot_ci = iof3ies/filtro_1661 if p1661s4 == 1 & (m_p750s2a1 > iof3ies) & p1661s4a2 != 98 & filtro_1661 > 1 & filtro_750 == 1
-
-* Revision
-cou if yotrot_ci == . & p1661s4 == 1
-cou if yotrot_ci > (iof3i + iof3ies) & yotrot_ci != .
-
-*****************
-*** ytransf_ci : Ingreso individual por transferencias no contributivas
-***************** 
-	egen double ytransf_ci = rowtotal(ypnc_ci yptmc_ci yotrot_ci), mi
-
-
-****************
-***remesas_ci***
-****************
-
-// Cantidad de transferencias desde otros hogares
-gen byte filtro_7510 = (p7510s1 == 1) + (p7510s2 == 1) + (p7500s2 == 1)
-
-	g double remesas_ci = p7510s2a1/12 if (p7510s2 == 1 & p7510s2a1 != 98 & !missing(p7510s2a1))
-	replace remesas_ci = iof3hes if p7510s2 == 1 & iof3h == 0 & p7510s2a1 == 98 & filtro_7510 == 1
-	replace remesas_ci = iof3hes/filtro_7510 if p7510s2 == 1 & iof3h == 0 & p7510s2a1 == 98 & filtro_7510 > 1
-	replace remesas_ci = iof3hes/filtro_7510 if p7510s2 == 1 & iof3h == 0 & p7510s2a1 == 98 & (p7510s1a1 == 98 | p7500s2a1 == 98) & filtro_7510 > 1
-	replace remesas_ci = iof3hes/filtro_7510 if p7510s2 == 1 & iof3h == 0 & p7510s2a1 != 98 & (m_p7510s2a1 > iof3h + iof3hes)
-	la var remesas_ci "Remesas mensuales reportadas por el individuo" 
-
-* Revision
-cou if remesas_ci == . & p7510s2 == 1
-cou if remesas_ci > (iof3h + iof3hes) & remesas_ci != .
-
+******************
+*** remesas_ci ***
+******************
+	gen double remesas_ci = p7510s2a1/12 if p7510s2 == 1
+	replace remesas_ci = . if p7510s2a1 == 98 | p7510s2a1 == 9999
 
 *************
 ***ynlm_ci***
 *************
-	
-// Desagregar iof* para evitar su doble contabilización:
-	* iof1 intereses y dividendos por inversiones > p7510s5a1/12
-	* iof2 pensiones o jubilaciones por vejez, invalidez o sustitución pensional > p7500s2a1
-	* iof3h Ingreso por ayudas de hogares, antes de imputación > p7500s3a1 +(p7510s1a1 + p7510s2a1)/12
-	* iof3i Ingreso por ayudas de instituciones, antes de imputación > p7510s3a1/ 12 | (p750s1a1 + p750s2a1 + p750s3a1)/12
-			* Sólo Entidades del gobierno > p750s2a1 = p1661s1a1 + p1661s2a1 + p1661s3a1 + p1661s4a2
-	* iof6 Ingreso por arriendos antes de imputación > p7500s1a1
-	* iof*es Ingreso por iof* imputado (sólo para faltantes o extremos)
-	
-// Transferencias monetarias de otros hogares dentro del país
-gen double aux_remesas = remesas_ci * (-1)
-egen double transf_nac = rowtotal(iof3h iof3hes aux_remesas), m
+	foreach var in p7500s1 p7500s2 p7500s3 p7510s1 p7510s2 p7510s3 p7510s5 p7510s6 p7510s7 { 
+	gen m_`var' = `var'a1
+	replace m_`var' = . if `var'a1 == 9999 | `var'a1 == 98
+	}
 
-// Transferencias monetarias de otras instituciones (privadas y extranjeras)
-gen double aux_transf_ci = ytransf_ci * (-1)
-egen double transf_ins = rowtotal(iof3i iof3ies aux_transf_ci), m
+	gen double yarriendo  = m_p7500s1 	// iof6*
+	replace yarriendo = iof6es if iof6 == 0 & iof6es != . & (p7500s1a1 == 98 | p7500s1a1 == 9999 | p7500s1 == 9)
+	replace yarriendo = iof6es if iof6 == 0 & iof6es != . & iof6es < m_p7500s1 
 	
-	egen double ynlm_ci = rowtotal(iof1 iof2 transf_nac remesas_ci transf_ins ytransf_ci iof6 iof1es iof2es iof6es), m
-	replace ynlm_ci = . if ynlm_ci == 0
+	gen double yjubilacion = m_p7500s2	// iof2* // = ypen_ci
+	replace yjubilacion = iof2es if iof2 == 0 & iof2es != . & (p7500s2a1 == 98 | p7500s2a1 == 9999 | p7500s2 == 9)
+	replace yjubilacion = iof2es if iof2 == 0 & iof2es < m_p7500s2 & p7500s2 == 1
+	replace yjubilacion = iof2   if iof2 != . & iof2es == . & p7500s2 == 1 & iof2 < m_p7500s2 & m_p7500s2 > 7000000
+	
+	
+	gen double ypenalimento  = m_p7500s3	// iof3h*
+	gen double yayudafamil  = m_p7510s1/12	// iof3h*
+	gen double yremesas	  = m_p7510s2/12	// iof3h* // = remesas_ci
+	
+	gen double yayudainsti = m_p7510s3/12	// iof3i*
+	
+	gen double yintereses = m_p7510s5/12	// iof1*
+	replace yintereses = iof1es if iof1 == 0 & iof1es != . & (p7510s5a1 == 98 | p7510s5a1 == 9999 | p7510s5 == 9)
+	replace yintereses = iof1es if iof1 == 0 & iof1es != . & iof1es < m_p7510s5 
+	
+	gen double ycesantia  = m_p7510s6/12
+	gen double yotros	  = m_p7510s7/12
+	
+	* Variable auxiliar para complemento de transferencias de instituciones (privadas y del extranjero)
+	gen double aux_ytransf_ci = ytransf_ci*(-1)
+	egen double delta_transf = rowtotal(yayudainsti aux_ytransf_ci), mi
+	
+	egen double ynlm_ci = rowtotal(yarriendo yjubilacion ypenalimento yayudafamil remesas_ci ytransf_ci delta_transf yintereses ycesantia yotros), mi
 	la var ynlm_ci "Ingreso no laboral monetario"
+	*egen double ynlm_ci = rsum(iof1 iof2  iof3h iof3i iof6 iof1es iof2es  iof3hes iof3ies iof6es), m // Para contrastar programación previa al 2020
+	drop m_p7500s1 m_p7500s2 m_p7500s3 m_p7510s1 m_p7510s2 m_p7510s3 m_p7510s5 m_p7510s6 m_p7510s7	
 	
 **************
 ***ynlnm_ci***
@@ -1020,23 +970,16 @@ egen double transf_ins = rowtotal(iof3i iof3ies aux_transf_ci), m
 	g ynlnm_ci = .
 	la var ynlnm_ci "Ingreso no laboral no monetario" 
 
-
-*** INGRESO TOTAL LABORAL Y NO LABORAL (MONETARIO Y NO MONETARIO) ***
-
 **************
 ***ytot_ci***
 **************
 	egen double ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci), mi
 
-
-*** INGRESO NETO INDIVIDUAL > INGRESO PRIMARIO + TRANSFERENCIAS PRIVADAS
-
 ***************
 *** ynet_ci ***
 ***************
-	egen double ynet_ci = rowtotal(ytot_ci aux_transf_ci), mi
-	sum ynet_ci if ynet_ci < 0
-	drop aux_transf_ci
+	egen double ynet_ci = rowtotal(ytot_ci aux_ytransf_ci), mi
+	drop aux_ytransf_ci
 
 
 			************************
@@ -1046,7 +989,7 @@ egen double transf_ins = rowtotal(iof3i iof3ies aux_transf_ci), m
 *******************
 *** nrylmpri_ch ***
 *******************
-	bys idh_ch: egen nrylmpri_ch = sum(nrylmpri_ci) if miembros_ci == 1
+	bys idh_ch: egen nrylmpri_ch = total(nrylmpri_ci) if miembros_ci == 1, mi
 	replace nrylmpri_ch = 1 if nrylmpri_ch > 0 & nrylmpri_ch < .
 	replace nrylmpri_ch = . if nrylmpri_ch == .
 	la var nrylmpri_ch "Hogares con algÃƒÂºn miembro que no respondiÃƒÂ³ por ingresos"
@@ -1058,7 +1001,7 @@ egen double transf_ins = rowtotal(iof3i iof3ies aux_transf_ci), m
 *******************
 
 	foreach i in lm lnm nlm {
-		bys idh_ch: egen double y`i'_ch = sum(y`i'_ci) if miembros_ci == 1, mi
+		bys idh_ch: egen double y`i'_ch = total(y`i'_ci) if miembros_ci == 1, mi
 	}
 	la var ylm_ch 	"Ingreso laboral monetario del hogar"
 	la var ylnm_ch 	"Ingreso laboral no monetario del hogar"
@@ -1067,47 +1010,45 @@ egen double transf_ins = rowtotal(iof3i iof3ies aux_transf_ci), m
 ****************
 *** ylmnr_ch ***
 ****************
-	bys idh_ch: egen ylmnr_ch = sum(ylm_ci) if miembros_ci == 1, mi
+	bys idh_ch: egen ylmnr_ch = total(ylm_ci) if miembros_ci == 1, mi
 	replace ylmnr_ch = . if nrylmpri_ch == 1
-
 
 *****************
 *** ytransf_ch : Ingreso del hogar por transferencias no contributivas
 ***************** 
 
-*** Beneficiarios a nivel hogar:
-bys idh_ch: egen byte pnc_ch = max(pnc_ci) if miembros_ci == 1
-bys idh_ch: egen byte ptmc_ch = max(ptmc_ci) if miembros_ci == 1
-bys idh_ch: egen byte potrot_ch = max(potrot_ci) if miembros_ci == 1
-
-
-*** Montos de transferencias a nivel hogar (mensualizado):
-bys idh_ch: egen double ypnc_ch = total(ypnc_ci) if miembros_ci == 1, mi
-bys idh_ch: egen double yptmc_ch = total(yptmc_ci) if miembros_ci == 1, mi
-bys idh_ch: egen double yotrot_ch = total(yotrot_ci) if miembros_ci == 1, mi
-
-*** Ingreso del Hogar por transferencias no contributivas
-egen double ytransf_ch = rowtotal(ypnc_ch yptmc_ch yotrot_ch) if miembros_ci == 1, mi
-
+	*** Beneficiarios a nivel hogar:
+		bys idh_ch: egen byte pnc_ch = max(pnc_ci) if miembros_ci == 1
+		bys idh_ch: egen byte ptmc_ch = max(ptmc_ci) if miembros_ci == 1
+		bys idh_ch: egen byte potrot_ch = max(potrot_ci) if miembros_ci == 1
+	
+		gen byte pcasht_ch = (ptmc_ch == 1 | pnc_ch == 1 | potrot_ch == 1)
+		replace pcasht_ch = . if ptmc_ch == . & pnc_ch == . & potrot_ch == .	
+	
+	*** Montos de transferencias a nivel hogar (mensualizado):
+		bys idh_ch: egen double ypnc_ch = total(ypnc_ci) if miembros_ci == 1, mi
+		bys idh_ch: egen double yptmc_ch = total(yptmc_ci) if miembros_ci == 1, mi
+		bys idh_ch: egen double yotrot_ch = total(yotrot_ci) if miembros_ci == 1, mi
+	
+	*** Ingreso del Hogar por transferencias no contributivas
+	egen double ytransf_ch = rowtotal(ypnc_ch yptmc_ch yotrot_ch) if miembros_ci == 1, mi
 
 ****************
 ***remesas_ch***
 ****************
-	bys idh_ch: egen double remesas_ch = sum(remesas_ci) if miembros_ci == 1, mi
+	bys idh_ch: egen double remesas_ch = total(remesas_ci) if miembros_ci == 1, mi
 	la var remesas_ch "Remesas mensuales del hogar" 
-	
 	
 **************
 ***ynlnm_ch***
 **************
 	g ynlnm_ch = .
 	la var ynlnm_ch "Ingreso no laboral no monetario del hogar"
-
 	
 **************
 ***ytot_ch***
 **************
-	egen double ytot_ch = rowtotal(ylm_ch ylnm_ch ynlm_ch ynlnm_ch), mi
+	bys idh_ch: egen double ytot_ch = total(ytot_ci) if miembros_ci == 1, mi
 
 	
 ***************
@@ -1130,7 +1071,6 @@ egen double ytransf_ch = rowtotal(ypnc_ch yptmc_ch yotrot_ch) if miembros_ci == 
 
 	g autocons_ch = .
 	la var autocons_ch "Autoconsumo reportado por el hogar"
-
 
 
 *****************
@@ -1692,9 +1632,6 @@ label var ybenefdes_ci "Monto de seguro de desempleo"
 	
 	gen miglac_ci=.
 	label var miglac_ci "=1 si es migrante proveniente de un pais LAC"
-
-
-
 
 
 
