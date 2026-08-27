@@ -520,7 +520,7 @@ use `base_in', clear
 	***** El código mantiene a la poblacion inactiva y a los menores de la edad límite de la PET como missing values en congruencia con la variable formal_ci *****.
 	gen byte cotizando_ci = .
 	replace cotizando_ci = 1 if ((p44f == 1 | p61b1 <= 4) & emp_ci==1)  //¿(…) recibe por parte de su patrono o empleador:
-	replace cotizando_ci = 0 if (cotizando_ci1 != 1 & inlist(condocup_ci, 1, 2))
+	replace cotizando_ci = 0 if (cotizando_ci != 1 & inlist(condocup_ci, 1, 2))
 	label var cotizando_ci "Cotizante a la Seguridad Social"
 	label define cotizando_ci 0 "No"  1 "Si"
 	label value cotizando_ci cotizando_ci
