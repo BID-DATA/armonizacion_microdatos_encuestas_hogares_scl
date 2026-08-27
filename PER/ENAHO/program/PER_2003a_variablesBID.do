@@ -520,6 +520,14 @@ label var cotizasec_ci "Cotizante a la Seguridad Social por su trabajo secundari
 *************
 gen formal_ci=(cotizando_ci==1)
 
+*****************
+*tipocontrato_ci*
+*****************
+gen tipocontrato_ci=. 
+label var tipocontrato_ci "Tipo de contrato segun su duracion en act principal"
+label define tipocontrato_ci 1 "Permanente/indefinido" 2 "Temporal" 3 "Sin contrato/verbal" 
+label value tipocontrato_ci tipocontrato_ci
+
 *************
 *tamemp_ci***
 *************
