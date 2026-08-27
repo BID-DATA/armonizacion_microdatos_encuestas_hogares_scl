@@ -586,7 +586,7 @@ use `base_in', clear
 	***************
 	*pensionsub_ci*
 	***************
-	gen pensionsub_ci = (p75 == 1) // Bono de desarollo humano
+	gen pensionsub_ci = .
 
 	************
 	*tipopen_ci*
@@ -599,14 +599,17 @@ use `base_in', clear
 	gen instpen_ci = .
 
 
-		**************************
-		***VARIABLES DE INGRESO***
-		**************************
+		************************************************
+		*** VARIABLES DE INGRESO & PROTECCION SOCIAL ***
+		************************************************
+		
 		*fre p63 p64b p65 p66 p67 p68b p69 p70b p71b p72b p73b p74b p76 p78
 		foreach var of varlist p63 p64b p65 p66 p67  ///
 		p68b p69 p70b p71b p72b p74b p76 {
 		replace `var'=. if `var'==999999 
 		}
+	
+*A. INGRESOS LABORALES A NIVEL DE INDIVIDUO	
 
     ***************
 	***ylmpri_ci***
@@ -654,14 +657,67 @@ use `base_in', clear
 	*************
 	egen double ylnm_ci =rowtotal(ylnmpri_ci ylnmsec_ci ylnmotros_ci), missing
 	
+	
+*B. INGRESOS NO LABORALES A NIVEL DE INDIVIDUO	
+
+	****************
+	***ytransf_ci***
+	****************
+* PNC - Pensiones sociales no contributivas
+* PTMC - Programas de transferencias monetarias condicionadas:
+		* Bono de Desarrollo Humano (p75 p76)
+* POTROT - Programas de otras transferencias monetarias no condicionadas:
+		* Bono Joaquín Gallegos Lara (p77 p78)
+
+
+*** Beneficiarios a nivel individual:
+	gen byte pnc_ci = .
+	gen byte ptmc_ci = (p75 == 1) if !missing(p75)
+	gen byte potrot_ci = (p77 == 1) if !missing(p77)
+
+*** Montos de transferencias a nivel individual:
+	// Transferencias PNC
+	gen double ypnc_ci = .
+
+	// Transferencias PTMC
+	gen double yptmc_ci = p76 if p76 != 999999
+
+	// Otras transferencias POTROT
+	gen double yotrot_ci = p78 if p78 != 999999
+
+*** Ingreso individual por transferencias no contributivas
+egen double ytransf_ci = rowtotal(ypnc_ci yptmc_ci yotrot_ci), mi
+
+
+	****************
+	***remesas_ci***
+	****************
+	gen remesas_ci = p74b if p74b != 999999
+	
+	*************
+	***ypen_ci***
+	*************
+	gen double ypen_ci = p72b if pension_ci == 1
+	replace ypen_ci = . if ypen_ci == 999999 
+
+	****************
+	***ypensub_ci***
+	****************
+	gen ypensub_ci = .
+
 	*************
 	***ynlm_ci***
 	*************
-	* MGR: agrego ingreso recibido por Bono de Discapacidad Joaquín Gallegos Lara
-	egen ynlm_ci = rsum(p71b p72b p73b p74b p76 p78), m
-	replace ynlm_ci = . if p71b == . & p72b == . & p73b == . & p74b == . & p76 == . & p78 == .
-	replace ynlm_ci = . if ynlm_ci >= 999999
-
+		*p71b Ingreso recibido por transacciones de capital
+		*p72b Ingreso por jubilación o pensiones > ypen_ci 
+		*p73b Ingreso por regalos o donaciones
+		*p74b Ingreso del exterior > remesas_ci
+		*p76  Monto que recibió por el BONO DE DESARROLLO HUMANO > ytransf_ci
+		*p78  Monto recibido por el BONO DE DISCAPACIDAD > ytransf_ci
+	egen double ynlm_ci = rowtotal(p71b ypen_ci p73b remesas_ci ytransf_ci), mi
+	replace ynlm_ci = . if p71b == . & ypen_ci == . & p73b == . & remesas_ci == . & ytransf_ci == .
+	replace ynlm_ci = . if p71b == 999999 | ypen_ci == 999999 | p73b == 999999 | remesas_ci == 999999 | ytransf_ci == 999999
+	
 	**************
 	***ynlnm_ci***
 	**************
@@ -671,31 +727,74 @@ use `base_in', clear
 	***ytot_ci***
 	*************
 	egen ytot_ci = rsum(ylm_ci ylnm_ci ynlm_ci ynlnm_ci), m
+	
+	***************
+	*** ynet_ci ***
+	***************
+	gen double aux_ytransf_ci = ytransf_ci*(-1)
+	egen double ynet_ci = rowtotal(ytot_ci aux_ytransf_ci), mi
+	drop aux_ytransf_ci
+
+
+*C. INGRESOS DEL HOGAR ***
 
 	************
 	***ylm_ch***
 	************
-	by idh_ch, sort: egen ylm_ch = sum(ylm_ci) if miembros_ci == 1
+	by idh_ch, sort: egen double ylm_ch = total(ylm_ci) if miembros_ci == 1, mi
 
 	*************
 	***ylnm_ch***
 	*************
-	by idh_ch, sort: egen ylnm_ch = sum(ylnm_ci) if miembros_ci == 1
+	by idh_ch, sort: egen double ylnm_ch = total(ylnm_ci) if miembros_ci == 1, mi
+
+	******************
+	*** ytransf_ch ***
+	****************** 
+
+	*** Beneficiarios a nivel hogar:
+		bys idh_ch: egen byte pnc_ch = max(pnc_ci) if miembros_ci == 1
+		bys idh_ch: egen byte ptmc_ch = max(ptmc_ci) if miembros_ci == 1
+		bys idh_ch: egen byte potrot_ch = max(potrot_ci) if miembros_ci == 1
+		
+		gen byte pcasht_ch = (pnc_ch == 1 | ptmc_ch == 1 | potrot_ch == 1)
+		replace pcasht_ch = . if pnc_ch == . & ptmc_ch == . & potrot_ch == .
+		
+	*** Montos de transferencias a nivel hogar:
+		bys idh_ch: egen double ypnc_ch = total(ypnc_ci) if miembros_ci == 1, mi
+		bys idh_ch: egen double yptmc_ch = total(yptmc_ci) if miembros_ci == 1, mi
+		bys idh_ch: egen double yotrot_ch = total(yotrot_ci) if miembros_ci == 1, mi
+		
+	*** Ingreso del Hogar por transferencias no contributivas
+	egen double ytransf_ch = rowtotal(ypnc_ch yptmc_ch yotrot_ch) if miembros_ci == 1, mi
+
+	****************
+	***remesas_ch***
+	****************
+	by idh_ch, sort: egen double remesas_ch = total(remesas_ci) if miembros_ci == 1, mi
+
+	*************
+	***ynlm_ch***
+	*************
+	by idh_ch, sort: egen double ynlm_ch = total(ynlm_ci) if miembros_ci==1, mi
 
 	**************
 	***ynlnm_ch***
 	**************
 	gen ynlnm_ch = .
-
-	*************
-	***ynlm_ch***
-	*************
-	by idh_ch, sort: egen ynlm_ch = sum(ynlm_ci) if miembros_ci==1
-
+	
 	*************
 	***ytot_ch***
 	*************
-	by idh_ch, sort: egen ytot_ch = sum(ytot_ci) if miembros_ci==1
+	by idh_ch, sort: egen double ytot_ch = total(ytot_ci) if miembros_ci==1, mi
+
+	***************
+	*** ynet_ch ***
+	***************
+	gen double aux_ytransf_ch = ytransf_ch*(-1)
+	egen double ynet_ch = rowtotal(ytot_ch aux_ytransf_ch) if miembros_ci == 1, mi
+	gen double ynet_ch_pc = (ynet_ch)/nmiembros_ch if miembros_ci == 1
+	drop aux_ytransf_ch
 
 	*****************
 	***ylmhopri_ci***
@@ -726,30 +825,8 @@ use `base_in', clear
 	by idh_ch, sort: egen ylmnr_ch = sum(ylm_ci) if miembros_ci == 1
 	replace ylmnr_ch = . if nrylmpri_ch == 1
 
-	****************
-	***remesas_ci***
-	****************
-	gen remesas_ci = p74b
-	replace remesas_ci = . if p74b >= 999999
 
-	****************
-	***remesas_ch***
-	****************
-	by idh_ch, sort: egen remesas_ch = sum(remesas_ci) if miembros_ci == 1
-		
-	*************
-	***ypen_ci***
-	*************
-	gen ypen_ci = p72b if pension_ci == 1
-	replace ypen_ci = . if ypen_ci == 999999 
 
-	****************
-	***ypensub_ci***
-	****************
-	gen ypensub_ci = p76 if pensionsub_ci == 1
-	replace ypensub_ci = . if ypensub_ci == 999999
-
-		
 		****************************
 		***VARIABLES DE EDUCACION***
 		****************************
