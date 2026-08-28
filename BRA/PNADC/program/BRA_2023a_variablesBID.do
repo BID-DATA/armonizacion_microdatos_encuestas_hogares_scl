@@ -1023,6 +1023,7 @@ by idh_ch, sort: egen ylmnr_ch = sum(ylm_ci) if miembros_ci == 1
 replace ylmnr_ch = . if nrylmpri_ch == 1
 label var ylmnr_ch "Ingreso laboral monetario del hogar"
 
+/*
 
 # Historial de modificaciones #
 #=============================#
