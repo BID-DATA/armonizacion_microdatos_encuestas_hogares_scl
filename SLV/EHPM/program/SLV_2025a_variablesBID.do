@@ -639,12 +639,14 @@ use `base_in', clear
 
 
 *******************************************************
-***              VARIABLES DE INGRESO               ***
+*** 	VARIABLES DE INGRESO & PROTECCION SOCIAL    ***
 *******************************************************
 
-	*************************
+	**************************
 	*** INGRESO INDIVIDUAL ***
-	*************************
+	**************************
+
+*A. INGRESOS LABORALES A NIVEL DE INDIVIDUO	
 
 	***************
 	***ylmpri_ci***
@@ -732,40 +734,96 @@ use `base_in', clear
 	egen double ylnm_ci = rsum(ylnmpri_ci ylnmsec_ci ylnmotros_ci), missing
 	replace ylnm_ci = . if ylnmpri_ci == . & ylnmsec_ci == . & ylnmotros_ci == .
 
-	***********
-	**ynlm_ci***
-	***********
-	/* Ingresos no laborales monetarios:
-	   remesas (r44001), cuota alimenticia, alquileres, pensiones, ahorros, etc.
-	   + utilidades, dividendos, herencias, ayudas gubernamentales, etc. (anuales /12) */
-	gen double remesas_temp   = r44001a * r44001b / 12   /* remesas internacionales */
-	gen double cuotalim       = r44002a * r44002b / 12
-	gen double alqui          = r44003a * r44003b / 12
-	gen double alqneg         = r44004a * r44004b / 12
-	gen double alqterr        = r44005a * r44005b / 12
-	gen double jubil          = ingreso_pensiones
-	gen double deveh          = r44007a * r44007b / 12
-	gen double pension_temp   = r44008a * r44008b / 12   /* pensión por sobrevivencia */
-	gen double ahorros        = r44009a * r44009b / 12
-	gen double otros_nl       = r44010a * r44010b / 12
-	gen double utilidades     = r44101 / 12
-	gen double dividendos     = r44102 / 12
-	gen double intereses      = r44103 / 12
-	gen double herencias      = r44104 / 12
-	gen double indemnizacion  = r44105 / 12
-	gen double ayudagob       = r44106 / 12
-	gen double acteventual    = r44107 / 12
-	gen double arrendamiento  = r44108 / 12
-	gen double remesaevent1   = r44109 / 12
-	gen double aguinaldo_nl   = r44110 / 12
-	gen double otrosy         = r44111 / 12
 
-	egen double ynlm_ci = rsum(remesas_temp cuotalim alqui alqneg alqterr jubil deveh ///
-		pension_temp ahorros otros_nl utilidades dividendos intereses herencias ///
-		indemnizacion ayudagob acteventual arrendamiento remesaevent1 aguinaldo_nl otrosy), missing
-	drop remesas_temp cuotalim alqui alqneg alqterr jubil deveh pension_temp ahorros otros_nl ///
-		utilidades dividendos intereses herencias indemnizacion ayudagob acteventual ///
-		arrendamiento remesaevent1 aguinaldo_nl otrosy
+*B. INGRESOS NO LABORALES A NIVEL DE INDIVIDUO	
+
+	********************************************************
+	*** ytransf_ci: Transferencias de programas sociales ***
+	********************************************************
+	// No está disponible la Sección 7: Subsidios al hogar de parte del gobierno (r7*)
+		
+		* PNC - Pensiones sociales no contributivas:
+			* 1 Pensión Básica Universal del Adulto Mayor r319a5==1 // nivel hogar (Sin monto)
+		* PTMC - Programas de transferencias monetarias condicionadas:
+			* 2 Becas: Beca de cuota escolar y Beca para matrícula  r211d== 1 | r211e==1 (Sin monto)
+			* 3 Bono para Comunidades Solidarias (rurales y urbanas) r319a3== 1| r319a4== 1 // nivel hogar (Sin monto)
+		* POTROT - Programas de otras transferencias monetarias no condicionadas
+			* 4 Otras ayudas del gobierno en efectivo (r44106)
+		
+	*** Beneficiarios a nivel individual:
+		
+		// PNC
+		gen byte pnc_ci = .		// Información solo a nivel hogar
+	
+		// PTMC
+		gen byte becaesc_ci = (r211d == 1 | r211e == 1)
+		replace becaesc_ci = . if r211d == . & r211e == .
+		gen byte solidario_ci = . 	// Información solo a nivel hogar
+		gen byte ptmc_ci = (becaesc_ci == 1 | solidario_ci == 1)
+		replace ptmc_ci = . if becaesc_ci == . & solidario_ci == .
+		
+		// POTROT
+		gen byte potrot_ci = (r44106 > 0) if !missing(r44106)
+		
+	*** Montos de transferencias a nivel individual: (No hay montos disponibles para este año)
+	
+		gen ypnc_ci = .		// Transferencias PNC
+		gen yptmc_ci = . 	// Transferencias PTMC 
+		gen yotrot_ci = r44106/12 if potrot_ci == 1 	// Otras transferencias POTROT
+	
+	*** Ingreso individual por transferencias no contributivas
+	egen double ytransf_ci = rowtotal(ypnc_ci yptmc_ci yotrot_ci), mi
+	
+	****************
+	***remesas_ci***
+	****************
+	/* Desde el 2022 se incluye la variable remesas monetarias habituales individuales (irefa a nivel hogar) */
+	gen double remesa_nm = irefb if relacion_ci == 1 & irefb > 0 & irefb != .
+	gen double remesa_esp = ires if relacion_ci == 1 & ires > 0 & ires != .
+	
+	egen double remesas_ci = rowtotal(ingreso_remesas remesa_nm remesa_esp), mi
+		
+	*************
+	*ypen_ci*
+	*************
+	gen double ypen_ci = ingreso_pensiones if (ingreso_pensiones > 0 & ingreso_pensiones != .) 
+	
+	*****************
+	**  ypensub_ci  *
+	*****************
+	* No se puede determinar el monto de la pension basica universal (sólo existe el filtro r319a5)
+	gen ypensub_ci = .
+	
+	***************
+	*** ynlm_ci ***
+	***************
+	/* Ingresos no laborales monetarios: remesas (r44001), cuota alimenticia, alquileres, pensiones, ahorros, etc.
+	   + utilidades, dividendos, herencias, ayudas gubernamentales, etc. (anuales /12) */
+		gen double remesas_temp   = r44001a * r44001b / 12  /* "remesas" Nacionales (transferencias desde otros hogares del país) */
+		gen double cuotalim       = r44002a * r44002b / 12
+		gen double alqui          = r44003a * r44003b / 12
+		gen double alqneg         = r44004a * r44004b / 12
+		gen double alqterr        = r44005a * r44005b / 12
+		gen double jubil          = ingreso_pensiones		 // ypen_ci
+		gen double deveh          = r44007a * r44007b / 12
+		gen double pension_temp   = r44008a * r44008b / 12   /* pensión por sobrevivencia */
+		gen double ahorros        = r44009a * r44009b / 12
+		gen double otros_nl       = r44010a * r44010b / 12
+		
+		gen double utilidades     = r44101 / 12
+		gen double dividendos     = r44102 / 12
+		gen double intereses      = r44103 / 12
+		gen double herencias      = r44104 / 12
+		gen double indemnizacion  = r44105 / 12
+		gen double ayudagob       = r44106 / 12		// ytransf_ci
+		gen double acteventual    = r44107 / 12
+		gen double arrendamiento  = r44108 / 12
+		*gen double remesaevent1   = r44109 / 12	// Se excluyen porque son ingresos excepcionales de "remesas" Nacionales
+		gen double aguinaldo_nl   = r44110 / 12
+		gen double otrosy         = r44111 / 12
+	
+	egen double ynlm_ci = rowtotal(remesas_temp cuotalim alqui alqneg alqterr ypen_ci deveh pension_temp ahorros otros_nl utilidades dividendos intereses herencias indemnizacion acteventual arrendamiento aguinaldo_nl otrosy ytransf_ci remesas_ci), mi
+	drop remesas_temp cuotalim alqui alqneg alqterr jubil deveh pension_temp ahorros otros_nl utilidades dividendos intereses herencias indemnizacion ayudagob acteventual arrendamiento aguinaldo_nl otrosy
 
 	************
 	**ynlnm_ci**
@@ -776,25 +834,68 @@ use `base_in', clear
 	**ytot_ci**
 	***********
 	egen double ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci), mi
+	
+	***************
+	*** ynet_ci ***
+	***************
+	gen double aux_ytransf_ci = ytransf_ci*(-1)
+	egen double ynet_ci = rowtotal(ytot_ci aux_ytransf_ci), mi
+	drop aux_ytransf_ci
+	
 
-	***********************
-	*** INGRESO DEL HOGAR***
-	***********************
+	*************************
+	*** INGRESO DEL HOGAR ***
+	*************************
 
-	***********
-	**ylm_ch***
-	***********
-	by idh_ch, sort: egen double ylm_ch = total(ylm_ci) if miembros_ci == 1
+	**************
+	*** ylm_ch ***
+	**************
+	by idh_ch, sort: egen double ylm_ch = total(ylm_ci) if miembros_ci == 1, mi
 
-	***********
-	**ylnm_ch***
-	***********
-	by idh_ch, sort: egen double ylnm_ch = total(ylnm_ci) if miembros_ci == 1
-
-	***********
-	**ynlm_ch***
-	***********
-	by idh_ch, sort: egen double ynlm_ch = total(ynlm_ci) if miembros_ci == 1
+	***************
+	*** ylnm_ch ***
+	***************
+	by idh_ch, sort: egen double ylnm_ch = total(ylnm_ci) if miembros_ci == 1, mi
+	
+	******************
+	*** ytransf_ch ***
+	****************** 
+	
+	*** Beneficiarios a nivel hogar:
+		gen byte pnc_ch = (r319a5 == 1) if !missing(r319a5) & miembros_ci == 1
+		
+		bys idh_ch: egen byte becaesc_ch = max(becaesc_ci)	
+		gen byte solidario_ch = (r319a3 == 1 | r319a4 == 1)	
+		replace solidario_ch = . if r319a3 == . & r319a4 == .
+	
+		gen byte ptmc_ch = (becaesc_ch == 1 | solidario_ch == 1) if miembros_ci == 1
+		replace ptmc_ch = (becaesc_ch == . & solidario_ch == .)
+		
+		bys idh_ch: egen byte potrot_ch = max(potrot_ci) if miembros_ci == 1
+		
+		gen byte pcasht_ch = (pnc_ch == 1 | ptmc_ch == 1 | potrot_ch == 1)
+		replace pcasht_ch = . if pnc_ch == . & ptmc_ch == . & potrot_ch == .
+		
+	*** Montos de transferencias a nivel hogar:  (No hay montos disponibles para este año)
+	
+		gen ypnc_ch = .	 
+		gen yptmc_ch = .
+		bys idh_ch: egen double yotrot_ch = total(yotrot_ci) if miembros_ci == 1, mi
+	
+	*** Ingreso del Hogar por transferencias no contributivas
+	egen double ytransf_ch = rowtotal(ypnc_ch yptmc_ch yotrot_ch) if miembros_ci == 1, mi
+	
+	******************
+	*** remesas_ch ***
+	******************
+	/* A nivel de hogar: totayuda = remesas habituales (irefa) + remesas eventuales (irefb) + remesas especie (ires) 
+	Son equivalentes a la variable "totayuda" */
+	bys idh_ch: egen double remesas_ch = total(remesas_ci) if miembros_ci == 1, mi
+	
+	***************
+	*** ynlm_ch ***
+	***************
+	bys idh_ch: egen double ynlm_ch = total(ynlm_ci) if miembros_ci == 1, mi
 
 	***********
 	**ynlnm_ch**
@@ -805,6 +906,14 @@ use `base_in', clear
 	**ytot_ch**
 	***********
 	egen double ytot_ch = rowtotal(ylm_ch ylnm_ch ynlm_ch ynlnm_ch), mi
+	
+	***************
+	*** ynet_ch ***
+	***************
+	gen double aux_ytransf_ch = ytransf_ch*(-1)
+	egen double ynet_ch = rowtotal(ytot_ch aux_ytransf_ch) if miembros_ci == 1, mi
+	gen double ynet_ch_pc = (ynet_ch)/nmiembros_ch if miembros_ci == 1
+	drop aux_ytransf_ch
 
 	***************
 	**ylmhopri_ci**
@@ -829,33 +938,6 @@ use `base_in', clear
 	**nrylmpri_ch**
 	**************
 	by idh_ch, sort: egen byte nrylmpri_ch = max(nrylmpri_ci) if miembros_ci == 1
-
-	***********
-	**remesas_ci**
-	***********
-	/* irefa: remesas monetarias del hogar recibidas del extranjero (nivel hogar)
-	   Se asigna a nivel individual - remesas_ch se construye por suma */
-	***gen double remesas_ci = irefa
-	*** El código de remesas_ci se sustituye por missing values y remesas_ch se construye con la variable totayuda que contiene las remesas totales del hogar.
-	gen double remesas_ci = .
-
-	***********
-	**remesas_ch**
-	***********
-	***by idh_ch, sort: egen double remesas_ch = total(remesas_ci) if miembros_ci == 1
-	by idh_ch, sort: gen double remesas_ch = totayuda if miembros_ci == 1
-	label var remesas_ch "Remesas mensuales del hogar"
-
-	**********
-	**ypen_ci**
-	**********
-	gen double ypen_ci = ingreso_pensiones if pension_ci == 1
-
-	***********
-	**ypensub_ci**
-	***********
-	gen double ypensub_ci = .
-	replace ypensub_ci = ingreso_pensiones if pensionsub_ci == 1
 
 	***************
 	**rentaimp_ch**
@@ -1371,16 +1453,17 @@ replace aguafuente_ch = 10 if r313 == 13				// Otra fuente sin clasificación
 	  afroind_ci afroind_ch afroind_ano_c dis_ci dis_ch /// Género y diversidad 
 	  afro_ci ind_ci noafroind_ci afro_ch ind_ch noafroind_ch disWG_ci /// Género y diversidad
 	  /// Agregar aquí: ISO3pais_dis_ci (renombrar con código del país, ej. COL_dis_ci)
-          condocup_ci categoinac_ci emp_ci cesante_ci desemp_ci subemp_ci durades_ci pea_ci nempleos_ci antiguedad_ci desalent_ci  /// Empleo
+      condocup_ci categoinac_ci emp_ci cesante_ci desemp_ci subemp_ci durades_ci pea_ci nempleos_ci antiguedad_ci desalent_ci  /// Empleo
 	  horaspri_ci horastot_ci tiempoparc_ci categopri_ci categosec_ci rama_ci spublico_ci tamemp_ci cotizando_ci instcot_ci	afiliado_ci /// Empleo
 	  formal_ci tipocontrato_ci ocupa_ci pension_ci	pensionsub_ci tipopen_ci instpen_ci	/// Empleo
 	  ylmpri_ci ylnmpri_ci ylmsec_ci ylnmsec_ci ylmotros_ci /// Ingresos individuo
-     ylnmotros_ci ylm_ci ylnm_ci ynlm_ci ynlnm_ci ytot_ci   /// Ingresos individuo
-	  ylm_ch ylnm_ch ynlm_ch ynlnm_ch   ytot_ch /// Ingresos del hogar
-	  ylmhopri_ci ylmho_ci /// ingreso por hora
+      ylnmotros_ci ylm_ci ylnm_ci ynlm_ci ynlnm_ci ytot_ci   /// Ingresos individuo
+	  ylm_ch ylnm_ch ynlm_ch ynlnm_ch ytot_ch /// Ingresos del hogar
+	  ylmhopri_ci ylmho_ci /// Ingreso por hora
 	  nrylmpri_ci nrylmpri_ch /// No respuesta de ingresos 
+	  pnc_ci ptmc_ci potrot_ci ypnc_ci yptmc_ci yotrot_ci ytransf_ci ynet_ci pnc_ch ptmc_ch potrot_ch ypnc_ch yptmc_ch yotrot_ch ytransf_ch ynet_ch ynet_ch_pc /// Protección social
 	  remesas_ci remesas_ch ypen_ci ypensub_ci /// Remesas y pensiones
-          aedu_ci eduui_ci eduuc_ci edupre_ci eduac_ci asiste_ci edupub_ci razonesnoasis_ci asispre_ci /// Educación 
+      aedu_ci eduui_ci eduuc_ci edupre_ci eduac_ci asiste_ci edupub_ci razonesnoasis_ci asispre_ci /// Educación 
 	  luz_ch luzmide_ch combust_ch piso_ch pared_ch techo_ch resid_ch dorm_ch cuartos_ch cocina_ch telef_ch refrig_ch /// Vivienda 
 	  freez_ch auto_ch compu_ch internet_ch cel_ch vivi1_ch vivi2_ch viviprop_ch vivitit_ch vivialq_ch vivialqimp_ch /// Vivienda
 	  aguared_ch aguafconsumo_ch aguafuente_ch aguadist_ch aguadisp1_ch aguadisp2_ch /// Agua y saneamineto
