@@ -748,8 +748,7 @@ use `base_in', clear
 			* 2 Becas: Beca de cuota escolar y Beca para matrícula  r211d== 1 | r211e==1 (Sin monto)
 			* 3 Bono para Comunidades Solidarias (rurales y urbanas) r319a3== 1| r319a4== 1 // nivel hogar (Sin monto)
 		* POTROT - Programas de otras transferencias monetarias no condicionadas
-			* 4 Otras ayudas del gobierno en efectivo
-				// r44106. OTROS INGRESOS DURANTELOS ÚLTIMOS 12 MESES? 06. Monto de ayuda del gobierno en efectivo
+			* 4 Otras ayudas del gobierno en efectivo (r44106)
 		
 	*** Beneficiarios a nivel individual:
 		
@@ -778,28 +777,29 @@ use `base_in', clear
 	****************
 	***remesas_ci***
 	****************
-	gen double remesas_ci = ingreso_remesas if (ingreso_remesas > 0 & ingreso_remesas != .) 
-	label var remesas_ci "Remesas mensuales reportadas por el individuo" 
+	/* Desde el 2022 se incluye la variable remesas monetarias habituales individuales (irefa a nivel hogar) */
+	gen double remesa_nm = irefb if relacion_ci == 1 & irefb > 0 & irefb != .
+	gen double remesa_esp = ires if relacion_ci == 1 & ires > 0 & ires != .
 	
+	egen double remesas_ci = rowtotal(ingreso_remesas remesa_nm remesa_esp), mi
+		
 	*************
 	*ypen_ci*
 	*************
 	gen double ypen_ci = ingreso_pensiones if (ingreso_pensiones > 0 & ingreso_pensiones != .) 
-	label var ypen_ci "Valor de la pension contributiva"
 	
 	*****************
 	**  ypensub_ci  *
 	*****************
 	* No se puede determinar el monto de la pension basica universal (sólo existe el filtro r319a5)
-	gen ypensub_ci=.
-	label var ypensub_ci "Valor de la pension subsidiada / no contributiva"
-
-	***********
-	**ynlm_ci***
-	***********
+	gen ypensub_ci = .
+	
+	***************
+	*** ynlm_ci ***
+	***************
 	/* Ingresos no laborales monetarios: remesas (r44001), cuota alimenticia, alquileres, pensiones, ahorros, etc.
 	   + utilidades, dividendos, herencias, ayudas gubernamentales, etc. (anuales /12) */
-		gen double remesas_temp   = r44001a * r44001b / 12   /* remesas Nacionales */
+		gen double remesas_temp   = r44001a * r44001b / 12  /* "remesas" Nacionales (transferencias desde otros hogares del país) */
 		gen double cuotalim       = r44002a * r44002b / 12
 		gen double alqui          = r44003a * r44003b / 12
 		gen double alqneg         = r44004a * r44004b / 12
@@ -818,12 +818,12 @@ use `base_in', clear
 		gen double ayudagob       = r44106 / 12		// ytransf_ci
 		gen double acteventual    = r44107 / 12
 		gen double arrendamiento  = r44108 / 12
-		gen double remesaevent1   = r44109 / 12
+		*gen double remesaevent1   = r44109 / 12	// Se excluyen porque son ingresos excepcionales de "remesas" Nacionales
 		gen double aguinaldo_nl   = r44110 / 12
 		gen double otrosy         = r44111 / 12
 	
 	egen double ynlm_ci = rowtotal(remesas_temp cuotalim alqui alqneg alqterr ypen_ci deveh pension_temp ahorros otros_nl utilidades dividendos intereses herencias indemnizacion acteventual arrendamiento aguinaldo_nl otrosy ytransf_ci remesas_ci), mi
-	drop remesas_temp cuotalim alqui alqneg alqterr jubil deveh pension_temp ahorros otros_nl utilidades dividendos intereses herencias indemnizacion ayudagob acteventual arrendamiento remesaevent1 aguinaldo_nl otrosy
+	drop remesas_temp cuotalim alqui alqneg alqterr jubil deveh pension_temp ahorros otros_nl utilidades dividendos intereses herencias indemnizacion ayudagob acteventual arrendamiento aguinaldo_nl otrosy
 
 	************
 	**ynlnm_ci**
@@ -888,6 +888,8 @@ use `base_in', clear
 	******************
 	*** remesas_ch ***
 	******************
+	/* A nivel de hogar: totayuda = remesas habituales (irefa) + remesas eventuales (irefb) + remesas especie (ires) 
+	Son equivalentes a la variable "totayuda" */
 	bys idh_ch: egen double remesas_ch = total(remesas_ci) if miembros_ci == 1, mi
 	
 	***************
