@@ -1443,7 +1443,7 @@ label var salmm_ci "Salario minimo legal"
 **categoinac_ci*
 **************
 
-gen categoinac_ci=
+gen categoinac_ci=.
 replace categoinac_ci=1 if q2_20==4 & condocup_ci==3
 replace categoinac_ci=2 if q2_20==1 & condocup_ci==3
 replace categoinac_ci=3 if q2_20==2 & condocup_ci==3
@@ -1460,8 +1460,6 @@ label value categoinac_ci categoinac_ci
 gen byte formal_ci=1 if cotizando_ci==1 & (condocup_ci==1 | condocup_ci==2)
 recode formal_ci .=0 if (condocup_ci==1 | condocup_ci==2)
 label var formal_ci "1=afiliado o cotizante / PEA"
-
-g formal_1=cotizando_ci1
 
 *******************
 ***  benefdes_ci  ***

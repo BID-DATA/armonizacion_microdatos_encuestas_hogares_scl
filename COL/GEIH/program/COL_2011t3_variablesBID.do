@@ -602,13 +602,6 @@ label value cotizando_ci cotizando_ci
 *************
 gen formal_ci=(cotizando_ci==1)
 
-*****************
-***desalent_ci***
-*****************
-	g desalent_ci = p6310 == 5
-	replace desalent_ci = . if p6310 == .
-	la var desalent_ci "Trabajador desalentado"
-
 ***************
 ***subemp_ci***
 ***************

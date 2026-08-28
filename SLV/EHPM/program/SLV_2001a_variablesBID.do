@@ -447,6 +447,7 @@ label var condocup_ci "Condicion de ocupacion utilizando definicion del pais
 ************
 ***emp_ci***
 ************
+***** El código mantiene como missing values a la poblacion menor de la edad limite de la PET que no forman parte de la población de referencia de la sección laboral de la Encuesta *****.
 gen byte emp_ci = .
 replace emp_ci = (condocup_ci == 1) if (condocup_ci != . & condocup_ci != 4)
 label var emp_ci "Ocupado (empleado)"
@@ -1085,7 +1086,10 @@ egen ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci)
 ***remesas_ci***
 ****************
 
-gen remesas_ci=remesasext
+***gen remesas_ci=remesasext
+*** El código de remesas_ci se sustituye por missing values y remesas_ch se construye con la variable totayuda que contiene las remesas totales del hogar.
+gen double remesas_ci = .
+label var remesas_ci "Remesas mensuales reportadas por el individuo"
 
 
 ************************
@@ -1152,10 +1156,14 @@ replace remesasnm=. if ayudaes==999999
 
 by idh_ch, sort: egen remesasi=sum(remesas_ci) if miembros_ci==1
 replace remesasi=. if remesasi==0
+
+/*
 egen remesas_ch=rsum(remesasi remesash remesasnm)
 replace remesas_ch=. if remesasi==. & remesash==. & remesasnm==.
+*/
 
-
+by idh_ch, sort: gen double remesas_ch = totayuda if miembros_ci == 1
+label var remesas_ch "Remesas mensuales del hogar"
 
 ***************
 *** ynlm_ch ***

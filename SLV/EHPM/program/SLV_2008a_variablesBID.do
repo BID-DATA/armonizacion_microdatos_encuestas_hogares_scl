@@ -778,16 +778,22 @@ label var autocons_ch "Autoconsumo del Hogar"
 *Hay problemas con los ceros y los missing en la variable remesaevent1
 *egen remesas_ci=rsum(remesas remesaevent1)
 
-
+/*
 gen temp=remesaevent1
 recode temp (0=.)
 egen remesas_ci=rsum(remesas temp), missing
 replace remesas_ci=. if remesas==. & temp==.
 label var remesas_ci "Remesas reportadas por el individuo"
 drop temp
+*/
 
-by idh_ch, sort: gen remesas_ch=sum(remesas_ci) if miembros_ci==1
-label var remesas_ch "Remesas del hogar"
+*** El código de remesas_ci se sustituye por missing values y remesas_ch se construye con la variable totayuda que contiene las remesas totales del hogar.
+gen double remesas_ci = .
+label var remesas_ci "Remesas mensuales reportadas por el individuo" 
+
+***by idh_ch, sort: egen double remesas_ch = total(remesas_ci) if miembros_ci == 1
+by idh_ch, sort: gen double remesas_ch = totayuda if miembros_ci == 1
+label var remesas_ch "Remesas mensuales del hogar"
 
 ******************************
 *	durades_ci

@@ -1096,7 +1096,7 @@ replace aguafuente_ch= 4 if h8==4
 replace aguafuente_ch= 7 if h8==3 
 replace aguafuente_ch= 8 if h8==7 
 replace aguafuente_ch= 9 if h8==5 
-replace aaguafuente_ch= 10 if h8==8 
+replace aguafuente_ch= 10 if h8==8 
 replace aguafuente_ch = 10 if aguafuente_ch ==. & jefe_ci==1
 
 *********************

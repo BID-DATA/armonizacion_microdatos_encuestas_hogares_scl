@@ -556,13 +556,6 @@ replace salmm_ci= (2850.78+4355.24+5144.13+3851.35+4004.64+3142.25+5253.68+6410.
 label var salmm_ci "Salario minimo legal"
 
 
-*****************
-***desalent_ci***
-*****************
-gen desalent_ci=0 if s5p9!=.
-replace desalent = 1 if s5p9==4 | s5p9==10
-
-
 ******************************
 *	subemp_ci
 ******************************

@@ -445,6 +445,16 @@ label var emp_ci "Ocupado (empleado)"
 label define emp_ci 0"No" 1"Si", add
 label value emp_ci emp_ci
 
+****************
+***desemp_ci***
+****************
+***** El código mantiene como missing values a la poblacion menor de la edad limite de la PET que no forman parte de la población de referencia de la sección laboral de la Encuesta *****.
+gen byte desemp_ci = .
+replace desemp_ci = (condocup_ci == 2) if (condocup_ci != . & condocup_ci != 4)
+label var desemp_ci "Desocupado (desempleado)"
+label define desemp_ci 0"No " 1"Si", add
+label value desemp_ci desemp_ci
+
 ***************
 * nempleos_ci *
 ***************
@@ -474,17 +484,6 @@ egen antiguedad_ci=rsum(ind asal), m
 replace antiguedad_ci=. if antiguedad_ci>edad_ci
 label var antiguedad_ci "Antiguedad en la actividad actual en anios"
 
-****************
-***desemp_ci***
-****************
-***** El código mantiene como población de referencia a las personas inactivas (condocup_ci == 3) *****.
-gen byte desalent_ci = .
-replace desalent_ci = 1 if (b7i == 0 & (inlist(b8, 5,7) | inlist(g3, 13,14)) & condocup_ci == 3)
-replace desalent_ci = 0 if (desalent_ci != 1 & condocup_ci==3)
-label var desalent_ci "Desalentados"
-label define desalent_ci 0"No" 1"Si", add
-label value desalent_ci desalent_ci
-  
 *************
 *cesante_ci* 
 *************

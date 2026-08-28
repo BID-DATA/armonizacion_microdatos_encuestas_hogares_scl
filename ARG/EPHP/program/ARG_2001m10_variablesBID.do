@@ -46,7 +46,7 @@ Detalle de procesamientos o modificaciones anteriores:
 
 clear all
 set more off
-use "`base_in'", clear
+use `base_in', clear
 
 
 		**********************************
@@ -540,7 +540,7 @@ desalent_ci
 ***********/
 ***** El código mantiene como población de referencia a las personas inactivas (condocup_ci == 3) *****.
 gen byte desalent_ci = .
-replace desalent_ci = 1 if ((p01==2 & p07==2) & p08==4) & condocup_ci == 3)
+replace desalent_ci = 1 if ((p01==2 & p07==2 & p08==4) & condocup_ci == 3)
 replace desalent_ci = 0 if (desalent_ci != 1 & condocup_ci==3)
 label var desalent_ci "Desalentados"
 label define desalent_ci 0"No" 1"Si", add

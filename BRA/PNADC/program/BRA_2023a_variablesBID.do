@@ -735,15 +735,14 @@ label value ocupa_ci ocupa_ci
 ****************
 ***pension_ci***
 **************** 
-gen pension_ci = 0 
-replace pension_ci = 1 if (v5004a2 > 0 & v5004a2! = .) /*Se les pregunta a todas las personas (jubilados, sobrevivientes, etc.)*/
+gen pension_ci = (v5004a == 1) if !missing(v5004a) /*Se les pregunta a todas las personas (jubilados, sobrevivientes, etc.) */
 label var pension_ci "1=Recibe pension contributiva"
 
 *******************
 ***pensionsub_ci***
 *******************
 /*AJAM, nuevo módulo de programas sociales especifica BPC -y BF-, Parte 5*/
-gen pensionsub_ci= (v5001a == 1)
+gen pensionsub_ci = (v5001a == 1 & edad_ci >= 65) if !missing(v5001a)
 label var pensionsub_ci "1=recibe pension subsidiada / no contributiva"
 
 *******************
@@ -761,13 +760,16 @@ label var instpen_ci "Institucion proveedora de la pension - variable original d
 
 
 
-	**************
-	***INGRESOS***
-	**************
+*************************************************
+*** VARIABLES DE INGRESOS & PROTECCIÓN SOCIAL ***
+*************************************************
+
 *Base restringe respuestas para mayores de 14 anios de edad
 *AJAM 2018, no se imputan valores de beneficios (vivienda, alimentación, ropa),
 *siguiendo los guidelines de la nota metodológica al respecto, 
 *ver p.36: file:///Y:/survey/BRA/PNADC/2016/a/docs/liv101561_notas_tecnicas.pdf
+
+*A. INGRESO LABORAL (MONETARIO Y NO MONETARIO) ***
 
 ***************
 ***ylmpri_ci***
@@ -814,26 +816,92 @@ label var ylnmotros_ci "Ingreso laboral NO monetario de otros trabajos"
 ************
 ***ylm_ci***
 ************
-egen ylm_ci = rsum(ylmpri_ci ylmsec_ci ylmotros_ci)
+egen double ylm_ci = rowtotal(ylmpri_ci ylmsec_ci ylmotros_ci), mi
 replace ylm_ci = . if ylmpri_ci == . & ylmsec_ci == . & ylmotros_ci == .
 label var ylm_ci "Ingreso laboral monetario total"  
 
 *************
 ***ylnm_ci***
 *************
-egen ylnm_ci = rsum(ylnmpri_ci ylnmsec_ci ylnmotros_ci)
+egen double ylnm_ci = rowtotal(ylnmpri_ci ylnmsec_ci ylnmotros_ci), mi
 replace ylnm_ci = . if ylnmpri_ci == . & ylnmsec_ci == . & ylnmotros_ci == .
 label var ylnm_ci "Ingreso laboral NO monetario total"  
+
+
+*B. INGRESO NO LABORAL (MONETARIO Y NO MONETARIO) ***
+
+******************
+*** ytransf_ci ***
+******************
+* PNC - Pensiones sociales no contributivas:
+		* Benefício Asistencial de Prestação Continuada (v5001a) + edad_ci >= 65
+* PTMC - Programas de transferencias monetarias condicionadas:
+		* Bolsa Família (v5002a)
+* POTROT - Programas de otras transferencias monetarias no condicionadas
+		* Outro programa social do governo (v5003a)
+		* Benefício Asistencial de Prestação Continuada (v5001a) + edad_ci < 65
+
+*** Beneficiarios a nivel individual:
+
+	gen byte pnc_ci = (v5001a == 1 & edad_ci >= 65) if !missing(v5001a)
+	gen byte ptmc_ci = (v5002a == 1) if !missing(v5002a)
+
+	gen byte otrogob_ci = (v5003a == 1) if !missing(v5003a)
+	gen byte discap_ci = (v5001a == 1 & edad_ci < 65) if !missing(v5001a)
+	gen byte potrot_ci = (otrogob_ci == 1 | discap_ci == 1)
+	replace potrot_ci = . if otrogob_ci == . & discap_ci == .
+
+*** Montos de transferencias a nivel individual:
+
+	// Transferencias PNC
+	gen double ypnc_ci = v5001a2 if pnc_ci == 1
+	
+	// Transferencias PTMC
+	gen double yptmc_ci = v5002a2		
+	
+	// Otras transferencias POTROT
+	gen double yotrogob_ci = v5003a2		
+	gen double ydis_ci = v5001a2 if discap_ci == 1		
+	egen double yotrot_ci = rowtotal(yotrogob_ci ydis_ci), mi
+	
+*** Ingreso individual por transferencias no contributivas
+egen double ytransf_ci = rowtotal(ypnc_ci yptmc_ci yotrot_ci), mi
+
+****************
+***remesas_ci***
+****************
+gen remesas_ci = .
+label var remesas_ci "Remesas mensuales reportadas por el individuo" 
+
+*************
+***ypen_ci***
+*************
+gen ypen_ci = v5004a2 if v5004a2 != .
+label var ypen_ci "Valor de la pension contributiva"
+
+****************
+***ypensub_ci***
+****************
+gen ypensub_ci = ypnc_ci
+label var ypensub_ci "Valor de la pension subsidiada / no contributiva"
+
 
 *************
 ***ynlm_ci*** // sale modulo de caracteristicas de la vivienda y otros rendimientos 
 *************
-foreach var of varlist v5001a2 v5002a2 v5003a2 v5004a2 v5005a2 v5006a2 v5007a2 { 
-replace `var' = . if `var' >= 999999 | `var' < 0
-}
-egen ynlm_ci = rsum(v5001a2 v5002a2 v5003a2 v5004a2 v5005a2 v5006a2 v5007a2) if edad_ci >= 10
-replace ynlm_ci = . if (v5001a2 == . & v5002a2 == . & v5003a2 == . & v5004a2 == . & v5005a2 == . & v5006a2 == . & v5007a2 == .) | ynlm_ci < 0
-label var ynlm_ci "Ingreso no laboral monetario"
+	* v5001a2 Rend Recebeu BPC-LOAS > ypnc_ci = ypensub_ci
+	* v5002a2 Rend recebido de bolsa familia > yptmc_ci
+	* v5003a2 Rend recebido de outro prog social > yotros_ci
+	* v5004a2 Rend recebido de aposentadoria e pensão > ypen_ci
+	* v5005a2 Rend de seguro-desemprego, seguro-defeso
+	* v5006a2 Rend recebido por pensão alimentícia doação etc
+	* v5007a2 Rend recebido aluguel e arrendamento
+	* v5008a2 Rend recebido de outros rendimentos
+
+egen double ynlm_ci = rowtotal(ytransf_ci ypen_ci v5005a2 v5006a2 v5007a2 v5008a2 remesas_ci), mi
+replace ynlm_ci = . if (ytransf_ci == . &  ypen_ci==. & v5005a2 == . & v5006a2==. & v5007a2==. &  v5008a2==. &  remesas_ci == .)
+label var ynlm_ci "Ingreso no laboral monetario"  
+
 
 *************
 **ynlnm_ci***
@@ -844,25 +912,61 @@ label var ynlnm_ci "Ingreso no laboral no monetario"
 *************
 ***ytot_ci***
 *************
-egen double ytot_ci= rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci), m 
+egen double ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci), mi 
 label var ytot_ci "Ingresos totales a nivel individuo"
+
+***************
+*** ynet_ci ***
+***************
+gen double aux_ytransf_ci = ytransf_ci*(-1)
+egen double ynet_ci = rowtotal(ytot_ci aux_ytransf_ci), mi
+drop aux_ytransf_ci
+
+
+*C. INGRESOS DEL HOGAR ***
 
 ************
 ***ylm_ch***
 ************
-by idh_ch, sort: egen ylm_ch = sum(ylm_ci) if miembros_ci == 1
+by idh_ch, sort: egen double ylm_ch = total(ylm_ci) if miembros_ci == 1, mi
 label var ylm_ch "Ingreso laboral monetario del hogar"
 
 *************
 ***ylnm_ch***
 *************
-by idh_ch, sort: egen ylnm_ch = sum(ylnm_ci) if miembros_ci == 1
+by idh_ch, sort: egen double ylnm_ch = total(ylnm_ci) if miembros_ci == 1, mi
 label var ylnm_ch "Ingreso laboral no monetario del hogar"
+
+******************
+*** ytransf_ch ***
+****************** 
+
+*** Beneficiarios a nivel hogar:
+	bys idh_ch: egen byte pnc_ch = max(pnc_ci) if miembros_ci == 1
+	bys idh_ch: egen byte ptmc_ch = max(ptmc_ci) if miembros_ci == 1
+	bys idh_ch: egen byte potrot_ch = max(potrot_ci) if miembros_ci == 1
+	
+	gen byte pcasht_ch = (ptmc_ch == 1 | pnc_ch == 1 | potrot_ch == 1)
+	replace pcasht_ch = . if ptmc_ch == . & pnc_ch == . & potrot_ch == .
+
+*** Montos de transferencias a nivel hogar:
+	bys idh_ch: egen double ypnc_ch = total(ypnc_ci) if miembros_ci == 1, mi
+	bys idh_ch: egen double yptmc_ch = total(yptmc_ci) if miembros_ci == 1, mi
+	bys idh_ch: egen double yotrot_ch = total(yotrot_ci) if miembros_ci == 1, mi
+
+*** Ingreso del Hogar por transferencias no contributivas
+egen double ytransf_ch = rowtotal(ypnc_ch yptmc_ch yotrot_ch) if miembros_ci == 1, mi
+
+****************
+***remesas_ch***
+****************
+gen remesas_ch = .
+label var remesas_ch "Remesas mensuales del hogar" 
 
 ***************
 *** ynlm_ch ***
 ***************
-by idh_ch, sort: egen ynlm_ch = sum(ynlm_ci) if miembros_ci == 1
+by idh_ch, sort: egen double ynlm_ch = total(ynlm_ci) if miembros_ci == 1, mi
 label var ynlm_ch "Ingreso no laboral monetario del hogar"
 
 **************
@@ -870,6 +974,19 @@ label var ynlm_ch "Ingreso no laboral monetario del hogar"
 **************
 gen ynlnm_ch = .
 label var ynlnm_ch "Ingreso no laboral no monetario del hogar"
+
+***************
+*** ytot_ch ***
+***************
+egen double ytot_ch = rowtotal(ylm_ch ylnm_ch ynlm_ch ynlnm_ch) if miembros_ci == 1, mi
+
+***************
+*** ynet_ch ***
+***************
+gen double aux_ytransf_ch = ytransf_ch*(-1)
+egen double ynet_ch = rowtotal(ytot_ch aux_ytransf_ch) if miembros_ci == 1, mi
+gen double ynet_ch_pc = (ynet_ch)/nmiembros_ch if miembros_ci == 1
+drop aux_ytransf_ch
 
 ****************
 ***ylhopri_ci***
@@ -906,250 +1023,183 @@ by idh_ch, sort: egen ylmnr_ch = sum(ylm_ci) if miembros_ci == 1
 replace ylmnr_ch = . if nrylmpri_ch == 1
 label var ylmnr_ch "Ingreso laboral monetario del hogar"
 
-****************
-***remesas_ci***
-****************
-gen remesas_ci = .
-label var remesas_ci "Remesas mensuales reportadas por el individuo" 
 
-****************
-***remesas_ch***
-****************
-gen remesas_ch = .
-label var remesas_ch "Remesas mensuales del hogar" 
+# Historial de modificaciones #
+#=============================#
 
-*************
-***ypen_ci***
-*************
-gen ypen_ci = v5004a2
-replace ypen_ci = . if ypen_ci <= 0
-label var ypen_ci "Valor de la pension contributiva"
-
-****************
-***ypensub_ci***
-****************
-egen ypensub_ci = rsum(v5001a2 v5002a2 v5003a2)
-replace ypensub_ci = . if v5001a2 == . & v5002a2 == . & v5003a2 == .
-label var ypensub_ci "Valor de la pension subsidiada / no contributiva"
-
-
-
-	**************************
-	***VARIABLES EDUCATIVAS***
-	**************************
 *Modificado por Agustina Thailinger y Pia Iocco (SCL/EDU) 3-28-2020
+*Modificado por Manuel Marcos(SCL/EDU) 2026-8-10
+
+# Variables insumos consideradas #
+#================================#
+
+v2009: Idade do morador na data de referência
+v3002: ... frequenta escola?
+v3002a: A escola que ... frequenta é de
+v3003a: Qual é o curso que ... frequenta?
+v3005a: Esse curso que .... frequenta é organizado em
+v3006: Qual é o ano/série/semestre que ... frequenta?
+V3008: Anteriormente ... frequentou escola?
+v3009a: Qual foi o curso mais elevado que ... frequentou anteriormente?
+v3011a: Esse curso que .... frequentou era organizado em:
+v3013: Qual foi o último ano/série/semestre que ... concluiu com aprovação, neste curso que frequentou anteriormente
+v3012: ... concluiu com aprovação, pelo menos a primeira série deste curso que frequentou anteriormente?
+v3014: ... concluiu este curso que frequentou anteriormente
+
+# Indicadores a construir #
+#=========================#
+
+1. aedu_ci: número de años de educación culminados
+2. edupre_ci: variable dicotómica que indica con valor 1 si la persona cursó la educación preescolar completa y con 0 si no lo hizo
+3. eduui_ci: variable dicotómica que indica con valor 1 si el mayor nivel educativo alcanzado corresponde a educación técnica o universitaria incompleta y con 0 el resto
+4. eduuc_ci: Variable dicotómica que indica con valor 1 si el mayor nivel educativo alcanzado corresponde a educación técnica, universitaria completa, o posgrado (completa o incompleta), y con 0 el resto
+5. eduac_ci: Variable dicotómica que indica con valor 1 si la persona tiene educación superior universitaria o posgrado (completa o incompleta), con 0 si tiene educación superior no universitaria o posgrado (completa o incompleta) y con missing el resto
+6. asiste_ci: Variable dicotómica que indica si la persona asiste actualmente a un centro educativo (de cualquier nivel educativo: preescolar, primaria, secundaria, y terciaria) de educación formal al momento de la encuesta.
+7. edupub_ci: Variable dicotómica que indica con valor 1 si la persona asiste a algún centro de enseñanza pública al momento de la encuesta, con 0 si asiste a un centro de enseñanza privada, y con perdido si no asiste o no responde a la pregunta. 
+8. asispre_ci: Asistencia a preescolar. Variable dicotómica que indica con valor 1 si la persona asiste actualmente a educación preescolar, y con 0 al resto (no tiene valores perdidos). 
+9. razonesnoasis_ci: Variable categórica que indica las razones por las cuales un individuo no asiste a la escuela
+
+# Notas para la construcción de variables #
+#=========================================#
+
+- grado_asist: el valor de "13" es "Curso no clasificado por series o cursos"
+- Ensino fundamental. Se resta uno porque preguntan el grado al que asisten, no el máximo alcanzado. Se infiere que el anterior es el completado
+- Ensino medio. Tienen que haber completado los 9 anios de ensino fundamental (antes eran 8)
+- Universitario. No incluye postgrados. Tienen que haber completado los 9 anios de ensinio fundamental y los 3 anios de ensinio medio, 12 en total
+- Especializacion o diplomado. Desde el nivel 9 y superior no se les pregunta en que anio o trimestre están. Se imputa que completaron todo superior.
+- Maestria. Se imputa pregrado completo. Desde el nivel 9 y superior no se les pregunta en que anio o trimestre están
+- Doctorado. Se imputa maestría completa. Desde el nivel 9 y superior no se les pregunta en que anio o trimestre están
+- grado_asist_sup: pasa de semestres a años para superior para el grupo de personas que están cursando
+- grado_asist_sup_v2: pasa de semestres a años para superior para el grupo de personas que ya terminaron sus estudios
+
+*/
 
 *************
 ***aedu_ci***
 *************
-gen nivel_asist = v3003a //¿A qué curso... asistes?
-	/*
-	02	Preescolar
-	03	Alfabetização de jovens e adultos
-	04	escuela elemental normal
-	05	Educación de jóvenes y adultos (EJA) de la escuela primaria
-	06	escuela secundaria regular
-	07	Educación de jóvenes y adultos (EJA) de educación secundaria
-	08	Superior - graduación
-	09	especialización de primer nivel
-	10	Maestria
-	11	Doctorado
-		Não aplicável
-	*/
-gen grado_asist = v3006  //¿A qué año/grado/semestre asiste?
-	/*
-	01	Primeira (o)
-	02	Segunda (o)
-	03	Terceira (o)
-	04	Quarta (o)
-	05	Quinta (o)
-	06	Sexta (o)
-	07	Sétima (o)
-	08	Oitava (o)
-	09	Nona (o)
-	10	Décimo
-	11	Décimo primeiro
-	12	Décimo segundo
-	13	Curso não classificado em séries ou anos
-	*/
-gen nivel_no_asist = v3009a  //curso más alto al que asistió
-	/*
-	02  Pré-escola
-	03	Classe de alfabetização - CA
-	04	Alfabetização de jovens e adultos
-	05	Antigo primário (elementar)
-	06	Antigo ginásio (médio 1º ciclo)
-	07	Regular do ensino fundamental ou do 1º grau
-	08	Educação de jovens e adultos (EJA) ou supletivo do 1º grau
-	09	Antigo científico, clássico, etc. (médio 2º ciclo)
-	10	Regular do ensino médio ou do 2º grau
-	11	Educação de jovens e adultos (EJA) ou supletivo do 2º grau
-	12	Superior - graduação
-	13	Especialização de nível superior
-	14	Mestrado
-	15	Doutorado
-		Não aplicável*/
-gen grado_no_asist = v3013 //último año/grado/semestre completo c/aprobación
-gen finalizo = v3014  // concluyó este curso 1 si
-gen finalizo_1 = v3012 //concluyó con aprobación al menos la 1ra serie de este curso
-gen seria_asist = v3005a  //curso organizado por
-gen seria_no_asist = v3011a  //curso se organizó en
+
+gen grado_asist = v3006
+replace grado_asist = . if v3006 == 13 
+
+* Para quienes asisten actualmente a superior en semestres se convierte a años
+gen grado_asist_sup = round(grado_asist/2) if v3005a == 1 & v3003a == 8
+
+* Para quienes ya no asisten pero cursaron superior en semestres se convierte a años
+gen grado_asist_sup_v2 = round(v3013/2) if v3011a == 1 & v3009a == 12
 
 gen aedu_ci = .
-label var aedu_ci "Anios de educacion"
 
-*PARA LOS QUE ASISTEN:
-**********************
-/*CAMBIO 2022:
-en la variable grado_asist (v3006) se está considerando la categoría
-"13 Curso no clasificado en grados o años". Entonces, en lo que 
-viene, se estaba sumando 13 años al usar grado_asist para calcular 
-aedu_ci (número de años de educación culminados)
-*/
+* Construcción para quienes están estudiando
+replace aedu_ci = 0 if v3003a == 2 | v3003a == 3                   						// Sin años de educación
+replace aedu_ci = grado_asist - 1 if v3003a == 4                   						// Ensinio fundamental 
+replace aedu_ci = 9 + grado_asist - 1 if v3003a == 6               						// Ensinio medio
+replace aedu_ci = grado_asist - 1 if v3003a == 5                   						// Ensinio fundamental jóvenes y adultos
+replace aedu_ci = 9 + grado_asist - 1 if v3003a == 7               						// Ensinio medio    
+replace aedu_ci = 12 + grado_asist_sup - 1 if v3003a == 8          						// Ensinio superior
+replace aedu_ci = 12 + 4 if v3003a == 9                            						// Especialização de nível superior
+replace aedu_ci = 12 + 4 if v3003a == 10                           						// Mestrado
+replace aedu_ci = 12 + 4 + 2 if v3003a == 11                       						// Doutorado
+						
+* Construcción para quienes NO están estudiando						
+replace aedu_ci=0 if v3008==2                                      						// Nunca asistieron 
+replace aedu_ci = 0 if inlist(v3009a, 2, 3, 4)                     						// Creche, prescola, Alfabetizacion de jovenes y adultos, Classe de alfabetização - CA.
+replace aedu_ci = v3013 if v3009a == 5                             						// Antigo primário. No se resta 1 porque la variable indica si lo concluyo o no
+replace aedu_ci = v3013 + 4 if v3009a == 6                         						// Antigo ginásio. Despues de antigo primário (4 anios)
+replace aedu_ci = v3013 if v3009a == 7                             						// Regular do ensino fundamental ou do 1º grau. No se resta 1 porque la variable indica si lo concluyo o no
+replace aedu_ci = v3013 if v3009a == 8                             						// Nivelacion de primaria para adultos
+replace aedu_ci = v3013 + 4 + 4 if v3009a == 9  & v3012 == 1       						// Antigo científico, clássico, etc. Despues de antigo primário y antigo ginásio (8 anios)
+replace aedu_ci = v3013 + 9 if v3009a == 10                        						// Regular do ensino médio óu do 2º grau. Despues de ensinio fundamental (9 anios)
+replace aedu_ci = v3013 + 9 if v3009a == 11                        						// Nivelacion de adultos secundaria
+replace aedu_ci = grado_asist_sup_v2 + 12 if v3009a == 12          						// Universitario pregrado
+replace aedu_ci = 12 + 4 if v3009a == 13 & (v3014 != 1 | missing(v3014)) 				// Especializacion o diplomado, no terminado
+replace aedu_ci = 12 + 4 + 2 if v3009a == 13 & v3014 == 1          						// Especializacion o diplomado, terminado
+replace aedu_ci = 12 + 4 if v3009a == 14 & (v3014 != 1 | missing(v3014))              	// Maestria, no terminado
+replace aedu_ci = 12 + 4 + 2 if v3009a == 14 & v3014 == 1          						// Maestria, terminado
+replace aedu_ci = 12 + 4 + 2 if v3009a == 15 & (v3014 != 1 | missing(v3014))  			// Doctorado, no terminado    
+replace aedu_ci = 12 + 4 + 2 + 4 if v3009a == 15 & v3014 == 1      						// Doctorado, terminado 
 
-*Creche & prescola
-******************
-*replace aedu_ci=0 if nivel_asist==1                                     // Creche no disponible para 2021,2022
-replace aedu_ci = 0 if nivel_asist == 2                                      // Prescola
-replace aedu_ci = 0 if nivel_asist == 3                                      // Alfabetizacion de jovenes y adultos
+* Reemplazo cuando el grado está missing pero el nivel se reporta (para quienes están estudiando)
+replace aedu_ci = 0  if missing(aedu_ci) & v3003a >= 2 & v3003a <= 5
+replace aedu_ci = 9  if missing(aedu_ci) & (v3003a == 6 | v3003a == 7)
+replace aedu_ci = 12 if missing(aedu_ci) & v3003a == 8
+replace aedu_ci = 16 if missing(aedu_ci) & (v3003a == 9 | v3003a == 10)
+replace aedu_ci = 18 if missing(aedu_ci) & v3003a == 11
 
-*Ensinio fundamental y medio
-****************************
-replace aedu_ci = grado_asist - 1 if nivel_asist == 4             // Ensino fundamental.Se resta 1 porque preguntan grado al que asisten
-replace aedu_ci = 0 if (nivel_asist == 4 & grado_asist == 13)		// se limpia grado_asist ==13. se imputa nivel anterior
-replace aedu_ci = grado_asist + 9 - 1 if nivel_asist == 6           // Ensino medio. Debe completar 9 anios de e.fundamental (antes 8)
-replace aedu_ci = 9 if (nivel_asist == 6 & grado_asist == 13)    // se limpia grado_asist==13. se imputa años max de nivel anterior
-
-*Ensinio fundamental y medio de jóvenes y adultos
-**************************************************
-replace aedu_ci = grado_asist - 1 if nivel_asist == 5              // Educacion de adultos y jovenes, ensino fundamental
-replace aedu_ci = grado_asist + 9 - 1 if nivel_asist == 7            // Educacion de adultos y jovenes, ensino medio
-replace aedu_ci = 9 if (nivel_asist == 7 & grado_asist == 13)      // se limpia grado_asist==13. se imputa años de nivel anterior
-
-*Superior
-**********
-replace grado_asist = round(grado_asist / 2) if v3005a == 1 & nivel_asist == 8 // E.universitaria: respuesta en semetres e convierten a anios
-replace aedu_ci = grado_asist + 12 - 1 if nivel_asist == 8                       // Universitario. No incluye postgrados. Tienen que haber completado los 9 anios de ensinio fundamental y los 3 anios de ensinio medio, 12 en total
-replace aedu_ci = 12 + 4 if nivel_asist == 9                                   // Especializacion/diplomado. Desde nivel 9 y superior no se pregunta en que anio o trimestre están
-replace aedu_ci = 12 + 4 if nivel_asist == 10                                  // Maestria. Se imputa pregrado completo. Desde el nivel 9 y superior no se les pregunta en que anio o trimestre están
-replace aedu_ci = 12 + 4 + 2 if nivel_asist == 11                                // Doctorado. se imputa maestria completa Desde el nivel 9 y superior no se les pregunta en que anio o trimestre están
-
-*Quitando a quienes no se cuentan:
-replace aedu_ci = . if grado_asist == 13 & nivel_asist == .
-
-*PARA LOS QUE NO ASISTEN:
-*************************
-*Creche & prescola
-replace aedu_ci = 0 if v3008 == 2                                            // Nunca asistieron  
-replace aedu_ci = 0 if inlist(nivel_no_asist, 1, 2, 3, 4)                  // Creche, prescola, Alfabetizacion de jovenes y adultos, Classe de alfabetização - CA.
-
-*Ensinio fundamental y medio
-replace aedu_ci = grado_no_asist     if nivel_no_asist == 5                  // Antigo primário. No se resta 1 porque la variable indica si lo concluyo o no
-replace aedu_ci = grado_no_asist + 4   if nivel_no_asist == 6                  // Antigo ginásio. Despues de antigo primário (4 anios)
-replace aedu_ci = grado_no_asist + 4 + 4 if nivel_no_asist == 9 & finalizo_1 == 1  // Antigo científico, clássico, etc. Despues de antigo primário y antigo ginásio (8 anios)
-replace aedu_ci = grado_no_asist     if nivel_no_asist == 7                  // Regular do ensino fundamental ou do 1º grau. No se resta 1 porque la variable indica si lo concluyo o no
-replace aedu_ci = grado_no_asist + 9   if nivel_no_asist == 10                 // Regular do ensino médio óu do 2º grau. Despues de ensinio fundamental (9 anios)
-
-*Ensinio fundamental y medio de jóvenes y adultos
-replace aedu_ci = grado_no_asist     if nivel_no_asist == 8                  // Nivelacion de primaria para adultos
-replace aedu_ci = grado_no_asist + 9   if nivel_no_asist == 11                 // Nivelacion de adultos secundaria
-
-*Superior
-replace grado_no_asist = round(grado_no_asist / 2) if v3011a == 1 & nivel_no_asist == 12 // Para universitaria la respuesta está dada en semetres. Se convierten a anios
-replace aedu_ci = grado_no_asist + 12  if nivel_no_asist == 12                 // Universitario pregrado
-
-replace aedu_ci = 12 + 4 if nivel_no_asist == 13 & inlist(finalizo, 2, 3, .)   // Especializacion o diplomado, no terminado
-replace aedu_ci = 12 + 4 + 2 if nivel_no_asist == 13 & finalizo == 1               // Especializacion o diplomado, terminado
-
-replace aedu_ci = 12 + 4 if nivel_no_asist == 14 & inlist(finalizo, 2, 3, .)   // Maestria, no terminado
-replace aedu_ci = 12 + 4 + 2 if nivel_no_asist == 14 & finalizo == 1               // Maestria, terminado
-
-replace aedu_ci = 12 + 4 + 2 if nivel_no_asist == 15 & inlist(finalizo, 2, 3, .) // Doctorado, no terminado 
-replace aedu_ci = 12 + 4 + 2 + 4 if nivel_no_asist == 15 & finalizo == 1             // Doctorado, terminado 
-
-*Imputando valores cuando el anio esta perdido, pero esta el nivel
-replace aedu_ci = 0  if nivel_asist == 1  & aedu_ci == .
-replace aedu_ci = 0  if nivel_asist == 2  & aedu_ci == .
-replace aedu_ci = 0  if nivel_asist == 3  & aedu_ci == .
-replace aedu_ci = 0  if nivel_asist == 4  & aedu_ci == .
-replace aedu_ci = 0  if nivel_asist == 5  & aedu_ci == .
-replace aedu_ci = 9  if nivel_asist == 6  & aedu_ci == .
-replace aedu_ci = 9  if nivel_asist == 7  & aedu_ci == .
-replace aedu_ci = 12 if nivel_asist == 8  & aedu_ci == .
-replace aedu_ci = 16 if nivel_asist == 9  & aedu_ci == .
-replace aedu_ci = 16 if nivel_asist == 10 & aedu_ci == .
-replace aedu_ci = 18 if nivel_asist == 11 & aedu_ci == .
-
-replace aedu_ci = 0  if nivel_asist == 1     & aedu_ci == .
-replace aedu_ci = 0  if nivel_asist == 2     & aedu_ci == .
-replace aedu_ci = 0  if nivel_asist == 3     & aedu_ci == .
-replace aedu_ci = 0  if nivel_asist == 4     & aedu_ci == .
-replace aedu_ci = 0  if nivel_asist == 5     & aedu_ci == .
-replace aedu_ci = 4  if nivel_no_asist == 6  & aedu_ci == .
-replace aedu_ci = 0  if nivel_no_asist == 7  & aedu_ci == .
-replace aedu_ci = 0  if nivel_no_asist == 8  & aedu_ci == .
-replace aedu_ci = 8  if nivel_no_asist == 9  & aedu_ci == .
-replace aedu_ci = 9  if nivel_no_asist == 10 & aedu_ci == .
-replace aedu_ci = 9  if nivel_no_asist == 11 & aedu_ci == .
-replace aedu_ci = 12 if nivel_no_asist == 12 & aedu_ci == .
-replace aedu_ci = 16 if nivel_no_asist == 13 & aedu_ci == .
-replace aedu_ci = 16 if nivel_no_asist == 14 & aedu_ci == .
-replace aedu_ci = 18 if nivel_no_asist == 15 & aedu_ci == .
+* Reemplazo cuando el grado está missing pero el nivel se reporta (para quienes NO están estudiando)
+replace aedu_ci = 0  if missing(aedu_ci) & v3009a >= 2 & v3009a <= 5
+replace aedu_ci = 4  if missing(aedu_ci) & v3009a == 6
+replace aedu_ci = 4  if missing(aedu_ci) & (v3009a == 7 | v3009a == 8)
+replace aedu_ci = 8  if missing(aedu_ci) & v3009a == 9
+replace aedu_ci = 9  if missing(aedu_ci) & (v3009a == 10 | v3009a == 11)
+replace aedu_ci = 12 if missing(aedu_ci) & v3009a == 12
+replace aedu_ci = 16 if missing(aedu_ci) & (v3009a == 13 | v3009a == 14)
+replace aedu_ci = 18 if missing(aedu_ci) & v3009a == 15
 
 ***************
 ***edupre_ci***
 ***************
-gen byte edupre_ci = .
-label variable edupre_ci "Educacion preescolar"
+
+* NOTA: No cuenta con preguntas para esta variable
+
+gen byte edupre_ci=.
 
 **************
 ***eduui_ci***
 **************
-gen byte eduui_ci = (v3003a == 08 | (v3009a == 12 & v3014 == 2))
-replace eduui_ci = . if aedu_ci == .
-label variable eduui_ci "Terciaria/universitaria incompleta"
- 
+
+gen eduui_ci = .
+replace eduui_ci = 1 if !missing(aedu_ci) & (v3003a == 8 | (v3009a == 12 & v3014 == 2))
+replace eduui_ci = 0 if !missing(aedu_ci) & !(v3003a == 8 | (v3009a == 12 & v3014 == 2))
+
 **************
 ***eduuc_ci***
 **************
-gen byte eduuc_ci = ((v3009a == 12 & v3014 == 1) | inlist(v3003a, 09, 10, 11, 13) | inlist(v3009a, 13, 14, 15)) 
-replace eduuc_ci = . if aedu_ci == .
-label variable eduuc_ci "Terciaria/universitaria completa o mas"
+
+gen eduuc_ci = .
+replace eduuc_ci = 1 if !missing(aedu_ci) & ((v3009a == 12 & v3014 == 1) | inlist(v3003a, 9, 10, 11) | inlist(v3009a, 13, 14, 15))
+replace eduuc_ci = 0 if !missing(aedu_ci) & !((v3009a == 12 & v3014 == 1) | inlist(v3003a, 9, 10, 11) | inlist(v3009a, 13, 14, 15))
 
 **************
 ***eduac_ci***
 **************
-gen byte eduac_ci = .
-label variable eduac_ci "Superior universitario vs superior no universitario"
+
+* NOTA: No cuenta con preguntas para esta variable
+
+gen byte eduac_ci=.
 
 **************
 **asiste_ci***
 **************
-gen asiste_ci = (v3002 == 1)
-replace asiste_ci =. if v3002 ==. 	// Integrantes entre 0-4 años que no responden el modulo de educación
-label var asiste_ci "Personas que actualmente asisten a un centro de enseñanza"
+
+gen asiste_ci = .
+replace asiste_ci = 1 if !missing(v3002) & v3002 == 1
+replace asiste_ci = 0 if !missing(v3002) & v3002 != 1
 
 ***************
 ***edupub_ci***
 ***************
-gen edupub_ci = (v3002a == 2)
-replace edupub_ci = . if v3002a == .
-label var edupub_ci "Personas que asisten a centros de enseñanza públicos"
+
+gen edupub_ci = .
+replace edupub_ci = 1 if !missing(v3002a) & v3002a == 2
+replace edupub_ci = 0 if !missing(v3002a) & v3002a != 2
 
 ****************
 ***asispre_ci***
 ****************
+
 *Creación de la variable asistencia a preescolar por Iván Bornacelly - 01/12/17
-gen asispre_ci = v3003a == 2 & v2009 >= 4
-la var asispre_ci "Asiste a educacion prescolar"	
+
+gen asispre_ci = 0
+replace asispre_ci = 1 if v2009 >= 4 & v3003a == 2
+
 
 ******************
-***pqnoasis1_ci***
+***razonesnoasis_ci***
 ******************
-**Daniela Zuluaga- Enero 2018: Se agrega la variable pqnoasis1_ci cuya sintaxis fue elaborada por Mayra Saenz**
-gen pqnoasis1_ci = .
 
+* NOTA: No cuenta con preguntas para esta variable
 
+gen razonesnoasis_ci = .
 
 	**********************************
 	**** VARIABLES DE LA VIVIENDA ****
@@ -1483,134 +1533,6 @@ label var miglac_ci "=1 si es migrante proveniente de un pais LAC"
 
 
 	************************************
-	***VARIABLES DE PROTECCIÓN SOCIAL***
-	************************************
-
-**********************
-***nmiembros_sph_ch***
-**********************
-gen miembros_aux = (relacion_ci != .)
-by idh_ch, sort: egen nmiembros_sph_ch = sum(miembros_aux)
-label variable nmiembros_ch "Numero de miembros en el hogar incluyendo no parientes"
-
-drop miembros_aux
-
-**********************
-*******y_hog_ci*******
-**********************
-egen y_hog_ci  = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci), missing
-label var y_hog_ci "Ingreso monetario del hogar SPH"
-
-**********************
-*******y_hog_ch*******
-**********************
-bys idh_ch: egen y_hog_ch = sum(y_hog_ci)
-label var y_hog_ch "Ingreso total del hogar SPH"
-
-**********************
-********ptmc_ci*******
-**********************
-* v5001a2 = Benefício Assistencial de Prestação Continuada – BPC-LOAS
-* v5002a2 = Programa Bolsa Família
-* v5003a2 = outros programas sociais do governo
-* v5005a2 = eguro-desemprego, seguro-defeso
-gen ptmc_ci = (v5001a == 1 | v5002a == 1 | v5003a == 1 | v5005a == 1)
-label var ptmc_ci "=0 No es beneficiario de programas sociales seleccionados"
-
-**********************
-*******ptmc_ch********
-**********************
-bys idh_ch: egen ptmc_ch = max(ptmc_ci), missing
-label var ptmc_ch "=0 El Hogar no es beneficiario de programas sociales seleccionados"
-
-**********************
-******ing_ptmc_ci*****
-**********************
-* v5001a2 = Benefício Assistencial de Prestação Continuada – BPC-LOAS
-* v5002a2 = Programa Bolsa Família
-* v5003a2 = outros programas sociais do governo
-* v5005a2 = eguro-desemprego, seguro-defeso
-egen ing_ptmc_ci = rowtotal(v5001a2 v5002a2 v5003a2 v5005a2), missing
-replace ing_ptmc_ci = . if ing_ptmc_ci < 0 | ing_ptmc_ci >= 99999
-label var ing_ptmc_ci "Ingreso por transferencias mensualizado individual"
-
-**********************
-******ing_ptmc_ch*****
-**********************
-bys idh_ch: egen ing_ptmc_ch = sum(ing_ptmc_ci)
-label var ing_ptmc_ch "Ingreso por transferencias mensualizado en el hogar"
-
-**********************
-*********pnc_ci*******
-**********************
-gen pnc_ci = (v5001a == 1)
-label var pnc_ci "=1 Recibe pensión no contributiva (adultos mayores)"
-
-**********************
-*********pnc_ch*******
-**********************
-bys idh_ch: egen pnc_ch = max(pnc_ci)
-label var pnc_ch "=1 En el hogar hay al menos una persona que recibe pensión no contributiva"
-
-**********************
-******ing_pnc_ci******
-**********************
-gen ing_pnc_ci = v5001a2
-replace ing_pnc_ci = . if ing_pnc_ci < 0 | ing_pnc_ci >= 99999
-label var ing_pnc_ci "Ingreso por concepto de pensión no contributiva individual"
-
-**********************
-******ing_pnc_ch******
-**********************
-bys idh_ch: egen ing_pnc_ch = sum(ing_pnc_ci) if pnc_ch == 1, missing
-label var ing_pnc_ci "Ingreso por concepto de pensión no contributiva hogar"
-
-**********************
-*******potrot_ci******
-**********************
-gen potrot_ci = !(v5002a == 1 | v5003a == 1 | v5005a == 1) // 0 Beneficiario, 1 No beneficiario
-label var potrot_ci "=0 Recibe por concepto de otro tipo de transferencia a nivel individual"
-
-**********************
-*******potrot_ch******
-**********************
-bys idh_ch: egen potrot_ch = max(potrot_ci)
-label var potrot_ch "=0 El hogar no recibe ingresos por concepto de otro tipo de transferencia"
-
-**********************
-*****ing_otrot_ci*****
-**********************
-egen ing_otrot_ci = rowtotal(v5002a2 v5003a2 v5005a2), missing
-replace ing_otrot_ci = . if ing_otrot_ci < 0 | ing_otrot_ci >= 99999
-label var ing_pnc_ci "Ingreso por concepto de otro tipo de transferencia a nivel individual"
-
-**********************
-*****ing_otrot_ch*****
-**********************
-bys idh_ch: egen ing_otrot_ch = sum(ing_otrot_ci), missing
-label var ing_otrot_ch "Ingreso por concepto de otro tipo de transferencia a nivel hogar"
-
-**********************
-******y_pc_net_ch*****
-**********************
-gen y_pc_net_ch = (y_hog_ch - ing_ptmc_ch - ing_pnc_ch - ing_otrot_ch) / nmiembros_sph_ch
-label var y_pc_net_ch "Ingreso neto del hogar per cápita"
-
-**********************
-****pnc_elegible_ci***
-**********************
-gen pnc_elegible_ci = (edad_ci >= 65)
-label var pnc_elegible_ci "=1 Si la persona es elegible por edad a una pensión no contributiva"
-
-**********************
-*******pcasht_ch******
-**********************
-bys idh_ch: gen pcasht_ch = (ptmc_ch == 1 | pnc_ch == 1 | potrot_ch == 1)
-label var pcasht_ch "=1 El hogar es beneficiario de ptmc, pnc u otro tipo de transferencia"
-
-
-
-	************************************
 	**VARIABLES DE REFERENCIA EXTERNA***
 	************************************
 *************
@@ -1651,11 +1573,12 @@ do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&Exter
   condocup_ci categoinac_ci emp_ci cesante_ci desemp_ci subemp_ci durades_ci pea_ci nempleos_ci antiguedad_ci desalent_ci  /// Empleo
   horaspri_ci horastot_ci tiempoparc_ci categopri_ci categosec_ci rama_ci spublico_ci tamemp_ci cotizando_ci instcot_ci	afiliado_ci /// Empleo 
   formal_ci tipocontrato_ci ocupa_ci pension_ci	pensionsub_ci tipopen_ci instpen_ci	ylmpri_ci /// Empleo 
-  ylmpri_ci ylnmpri_ci ylmsec_ci ylnmsec_ci ylmotros_ci	ylnmotros_ci  ylm_ci ylnm_ci ynlm_ci ynlnm_ci nrylmpri_ci /// Ingresos individuo 
-  ylm_ch ylnm_ch ylmnr_ch ynlm_ch ynlnm_ch ylmhopri_ci ylmho_ci /// Ingresos del hogar 
+  ylmpri_ci ylnmpri_ci ylmsec_ci ylnmsec_ci ylmotros_ci	ylnmotros_ci  ylm_ci ylnm_ci ynlm_ci ynlnm_ci ytot_ci nrylmpri_ci /// Ingresos individuo 
+  ylm_ch ylnm_ch ylmnr_ch ynlm_ch ynlnm_ch ytot_ch ylmhopri_ci ylmho_ci /// Ingresos del hogar 
   nrylmpri_ci nrylmpri_ch /// No respuesta de ingresos  
+  pnc_ci ptmc_ci potrot_ci ypnc_ci yptmc_ci yotrot_ci ytransf_ci ynet_ci pnc_ch ptmc_ch potrot_ch ypnc_ch yptmc_ch yotrot_ch ytransf_ch ynet_ch ynet_ch_pc /// Protección social
   remesas_ci remesas_ch ypen_ci ypensub_ci /// Remesas y pensiones
-  aedu_ci eduui_ci eduuc_ci edupre_ci eduac_ci asiste_ci edupub_ci pqnoasis1_ci asispre_ci /// Educación
+  aedu_ci eduui_ci eduuc_ci edupre_ci eduac_ci asiste_ci edupub_ci razonesnoasis_ci asispre_ci /// Educación
   luz_ch luzmide_ch combust_ch piso_ch pared_ch techo_ch resid_ch dorm_ch cuartos_ch cocina_ch telef_ch refrig_ch /// Vivienda
   freez_ch auto_ch compu_ch internet_ch cel_ch vivi1_ch vivi2_ch viviprop_ch vivitit_ch vivialq_ch vivialqimp_ch /// Vivienda
   aguared_ch aguafconsumo_ch aguafuente_ch aguadist_ch aguadisp1_ch aguadisp2_ch /// Agua y saneamineto

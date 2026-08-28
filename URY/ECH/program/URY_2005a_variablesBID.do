@@ -1524,7 +1524,7 @@ compress
 saveold "`base_out'",   replace
 
 
-log close
+capture log close
 
 
 

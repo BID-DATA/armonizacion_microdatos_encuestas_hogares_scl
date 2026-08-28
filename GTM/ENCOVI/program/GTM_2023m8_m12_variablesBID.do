@@ -891,8 +891,7 @@ label value cotizando_ci cotizando_ci
 
 * Formalidad sin restringir PEA
 * SGR 05/10/2017: se modifica line 1
-gen cotizando_ci1=1 if p04c25a==1 & p04c25b>0 & p04c25a!=.
-gen cotizando_ci1=1 if p05c07a==1 & p05c07b>0 & p05c07b!=.
+gen cotizando_ci1=1 if p10c08a==1 & p10c08b>0 & p10c08b!=.
 recode cotizando_ci1 .=0 if condocup_ci>=1 & condocup_ci<=3
 label var cotizando_ci1 "Cotizante a la Seguridad Social"
 
@@ -1489,97 +1488,96 @@ gen double yneto_pc_ch = .
          *** VARIABLES DE EDUCACIÓN  **
          ******************************
 
-******************************
-*	asiste_ci: Definida aqui como inscritos en plantel educativo en el presente anio escolar  OK
-******************************
-* P03A02 2021 es p04a02 en 2022: Inscripción escolar
-g asiste_ci = (p04a02 == 1)
-replace asiste_ci = . if p04a02 == .
-notes: asiste is defined as enrolled in the current school year
+ * Convertir variables a numéricas
 
-*******************************************
-*	aedu_ci: Anios de educacion COMPLETADOS
-*******************************************
+destring p06a02 p06b05 p06b06a p06b24 p06b26a p06b26c p06b28a, replace force
 
-/* 2021 p03a01 y 2022 p04a01: analfabetos (2) que no contestan sobre nivel y grado
-   202 la variabla p03a05b va de 1-6 y en el 2022 p04a05b va de 1-26:
-           1 1ro primaria
-           2 2do primaria
-           3 3ro primaria
-           4 4to primaria
-           5 5to primaria
-           6 6to primaria
-           7 1ro básico
-           8 2do básico
-           9 3ro básico
-          10 4to diversificado
-          11 5to diversificado
-          12 6to diversificado
-          13 7mo diversificado
-          14 1er año universidad
-          15 2do año universidad
-          16 3er año universidad
-          17 4to año universidad
-          18 5to año universidad
-          19 6to año universidad
-          20 1er año maestría
-          21 2do año maestría
-          22 3er año maestría
-          23 1er año doctorado
-          24 2do año doctorado
-          25 3er año doctorado
-          26 4to año doctorado 
-		  
-		  tab p04a05b p04a05a*/
+**************
+***aedu_ci***
+**************
 
-* Antes del 2022 el código era así:
-gen aedu_ci=.
-replace	 aedu_ci=0  if p06b26a==1
+gen aedu_ci = .
+replace aedu_ci = 0 if inlist(p06b26a, 0, 1) & missing(aedu_ci)
+replace aedu_ci = p06b26c if p06b26a == 2 & !missing(p06b26c) & missing(aedu_ci)
+replace aedu_ci = 6 + p06b26c if p06b26a == 3 & !missing(p06b26c) & missing(aedu_ci)
+replace aedu_ci = 6 + p06b26c if p06b26a == 4 & p06b26c == 4 & !missing(p06b26c) & missing(aedu_ci)
+replace aedu_ci = 11 if p06b26a == 4 & inlist(p06b26c, 5, 6) & !missing(p06b26c) & missing(aedu_ci)
+replace aedu_ci = 11 + p06b26c if p06b26a == 5 & inrange(p06b26c, 1, 5) & !missing(p06b26c) & missing(aedu_ci)
+replace aedu_ci = 16 if p06b26a == 5 & p06b26c == 6 & !missing(p06b26c) & missing(aedu_ci)
+replace aedu_ci = 16 + p06b26c if p06b26a == 6 & inlist(p06b26c, 1, 2) & !missing(p06b26c) & missing(aedu_ci)
+replace aedu_ci = 18 if p06b26a == 6 & p06b26c == 3 & !missing(p06b26c) & missing(aedu_ci)
+replace aedu_ci = 18 + p06b26c if p06b26a == 7 & !missing(p06b26c) & missing(aedu_ci)
 
-*Modificación Mayra Sáenz Agosto 2015: Aunque en el cuestionario consta la categoría 0 = ninguno
-*En la base de datos no se incluye la categoría. Por lo tanto, se considera ningun tipo de educación
-*a los que no saben leer ni escribir y no responden ls preguntas de educación.
-replace aedu_ci=0  if p06b01 ==2 & (p06b02a==2 & p06b02a==.)
+***************
+***edupre_ci***
+***************
 
-*Primaria 
-replace aedu_ci=1  if (p06b26a==2 & p06b26c==1)
-replace aedu_ci=2  if (p06b26a==2 & p06b26c==2)
-replace aedu_ci=3  if (p06b26a==2 & p06b26c==3)
-replace aedu_ci=4  if (p06b26a==2 & p06b26c==4)
-replace aedu_ci=5  if (p06b26a==2 & p06b26c==5)
-replace aedu_ci=6  if (p06b26a==2 & p06b26c==6) 
+gen edupre_ci = .
 
-*Secundaria
-replace aedu_ci=7  if (p06b26a==3 & p06b26c==1) 
-replace aedu_ci=8 if (p06b26a==3 & p06b26c==2) 
-replace aedu_ci=9 if (p06b26a==3 & p06b26c==3) 
-replace aedu_ci=10 if (p06b26a==4 & (p06b26c==2 | p06b26c==4)) 
-replace aedu_ci=11 if (p06b26a==4 & p06b26c==5) 
-replace aedu_ci=12 if (p06b26a==4 & p06b26c==6) 
+**************
+***eduui_ci***
+**************
 
-*Superior
-replace aedu_ci=13 if (p06b26a==5 & p06b26c==1)
-replace aedu_ci=14 if (p06b26a==5 & p06b26c==2)
-replace aedu_ci=15 if (p06b26a==5 & p06b26c==3)
-replace aedu_ci=16 if (p06b26a==5 & p06b26c==4)
-replace aedu_ci=17 if (p06b26a==5 & p06b26c==5) 
-replace aedu_ci=18 if (p06b26a==5 & p06b26c==6) //ingenierias duran 6 años.  
-replace aedu_ci=19 if (p06b26a==5 & p06b26c==7) //quizas es medicina
+gen eduui_ci = 0
+replace eduui_ci = 1 if p06b06a == 5 & p06b26a == 4
+replace eduui_ci = 1 if p06b26a == 5 & p06b26c < 5 & !missing(p06b26c)
 
-*Postgrado
-replace aedu_ci=12+6 if (p06b26a==6 & p06b26c==1) 
-replace aedu_ci=12+6+1 if (p06b26a==6 & p06b26c==2)
+***************
+***eduuc_ci***
+***************
 
-replace aedu_ci=12+6+2 + p06b26c if (p06b26a==7) // doctorado
-//imputando los valores perdidos
-replace aedu_ci=0 if p06b26a==0 & p06b26c==. 
+gen eduuc_ci = 0
+replace eduuc_ci = 1 if p06b26a == 5 & inrange(p06b28a, 1001, 1099)
+replace eduuc_ci = 1 if p06b26a == 5 & p06b26c >= 5 & !missing(p06b26c)
+replace eduuc_ci = 1 if inlist(p06b26a, 6, 7)
+replace eduuc_ci = 1 if p06b26a == 5 & inlist(p06b06a, 6, 7)
 
-label var aedu_ci "Anios de educacion aprobados"
+**************
+***eduac_ci***
+**************
 
+gen eduac_ci = .
+replace eduac_ci = 0 if p06b26a == 5 & inrange(p06b28a, 1001, 1099)
+replace eduac_ci = 1 if inlist(p06b26a, 6, 7) & missing(eduac_ci)
+replace eduac_ci = 1 if p06b26a == 5 & inlist(p06b06a, 6, 7) & missing(eduac_ci)
+replace eduac_ci = 1 if p06b26a == 5 & inrange(p06b28a, 2000, 7100) & missing(eduac_ci)
+replace eduac_ci = 1 if p06b26a == 5 & p06b26c >= 5 & !missing(p06b26c) & missing(eduac_ci)
 
+***************
+***asiste_ci***
+***************
 
+gen asiste_ci = .
+replace asiste_ci = 1 if p06b05 == 1
+replace asiste_ci = 0 if p06b05 == 2
 
+***************
+***edupub_ci***
+***************
 
+gen edupub_ci = .
+replace edupub_ci = 1 if inlist(p06a02, 1, 2, 3)
+replace edupub_ci = 0 if inlist(p06a02, 4, 5, 6, 7)
+
+***************
+***asispre_ci**
+***************
+
+gen asispre_ci = .
+
+******************
+*razonesnoasis_ci*
+*****************
+
+gen razonesnoasis_ci = .
+replace razonesnoasis_ci = 1 if inlist(p06b24, 1, 2)
+replace razonesnoasis_ci = 2 if inlist(p06b24, 3, 5)
+replace razonesnoasis_ci = 3 if inlist(p06b24, 4, 6, 7, 9, 10, 14)
+replace razonesnoasis_ci = 4 if inlist(p06b24, 8, 11, 13, 15)
+replace razonesnoasis_ci = 5 if p06b24 == 12
+		 
+		 
+		 
 ******************************
 *	eduno_ci
 ******************************
@@ -1642,59 +1640,6 @@ la var edus2i_ci "1er ciclo de Educacion Secundaria Incompleto"
 g byte edus2c_ci=(aedu_ci==11)
 replace edus2c_ci=. if aedu_ci==.
 la var edus2c_ci "2do ciclo de Educacion Secundaria Incompleto"
-
-******************************
-*	eduui_ci 
-******************************
-g byte eduui_ci=(aedu_ci>11 & aedu_ci<15) 
-replace eduui_ci=. if aedu_ci==.
-la var eduui_ci "Universitaria o Terciaria Incompleta"
-
-******************************
-*	eduuc_ci 
-******************************
-g byte eduuc_ci=aedu_ci>14
-replace eduuc_ci=. if aedu_ci==.
-la var eduuc_ci "Universitaria o Terciaria Completa"
-
-******************************
-*	edupre_ci 
-******************************
-g byte edupre_ci=.
-label variable edupre_ci "Educacion preescolar"
-
-******************************
-*	asispre_ci
-******************************
-* 2021 p03a04a y 2022 p04a04a
-g byte asispre_ci = p06b06a==1
-la var asispre_ci "Asiste a Educacion preescolar"
-
-**************
-***eduac_ci***
-**************
-gen byte eduac_ci=. // esta disponible solo para los con titulo
-label variable eduac_ci "Superior universitario vs superior no universitario"
-
-******************************
-*	pqnoasis_ci 
-******************************
-
-g pqnoasis_ci  = p06b24
-**************
-*pqnoasis1_ci*
-**************
-
-g       pqnoasis1_ci = .
-replace pqnoasis1_ci = 1 if (p06b24==1) 
-replace pqnoasis1_ci = 2 if (p06b24==2) 
-replace pqnoasis1_ci = 3 if (p06b24==1 | p06b24==6 | p06b24== 7 | p06b24==10   ) 
-replace pqnoasis1_ci = 4 if (p06b24==5)
-replace pqnoasis1_ci = 5 if (p06b24==4 | p06b24== 9 |p06b24== 14)
-replace pqnoasis1_ci = 7 if (p06b24== 15)
-replace pqnoasis1_ci = 8 if (p06b24== 8 | p06b24== 11 | p06b24== 12 | p06b24== 13)
-replace pqnoasis1_ci = 9 if (p06b24== 15)
-
  
 
 ******************************
@@ -1706,30 +1651,6 @@ g repite_ci=.  /*NA*/
 ******************************
 g repiteult_ci=. /*NA*/
 
-
-******************************
-*	edupub_ci 
-******************************
-/*se cambia categoría
-P03A02 2021 y p04a02 2022 (1=si)
-P03A03 2021
-           1 Público
-           2 Privado
-           3 Municipal
-           4 Cooperativa
-p04a03 2022
-           1 Municipal
-           2 Público
-           3 Privado
-           4 Cooperativa
-          98 Otro
-*/		  
-g edupub_ci= (p06a02==1 | p06a02== 2 | p06a02==3) // asiste y es publico
-replace edupub_ci=0 if  (p06a02==6 | p06a02== 7 | p06a02==5 | p06a02 == 4) // asiste y es privado
-replace edupub_ci=. if p06a01 == 7 // no asiste
-label define edupub_ci 1 "Público" 0 "Privado"
-label value edupub_ci edupub_ci
-la var edupub_ci "Personas que asisten a centros de ensenanza publicos"
 
     
 	
@@ -1811,7 +1732,7 @@ do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&Exter
 	  ylmhopri_ci ylmho_ci /// ingreso por hora
 	  nrylmpri_ci nrylmpri_ch /// No respuesta de ingresos 
 	  remesas_ci remesas_ch ypen_ci ypensub_ci /// Remesas y pensiones
-          aedu_ci eduui_ci eduuc_ci edupre_ci eduac_ci asiste_ci edupub_ci pqnoasis1_ci asispre_ci /// Educación 
+          aedu_ci eduui_ci eduuc_ci edupre_ci eduac_ci asiste_ci edupub_ci razonesnoasis_ci asispre_ci /// Educación 
 	  luz_ch luzmide_ch combust_ch piso_ch pared_ch techo_ch resid_ch dorm_ch cuartos_ch cocina_ch telef_ch refrig_ch /// Vivienda 
 	  freez_ch auto_ch compu_ch internet_ch cel_ch vivi1_ch vivi2_ch viviprop_ch vivitit_ch vivialq_ch vivialqimp_ch /// Vivienda
 	  aguared_ch aguafconsumo_ch aguafuente_ch aguadist_ch aguadisp1_ch aguadisp2_ch /// Agua y saneamineto

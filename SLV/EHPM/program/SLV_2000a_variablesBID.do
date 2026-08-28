@@ -1082,8 +1082,11 @@ egen ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci)
 ***remesas_ci***
 ****************
 
-gen remesas_ci=remesasext
-replace remesas_ci=. if remesasext==0
+***gen remesas_ci=remesasext
+***replace remesas_ci=. if remesasext==0
+*** El código de remesas_ci se sustituye por missing values y remesas_ch se construye con la variable totayuda que contiene las remesas totales del hogar.
+gen double remesas_ci = .
+label var remesas_ci "Remesas mensuales reportadas por el individuo" 
 
 ************************
 *** HOUSEHOLD INCOME ***
@@ -1154,11 +1157,14 @@ replace remesasnm=. if ayudaes==999999
 
 by idh_ch, sort: egen remesasi=sum(remesas_ci) if miembros_ci==1
 replace remesasi=. if remesasi==0
+
+/*
 egen remesas_ch=rsum(remesasi remesash remesasnm)
 replace remesas_ch=. if remesasi==. & remesash==. & remesasnm==.
+*/
 
-
-
+by idh_ch, sort: gen double remesas_ch = totayuda if miembros_ci == 1
+label var remesas_ch "Remesas mensuales del hogar"
 
 ***************
 *** ynlm_ch ***
@@ -2367,13 +2373,9 @@ r407 (PQNOBUS)
 ****************
 *afiliado_ci****
 ****************
-***** El código mantiene a la poblacion inactiva y a los menores de la edad límite de la PET como missing values en congruencia con la variable formal_ci *****.
-gen byte afiliado_ci = .
-replace afiliado_ci = 1 if ((r109 >= 1 & r109 <= 2) & emp_ci==1)
-replace afiliado_ci = 0 if (r109 > 2 & inlist(condocup_ci, 1, 2))
+***** No se dispone de la variable constructora (r109a) para generar "afiliado_ci", aunque esta en el cuestionario.
+gen afiliado_ci= .
 label var afiliado_ci "Afiliado a la Seguridad Social"
-label define afiliado_ci 0 "No"  1 "Si"
-label value afiliado_ci afiliado_c1
 *Nota: seguridad social comprende solo los que en el futuro me ofrecen una pension.
 
 ****************

@@ -552,11 +552,6 @@ label value desemp_ci desemp_ci
 *************
 gen pea_ci=(emp_ci==1 | desemp_ci==1)
 
-*************
-***formal_ci***
-*************
-gen formal_ci=(cotizando_ci==1)
-
 /*
 ************
 ***emp_ci***
@@ -607,6 +602,11 @@ label var cotizando_ci "Cotizante a la Seguridad Social"
 label define cotizando_ci 0 "No"  1 "Si"
 label value cotizando_ci cotizando_ci
 *Nota: la pregunta p6920 se realiza a todos los ocupados (asalariados/independientes)
+
+*************
+***formal_ci***
+*************
+gen formal_ci=(cotizando_ci==1)
 
 ***************
 ***subemp_ci***

@@ -797,12 +797,16 @@ use `base_in', clear
 	****************
 	***remesas_ci***
 	****************
-	gen byte remesas_ci=irefa
+	***gen double remesas_ci = irefa
+	*** El código de remesas_ci se sustituye por missing values y remesas_ch se construye con la variable totayuda que contiene las remesas totales del hogar.
+	gen double remesas_ci = .
 
-	****************
-	***remesas_ch***
-	****************
-	by idh_ch, sort: egen remesas_ch=sum(remesas_ci) if miembros_ci==1
+	***********
+	**remesas_ch**
+	***********
+	***by idh_ch, sort: egen double remesas_ch = total(remesas_ci) if miembros_ci == 1
+	by idh_ch, sort: gen double remesas_ch = totayuda if miembros_ci == 1
+	label var remesas_ch "Remesas mensuales del hogar"
 
 	*************
 	***ypen_ci***
