@@ -643,7 +643,7 @@ label var antiguedad_ci "Antiguedad en la actividad actual en anios"
 			*** VARIABLES DE INGRESOS & PROTECCION SOCIAL ***
 			*************************************************
 
-*** INGRESO LABORAL (MONETARIO Y NO MONETARIO) ***
+*A. INGRESOS LABORALES A NIVEL DE INDIVIDUO	
 
 ***************
 ***ylmpri_ci***
@@ -767,7 +767,7 @@ replace ylnm_ci=. if ylnmpri_ci==. &  ylnmsec_ci==. & ylnmotros_ci==.
 label var ylnm_ci "Ingreso laboral NO monetario total"  
 
 
-*** INGRESO NO LABORAL (MONETARIO Y NO MONETARIO) ***
+*B. INGRESOS NO LABORALES A NIVEL DE INDIVIDUO	
 
 ********************************************************
 *** ytransf_ci: Transferencias de programas sociales ***
@@ -775,14 +775,12 @@ label var ylnm_ci "Ingreso laboral NO monetario total"
 // No está disponible la Sección 7: Subsidios al hogar de parte del gobierno (r7*)
 
 * PNC - Pensiones sociales no contributivas:
-	* 1 Pensión Básica Universal del Adulto Mayor r319a5==1 (hogar)
+	* 1 Pensión Básica Universal del Adulto Mayor r319a5==1 // nivel hogar (sin monto)
 * PTMC - Programas de transferencias monetarias condicionadas:
-	* 2 Becas: Beca de cuota escolar y Beca para matrícula  r211d== 1 | r211e==1 $ imputado > 0
-	* -2b Beca del Gobierno (sin información)
-	* 3 Bono para Comunidades Solidarias (rurales y urbanas) r319a3== 1| r319a4== 1 // nivel hogar  $ imputado > 0
+	* 2 Becas: Beca de cuota escolar y Beca para matrícula  r211d== 1 | r211e==1  (sin monto)
+	* 3 Bono para Comunidades Solidarias (rurales y urbanas) r319a3== 1| r319a4== 1 // nivel hogar (sin monto)
 * POTROT - Programas de otras transferencias monetarias no condicionadas
-	* 4 Otras ayudas del gobierno en efectivo
-		// r44106. QUÉ OTROS INGRESOS HA TENIDO (…) DURANTELOS ÚLTIMOS 12 MESES QUE NO HAYA MENCIONADO ANTERIORMENTE? 06. Monto de ayuda del gobierno en efectivo
+	* 4 Otras ayudas del gobierno en efectivo (r44106)
 	
 *** Beneficiarios a nivel individual:
 	
@@ -811,61 +809,60 @@ egen double ytransf_ci = rowtotal(ypnc_ci yptmc_ci yotrot_ci), mi
 ****************
 ***remesas_ci***
 ****************
-***gen remesas_ci=remesas
-*** El código de remesas_ci se sustituye por missing values y remesas_ch se construye con la variable totayuda que contiene las remesas totales del hogar.
-gen double remesas_ci = .
+/* Desde el 2022 se incluye la variable remesas monetarias habituales individuales (irefa a nivel hogar) */
+gen double remesa_nm = irefb if relacion_ci == 1 & irefb > 0 & irefb != .
+gen double remesa_esp = ires if relacion_ci == 1 & ires > 0 & ires != .
+	
+egen double remesas_ci = rowtotal(ingreso_remesas remesa_nm remesa_esp), mi		
 label var remesas_ci "Remesas mensuales reportadas por el individuo" 
 
-*************
-*ypen_ci*
-*************
+***************
+*** ypen_ci ***
+***************
 gen double ypen_ci = ingreso_pensiones if (ingreso_pensiones > 0 & ingreso_pensiones != .) 
 label var ypen_ci "Valor de la pension contributiva"
 
-*****************
-**  ypensub_ci  *
-*****************
+******************
+*** ypensub_ci ***
+******************
 * No se puede determinar el monto de la pension basica universal
-gen ypensub_ci=.
+gen ypensub_ci = .
 label var ypensub_ci "Valor de la pension subsidiada / no contributiva"
 
-*************
-***ynlm_ci***
-*************
-gen remesas =r44001a*r44001b/12
-
-gen cuotalim=r44002a*r44002b/12
-gen alqui   =r44003a*r44003b/12
-gen alqneg  =r44004a*r44004b/12
-gen alqterr =r44005a*r44005b/12
-gen jubil   =ingreso_pensiones  // ypen_ci
-gen deveh   =r44007a*r44007b/12
-gen pension =r44008a*r44008b/12
-gen ahorros =r44009a*r44009b/12
-gen otros   =r44010a*r44010b/12
-
-gen utilidades   =r44101/12
-gen dividendos   =r44102/12
-gen intereses    =r44103/12
-gen herencias    =r44104/12
-gen indemnizacion=r44105/12
-gen ayudagob     =r44106/12  // ytransf_ci
-gen acteventual  =r44107/12
-gen arrendamiento=r44108/12
-gen remesaevent1 =r44109/12
-gen aguinaldo    =r44110/12
-gen otrosy       =r44111/12
-
-egen double ynlm_ci = rowtotal(cuotalim alqui alqneg alqterr ypen_ci deveh pension ahorros otros utilidades dividendos intereses herencias indemnizacion acteventual arrendamiento aguinaldo otrosy ytransf_ci), mi
-egen miss = rowmiss(cuotalim alqui alqneg alqterr ypen_ci deveh pension ahorros otros utilidades dividendos intereses herencias indemnizacion acteventual arrendamiento aguinaldo otrosy ytransf_ci)
-replace ynlm_ci = . if miss == 19
+***************
+*** ynlm_ci ***
+***************
+	gen double remesas_nac   = r44001a * r44001b / 12  /* "remesas" Nacionales (transferencias desde otros hogares del país) */
+	gen double cuotalim       = r44002a * r44002b / 12
+	gen double alqui          = r44003a * r44003b / 12
+	gen double alqneg         = r44004a * r44004b / 12
+	gen double alqterr        = r44005a * r44005b / 12
+	gen double jubil          = ingreso_pensiones		 // ypen_ci
+	gen double deveh          = r44007a * r44007b / 12
+	gen double pension_temp   = r44008a * r44008b / 12   /* pensión por sobrevivencia */
+	gen double ahorros        = r44009a * r44009b / 12
+	gen double otros_nl       = r44010a * r44010b / 12
+	
+	gen double utilidades     = r44101 / 12
+	gen double dividendos     = r44102 / 12
+	gen double intereses      = r44103 / 12
+	gen double herencias      = r44104 / 12
+	gen double indemnizacion  = r44105 / 12
+	gen double ayudagob       = r44106 / 12		// ytransf_ci
+	gen double acteventual    = r44107 / 12
+	gen double arrendamiento  = r44108 / 12
+	*gen double remesaevent1   = r44109 / 12	// Se excluyen porque son ingresos excepcionales de "remesas" Nacionales
+	gen double aguinaldo_nl   = r44110 / 12
+	gen double otrosy         = r44111 / 12
+	
+egen double ynlm_ci = rowtotal(remesas_nac cuotalim alqui alqneg alqterr ypen_ci deveh pension_temp ahorros otros_nl utilidades dividendos intereses herencias indemnizacion acteventual arrendamiento aguinaldo_nl otrosy ytransf_ci remesas_ci), mi
+drop remesas_nac cuotalim alqui alqneg alqterr jubil deveh pension_temp ahorros otros_nl utilidades dividendos intereses herencias indemnizacion ayudagob acteventual arrendamiento aguinaldo_nl otrosy
 label var ynlm_ci "Ingreso no laboral monetario" 
-drop cuotalim-otrosy miss 
 
 *******************
 *** nrylmpri_ch ***
 *******************
-by idh_ch, sort: egen nrylmpri_ch=sum(nrylmpri_ci) if miembros_ci==1
+by idh_ch, sort: egen nrylmpri_ch=sum(nrylmpri_ci) if miembros_ci==1, mi
 replace nrylmpri_ch=1 if nrylmpri_ch>0 & nrylmpri_ch!=.
 replace nrylmpri_ch=. if nrylmpri_ch==.
 label var nrylmpri_ch "Hogares con algún miembro que no respondió por ingresos"
@@ -876,15 +873,10 @@ label var nrylmpri_ch "Hogares con algún miembro que no respondió por ingresos
 gen ynlnm_ci=.
 label var ynlnm_ci "Ingreso no laboral no monetario" 
 
-
-*** INGRESO TOTAL LABORAL Y NO LABORAL (MONETARIO Y NO MONETARIO) ***
-
-***************
-*** ytot_ci ***
-*************** 
+***********
+**ytot_ci**
+***********
 egen double ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci), mi
-
-*** INGRESO NETO INDIVIDUAL > INGRESO PRIMARIO + TRANSFERENCIAS PRIVADAS ***
 
 ***************
 *** ynet_ci ***
@@ -901,19 +893,19 @@ drop aux_ytransf_ci
 **************
 *** ylm_ch ***
 **************
-by idh_ch, sort: egen double ylm_ch = total(ylm_ci) if miembros_ci==1
+by idh_ch, sort: egen double ylm_ch = total(ylm_ci) if miembros_ci==1, mi
 label var ylm_ch "Ingreso laboral monetario del hogar"
 
 ***************
 *** ylnm_ch ***
 ***************
-by idh_ch, sort: egen double ylnm_ch = total(ylnm_ci) if miembros_ci==1
+by idh_ch, sort: egen double ylnm_ch = total(ylnm_ci) if miembros_ci==1, mi
 label var ylnm_ch "Ingreso laboral no monetario del hogar"
 
 ****************
 *** ylmnr_ch ***
 ****************
-by idh_ch, sort: egen double ylmnr_ch = total(ylm_ci) if miembros_ci==1
+by idh_ch, sort: egen double ylmnr_ch = total(ylm_ci) if miembros_ci==1, mi
 replace ylmnr_ch=. if nrylmpri_ch==1
 label var ylmnr_ch "Ingreso laboral monetario del hogar"
 
@@ -933,10 +925,10 @@ label var ylmnr_ch "Ingreso laboral monetario del hogar"
 	
 	bys idh_ch: egen byte potrot_ch = max(potrot_ci) if miembros_ci == 1
 	
-	gen byte pcasht_ch = (ptmc_ch == 1 | pnc_ch == 1 | potrot_ch == 1)
+	gen byte pcasht_ch = (pnc_ch == 1 | ptmc_ch == 1 | potrot_ch == 1)
+	replace pcasht_ch = . if pnc_ch == . & ptmc_ch == . & potrot_ch == .
 	
-*** Montos de transferencias a nivel hogar:  (No hay montos disponibles para este año)
-
+*** Montos de transferencias a nivel hogar:
 	gen ypnc_ch = .	 
 	gen yptmc_ch = .
 	bys idh_ch: egen double yotrot_ch = total(yotrot_ci) if miembros_ci == 1, mi
@@ -944,21 +936,17 @@ label var ylmnr_ch "Ingreso laboral monetario del hogar"
 *** Ingreso del Hogar por transferencias no contributivas
 egen double ytransf_ch = rowtotal(ypnc_ch yptmc_ch yotrot_ch) if miembros_ci == 1, mi
 
-
 ******************
 *** remesas_ch ***
 ******************
-// totayuda: suma de todas las remesas (nacionales e internacionales) monetarias y no monetarias
-***by idh_ch, sort: egen double remesas_ch = total(remesas_ci) if miembros_ci == 1
-by idh_ch, sort: gen double remesas_ch = totayuda if miembros_ci == 1
-label var remesas_ch "Remesas mensuales del hogar"
-
+/* A nivel de hogar: totayuda = remesas habituales (irefa) + remesas eventuales (irefb) + remesas especie (ires) 
+Son equivalentes a la variable "totayuda" */
+bys idh_ch: egen double remesas_ch = total(remesas_ci) if miembros_ci == 1, mi
 
 ***************
 *** ynlm_ch ***
 ***************
-by idh_ch, sort: egen double ing_nlm1 = total(ynlm_ci) if miembros_ci==1, mi 	// Ingresos no laborales individuales
-egen double ynlm_ch = rowtotal(ing_nlm1 remesas_ch) if miembros_ci==1, mi
+bys idh_ch: egen double ynlm_ch = total(ynlm_ci) if miembros_ci == 1, mi
 label var ynlm_ch "Ingreso no laboral monetario del hogar"
 
 **************
@@ -1621,9 +1609,7 @@ label var instpen_ci "Institucion proveedora de la pension - variable original d
 ***************
 *pensionsub_ci*
 ***************
-gen pensionsub_ci=.
-*gen pensionsub_ci=1 if r321a5==1 & edad_ci>=65
-*recode pensionsub_ci .=0
+gen byte pensionsub_ci = (r319a5 == 1) if !missing(r319a5) // Pensión Básica Universal
 label var pensionsub_ci "1=recibe pension subsidiada / no contributiva"
 
 *************

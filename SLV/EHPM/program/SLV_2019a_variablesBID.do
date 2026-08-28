@@ -608,7 +608,7 @@ label var antiguedad_ci "Antiguedad en la actividad actual en anios"
 			*** VARIABLES DE INGRESOS & PROTECCION SOCIAL ***
 			*************************************************
 
-*** INGRESO LABORAL (MONETARIO Y NO MONETARIO) ***
+*A. INGRESOS LABORALES A NIVEL DE INDIVIDUO	
 
 ***************
 ***ylmpri_ci***
@@ -728,7 +728,7 @@ replace ylnm_ci=. if ylnmpri_ci==. &  ylnmsec_ci==. & ylnmotros_ci==.
 label var ylnm_ci "Ingreso laboral NO monetario total"  
 
 
-*** INGRESO NO LABORAL (MONETARIO Y NO MONETARIO) ***
+*B. INGRESOS NO LABORALES A NIVEL DE INDIVIDUO	
 
 ********************************************************
 *** ytransf_ci: Transferencias de programas sociales ***
@@ -741,7 +741,7 @@ label var ylnm_ci "Ingreso laboral NO monetario total"
 		// r903 Monto recibido por la pensión básica universal (el que recibe el hogar por cada vez, reportada en la pregunta anterior)
 		
 * PTMC - Programas de transferencias monetarias condicionadas:
-	* 2 Becas: Beca de cuota escolar y Beca para matrícula  r211d== 1 | r211e==1 $ imputado > 0
+	* 2 Becas: Beca de cuota escolar y Beca para matrícula  r211d== 1 | r211e==1 (sin monto)
 	* -2b Beca del Gobierno 
 		// r912. ¿RECIBE ALGÚN MIEMBRO DEL HOGAR BECAS PARA EDUCACIÓN FORMAL O FORMACIÓN TÉCNICA? 1. Sí, del gobierno
 		// r913. Monto estimado de las becas para educación formal o formación técnica
@@ -749,8 +749,7 @@ label var ylnm_ci "Ingreso laboral NO monetario total"
 		// r917. ¿ALGUNA PERSONA EN EL HOGAR RECIBE AYUDA BONOS SOLIDARIAS RURALES? (Monto $ r919)
 		// r920. ¿ALGUNA PERSONA EN EL HOGAR RECIBE AYUDA BONOS SOLIDARIAS URBANAS? (Monto $ r922)
 * POTROT - Programas de otras transferencias monetarias no condicionadas
-	* 4 Otras ayudas del gobierno en efectivo
-		// r44506. QUÉ OTROS INGRESOS HA TENIDO (…) DURANTELOS ÚLTIMOS 12 MESES QUE NO HAYA MENCIONADO ANTERIORMENTE? 06. Ayuda del gobierno en efectivo
+	* 4 Otras ayudas del gobierno en efectivo (r44506)
 
 *** Beneficiarios a nivel individual:
 	
@@ -782,14 +781,16 @@ egen double ytransf_ci = rowtotal(ypnc_ci yptmc_ci yotrot_ci), mi
 ****************
 ***remesas_ci***
 ****************
-***gen remesas_ci=remesas
-*** El código de remesas_ci se sustituye por missing values y remesas_ch se construye con la variable totayuda que contiene las remesas totales del hogar.
-gen double remesas_ci = .
+gen double remesa_mh = (r44401a * r44401b)/12	// Monetarias habituales
+gen double remesa_me = r44509/12				// Monetarias eventuales
+// Remesas en especie están sólo a nivel de hogar (se agregan a ynlm_ch)
+
+egen double remesas_ci = rowtotal(remesa_mh remesa_me), mi
 label var remesas_ci "Remesas mensuales reportadas por el individuo" 
 
-*************
-*ypen_ci*
-*************
+***************
+*** ypen_ci ***
+***************
 //r44407a. ¿EN LOS ÚLTIMOS 30 DÍAS RECIBIÓ (…) INGRESOS POR: 07. Jubilación, pensión de invalidez o vejez?
 gen double ypen_ci = (r44407a*r44407b)/12 if (r44407a > 0 & r44407a != .)
 label var ypen_ci "Valor de la pension contributiva"
@@ -801,41 +802,39 @@ label var ypen_ci "Valor de la pension contributiva"
 gen ypensub_ci = .
 label var ypensub_ci "Valor de la pension subsidiada / no contributiva"
 
-*************
-***ynlm_ci***
-*************
-gen double remesas = (r44401a*r44401b)/12
-gen double ayuda = (r44402a*r44402b)/12
-gen double cuotalim = (r44403a*r44403b)/12
-gen double alqui = (r44404a*r44404b)/12
-gen double alqneg = (r44405a*r44405b)/12
-gen double alqterr = (r44406a*r44406b)/12
-gen double jubil = (r44407a*r44407b)/12   // ypen_ci
-gen double deveh = (r44408a*r44408b)/12
-gen double pension = (r44409a*r44409b)/12 
-gen double ahorros = (r44410a*r44410b)/12
-gen double otros = (r44411a*r44411b)/12
+***************
+*** ynlm_ci ***
+***************
 
-gen double utilidades   = r44501/12
-gen double dividendos   = r44502/12
-gen double intereses    = r44503/12
-gen double herencias    = r44504/12
-gen double indemnizacion= r44505/12
-gen double ayudagob     = r44506/12 	// ytransf_ci
-gen double acteventual  = r44507/12
-gen double arrendamiento= r44508/12
-gen double remesaevent1 = r44509/12  
-gen double remesaevent2 = r44510/12
-gen double aguinaldo    = r44511/12
-gen double otrosy       = r44512/12
+	gen double remesa_nac = (r44402a*r44402b)/12  /* "remesas" Nacionales (transferencias desde otros hogares del país) */
+	gen double cuotalim = (r44403a*r44403b)/12
+	gen double alqui = (r44404a*r44404b)/12
+	gen double alqneg = (r44405a*r44405b)/12
+	gen double alqterr = (r44406a*r44406b)/12
+	gen double jubil = (r44407a*r44407b)/12   // ypen_ci
+	gen double deveh = (r44408a*r44408b)/12
+	gen double pension_sv = (r44409a*r44409b)/12 // Pension de sobreviviencia
+	gen double ahorros = (r44410a*r44410b)/12
+	gen double otros = (r44411a*r44411b)/12
+	
+	gen double utilidades   = r44501/12
+	gen double dividendos   = r44502/12
+	gen double intereses    = r44503/12
+	gen double herencias    = r44504/12
+	gen double indemnizacion= r44505/12
+	gen double ayudagob     = r44506/12 	// ytransf_ci
+	gen double acteventual  = r44507/12
+	gen double arrendamiento= r44508/12
+	gen double remesaevent1 = r44509/12  
+	*gen double remesaevent2 = r44510/12	// Se excluyen porque son ingresos excepcionales de "remesas" Nacionales
+	gen double aguinaldo_nl    = r44511/12
+	gen double otrosy       = r44512/12
 
-// Con remesas_ci = ., se debe sacar del ynlm_ci: remesas remesaevent1 remesaevent2 (para que no sea una doble sumatoria en el ingreso por hogar)
+// Con remesas_ci = ., se debe sacar del ynlm_ci: remesas remesaevent1 (para que no sea una doble sumatoria en el ingreso por hogar)
 
-egen double ynlm_ci = rowtotal(ayuda cuotalim alqui alqneg alqterr ypen_ci deveh pension ahorros otros utilidades dividendos intereses herencias indemnizacion acteventual arrendamiento aguinaldo otrosy ytransf_ci), mi
-egen miss = rowmiss(ayuda cuotalim alqui alqneg alqterr ypen_ci deveh pension ahorros otros utilidades dividendos intereses herencias indemnizacion acteventual arrendamiento aguinaldo otrosy ytransf_ci)
-replace ynlm_ci = . if miss == 20
+egen double ynlm_ci = rowtotal(remesa_nac cuotalim alqui alqneg alqterr ypen_ci deveh pension_sv ahorros otros utilidades dividendos intereses herencias indemnizacion acteventual arrendamiento aguinaldo_nl otrosy ytransf_ci remesas_ci), mi
+drop remesa_nac cuotalim alqui alqneg alqterr deveh pension_sv ahorros otros utilidades dividendos intereses herencias indemnizacion acteventual arrendamiento aguinaldo_nl otrosy
 label var ynlm_ci "Ingreso no laboral monetario" 
-drop ayuda-otrosy miss 
 
 *******************
 *** nrylmpri_ch ***
@@ -851,14 +850,10 @@ label var nrylmpri_ch "Hogares con algún miembro que no respondió por ingresos
 gen ynlnm_ci = .
 label var ynlnm_ci "Ingreso no laboral no monetario" 
 
-*** INGRESO TOTAL LABORAL Y NO LABORAL (MONETARIO Y NO MONETARIO) ***
-
 ***************
 *** ytot_ci ***
 *************** 
 egen double ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci), mi
-
-*** INGRESO NETO INDIVIDUAL > INGRESO PRIMARIO + TRANSFERENCIAS PRIVADAS ***
 
 ***************
 *** ynet_ci ***
@@ -932,8 +927,7 @@ egen double ytransf_ch = rowtotal(ypnc_ch yptmc_ch yotrot_ch) if miembros_ci == 
 ******************
 *** remesas_ch ***
 ******************
-// totayuda: suma de todas las remesas monetarias+no monetarias, incluye remesas remesaevent1 remesaevent2
-***by idh_ch, sort: egen double remesas_ch = total(remesas_ci) if miembros_ci == 1
+// totayuda = remesas habituales (irefa) + remesas eventuales (irefb) + remesas especie (ires) 
 gen double remesas_ch = totayuda if miembros_ci == 1
 label var remesas_ch "Remesas mensuales del hogar"
 
@@ -941,7 +935,7 @@ label var remesas_ch "Remesas mensuales del hogar"
 *** ynlm_ch ***
 ***************
 by idh_ch, sort: egen double ing_nlm1 = total(ynlm_ci) if miembros_ci==1, mi 	// Ingresos no laborales individuales
-egen double ynlm_ch = rowtotal(ing_nlm1 remesas_ch ytransf_ch) if miembros_ci==1, mi
+egen double ynlm_ch = rowtotal(ing_nlm1 ires ytransf_ch) if miembros_ci==1, mi
 label var ynlm_ch "Ingreso no laboral monetario del hogar"
 
 **************
@@ -1590,8 +1584,7 @@ label var instpen_ci "Institucion proveedora de la pension - variable original d
 ***************
 *pensionsub_ci*
 ***************
-gen pensionsub_ci=1 if r321a5==1 & edad_ci>=65
-recode pensionsub_ci .=0
+gen pensionsub_ci = (r321a5 == 1) if !missing(r321a5) 	// r321a5 = r901
 label var pensionsub_ci "1=recibe pension subsidiada / no contributiva"
 
 *************
