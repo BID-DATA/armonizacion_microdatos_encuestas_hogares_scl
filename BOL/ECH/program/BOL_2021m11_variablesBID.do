@@ -534,9 +534,7 @@ label value tamemp tamemp
 *************
 // Variable auxiliar de filtro de pensiones contributivas (vejez, benemerito, invalidez, viudez)
 egen aux_pc = rowtotal(s05a_01a s05a_01b s05a_01c s05a_01d), missing
-
-gen pension_ci = 1 if aux_pc > 0 & aux_pc != .
-replace pension_ci = 0 if aux_pc == 0
+gen pension_ci = (aux_pc > 0) if !missing(aux_pc)
 label var pension_ci "1=Recibe pension contributiva"
 
 
@@ -1334,7 +1332,6 @@ https://www.bcb.gob.bo/?q=cotizaciones_tc
 Al 4 DE ENERO DE 2021
 */
 
-* a) Remesas monetarias: 
 destring s05c_*, replace i("NA")
 gen s6_112 = .
 replace s6_112 =  s05c_10a 			 if s05c_10b==1 /*bolivianos*/
@@ -1345,31 +1342,17 @@ replace s6_112 =  s05c_10a*1.32060   if s05c_10b==5 /*real*/
 replace s6_112 =  s05c_10a*0.00966	 if s05c_10b==6 /*peso chileno*/
 * replace s6_112 =  s05c_10a*2.00961   if s05c_10b==7 /*soles*/ En la 201 es Otro
 
-gen double rem = s6_112
+* Se suman remesas monetarias y en especie:
+egen rem = rsum(s05c_10a s6_112), m
 
-gen yremesas_m = .
-replace yremesas_m = rem*4.3		if s05c_09==2
-replace yremesas_m = rem*2		    if s05c_09==3
-replace yremesas_m = rem			if s05c_09==4
-replace yremesas_m = rem/2			if s05c_09==5
-replace yremesas_m = rem/3			if s05c_09==6
-replace yremesas_m = rem/6			if s05c_09==7
-replace yremesas_m = rem/12			if s05c_09==8
-
-
-* b) Remesas en especie
-gen rem_nm = s05c_10a
-
-gen yremesas_nm  = .
-replace yremesas_nm = rem_nm*4.3		if s05c_09==2
-replace yremesas_nm = rem_nm*2		    if s05c_09==3
-replace yremesas_nm = rem_nm			if s05c_09==4
-replace yremesas_nm = rem_nm/2			if s05c_09==5
-replace yremesas_nm = rem_nm/3			if s05c_09==6
-replace yremesas_nm = rem_nm/6			if s05c_09==7
-replace yremesas_nm = rem_nm/12			if s05c_09==8
-
-
+gen yremesas = .
+replace yremesas= rem*4.3		if s05c_09==2
+replace yremesas= rem*2		    if s05c_09==3
+replace yremesas= rem			if s05c_09==4
+replace yremesas= rem/2			if s05c_09==5
+replace yremesas= rem/3			if s05c_09==6
+replace yremesas= rem/6			if s05c_09==7
+replace yremesas= rem/12		if s05c_09==8
 
 /* 
 ylm:
@@ -1390,6 +1373,8 @@ yvesti
 yvivien 
 yguarde */
 
+
+*A. INGRESOS LABORALES A NIVEL DE INDIVIDUO	
 
 ***************
 ***ylmpri_ci***
@@ -1497,20 +1482,22 @@ replace ylnm_ci=. if ylnmpri_ci==. & ylnmsec_ci==. & ylnmotros_ci==.
 label var ylnm_ci "Ingreso laboral NO monetario total"  
 
 
+*B. INGRESOS NO LABORALES A NIVEL DE INDIVIDUO
+
 ********************************************************
 *** ytransf_ci: Transferencias de programas sociales ***
 ********************************************************
 
-* PNC - Pensiones sociales no contributivas:
-		* 1 Renta Dignidad s05a_01e==1 $ s05a_01e0
-* PTMC - Programas de transferencias monetarias condicionadas:
-		* 2 Bono Juancito Pinto s03a_08==1 $ monto imputado > 0
-		* 3 Bono Juana Azurduy  s02b_24a1==1| s02b_24b==1| s02c_30==1 $ monto imputado > 0
-* POTROT - Programas de otras transferencias monetarias no condicionadas
-		* 4 Bono de Indigencia, Bono Personas con Discapacidad, Renta Solidaria s02a_15==1 $ s02a_15a
-		* 5 Bono de Natalidad s04c_20b==1 $ monto imputado > 0
-		* 6 Bono contra el Hambre s05b_06a==1 $ monto imputado > 0
-
+	* PNC - Pensiones sociales no contributivas:
+			* 1 Renta Dignidad s05a_01e==1 $ s05a_01e0
+	* PTMC - Programas de transferencias monetarias condicionadas:
+			* 2 Bono Juancito Pinto s03a_08==1 (Sin monto)
+			* 3 Bono Juana Azurduy  s02b_24a1==1| s02b_24b==1| s02c_30==1 (Sin monto)
+			* 4 Subsidio Universal Prenatal s02b_26 == 1 (Sin monto)
+	* POTROT - Programas de otras transferencias monetarias no condicionadas
+			* 4 Bono de Indigencia, Bono Personas con Discapacidad, Renta Solidaria s02a_15==1 $ s02a_15a
+			* 5 Bono de Natalidad s04c_20b==1 (Sin monto)
+			* 6 Bono contra el Hambre s05b_06a==1 (Sin monto)
 
 *** Beneficiarios a nivel individual:
 	
@@ -1521,9 +1508,10 @@ label var ylnm_ci "Ingreso laboral NO monetario total"
 	gen byte juancito_ci = (s03a_08 == 1) if !missing(s03a_08)
 	gen byte juana_ci = (s02b_24a1 == 1 | s02b_24b == 1 | s02c_30 == 1)
 	replace juana_ci = . if s02b_24a1 == . & s02b_24b == . & s02c_30 == .
+	gen byte subpre_ci = (s02b_26 == 1) if !missing(s02b_26)
 	
-	gen byte ptmc_ci = (juancito_ci == 1 | juana_ci == 1)
-	replace ptmc_ci = . if juancito_ci == . & juana_ci == .
+	gen byte ptmc_ci = (juancito_ci == 1 | juana_ci == 1 | subpre_ci == 1)
+	replace ptmc_ci = . if juancito_ci == . & juana_ci == . & subpre_ci == .
 	
 	// POTROT
 	gen byte discap_ci = (s02a_15 == 1) if !missing(s02a_15)
@@ -1541,6 +1529,7 @@ label var ylnm_ci "Ingreso laboral NO monetario total"
 	// Transferencias PTMC (No hay montos disponibles)
 	gen yjuancito_ci = .
 	gen yjuana_ci = .
+	gen ysubpre_ci = .
 	gen yptmc_ci = .
 	
 	// Otras transferencias POTROT
@@ -1551,7 +1540,6 @@ label var ylnm_ci "Ingreso laboral NO monetario total"
 
 	egen double yotrot_ci = rowtotal(ydiscap_ci ynatal_ci ycontrah_ci), mi
 
-
 *** Ingreso individual por transferencias no contributivas
 egen double ytransf_ci = rowtotal(ypnc_ci yptmc_ci yotrot_ci), mi
 
@@ -1560,7 +1548,7 @@ egen double ytransf_ci = rowtotal(ypnc_ci yptmc_ci yotrot_ci), mi
 ***remesas_ci***
 *****************
 
-gen remesas_ci = yremesas_m
+gen remesas_ci = yremesas
 label var remesas_ci "Remesas mensuales reportadas por el individuo" 
 
 ***************
@@ -1583,7 +1571,7 @@ label var ypensub_ci "Valor de la pension subsidiada / no contributiva"
 *** ynlm_ci. Ingreso no laboral monetario (otras fuentes) ***
 *************************************************************
 
-/* ynlm:
+/* 
 yinteres 
 yalqui 
 yjubi > ypen_ci
@@ -1596,27 +1584,15 @@ ydivi
 yalqmaqui  
 yindtr  
 yindseg 
-yheren 
-ypasu 
 ybono > ypnc_ci
-yotring  
+yotring > otros ingresos extraordinarios
 yasistfam 
-ytransmon > asistencia familiar, dinero de otros hogares del pais, otros bonos
-yremesas_m > separé las remesas monetarias de las no monetarias > remesas_ci
-yinvers 
-yhipotec 
-ypresta 
-yprestata 
-yinmueb 
-yinmrur 
-yvehi 
-yelec 
-ymuebles 
-yjoyas 
+ytransmon > dinero de otros hogares del pais, otros bonos sociales en dinero
+yremesas > remesas_ci
 ytransf > ypnc_ci + yptmc_ci + yotrot_ci */
 
 egen double ynlm_ci = rowtotal(yinteres yalqui ypen_ci yotren yalqagri ydivi yalqmaqui yindtr yindseg ytransf_ci yotring yasistfam ytransmon remesas_ci), mi
-replace ynlm_ci=. if yinteres==. & yalqui==. & ypen_ci==. & yotren==. & yalqagri==. & ydivi==. & yalqmaqui==. & yindtr==. & yindseg==. & 	ytransf_ci==. & yotring==. & yasistfam==. & ytransmon==. & remesas_ci==. 
+replace ynlm_ci=. if yinteres==. & yalqui==. & ypen_ci==. & yotren==. & yalqagri==. & ydivi==. & yalqmaqui==. & yindtr==. & yindseg==. & ytransf_ci==. & yotring==. & yasistfam==. & ytransmon==. & remesas_ci==. 
 label var ynlm_ci "Ingreso no laboral monetario"  
 
 
@@ -1624,12 +1600,10 @@ label var ynlm_ci "Ingreso no laboral monetario"
 *** ynlnm_ci: Ingreso no laboral no monetario ***
 *************************************************
 *Modificación SGR Julio 2019: En esta encuesta se pregunta por transferencia en alimentos u otras especies.
-egen double ynlnm_ci = rowtotal(yalimento yotro_bono2 yremesas_nm), missing
-replace ynlnm_ci=. if yalimento==. & yotro_bono2==. & yremesas_nm == .
+egen double ynlnm_ci = rowtotal(yalimento yotro_bono2), missing
+replace ynlnm_ci=. if yalimento==. & yotro_bono2==.
 label var ynlnm_ci "Ingreso no laboral no monetario" 
 
-
-*** INGRESO TOTAL LABORAL Y NO LABORAL (MONETARIO Y NO MONETARIO) ***
 
 ***************
 *** ytot_ci ***
@@ -1637,14 +1611,11 @@ label var ynlnm_ci "Ingreso no laboral no monetario"
 egen double ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci), mi
 
 
-*** INGRESO NETO INDIVIDUAL > INGRESO PRIMARIO + TRANSFERENCIAS PRIVADAS ***
-
 ***************
 *** ynet_ci ***
 ***************
 gen double aux_ytransf_ci = ytransf_ci*(-1)
 egen double ynet_ci = rowtotal(ytot_ci aux_ytransf_ci), mi
-sum ynet_ci if ynet_ci < 0
 drop aux_ytransf_ci
 
 
@@ -1687,7 +1658,9 @@ label var ylnm_ch "Ingreso laboral no monetario del hogar"
 	bys idh_ch: egen byte pnc_ch = max(pnc_ci) if miembros_ci == 1
 	bys idh_ch: egen byte ptmc_ch = max(ptmc_ci) if miembros_ci == 1
 	bys idh_ch: egen byte potrot_ch = max(potrot_ci) if miembros_ci == 1
+	
 	gen byte pcasht_ch = (ptmc_ch == 1 | pnc_ch == 1 | potrot_ch == 1)
+	replace pcasht_ch = . if pnc_ch == . & ptmc_ch == . & potrot_ch == .
 
 *** Montos de transferencias a nivel hogar:
 	bys idh_ch: egen double ypnc_ch = total(ypnc_ci) if miembros_ci == 1, mi
