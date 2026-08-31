@@ -1,0 +1,1380 @@
+*(Versión Stata 19)
+
+clear
+set more off
+
+*________________________________________________________________________________________________________________*
+
+* Activar si es necesario (dejar desactivado para evitar sobreescribir la base y dejar la posibilidad de 
+* utilizar un loop)
+* Los datos se obtienen de las carpetas que se encuentran en el servidor: ${surveysFolder}
+* Se tiene acceso al servidor unicamente al interior del BID.
+* El servidor contiene las bases de datos MECOVI.
+*________________________________________________________________________________________________________________*
+ 
+global ruta = "${surveysFolder}"
+
+local PAIS SLV
+local ENCUESTA EHPM
+local ANO "2024"
+local ronda a
+
+local log_file = "$ruta\harmonized\\`PAIS'\\`ENCUESTA'\log\\`PAIS'_`ANO'`ronda'_variablesBID.log"
+local base_in  = "$ruta\survey\\`PAIS'\\`ENCUESTA'\\`ANO'\\`ronda'\data_merge\\`PAIS'_`ANO'`ronda'.dta"
+local base_out = "$ruta\harmonized\\`PAIS'\\`ENCUESTA'\data_arm\\`PAIS'_`ANO'`ronda'_BID.dta"
+   
+capture log close
+cap log using "`log_file'", replace 
+
+cap log off
+
+/***************************************************************************
+                 BASES DE DATOS DE ENCUESTA DE HOGARES - SOCIOMETRO 
+Pais: El Salvador
+Encuesta: EHPM
+Round: a
+Autores: Matias Rodriguez (SCL/SCL) - Email: mrodriguezm@iadb.org, 22 de diciembre de 2025
+Versión: 1 
+Matias Rodriguez (SCL/SCL) - Email: mrodriguezm@iadb.org, 22 de diciembre de 2025
+
+
+****************************************************************************/
+
+/***************************************************************************
+Detalle de procesamientos o modificaciones anteriores:
+****************************************************************************/
+use `base_in', clear
+
+**********************************
+***VARIABLES DEL IDENTIFICACION***
+**********************************
+	********************
+	*** region_BID_c ****
+	********************
+	gen byte region_BID_c=.
+	replace region_BID_c=1
+
+	********************
+	*** region_c ****
+	********************
+	gen byte region_c = r004
+	label define region_c   ///
+	1 "Ahuachapán" ///
+    2 "Santa Ana" ///
+    3 "Sonsonate" ///
+    4 "Chalatenango" ///
+    5 "La Libertad" ///
+    6 "San Salvador" ///
+    7 "Cuscatlán" ///
+    8 "La Paz" ///
+    9 "Cabañas" ///
+    10 "San Vicente" ///
+    11 "Usulután" ///
+    12 "San Miguel" ///
+    13 "Morazán" ///
+    14 "La Unión" 		
+	label value region_c region_c
+
+	*************
+	* pais_c    *
+	*************
+	gen str3 pais_c="SLV"
+
+	******
+	*anio*
+	******
+	gen int anio_c=2024
+	
+	******
+	*mes_c*
+	******
+	gen int mes_c=r015
+
+	******
+	*zona*
+	******
+	gen byte zona_c=area
+ 	
+	*********
+	*estrato*
+	*********
+	gen estrato_ci=estratoarea
+
+	***************
+	***upm_ci***
+	***************
+	gen upm_ci=.
+	
+	******************
+	*idh_ch (idhogar)*
+	******************
+	gen idh_ch = idboleta
+	tostring idh_ch, replace
+
+	***************
+	****idp_ci*****
+	***************
+	egen idp_ci = concat(idh_ch r101)
+	tostring idp_ci, replace format ("%20.0f") 
+
+	***********
+	*factor_ci* 
+	***********
+	gen factor_ci=fac00
+	
+	*******************************************
+	*Factor de expansion del hogar (factor_ch)*
+	*******************************************
+	gen factor_ch=fac00 /*todos los factores 00-04 son los mismos*/
+
+
+****************************
+***VARIABLES DEMOGRAFICAS***
+****************************
+
+	*********
+	*sexo_ci*
+	*********
+	gen byte sexo_ci=.
+	replace sexo_ci = 1 if r104==1
+	replace sexo_ci = 2 if r104==2
+
+	*********
+	*edad_ci*
+	*********
+	gen int edad_ci=.
+	replace edad_ci=r106 if r106>=0
+
+	**************
+	**relacion_ci**
+	**************
+	gen byte relacion_ci=.
+	replace relacion_ci = 1 if r103==1
+	replace relacion_ci = 2 if r103==2
+	replace relacion_ci = 3 if r103==3
+	replace relacion_ci = 4 if r103>=4 & r103<=9
+	replace relacion_ci = 5 if r103==11
+	replace relacion_ci = 6 if r103==10
+
+	*************
+	*miembros_ci*
+	*************
+	gen miembros_ci=(relacion_ci>=1 & relacion_ci<=5)
+
+	*************
+	*miembros_one_ci*
+	*************
+	gen miembros_one_ci=.
+	*No hay metodología de la encuesta y en los anteriores años no se lo hizo 
+	
+	**************
+	*Estado Civil*
+	**************
+	gen byte civil_ci=. 
+	replace civil_ci=1 if r107==6
+	replace civil_ci=2 if r107==1 | r107==2 
+	replace civil_ci=3 if r107==4 | r107==5
+	replace civil_ci=4 if r107==3
+
+	*********
+	*jefe_ci*
+	*********
+	gen byte jefe_ci=.
+	replace jefe_ci = 1 if (relacion_ci==1)
+	replace jefe_ci = 0 if (relacion_ci!=1) & (relacion_ci!=.)
+		
+	**************
+	*nconyuges_ch*
+	**************
+	by idh_ch, sort: egen nconyuges_ch=sum(relacion_ci==2)
+    replace nconyuges_ch =. if relacion_ci==.
+	
+	***********
+	*nhijos_ch*
+	***********
+	by idh_ch, sort: egen byte nhijos_ch=sum(relacion_ci==3)
+	replace nhijos_ch =. if relacion_ci==.          
+
+	**************
+	*notropari_ch*
+	**************
+	by idh_ch, sort: egen byte notropari_ch=sum(relacion_ci==4)
+	replace notropari_ch =. if relacion_ci==.
+
+	**************
+	*notronopari_ch*
+	**************
+   by idh_ch, sort: egen byte notronopari_ch=sum(relacion_ci==5)
+   replace notronopari_ch=. if relacion_ci==.          
+		
+	****************
+	*nempdom_ch*
+	****************
+	by idh_ch, sort: egen byte nempdom_ch=sum(relacion_ci==6)
+	replace nempdom_ch =. if relacion_ci==.
+	
+	*************
+	*clasehog_ch*
+	*************
+	gen byte clasehog_ch=0
+	**** unipersonal
+	replace clasehog_ch=1 if nhijos_ch==0 & nconyuges_ch==0 & notropari_ch==0 & notronopari_ch==0
+	**** nuclear (child with or without spouse but without other relatives)
+	replace clasehog_ch=2 if nhijos_ch>0 & notropari_ch==0 & notronopari_ch==0
+	**** nuclear (spouse with or without children but without other relatives)
+	replace clasehog_ch=2 if nhijos_ch==0 & nconyuges_ch>0 & notropari_ch==0 & notronopari_ch==0
+	**** ampliado
+	replace clasehog_ch=3 if notropari_ch>0 & notronopari_ch==0
+	**** compuesto (some relatives plus non relative)
+	replace clasehog_ch=4 if ((nconyuges_ch>0 | nhijos_ch>0 | notropari_ch>0) & (notronopari_ch>0))
+	**** corresidente
+	replace clasehog_ch=5 if nhijos_ch==0 & nconyuges_ch==0 & notropari_ch==0 & notronopari_ch>0
+
+	**************
+	*nmiembros_ch*
+	**************
+	by idh_ch, sort: egen byte nmiembros_ch=sum(relacion_ci>0 & relacion_ci<=5)
+		
+	*************
+	*nmayor21_ch*
+	*************
+	by idh_ch, sort: egen byte nmayor21_ch=sum((relacion_ci>0 & relacion_ci<=5) & (edad_ci>=21 & edad_ci<=98))
+
+	*************
+	*nmenor21_ch*
+	*************
+	by idh_ch, sort: egen byte nmenor21_ch=sum((relacion_ci>0 & relacion_ci<=5) & (edad_ci<21))
+
+	*************
+	*nmayor65_ch*
+	*************
+	by idh_ch, sort: egen byte nmayor65_ch=sum((relacion_ci>0 & relacion_ci<=5) & (edad_ci>=65 & edad_ci!=.))
+
+	************
+	*nmenor6_ch*
+	************
+	by idh_ch, sort: egen byte nmenor6_ch=sum((relacion_ci>0 & relacion_ci<=5) & (edad_ci<6))
+
+	************
+	*nmenor1_ch*
+	************
+	by idh_ch, sort: egen byte nmenor1_ch=sum((relacion_ci>0 & relacion_ci<=5) & (edad_ci<1))
+
+
+*******************************************************
+***           VARIABLES DE DIVERSIDAD               ***
+*******************************************************
+
+	*********
+	*afro_ci*
+	*********
+	gen byte afro_ci = .
+	
+	*********
+	*indi_ci*
+	*********	
+	gen byte ind_ci =.
+
+	**************
+	*noafroind_ci*
+	**************
+	gen byte noafroind_ci =.  
+	
+	**************
+	*afroind_ano_c*
+	**************
+	gen byte afroind_ano_c =.   
+	
+	************
+	*afroind_ci*
+	************
+	gen byte afroind_ci=. 
+	
+	*********
+	*afro_ch*
+	*********
+	gen byte afro_jefe = afro_ci if relacion_ci==1
+	egen afro_ch  = max(afro_jefe), by(idh_ch) 
+	drop afro_jefe
+	
+	********
+	*ind_ch*
+	********	
+	gen byte ind_jefe = ind_ci if relacion_ci==1
+	egen ind_ch = max(ind_jefe), by(idh_ch) 
+	drop ind_jefe
+
+	**************
+	*noafroind_ch*
+	**************
+	gen byte noafroind_jefe = noafroind_ci if relacion_ci==1
+	egen noafroind_ch = max(noafroind_jefe), by(idh_ch) 
+	drop noafroind_jefe
+
+	************
+	*afroind_ch*
+	************
+ 	gen byte afroind_jefe = afroind_ci if jefe_ci==1
+	egen afroind_ch = min(afroind_jefe), by(idh_ch) 
+	drop afroind_jefe 
+
+	********
+	*dis_ci*
+	********
+	gen byte dis_ci=.
+	
+	**********
+	*disWG_ci*
+	**********
+	gen byte disWG_ci=.
+	
+	********
+	*dis_ch*
+	********
+	egen byte dis_ch = max(dis_ci), by(idh_ch) 
+	
+	******************
+	*ISOalpha3_dis_ci*
+	******************
+	gen byte SLV_dis_ci = .
+	
+
+*******************************************************
+***          VARIABLES DE MERCADO LABORAL           ***
+*******************************************************
+
+	***************
+	**condocup_ci**
+	***************
+	gen byte condocup_ci=.
+	replace condocup_ci = 1 if inlist(1, r403, r4041, r4041_1, r4042, ///
+		r4043, r4044, r4045, r4046, r4047, r4048, r4049, r405, r405b)| r406<5
+	replace condocup_ci=2 if condocup_ci!=1 & r407==1
+	replace condocup_ci=3 if (condocup_ci!=1 & condocup_ci!=2) & edad_ci>=5
+	replace condocup_ci=4 if edad_ci<5 // Cuestionario realiza la pregunta desde los 5 años
+	*r403 Realizó algún trabajo la semana anterior para generar ingresos
+	*r404 LA SEMANA ANTERIOR (…), REALIZÓ ALGUNA ACTIVIDAD PARA OBTENER INGRESOS EN DINERO
+	*r405 Tiene algún empleo fijo al que próximamente volverá
+	*r405b Tiene algún negocio, empresa o actividad propia a la que próximamente volverá
+	*r406 Razón por la que no trabajó la semana anterior
+	*r407 Buscó trabajo o trató de establecer su propia empresa o negocio
+	
+	*******************
+	***categoinac_ci***
+	*******************
+	gen byte categoinac_ci = .
+	replace categoinac_ci = 1 if (r409==13 & condocup_ci == 3)
+	replace categoinac_ci = 2 if ((r409==8 | r409==15) & condocup_ci == 3)
+	replace categoinac_ci = 3 if (r409==12 & condocup_ci == 3)
+	replace categoinac_ci = 4 if ((categoinac_ci != 1 & categoinac_ci != 2 & categoinac_ci != 3) & condocup_ci == 3)
+
+	************
+	***emp_ci***
+	************
+	***** El código mantiene como missing values a la poblacion menor de la edad limite de la PET que no forman parte de la población de referencia de la sección laboral de la Encuesta *****.
+	gen byte emp_ci = .
+	replace emp_ci = (condocup_ci == 1) if (condocup_ci != . & condocup_ci != 4)
+	label var emp_ci "Ocupado (empleado)"
+	label define emp_ci 0"No" 1"Si", add
+	label value emp_ci emp_ci
+
+	**************
+	***cesante_ci*** 
+	**************
+	gen byte cesante_ci = .
+	replace cesante_ci = 1 if (r410== 1 & condocup_ci == 2) 
+	replace cesante_ci = 0 if (cesante_ci != 1 & condocup_ci ==2)
+
+	****************
+	***desemp_ci***
+	****************
+	***** El código mantiene como missing values a la poblacion menor de la edad limite de la PET que no forman parte de la población de referencia de la sección laboral de la Encuesta *****.
+	gen byte desemp_ci = .
+	replace desemp_ci = (condocup_ci == 2) if (condocup_ci != . & condocup_ci != 4)
+	label var desemp_ci "Desocupado (desempleado)"
+	label define desemp_ci 0"No " 1"Si", add
+	label value desemp_ci desemp_ci
+	
+	*****************
+	***horaspri_ci***
+	*****************
+	egen byte horaspri_ci= rsum(r411a r411d) if emp_ci==1
+	replace horaspri_ci = . if emp_ci == 0
+
+	***************
+	***subemp_ci***
+	***************
+	gen byte subemp_ci = 0
+	replace subemp_ci=1 if horaspri_ci<=30  & emp_ci==1 & (r413==2 | r413==3)
+
+	****************
+	***durades_ci***
+	****************
+	gen byte durades_ci = floor(r407a_s/(52/12)) //redondeamos por consitencia y lo dividimos aunque en el manual lo multiplica
+
+	***********
+	***pea_ci***
+	***********
+	gen byte pea_ci = .
+	replace pea_ci = 1 if inlist(condocup_ci,1,2)
+	replace pea_ci = 0 if inlist(condocup_ci,3,4)
+
+	*****************
+	***nempleos_ci***
+	*****************
+	gen byte nempleos_ci = .
+	replace nempleos_ci=1 if emp_ci==1 & r432==2
+	replace nempleos_ci=2 if emp_ci==1 & r432==1
+	replace nempleos_ci=. if emp_ci==0
+
+	*******************
+	***antiguedad_ci***
+	*******************
+	gen byte antiguedad_ci=.
+
+	*****************
+	***desalent_ci***
+	*****************
+	***** El código mantiene como población de referencia a las personas inactivas (condocup_ci == 3) *****.
+	gen byte desalent_ci = .
+	replace desalent_ci = 1 if ((r407 == 2 & (r409 == 2 | r409 == 3) & condocup_ci == 3))
+	replace desalent_ci = 0 if (desalent_ci != 1 & condocup_ci == 3)
+	label var desalent_ci "Desalentados"
+	label define desalent_ci 0"No" 1"Si", add
+	label value desalent_ci desalent_ci
+
+	*****************
+	***horastot_ci***
+	*****************
+	egen byte horastot_ci=rsum(horaspri_ci r433) if emp_ci==1 
+	replace horastot_ci = . if horaspri_ci == . & r433 == .
+	replace horastot_ci = . if emp_ci == 0
+
+	*******************
+	***tiempoparc_ci***
+	*******************
+	gen byte tiempoparc_ci= ((horaspri_ci >= 1 & horaspri_ci < 30) & r413==1 & emp_ci == 1) 
+	replace tiempoparc_ci = . if emp_ci == 0
+
+	******************
+	***categopri_ci***
+	******************
+	gen byte categopri_ci=.
+	replace categopri_ci=0 if r418==8 & emp_ci==1
+	replace categopri_ci=1 if r418==1 & emp_ci==1
+	replace categopri_ci=2 if r418==2 | r418==3 & emp_ci==1
+	replace categopri_ci=3 if r418==6 | r418==7 | r418==9 & emp_ci==1
+	replace categopri_ci=4 if r418==5  & emp_ci==1
+
+	******************
+	***categosec_ci***
+	******************
+	gen byte categosec_ci=.
+
+	*************
+	***rama_ci***
+	*************
+	gen byte rama_ci=. 
+	replace rama_ci=1 if (r416>=100 & r416<=322) & emp_ci==1 
+	replace rama_ci=2 if (r416>=510 & r416<=990) & emp_ci==1 
+	replace rama_ci=3 if (r416>=1010 & r416<=3320) & emp_ci==1 
+	replace rama_ci=4 if (r416>=3510 & r416<=3900) & emp_ci==1 
+	replace rama_ci=5 if (r416>=4100 & r416<=4390) & emp_ci==1 
+	replace rama_ci=6 if ((r416>=4510 & r416<=4799) | (r416>=5510 & r416<=5630))& emp_ci==1 
+	replace rama_ci=7 if ((r416>=4911 & r416<=5320) | (r416>=6110 & r416<=6190)) & emp_ci==1 
+	replace rama_ci=8 if (r416>=6411 & r416<=8299) & emp_ci==1 
+	replace rama_ci=9 if ((r416>=5811 & r416<=6022) | (r416>=6201 & r416<=6399) | (r416>=8411 & r416<=9900)) & emp_ci==1 
+
+	*****************
+	***spublico_ci***
+	*****************
+	gen byte spublico_ci = .
+	replace spublico_ci = 1 if emp_ci == 1 & rama_ci == 10
+	replace spublico_ci = 0 if emp_ci == 1 & rama_ci != 10 & rama_ci != .
+
+	***************
+	***tamemp_ci***
+	***************
+	gen tamemp_ci = .
+	replace tamemp_ci = 1 if ((r421>=1 & r421<=5) | r421a==1)
+	replace tamemp_ci = 2 if ((r421>=6 & r421<=50) | inlist(r421a,2,3))
+	replace tamemp_ci = 3 if (r421>50 | (r421a>3 & r421a != .))
+	replace tamemp_ci = . if condocup_ci!=1
+	label var tamemp_ci "# empleados en la empresa segun rangos"
+	label define tamemp_ci 1 "Pequena" 2 "Mediana" 3 "Grande" 
+	label value tamemp_ci tamemp_ci
+	
+	****************
+	**cotizando_ci**
+	****************
+	***** El código mantiene a la poblacion inactiva y a los menores de la edad límite de la PET como missing values en congruencia con la variable formal_ci *****.
+	gen byte cotizando_ci = .
+	replace cotizando_ci = 1 if ((r422a == 2 | r422f == 2 | r422g == 2) & emp_ci==1)
+	replace cotizando_ci = 0 if (cotizando_ci != 1 & inlist(condocup_ci, 1, 2))
+	label var cotizando_ci "Cotizante a la Seguridad Social"
+	label define cotizando_ci 0 "No"  1 "Si"
+	label value cotizando_ci cotizando_ci
+
+	******************
+	*** instcot_ci ***
+	******************
+	gen byte instcot_ci=.
+	replace instcot_ci= 1 if cotizando_ci == 1 & r501<=3
+	replace instcot_ci= 2 if cotizando_ci == 1 & r501==4
+	replace instcot_ci= 3 if cotizando_ci == 1 & r501==5
+	replace instcot_ci= 4 if cotizando_ci == 1 & r501==6
+	replace instcot_ci= 5 if cotizando_ci == 1 & r501==7
+	replace instcot_ci= 6 if cotizando_ci == 1 & r501==9
+	label define instcot_ci  1 "ISSS" 2 "Bienestar Magisterial" 3 "Hospital Militar" 4 "Colectivo" 5 "Individual (Privado)" 6 "Otros"
+	label value instcot_ci instcot_ci
+
+	*****************
+	***afiliado_ci***
+	*****************
+	***** El código mantiene a la poblacion inactiva y a los menores de la edad límite de la PET como missing values en congruencia con la variable formal_ci *****.
+	gen byte afiliado_ci = .
+	replace afiliado_ci = 1 if ((r501 >= 1 & r501 <= 2) & emp_ci==1)
+	replace afiliado_ci = 0 if (r501 > 2 & inlist(condocup_ci, 1, 2))
+	label var afiliado_ci "Afiliado a la Seguridad Social"
+	label define afiliado_ci 0 "No"  1 "Si"
+	label value afiliado_ci afiliado_ci
+
+	*************
+	**formal_ci**
+	*************
+	gen byte formal_ci = .
+	replace formal_ci  =  1 if (cotizando_ci == 1 | afiliado_ci == 1) & condocup_ci == 1
+	replace formal_ci = 0 if cotizando_ci == 0 & (condocup_ci == 1 | condocup_ci == 2)
+
+	*******************
+	**tipocontrato_ci**
+	*******************
+	gen byte tipocontrato_ci = .
+	replace tipocontrato_ci = 0 if (r419==6 ) & categopri_ci==3
+	replace tipocontrato_ci = 1 if r419==1 & categopri_ci == 3
+	replace tipocontrato_ci = 2 if inlist(r419,2,3,4,5) & categopri_ci == 3
+	replace tipocontrato_ci = 3 if r419==7 & categopri_ci == 3
+	label var tipocontrato_ci "Tipo de contrato segun su duracion en act principal"
+	label define tipocontrato_ci 0 "Con contrato" 1 "Permanente/indefinido" 2 "Temporal" 3 "Sin contrato/verbal" 
+	label value tipocontrato_ci tipocontrato_ci
+	
+	**************
+	***ocupa_ci***
+	**************
+	gen ocupa_ci=.
+	replace ocupa_ci=1 if (r414>=2111 & r414<=3522) & emp_ci==1
+	replace ocupa_ci=2 if (r414>=1110 & r414<=1439) & emp_ci==1
+	replace ocupa_ci=3 if (r414>=4110 & r414<=4419) & emp_ci==1
+	replace ocupa_ci=4 if (r414>=9510 & r414<=9520)& emp_ci==1 | (r414>=5210 & r414<=5249)  & emp_ci==1
+	replace ocupa_ci=5 if (r414>=5111 & r414<=5169) & emp_ci==1 | (r414>=9111 & r414<=9129) & emp_ci==1 | (r414>=5311 & r414<=5419) & emp_ci==1 | (r414>=9610 & r414<=9629) & emp_ci==1
+	replace ocupa_ci=6 if (r414>=6110 & r414<=6340) & emp_ci==1| (r414>=9210 & r414<=9220) & emp_ci==1
+	replace ocupa_ci=7 if (r414>=7111 & r414<=8350) & emp_ci==1| (r414>=9311 & r414<=9412) & emp_ci==1 
+	replace ocupa_ci=8 if r414>=110 & r414<=310 & emp_ci==1
+	replace ocupa_ci=9 if !inlist(ocupa_ci, 1, 2, 3, 4, 5, 6, 7, 8) & emp_ci==1
+
+	**************
+	**pension_ci***
+	**************
+	gen byte pension_ci=. 
+	replace pension_ci=1 if (ingreso_pensiones>0 & ingreso_pensiones !=.) & cotizando_ci == 1
+	replace pension_ci=0 if pension_ci!=1
+
+	***************
+	**pensionsub_ci**
+	***************
+	gen byte pensionsub_ci = . 
+	replace pensionsub_ci=1 if r319a5==1 // pension universal
+	replace pensionsub_ci=0 if pensionsub_ci!=1 
+	*consideramos incluir  r44008a --  Monto que recibe pensión por sobrevivencia  y r319a4 / r319a3 Recibe el hogar bonos comunidades solidarias urbanas/ rurales
+
+	**************
+	**tipopen_ci***
+	**************
+	gen byte tipopen_ci = . 
+
+	**************
+	**instpen_ci***
+	**************
+	gen byte instpen_ci = . 
+
+
+************************************************
+*** VARIABLES DE INGRESO & PROTECCION SOCIAL ***
+************************************************
+
+		*************************
+		* INGRESO DEL INDIVIDUO *
+		*************************
+
+*A. INGRESOS LABORALES A NIVEL DE INDIVIDUO	
+
+*fre imeds imei imes imnl  ingneto  irefa oia oimed 	
+
+***************
+***ylmpri_ci***
+***************
+*Para asalariados
+	gen yprid=imeds
+	gen hrsextrasd=		r42501a*r42501b/12 
+	gen vacacionesd=	r42502a*r42502b/12 
+	gen aguinaldod=		r42503a*r42503b/12 
+	gen bonificacionesd=r42504a*r42504b/12 
+	gen propina=r42511a*r42511b/12 
+	egen yprijbd=rsum(yprid hrsextrasd vacacionesd aguinaldod bonificacionesd propina), missing
+	drop yprid-propina
+	*Para trabajadores independientes
+	gen yprijbi= imei
+	egen ylmpri_ci=rsum(yprijbi yprijbd), missing
+	drop yprijbi yprijbd
+	replace ylmpri_ci = 0 if  inlist(condocup_ci,2,3) | categopri_ci==4 //PET con condición de inactivo/desocupado o categoría ocupacional no remunerado debe registrar ylmsec_ci = 0
+
+	***************
+	***ylmsec_ci***
+	***************
+	gen hrsextrasd1     =r43501a*r43501b/12 
+	gen vacacionesd1    =r43502a*r43502b/12 
+	gen aguinaldod1     =r43503a*r43503b/12 
+	gen bonificacionesd1=r43504a*r43504b/12 
+	gen propina1        =r43511a*r43511b/12 
+	egen yprijbd1 =rsum(hrsextrasd1 vacacionesd1 aguinaldod1 bonificacionesd1 propina1), missing
+	egen ylmsec_ci=rsum(r434 yprijbd1), missing //imes
+	replace ylmsec_ci=. if emp_ci!=1
+	drop  hrsextrasd1-yprijbd1
+	replace ylmsec_ci = 0 if  inlist(condocup_ci,2,3) | categopri_ci==4 //PET con condición de inactivo/desocupado o categoría ocupacional no remunerado debe registrar ylmsec_ci = 0
+
+	*****************
+	***ylmotros_ci***
+	*****************
+	gen ylmotros_ci=.
+
+	************
+	***ylm_ci***
+	************
+	egen ylm_ci = rowtotal(ylmpri_ci ylmsec_ci ylmotros_ci), missing
+	replace ylm_ci=. if ylmpri_ci==. &  ylmsec_ci==. & ylmotros_ci==. 
+
+	****************
+	***ylnmpri_ci***
+	****************
+	g food1=r42505a*r42505b/12 
+	g ropa1=r42506a*r42506b/12 
+	g merca1=r42507a*r42507b/12 
+	g vivi1=r42508a*r42508b/12 
+	g trans1=r42509a*r42509b/12 
+	g segur1=r42510a*r42510b/12 
+	g otross1=r42512a*r42512b/12 
+
+	egen ylnmpri_ci = rowtotal(food1 ropa1 merca1 vivi1 trans1 segur1 otross1), missing
+	replace ylnmpri_ci=. if emp_ci!=1
+	drop food1-otross1
+
+	****************
+	***ylnmsec_ci***
+	****************
+	g food2=r43505a*r43505b/12 
+	g ropa2=r43506a*r43506b/12 
+	g merca2=r43507a*r43507b/12 
+	g vivi2=r43508a*r43508b/12 
+	g trans2=r43509a*r43509b/12 
+	g segur2=r43510a*r43510b/12 
+	g otross2=r43512a*r43512b/12 
+
+	egen ylnmsec_ci = rowtotal(food2 ropa2 merca2 vivi2 trans2 segur2 otross2), missing
+	replace ylnmsec_ci=. if emp_ci!=1 
+	drop food2-otross2
+
+	******************
+	***ylnmotros_ci***
+	******************
+	gen ylnmotros_ci=.
+
+	*************
+	***ylnm_ci***
+	*************
+	egen ylnm_ci = rowtotal(ylnmpri_ci ylnmsec_ci ylnmotros_ci), missing
+	replace ylnm_ci=. if ylnmpri_ci==. &  ylnmsec_ci==. & ylnmotros_ci==.
+
+
+*B. INGRESOS NO LABORALES A NIVEL DE INDIVIDUO	
+
+	********************************************************
+	*** ytransf_ci: Transferencias de programas sociales ***
+	********************************************************
+	// No está disponible la Sección 7: Subsidios al hogar de parte del gobierno (r7*)
+		
+		* PNC - Pensiones sociales no contributivas:
+			* 1 Pensión Básica Universal del Adulto Mayor r319a5==1 // nivel hogar (Sin monto)
+		* PTMC - Programas de transferencias monetarias condicionadas:
+			* 2 Becas: Beca de cuota escolar y Beca para matrícula  r211d== 1 | r211e==1 (Sin monto)
+			* 3 Bono para Comunidades Solidarias (rurales y urbanas) r319a3== 1| r319a4== 1 // nivel hogar (Sin monto)
+		* POTROT - Programas de otras transferencias monetarias no condicionadas
+			* 4 Otras ayudas del gobierno en efectivo (r44106)
+		
+	*** Beneficiarios a nivel individual:
+		
+		// PNC
+		gen byte pnc_ci = .		// Información solo a nivel hogar
+	
+		// PTMC
+		gen byte becaesc_ci = (r211d == 1 | r211e == 1)
+		replace becaesc_ci = . if r211d == . & r211e == .
+		gen byte solidario_ci = . 	// Información solo a nivel hogar
+		gen byte ptmc_ci = (becaesc_ci == 1 | solidario_ci == 1)
+		replace ptmc_ci = . if becaesc_ci == . & solidario_ci == .
+		
+		// POTROT
+		gen byte potrot_ci = (r44106 > 0) if !missing(r44106)
+		
+	*** Montos de transferencias a nivel individual: (No hay montos disponibles para este año)
+	
+		gen ypnc_ci = .		// Transferencias PNC
+		gen yptmc_ci = . 	// Transferencias PTMC 
+		gen yotrot_ci = r44106/12 if potrot_ci == 1 	// Otras transferencias POTROT
+	
+	*** Ingreso individual por transferencias no contributivas
+	egen double ytransf_ci = rowtotal(ypnc_ci yptmc_ci yotrot_ci), mi
+	
+	******************
+	*** remesas_ci ***
+	******************
+	/* Desde el 2022 se incluye la variable remesas monetarias habituales individuales (irefa a nivel hogar) */
+	gen double remesa_nm = irefb if relacion_ci == 1 & irefb > 0 & irefb != .
+	gen double remesa_esp = ires if relacion_ci == 1 & ires > 0 & ires != .
+	
+	egen double remesas_ci = rowtotal(ingreso_remesas remesa_nm remesa_esp), mi
+		
+	***************
+	*** ypen_ci ***
+	***************
+	gen double ypen_ci = ingreso_pensiones if (ingreso_pensiones > 0 & ingreso_pensiones != .) 
+		
+	*****************
+	**  ypensub_ci  *
+	*****************
+	* No se puede determinar el monto de la pension basica universal (sólo existe el filtro r319a5)
+	gen ypensub_ci = .	
+	
+	***************
+	*** ynlm_ci ***
+	***************
+		gen double remesas_temp   = r44001a * r44001b / 12   /* "remesas" Nacionales (transferencias desde otros hogares del país) */
+		gen double cuotalim       = r44002a * r44002b / 12
+		gen double alqui          = r44003a * r44003b / 12
+		gen double alqneg         = r44004a * r44004b / 12
+		gen double alqterr        = r44005a * r44005b / 12
+		gen double jubil          = ingreso_pensiones		 // ypen_ci
+		gen double deveh          = r44007a * r44007b / 12
+		gen double pension_temp   = r44008a * r44008b / 12   /* pensión por sobrevivencia */
+		gen double ahorros        = r44009a * r44009b / 12
+		gen double otros_nl       = r44010a * r44010b / 12
+		
+		gen double utilidades     = r44101 / 12
+		gen double dividendos     = r44102 / 12
+		gen double intereses      = r44103 / 12
+		gen double herencias      = r44104 / 12
+		gen double indemnizacion  = r44105 / 12
+		gen double ayudagob       = r44106 / 12		// ytransf_ci
+		gen double acteventual    = r44107 / 12
+		gen double arrendamiento  = r44108 / 12
+		*gen double remesaevent1   = r44109 / 12	// Se excluyen porque son ingresos excepcionales de "remesas" Nacionales
+		gen double aguinaldo_nl   = r44110 / 12
+		gen double otrosy         = r44111 / 12
+	
+	egen double ynlm_ci = rowtotal(remesas_temp cuotalim alqui alqneg alqterr ypen_ci deveh pension_temp ahorros otros_nl utilidades dividendos intereses herencias indemnizacion acteventual arrendamiento aguinaldo_nl otrosy ytransf_ci remesas_ci), mi
+	drop remesas_temp cuotalim alqui alqneg alqterr jubil deveh pension_temp ahorros otros_nl utilidades dividendos intereses herencias indemnizacion ayudagob acteventual arrendamiento aguinaldo_nl otrosy
+
+	*************
+	***ynlnm_ci***
+	*************
+	gen ynlnm_ci=.
+
+	**************
+	*** ytot_ci **
+	**************
+	egen ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci), mi
+	
+	***************
+	*** ynet_ci ***
+	***************
+	gen double aux_ytransf_ci = ytransf_ci*(-1)
+	egen double ynet_ci = rowtotal(ytot_ci aux_ytransf_ci), mi
+	drop aux_ytransf_ci
+
+
+		************************
+		*** INGRESO DEL HOGAR***
+		************************
+
+	**************
+	*** ylm_ch ***
+	**************
+	by idh_ch, sort: egen double ylm_ch = total(ylm_ci) if miembros_ci == 1, mi
+
+	***************
+	*** ylnm_ch ***
+	***************
+	by idh_ch, sort: egen double ylnm_ch = total(ylnm_ci) if miembros_ci == 1, mi
+	
+	******************
+	*** ytransf_ch ***
+	****************** 
+	
+	*** Beneficiarios a nivel hogar:
+		gen byte pnc_ch = (r319a5 == 1) if !missing(r319a5) & miembros_ci == 1
+		
+		bys idh_ch: egen byte becaesc_ch = max(becaesc_ci)	
+		gen byte solidario_ch = (r319a3 == 1 | r319a4 == 1)	
+		replace solidario_ch = . if r319a3 == . & r319a4 == .
+	
+		gen byte ptmc_ch = (becaesc_ch == 1 | solidario_ch == 1) if miembros_ci == 1
+		replace ptmc_ch = (becaesc_ch == . & solidario_ch == .)
+		
+		bys idh_ch: egen byte potrot_ch = max(potrot_ci) if miembros_ci == 1
+		
+		gen byte pcasht_ch = (pnc_ch == 1 | ptmc_ch == 1 | potrot_ch == 1)
+		replace pcasht_ch = . if pnc_ch == . & ptmc_ch == . & potrot_ch == .
+		
+	*** Montos de transferencias a nivel hogar:
+		gen ypnc_ch = .	 
+		gen yptmc_ch = .
+		bys idh_ch: egen double yotrot_ch = total(yotrot_ci) if miembros_ci == 1, mi
+	
+	*** Ingreso del Hogar por transferencias no contributivas
+	egen double ytransf_ch = rowtotal(ypnc_ch yptmc_ch yotrot_ch) if miembros_ci == 1, mi
+	
+	******************
+	*** remesas_ch ***
+	******************
+	/* A nivel de hogar: totayuda = remesas habituales (irefa) + remesas eventuales (irefb) + remesas especie (ires) 
+	Son equivalentes a la variable "totayuda" */
+	bys idh_ch: egen double remesas_ch = total(remesas_ci) if miembros_ci == 1, mi
+	label var remesas_ch "Remesas mensuales del hogar"
+	
+	***************
+	*** ynlm_ch ***
+	***************
+	bys idh_ch: egen double ynlm_ch = total(ynlm_ci) if miembros_ci == 1, mi
+
+	***********
+	**ynlnm_ch**
+	***********
+	gen double ynlnm_ch = .
+
+	***********
+	**ytot_ch**
+	***********
+	egen double ytot_ch = rowtotal(ylm_ch ylnm_ch ynlm_ch ynlnm_ch), mi
+	
+	***************
+	*** ynet_ch ***
+	***************
+	gen double aux_ytransf_ch = ytransf_ch*(-1)
+	egen double ynet_ch = rowtotal(ytot_ch aux_ytransf_ch) if miembros_ci == 1, mi
+	gen double ynet_ch_pc = (ynet_ch)/nmiembros_ch if miembros_ci == 1
+	drop aux_ytransf_ch
+	
+	*****************
+	***ylhopri_ci ***
+	*****************
+	gen double ylmhopri_ci = ylmpri_ci / (4.3 * horaspri_ci)
+	replace ylmhopri_ci = . if ylmhopri_ci <= 0
+
+	***************
+	***ylmho_ci ***
+	***************
+	gen double ylmho_ci = ylm_ci / (4.3 * horastot_ci)
+	replace ylmho_ci = . if ylmho_ci <= 0
+		
+	******************
+	****nrylmpri_ci***
+	******************
+	gen byte nrylmpri_ci = .
+	replace nrylmpri_ci = 1 if ylmpri_ci == . & emp_ci == 1
+	replace nrylmpri_ci = 0 if ylmpri_ci != . & emp_ci ==1
+
+	*******************
+	*** nrylmpri_ch ***
+	*******************
+	by idh_ch, sort: egen byte nrylmpri_ch = sum(nrylmpri_ci) if miembros_ci==1
+	replace nrylmpri_ch = 1 if nrylmpri_ch > 0 & nrylmpri_ch < .
+	replace nrylmpri_ch = . if nrylmpri_ch == .
+	
+	****************
+	*** ylmnr_ch ***
+	****************
+	by idh_ch, sort: egen byte ylmnr_ch = sum(ylm_ci) if miembros_ci == 1
+	replace ylmnr_ch = . if nrylmpri_ch == 1
+
+
+
+****************************
+***VARIABLES DE EDUCACION***
+****************************
+ 
+    *********  
+    *aedu_ci*
+    *********
+    gen aedu_ci=aproba1
+ 
+    **********
+    *eduui_ci*
+    **********
+    gen eduui_ci = (inlist(r204, 4, 5)) | (inlist(r214, 4, 5) & inlist(r217, 1, 2, 3))
+    replace eduui_ci=. if aedu_ci==.
+ 
+    **********
+    *eduuc_ci*
+    **********
+    gen eduuc_ci = inlist(r214, 4, 5) & (inrange(r217, 4, 9))
+    replace eduuc_ci=. if aedu_ci==.
+ 
+    **********
+    *eduac_ci*
+    **********
+    gen eduac_ci=.
+    replace eduac_ci=1 if r214==4
+    replace eduac_ci=0 if r214==5
+    ***********
+    *edupre_ci*
+    ***********
+    gen byte edupre_ci =.
+    replace edupre_ci = 1 if r209==1
+    replace edupre_ci = 0 if r209==0
+ 
+    ************
+    *asispre_ci*
+    ************
+    gen asispre_ci=(r203==1 & r204==1) // no consideramos menores de 3 años (r201a)
+ 
+    ***********
+    *asiste_ci*
+    ***********
+    gen asiste_ci=(r203==1)
+    replace asiste_ci=. if r203==.
+
+	*************
+	*razonesnoasis_ci*
+	**************
+	gen razonesnoasis_ci=. 
+	replace razonesnoasis_ci=1 if r219==3
+	replace razonesnoasis_ci=2 if r219==1
+	replace razonesnoasis_ci=3 if r219==4  | r219==5  | r219==6
+	replace razonesnoasis_ci=4 if r219==10
+	replace razonesnoasis_ci=5 if r219==2  | r219==12 | r219==15 | r219==16
+	replace razonesnoasis_ci=6 if r219==8
+	replace razonesnoasis_ci=7 if r219==7 
+	replace razonesnoasis_ci=8 if r219==9  | r219==13 | r219==14 | r219==18
+	replace razonesnoasis_ci=9 if r219==11 | r219==17 
+
+	***********
+	*edupub_ci*
+	***********		
+	gen edupub_ci=.
+	replace edupub_ci=1 if r210a==1 & r203==1
+	replace edupub_ci=0 if (r210a==2 | r210a==3) & r203==1
+
+
+****************************
+***VARIABLES DE VIVIENDA***
+****************************		
+	***********
+	*luz_ch*
+	***********
+	gen luz_ch=.
+	replace luz_ch=0 if r311==3 | r311==4 | r311==7
+	replace luz_ch=1 if r311==1 | r311==2 | r311==5 | r311==6
+	
+	***********
+	*luzmide_ch*
+	***********
+	gen luzmide_ch=.
+	
+	***********
+	*combust_ch*
+	***********
+	gen combust_ch=.
+	replace combust_ch=0 if r320==4 | r320==5 | r320==6
+	replace combust_ch=1 if r320==1 | r320==2 | r320==3 
+	
+	***********
+	*piso_ch*
+	***********
+	gen piso_ch=.
+	replace piso_ch=0 	if r304==5
+	replace piso_ch=1 	if r304>=1 & r304<=4
+	replace piso_ch=2 	if r304==6
+		
+	***********
+	*pared_ch*
+	***********
+	gen pared_ch=.	
+	replace pared_ch=0 	if r303==2 | r303==3 |r303==5 |r303==6 |r303==7 
+	replace pared_ch=1 	if r303==1 | r303==4
+	replace pared_ch=2 	if r303==8
+	
+	***********
+	*techo_ch*
+	***********
+	gen techo_ch=.
+	* NOTA: REVISANDO METODOLÓGIA AÚN NO CREAR
+	replace techo_ch=1 	if r302>=1 & r302<=4
+	replace techo_ch=0 	if r302>=5 & r302<=6 
+	replace techo_ch=2 	if r302==7
+		
+	***********
+	*resid_ch*
+	***********
+	gen resid_ch=.
+	replace resid_ch=0 if r322==1 | r322==2
+	replace resid_ch=1 if r322==4 | r322==5
+	replace resid_ch=2 if r322==6
+	replace resid_ch=3 if r322==3 | r322==7
+
+	***********
+	*dorm_ch*
+	***********
+	gen dorm_ch=r306
+	replace dorm_ch=. if r306==.
+
+	***********
+	*cuartos_ch*
+	***********
+	gen cuartos_ch=r305
+	replace cuartos_ch=. if r305==.
+	
+	***********
+	*cocina_ch*
+	***********
+	gen cocina_ch=.
+	
+	***********
+	*telef_ch*
+	***********
+	gen telef_ch=.
+	replace telef_ch=0 if r3211a==2	
+	replace telef_ch=1 if r3211a==1
+		
+	***********
+	*refrig_ch*
+	***********
+	gen refrig_ch=.
+	replace refrig_ch=0 if r32305a==2
+	replace refrig_ch=1 if r32305a==1
+	
+	***********
+	*freez_ch*
+	***********
+	gen freez_ch=.
+	
+	***********
+	*auto_ch*
+	***********
+	gen auto_ch=.
+	replace auto_ch=0 if r32312a==2
+	replace auto_ch=1 if r32312a==1
+	
+	***********
+	*compu_ch*
+	***********
+	gen compu_ch=.
+	replace compu_ch=0 if r32309a==2
+	replace compu_ch=1 if r32309a==1
+		
+	***********
+	*internet_ch*
+	***********
+	gen internet_ch=.
+	replace internet_ch=0 if r3213a==2
+	replace internet_ch=1 if r3213a==1
+	
+	***********
+	*cel_ch*
+	***********
+	gen cel_ch=.
+	replace cel_ch=0 if r3212a==2
+	replace cel_ch=1 if r3212a==1
+	
+	***********
+	*vivi1_ch*
+	***********
+	gen vivi1_ch=.
+	replace vivi1_ch=1 if r301==1 
+	replace vivi1_ch=2 if r301==2
+	replace vivi1_ch=3 if r301>=3 & r301<=9
+
+	***********
+	*vivi2_ch*
+	***********
+	gen vivi2_ch=.
+	replace vivi2_ch=0 if vivi1_ch ==3
+	replace vivi2_ch=1 if vivi1_ch ==1 | vivi1_ch ==2
+	
+	***********
+	*viviprop_ch*
+	***********
+	gen viviprop_ch=.
+	replace viviprop_ch=0 	if r308==1
+	replace viviprop_ch=1 	if r308==3
+	replace viviprop_ch=2 	if r308==2 
+	replace viviprop_ch=3 	if r308 >=4 & r308<9
+	replace viviprop_ch=. 	if r308==.
+
+	***********
+	*vivitit_ch*
+	***********
+	gen vivitit_ch=.
+
+	***********
+	*vivialq_ch*
+	***********
+	gen vivialq_ch= r308c  
+
+	***********
+	*vivialqimp_ch*
+	***********
+	gen vivialqimp_ch=r310a 
+
+****************************
+***VARIABLES DE WASH***
+****************************
+*fre r312d r312h r313 R313otr r314 r312 r315 r316 r317a r317b r317c r317otr r318 r318otr
+	***********
+	*aguared_ch*
+	***********
+	gen byte aguared_ch =.
+	replace aguared_ch = 0 if r312> 4
+	replace aguared_ch = 1 if r312==1 | r312==2| r312==3| r312==4
+	
+	*****************
+	*aguafconsumo_ch*
+	*****************
+	gen aguafconsumo_ch = 0
+
+	***********
+	*aguafuente_ch*
+	***********	
+/* r312 ¿Tiene la vivienda servicio de agua por cañería?
+           1 Dentro de la vivienda con abastecimiento público (ANDA)
+           2 Dentro de la vivienda con otro tipo de abastecimiento
+           3 Fuera de la vivienda pero dentro de la propiedad con abastecimiento público (ANDA)
+           4 Fuera de la vivienda pero dentro de la propiedad con otro tipo de abastecimiento
+		 4.1 Tubería por poliducto (buen estado)
+           5 No tiene
+           6 Tiene pero no le cae (por más de un mes)
+
+r313 ¿Forma de abastecimiento de agua de la vivienda
+           1 Cañería del vecino(a)
+           2 Pila, chorro público o cantarera
+           3 Camión, carreta o pipa
+           4 Pozo con tubería privado
+		 4.1 Pozo con tubería público
+           5 Pozo protegido privado
+		 5.1 Pozo protegido público
+           6 Pozo no protegido privado
+		 6.1 Pozo no protegido público
+           7 Ojo de agua, río o quebrada
+           8 Manantial protegido
+           9 Manantial no protegido
+          10 Colecta agua lluvia
+          11 Acarreo de cañería del vecino(a)
+          12 Chorro común
+          13 Otros medios */
+
+gen byte aguafuente_ch = .
+replace aguafuente_ch = 1 if inlist(r312, 1, 2, 3, 4)	// Cañería (piped), red de distribución 
+replace aguafuente_ch = 2  if inlist(r313, 2, 12)		// Llave pública, pila, standpipe
+*replace aguafuente_ch = 3 if....						// Agua embotellada
+replace aguafuente_ch = 4  if inlist(r313, 4, 4.1, 5, 5.1)	// Pozo protegido
+replace aguafuente_ch = 5  if r313 == 10				// Agua de lluvia
+replace aguafuente_ch = 6  if r313 == 3					// Camión, cisterna, aljibe
+replace aguafuente_ch = 7  if r312 == 4.1				// Otra fuente mejorada
+replace aguafuente_ch = 7  if inlist(r313, 1, 8, 11)	// Otra fuente mejorada
+replace aguafuente_ch = 8  if r313 == 7					// Rio, vertiente, lago
+replace aguafuente_ch = 9  if inlist(r313, 6, 6.1, 9)	// Otra fuente no mejorada  
+replace aguafuente_ch = 10 if r313 == 13				// Otra fuente sin clasificación
+
+	******************
+	** aguadist_ch ** 
+	*****************
+	gen byte aguadist_ch  = .
+	replace aguadist_ch = 1 if inlist(r312,1,2) | inlist(r313,1,2,3,4,5,6)
+	replace aguadist_ch= 2 if (r312==3| r312==4|r312 == 4.1)
+	replace aguadist_ch=3 if r313==2 | r313==4.1| r313==5.1 | r313==6.1 | r313==12 | r313==11
+	replace aguadist_ch = 0 if missing(aguadist_ch) & aguafuente_ch!=.
+
+	******************
+	** aguadisp1_ch ** 
+	*****************
+	gen aguadisp1_ch =9
+
+	******************
+	** aguadisp2_ch **
+	*****************
+	gen byte aguadisp2_ch =.
+	replace aguadisp2_ch = 1 if r312d<=3 | r312h<=11 
+	replace aguadisp2_ch = 2 if r312d>=4 & r312h>=12
+	replace aguadisp2_ch = 3 if r312d==7 & r312h ==24
+
+	******************
+	** aguatrat_ch ** - 
+	*****************
+	gen byte aguatrat_ch =.
+	
+	******************
+	** aguamala_ch ** - 
+	*****************
+	gen byte aguamala_ch = 2
+	replace aguamala_ch = 0 if aguafuente_ch<=7
+	replace aguamala_ch = 1 if aguafuente_ch>7 & aguafuente_ch!=10 & aguafuente_ch!=.
+
+	******************
+	** aguamejorada_ch ** - 
+	*****************
+	gen byte aguamejorada_ch = 2
+	replace aguamejorada_ch = 0 if aguafuente_ch>7 & aguafuente_ch!=10
+	replace aguamejorada_ch = 1 if aguafuente_ch<=7
+
+	******************
+	** aguamide_ch ** - 
+	*****************
+	gen byte aguamide_ch = .
+
+	******************
+	** bano_ch **
+	*****************
+	gen byte bano_ch = .
+	replace bano_ch=1 if (r316==1 | r316==3)
+	replace bano_ch=2 if (r316==2 | r316==4)
+	replace bano_ch=3 if (r316==7 | r316==8 | r316==9 | r316==10)
+	replace bano_ch=4 if (r314==1 |r314==2) & (r317a==3 |r317a==4) 
+	replace bano_ch=6 if (r316==5 | r316==6)
+	replace bano_ch=0 if r314==4 |r314==3
+		
+	******************
+	** banoex_ch ** - 
+	*****************
+	generate banoex_ch=9
+
+	******************
+	** sinbano_ch ** - 
+	*****************
+	gen sinbano_ch = 3
+	replace sinbano_ch = 0 if bano_ch>0
+	replace sinbano_ch = 1 if r314==4 & r315==1 | ( r314==4 & r315==2 & inlist(r317a, 1,2))
+	replace sinbano_ch = 2 if r314==4 & r315==2 & (r317a==3|r317a==4) 
+
+	******************
+    ** banomejorado_ch **
+    *****************
+	gen byte banomejorado_ch= 2
+	replace banomejorado_ch =1 if bano_ch<=3 & bano_ch!=0
+	replace banomejorado_ch =0 if (bano_ch ==0 | bano_ch>=4) & bano_ch!=6
+	
+****************************
+***VARIABLES DE MIGRACIÓN***
+****************************		
+
+	*****************
+    *migrante_ci****
+    ****************
+	gen byte migrante_ci=.
+	
+	****************
+	 *migrantiguo5_ci*
+	****************	
+	gen byte migrantiguo5_ci=.
+
+	****************
+	 *miglac_ci*
+	****************	
+	gen byte miglac_ci=.
+	
+
+****************************
+***VARIABLES DE EXTERNAS***
+****************************	
+	
+	****************
+	 *tipo_bienestar*
+	****************
+	gen byte tipo_bienestar =  1 
+
+	****************
+	 * pobre_ine_ci*
+	****************	
+	gen byte pobre_ine_ci= . 
+	replace pobre_ine_ci= 0 if pobreza==3
+	replace pobre_ine_ci= 1 if pobreza==1 |pobreza==2
+
+	****************
+	* bienestar_agregado*
+	****************	
+	gen bienestar_agregado = . 
+
+	****************
+	* lpe_ci *
+	****************
+	gen lpe_ci = . //
+	*zona urbana 68.20
+	replace lpe_ci= li if zona_c == 1
+	*zona rural 42.17
+	replace lpe_ci= li if  zona_c == 0
+	
+	****************
+	 * ln_ci *
+	****************
+	gen ln_ci = . //
+	*zona urbana 68.20 *2 
+	replace ln_ci= li*2 if  zona_c == 1
+	*zona rural 42.17 * 2
+	replace ln_ci= li*2 if  zona_c == 0
+		
+
+
+	/*_____________________________________________________________________________________________________*/
+
+	* Asignación de etiquetas e inserción de variables externas: tipo de cambio, Indice de Precios al 
+    * Consumidor (2011=100), Paridad de Poder Adquisitivo (PPA 2011),  líneas de pobreza
+
+	/*_____________________________________________________________________________________________________*/
+	
+
+	do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&ExternalVars_Harmonized_DataBank.do"
+
+	
+	/*_____________________________________________________________________________________________________*/
+	* Verificación de que se encuentren todas las variables armonizadas 
+	/*_____________________________________________________________________________________________________*/
+	
+	
+      order region_BID_c region_c pais_c anio_c mes_c zona_c idh_ch idp_ci factor_ci factor_ch estrato_ci upm_ci /// Identificación
+	  sexo_ci edad_ci relacion_ci civil_ci jefe_ci nconyuges_ch nhijos_ch notropari_ch notronopari_ch nempdom_ch /// Demográficas
+	  clasehog_ch nmiembros_ch miembros_ci nmayor21_ch nmenor21_ch nmayor65_ch nmenor6_ch nmenor1_ch /// Demográficas
+	  afroind_ci afroind_ch afroind_ano_c dis_ci dis_ch /// Género y diversidad 
+	  afro_ci ind_ci noafroind_ci afro_ch ind_ch noafroind_ch disWG_ci /// Género y diversidad
+	  /// Agregar aquí: ISO3pais_dis_ci (renombrar con código del país, ej. COL_dis_ci)
+      condocup_ci categoinac_ci emp_ci cesante_ci desemp_ci subemp_ci durades_ci pea_ci nempleos_ci antiguedad_ci desalent_ci  /// Empleo
+	  horaspri_ci horastot_ci tiempoparc_ci categopri_ci categosec_ci rama_ci spublico_ci tamemp_ci cotizando_ci instcot_ci	afiliado_ci /// Empleo
+	  formal_ci tipocontrato_ci ocupa_ci pension_ci	pensionsub_ci tipopen_ci instpen_ci	/// Empleo
+	  ylmpri_ci ylnmpri_ci ylmsec_ci ylnmsec_ci ylmotros_ci /// Ingresos individuo
+     ylnmotros_ci ylm_ci ylnm_ci ynlm_ci ynlnm_ci ytot_ci   /// Ingresos individuo
+	  ylm_ch ylnm_ch ynlm_ch ynlnm_ch ytot_ch /// Ingresos del hogar
+	  ylmhopri_ci ylmho_ci /// Ingreso por hora
+	  nrylmpri_ci nrylmpri_ch /// No respuesta de ingresos 
+	  pnc_ci ptmc_ci potrot_ci ypnc_ci yptmc_ci yotrot_ci ytransf_ci ynet_ci pnc_ch ptmc_ch potrot_ch ypnc_ch yptmc_ch yotrot_ch ytransf_ch ynet_ch ynet_ch_pc /// Protección social
+	  remesas_ci remesas_ch ypen_ci ypensub_ci /// Remesas y pensiones
+      aedu_ci eduui_ci eduuc_ci edupre_ci eduac_ci asiste_ci edupub_ci razonesnoasis_ci asispre_ci /// Educación 
+	  luz_ch luzmide_ch combust_ch piso_ch pared_ch techo_ch resid_ch dorm_ch cuartos_ch cocina_ch telef_ch refrig_ch /// Vivienda 
+	  freez_ch auto_ch compu_ch internet_ch cel_ch vivi1_ch vivi2_ch viviprop_ch vivitit_ch vivialq_ch vivialqimp_ch /// Vivienda
+	  aguared_ch aguafconsumo_ch aguafuente_ch aguadist_ch aguadisp1_ch aguadisp2_ch /// Agua y saneamineto
+	  aguatrat_ch aguamala_ch aguamejorada_ch aguamide_ch bano_ch banoex_ch banomejorado_ch sinbano_ch  /// Agua y saneamineto
+	  migrante_ci migrantiguo5_ci miglac_ci /// Migración  
+	  miembros_one_ci tipo_bienestar pobre_ine_ci bienestar_agregado lpe_ci  ln_ci /// Pobreza  
+      lp19_2011 lp31_2011 lp5_2011  lp365_2017 lp685_2017 lp14_2017 lp81_2017 tc_c ratio_cpi2011 ratio_cpi2017 cpi_c cpi2011 cpi2017 ppp_c ppp_2011 ppp_2017, first /// Fuente externa
+
+
+
+
+saveold "`base_out'", version(12) replace
+
+cap log close

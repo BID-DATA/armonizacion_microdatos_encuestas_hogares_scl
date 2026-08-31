@@ -398,23 +398,6 @@ label var lpe_ci "Linea de indigencia oficial del pais"
 * 3. Creación de nuevas variables de SS and LMK a incorporar en Armonizadas
 ************************************************************************************************************/
 
-
-****************
-*cotizando_ci***
-****************
-gen cotizando_ci=.
-label var cotizando_ci "cotizante a la seguridad social"
-
-****************
-*afiliado_ci****
-****************
-*Modificado Mayo 2016 - Mayra Sáenz
-gen afiliado_ci=.	
-replace afiliado_ci=1 if p10b026a==1
-recode afiliado_ci .=0 if p10b026a!=1
-
-label var afiliado_ci "afiliado a la seguridad social"
-
 ****************
 *tipopen_ci*****
 ****************
@@ -558,17 +541,26 @@ replace pea1_ci=0 if pea1_ci~=1
 *replace pea2_ci=0 if pea2_ci~=1
 */
 
+
 ************
 ***emp_ci***
 ************
-gen byte emp_ci=(condocup_ci==1)
-label var emp_ci "ocupado (empleado)"
+***** El código mantiene como missing values a la poblacion menor de la edad limite de la PET que no forman parte de la población de referencia de la 	sección laboral de la Encuesta *****.
+gen byte emp_ci = .
+replace emp_ci = (condocup_ci == 1) if (condocup_ci != . & condocup_ci != 4)
+label var emp_ci "Ocupado (empleado)"
+label define emp_ci 0"No" 1"Si", add
+label value emp_ci emp_ci
 
 ****************
 ***desemp_ci***
 ****************
-gen desemp_ci=(condocup_ci==2)
-label var desemp_ci "desempleado que buscó empleo en el periodo de referencia"
+***** El código mantiene como missing values a la poblacion menor de la edad limite de la PET que no forman parte de la población de referencia de la sección laboral de la Encuesta *****.
+gen byte desemp_ci = .
+replace desemp_ci = (condocup_ci == 2) if (condocup_ci != . & condocup_ci != 4)
+label var desemp_ci "Desocupado (desempleado)"
+label define desemp_ci 0"No " 1"Si", add
+label value desemp_ci desemp_ci
   
 *************
 ***pea_ci***
@@ -583,8 +575,35 @@ replace desalent_ci=0 if pea2_ci==1 | (p10a09!=9 & p10a09!=11)
 label var desalent_ci "trabajadores desalentados, personas que creen que por alguna razon no conseguiran trabajo" 
 */
 
-gen desalent_ci=.
+***** El código mantiene como población de referencia a las personas inactivas (condocup_ci == 3) *****.
+gen byte desalent_ci = .
+replace desalent_ci = 1 if (p04b01 == 2 & (p04b04 >= 3 & p04b04 <= 5) & condocup_ci == 3)
+replace desalent_ci = 0 if (desalent_ci != 1 & condocup_ci == 3)
+label var desalent_ci "Desalentados"
+label define desalent_ci 0"No" 1"Si", add
+label value desalent_ci desalent_ci
 
+****************
+*cotizando_ci***
+****************
+***** El código mantiene a la poblacion inactiva y a los menores de la edad límite de la PET como missing values en congruencia con la variable formal_ci *****.
+gen byte cotizando_ci = .
+replace cotizando_ci = 1 if ((p04c25a==1 & (p04c25b>0 & p04c25b!=.)) & emp_ci==1)
+replace cotizando_ci = 0 if (cotizando_ci != 1 & inlist(condocup_ci, 1, 2))
+label var cotizando_ci "Cotizante a la Seguridad Social"
+label define cotizando_ci 0 "No"  1 "Si"
+label value cotizando_ci cotizando_ci
+
+****************
+*afiliado_ci****
+****************
+***** El código mantiene a la poblacion inactiva y a los menores de la edad límite de la PET como missing values en congruencia con la variable formal_ci *****.
+gen byte afiliado_ci = .
+replace afiliado_ci = 1 if(p04c25a==1 & emp_ci==1)
+replace afiliado_ci = 0 if (afiliado_ci != 1 & inlist(condocup_ci, 1, 2))
+label var afiliado_ci "Afiliado a la Seguridad Social"
+label define afiliado_ci 0 "No"  1 "Si"
+label value afiliado_ci afiliado_ci
 
 *** horas actividad principal
 gen horaspri_ci=.
@@ -763,30 +782,14 @@ label var ypeoficial_ch "Ingreso per cápita generado por el país"
 
 */
 
-gen byte aedu_ci = .
 
-*Modificación Mayra Sáenz - se utiliza la p06b06a p06b06b en lugar de la p06b25a p06b25b
-
-*** preprimaria
-replace aedu_ci=0 if p06b06a==1 
-
-
-*** primaria
-replace aedu_ci=p06b06b  if p06b06a==2
-
-
-*** basica
-replace aedu_ci=6 + p06b06b if p06b06a==3
-
-*** diversificado
-replace aedu_ci=9 + p06b06b if p06b06a==4
-
-
-*** educacion superior
-replace aedu_ci=12 + p06b06b if p06b06a==5 
-
-*** post-grado
-replace aedu_ci=17 + p06b06b if p06b06a==6
+gen aedu_ci = .
+replace	 aedu_ci = 0  if (p06b25a == 0 | p06b25a== 1) // Ninguno Preprimaria
+replace aedu_ci = p06b25b if p06b25a == 2 // Primaria
+replace aedu_ci = 6 + p06b25b if (p06b25a == 3 | p06b25a == 4) // Básico, Diversificado
+replace aedu_ci = 11 + p06b25b if p06b25a== 5 // Superior
+replace aedu_ci = 16 + p06b25b if (p06b25a == 6 | p06b25a == 7) // Postgrado 
+label var aedu_ci "Anios de educacion aprobados"
 
 
 *Para los que no están asistiendo actualmente 
@@ -1094,6 +1097,8 @@ egen ylnmpri_ci=rsum(alim vivi ropa transp), missing
 replace ylnmpri_ci=. if (alim==. & vivi==. & ropa==. & transp==.) | p10b04>4   
 label var ylnmpri_ci " ingreso laboral no monetario ocupacion principal"
 
+
+
 ****************************
 *** ocupacion secundaria ***
 ****************************
@@ -1228,6 +1233,9 @@ label var autocons_ci "autoconsumo individual"
 gen ynlnm_ci=.
 label var ynlnm_ci "ingreso no laboral no monetario"
 
+egen double ytot_ci= rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci), mi
+
+
 ************************************************************************************
 *** ingresos distintos del trabajo en dinero o bienes (montos totales del hogar) ***
 ************************************************************************************
@@ -1355,7 +1363,7 @@ gen id_afro_ci = .
 
 do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&ExternalVars_Harmonized_DataBank.do"
 
-order region_BID_c region_c pais_c anio_c mes_c zona_c factor_ch	idh_ch	idp_ci	factor_ci sexo_ci edad_ci ///
+cap order region_BID_c region_c pais_c anio_c mes_c zona_c factor_ch	idh_ch	idp_ci	factor_ci sexo_ci edad_ci ///
 afroind_ci afroind_ch afroind_ano_c dis_ci dis_ch relacion_ci civil_ci jefe_ci nconyuges_ch nhijos_ch notropari_ch notronopari_ch nempdom_ch ///
 clasehog_ch nmiembros_ch miembros_ci nmayor21_ch nmenor21_ch nmayor65_ch nmenor6_ch	nmenor1_ch	condocup_ci ///
 categoinac_ci nempleos_ci emp_ci antiguedad_ci	desemp_ci cesante_ci durades_ci	pea_ci desalent_ci subemp_ci ///

@@ -358,9 +358,12 @@ gen nempleos_ci=.
 **********
 * emp_ci *
 **********
-
-gen emp_ci=(condocup_ci==1)
-replace emp_ci=. if condocup_ci==.
+***** El código mantiene como missing values a la poblacion menor de la edad limite de la PET que no forman parte de la población de referencia de la 	sección laboral de la Encuesta *****.
+gen byte emp_ci = .
+replace emp_ci = (condocup_ci == 1) if (condocup_ci != . & condocup_ci != 4)
+label var emp_ci "Ocupado (empleado)"
+label define emp_ci 0"No" 1"Si", add
+label value emp_ci emp_ci
 
 ****************
 * antiguedad_ci*
@@ -371,9 +374,12 @@ gen antiguedad_ci=.
 *************
 * desemp_ci *
 *************
-
-gen desemp_ci=(condocup_ci==2)
-replace desemp_ci=. if condocup_ci==.
+***** El código mantiene como missing values a la poblacion menor de la edad limite de la PET que no forman parte de la población de referencia de la sección laboral de la Encuesta *****.
+gen byte desemp_ci = .
+replace desemp_ci = (condocup_ci == 2) if (condocup_ci != . & condocup_ci != 4)
+label var desemp_ci "Desocupado (desempleado)"
+label define desemp_ci 0"No " 1"Si", add
+label value desemp_ci desemp_ci
 
 ***************
 * cesante_ci  *
