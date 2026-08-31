@@ -698,97 +698,121 @@ replace ymensualindep=  ingreso_actividad_in_monto*4.3   if ingreso_actividad_in
 replace ymensualindep=  ingreso_actividad_in_monto*2   if ingreso_actividad_in_periodo==3
 replace ymensualindep=  ingreso_actividad_in_monto     if ingreso_actividad_in_periodo==4
 
-*variables en la base con el mismo nombre
-rename comisiones otrascomisionesoriginales
-rename propinas otraspropinasoriginales
-rename bonificaciones bonificacionesoriginales
-gen double comisiones=comisiones_ap_monto 
-gen double propinas=propinas_ap_monto 
-gen double horasextra=horas_extra_ap_monto 
+	*variables en la base con el mismo nombre
+	rename comisiones otrascomisionesoriginales
+	rename propinas otraspropinasoriginales
+	rename bonificaciones bonificacionesoriginales
+	
+gen double comisiones_pri = comisiones_ap_monto 
+gen double propinas_pri = propinas_ap_monto 
+gen double horasextra_pri = horas_extra_ap_monto 
 
-gen double vacaciones=vacaciones_ap_monto/12 
-gen double dividendos=dividendos_ap_monto/12
-gen double bonificaciones=bonificacion_ap_monto/12
-gen double regalia=regalia_ap_monto/12
-gen double utilidades=utilidad_empresarial_ap_monto/12                                               
-gen double beneficios=beneficios_marginales_ap_monto/12                                             
-gen double bonoantiguedad=incentivo_antiguedad_ap_monto/12
-gen double otrosbeneficios=otros_beneficios_ap_monto/12
+gen double vacaciones_pri = vacaciones_ap_monto/12
+gen double dividendos_pri = dividendos_ap_monto/12
+gen double bonificaciones_pri = bonificacion_ap_monto/12
+gen double regalia_pri = regalia_ap_monto/12
+gen double utilidades_pri = utilidad_empresarial_ap_monto/12 
+gen double beneficios_pri = beneficios_marginales_ap_monto/12
+gen double bonoantiguedad_pri = incentivo_antiguedad_ap_monto/12
+gen double otrosbeneficios_pri = otros_beneficios_ap_monto/12
 
-gen double alimentos=alimentacion_especie_ap_monto if alimentacion_especie_ap==1
-gen double vivienda1=vivienda_especie_ap_monto if vivienda_especie_ap ==1
-gen double transporte=transporte_especie_ap_monto if transporte_especie_ap==1
-gen double gasolina=gasolina_especie_ap_monto if gasolina_especie_ap==1
-gen double cellular=celular_especie_ap_monto if celular_especie_ap==1
-gen double otros=otros_especie_ap_monto if otros_especie_ap==1
+* Ingresos en especie trabajo principal
+gen double alimentos_pri = alimentacion_especie_ap_monto if alimentacion_especie_ap==1
+gen double vivienda1_pri = vivienda_especie_ap_monto if vivienda_especie_ap ==1
+gen double transporte_pri = transporte_especie_ap_monto if transporte_especie_ap==1
+gen gasolina_pri = gasolina_especie_ap_monto if gasolina_especie_ap==1
+gen double cellular_pri = celular_especie_ap_monto if celular_especie_ap==1
+gen double otros_pri = otros_especie_ap_monto if otros_especie_ap==1
 
-gen double pension=pension_nac_monto  	    if pension_nac==1
-gen double intereses= intereses_nac_monto 	if intereses_nac==1 
-gen double alquiler= alquiler_nac_monto 	if alquiler_nac==1
-gen double remesasnac=remesas_nac_monto  if remesas_nac==1  
-gen double otrosingnm = ayuda_especie_nac_monto  if ayuda_especie_nac==1 
-gen double alimento_escuela = alimentos_escuela_nac_monto if alimentos_escuela_nac == 1
-
-egen double gobierno = rowtotal(gob_comer_primero_monto gob_inc_asis_escolar_monto gob_bono_luz_monto gob_bonogas_choferes_monto gob_bonogas_hogares_monto  ///
-gob_proteccion_vejez_monto gob_bono_estudiante_prog_monto gob_inc_educacion_sup_monto gob_inc_policia_prev_monto gob_inc_marina_guerra_monto) if gobierno_nac==1, missing
+* Ingresos del trabajo secundario
 recode ingreso_asalariado_secun (0=.)
 recode ingreso_independientes_secun (0=.)
 egen double ymensual2 = rowtotal(ganancia_secun_imp_monto ingreso_asalariado_secun ingreso_independientes_secun), missing
 
-*REMESAS*
+*Ingresos no laborales
+gen double pension_nl = pension_nac_monto if pension_nac==1
+gen double intereses_nl = intereses_nac_monto if intereses_nac==1 
+gen double alquiler_nl = alquiler_nac_monto if alquiler_nac==1
+gen double remesasnac = remesas_nac_monto  if remesas_nac==1  
+gen double ayuda_nm = ayuda_especie_nac_monto  if ayuda_especie_nac==1	//nm 
+gen double alimento_esc = alimentos_escuela_nac_monto if alimentos_escuela_nac == 1	//nm
+gen double ayudaemp_nl = ayuda_empresas_nac_monto if ayuda_empresas_nac == 1
+gen double otrasayudas_nl = otros_ingresos_nac_monto if otros_ingresos_nac == 1
+
+egen double gobierno = rowtotal(gob_comer_primero_monto gob_inc_asis_escolar_monto gob_bono_luz_monto gob_bonogas_choferes_monto gob_bonogas_hogares_monto gob_proteccion_vejez_monto gob_bono_estudiante_prog_monto gob_inc_educacion_sup_monto gob_inc_policia_prev_monto gob_inc_marina_guerra_monto) if gobierno_nac == 1, mi
+
+* Ingresos no laborales (en 12 meses)
+gen double intereses_12m = intereses_nac_ano_monto/12 if intereses_nac_ano == 1 
+gen double alquiler_12m = alquiler_nac_ano_monto/12 if alquiler_nac_ano == 1
+gen double remesasnac_12m = remesas_nac_ano_monto/12 if remesas_nac_ano == 1  
+gen double ayudanm_12m = ayuda_especie_nac_ano_monto/12 if ayuda_especie_nac_ano == 1 	//nm
+gen double ayudaemp_12m = ayuda_empresas_nac_ano_monto/12 if ayuda_empresas_nac == 1
+gen double regalia_12m = regalia_pension_nac_ano_monto/12 if regalia_pension_nac_ano == 1
+gen double otrasayudas_12m = otros_ingresos_nac_ano_monto/12 if otros_ingresos_nac_ano == 1
+
 *Para República Dominicana hay dos módulos especiales: remesas e ingresos del exterior.
-*Aquí se trabaja sobre esas variables:
-*Módulo de ingresos del exterior
+* Módulo de ingresos del exterior
 ********************************
 *Información cambiaria que viene en la base de excel
 *Dado que se necesita la información en moneda local se calcula el factor de conversión a pesos
 *Si la información está en pesos se deja como está
 *Si la información está en dólares se multiplica por 52.78, Euros, luego de ser convertidos en dolares, por 0.9 (promedio para los meses del cuarto trimestre de 2019)
-*Nota: Tasa de cambio a peso CHF=51.54 Para ultimo trimestre
 
-*Modulo Ingresos del Exterior
-gen double pension_int=pension_ext_monto	    if  pension_ext_moneda=="DOP"
-replace pension_int=pension_ext_monto*52.78   	if  pension_ext_moneda=="USD"
-replace pension_int=(pension_ext_monto*0.9)*52.78  if  pension_ext_moneda=="EUR"
-replace pension_int=pension_ext_monto*51.54   	if  pension_ext_moneda=="CHF"
+* Tasa de cambio: Promedio anual 2021
+gen tc_usd = 52.78
+gen tc_eur_usd = 0.9
+gen tc_chf = 51.54
 
-replace pension_int=. if pension_ext==2
+gen double pension_int = pension_ext_monto if  pension_ext == 1 |  pension_ext_moneda == "DOP"
+replace pension_int = (pension_ext_monto*tc_usd) if  pension_ext_moneda == "USD"
+replace pension_int	= (pension_ext_monto*tc_eur_usd)*tc_usd if  pension_ext_moneda == "EUR"
+replace pension_int = . if pension_ext == 2
 
+gen double interes_int = interes_ext_monto if interes_ext == 1
 
-gen double interes_int=interes_ext_monto	 		if interes_ext_moneda=="DOP"
-replace interes_int=interes_ext_monto*52.78 	    if interes_ext_moneda=="USD"
-replace interes_int=(interes_ext_monto*0.9)*52.78  if interes_ext_moneda=="EUR"
-replace interes_int=. if interes_ext==2
+gen double alquiler_int = alquiler_ext_monto if alquiler_ext == 1
 
+gen double regalos_int = regalos_ext_monto if regalos_ext == 1	//nm
 
-*gen regalos_int= monto_equiv_regalo	if regalos_ext ==1
+gen double otrosing_int = otros_ingresos_ext_monto if otros_ingresos_ext == 1
 
 
 *Módulo de remesas
 ******************
 *En este módulo se pregunta por el monto de remesas recibido durante los ultimos 6 meses, por ello se saca el promedio.
+* Variable auxiliar de tipo de cambio creada en la sección anterior de Ingresos del Exterior
 
-forvalues y=1/6  {
-forvalues x=1/3  {
-g double remesasaux`y'_`x'=mes`y'_`x'_ext_monto if mes`y'_`x'_ext_moneda=="DOP"
-replace remesasaux`y'_`x'=mes`y'_`x'_ext_monto*52.78 if mes`y'_`x'_ext_moneda=="USD"
-replace remesasaux`y'_`x'=(mes`y'_`x'_ext_monto*.9)*52.78 if mes`y'_`x'_ext_moneda=="EUR"
-}
-}
-egen double remesas_mes = rowtotal(remesasaux*_*), missing 
-replace remesas_mes=. if recibio_remesa_ext1!=1 & recibio_remesa_ext2!=1 & recibio_remesa_ext3!=1
-gen double remesas_prom=remesas_mes/6
+	forvalues y = 1/6  {	// Meses
+	forvalues x = 1/3  {	// Cantidad de montos recibidos
+		
+		capture confirm string variable mes`y'_`x'_ext_moneda
+        if !_rc {
+            gen double remesasaux`y'_`x' = (mes`y'_`x'_ext_monto) 			 if mes`y'_`x'_ext_moneda == "DOP"
+			replace remesasaux`y'_`x'    = (mes`y'_`x'_ext_monto)*tc_usd 	 if mes`y'_`x'_ext_moneda == "USD"
+			replace remesasaux`y'_`x'    = (mes`y'_`x'_ext_monto*tc_eur_usd)*tc_usd if mes`y'_`x'_ext_moneda == "EUR"
+			replace remesasaux`y'_`x'    = (mes`y'_`x'_ext_monto)*tc_chf 	 if mes`y'_`x'_ext_moneda == "CHF"
+        }
+
+        else {
+            gen double remesasaux`y'_`x' = mes`y'_`x'_ext_monto if mes`y'_`x'_ext_moneda == .
+		}
+	}
+	}
+	
+egen double remesas_mes = rowtotal(remesasaux*_*), mi
+replace remesas_mes = . if recibio_remesa_ext1 != 1 & recibio_remesa_ext2 != 1 & recibio_remesa_ext3 != 1
+gen double remesas_prom = remesas_mes/6
+drop tc_usd tc_eur_usd tc_chf
 
 
-*** INGRESO LABORAL (MONETARIO Y NO MONETARIO) ***
+*A. INGRESOS LABORALES A NIVEL DE INDIVIDUO	
 
 ***************
 ***ylmpri_ci***
 ***************
 *2018 AJAM, Obs. variable ymensual tiene muchos más missings que en bases anteriores (ENFT -<2016), para ver correr un: mdesc ymensual.
 *Esto explica en parte porque se observa una media más baja en el ingreso laboral total
-egen double ylmpri_ci = rowtotal(ymensual comisiones propinas horasextra vacaciones bonificaciones regalia utilidades beneficios otrosbeneficios bonoantiguedad otros_pagos_ap_monto ymensualindep), missing 
-replace ylmpri_ci=. if ymensual==. & comisiones==. & propinas==. & horasextra==. & vacaciones==. & bonificaciones==. & regalia==. & utilidades==. & beneficios==. & otrosbeneficios==. & bonoantiguedad==. & ymensualindep==.
+egen double ylmpri_ci = rowtotal(ymensual comisiones_pri propinas_pri horasextra_pri vacaciones_pri bonificaciones_pri regalia_pri utilidades_pri beneficios_pri otrosbeneficios_pri bonoantiguedad_pri otros_pagos_ap_monto ymensualindep), missing 
 replace ylmpri_ci=. if emp_ci==0
 replace ylmpri_ci=0 if categopri_ci==4
 label var ylmpri_ci "Ingreso laboral monetario actividad principal" 
@@ -796,23 +820,21 @@ label var ylmpri_ci "Ingreso laboral monetario actividad principal"
 *****************
 ***nrylmpri_ci***
 *****************
-
 gen nrylmpri_ci=(ylmpri_ci==. & emp_ci==1)
 label var nrylmpri_ci "Id no respuesta ingreso de la actividad principal"  
 
 ****************
 ***ylnmpri_ci***
 ****************
-egen double ylnmpri_ci = rowtotal(alimentos vivienda1 transporte gasolina cellular otros), missing 
-replace ylnmpri_ci=ylnmpri_ci+noremunerados if categopri_ci==4
-replace ylnmpri_ci=. if alimentos==. & vivienda1==. & transporte==. & gasolina==. & cellular==. & otros==. & noremunerados==.
+egen double ing_mpri_ci = rowtotal(alimentos_pri vivienda1_pri transporte_pri gasolina_pri cellular_pri otros_pri), missing 
+egen double ylnmpri_ci = rowtotal(ing_mpri_ci noremunerados) if categopri_ci == 4, mi
 label var ylnmpri_ci "Ingreso laboral NO monetario actividad principal"   
 
 ***************
 ***ylmsec_ci***
 ***************
 *Modificación Mayra Sáenz - Febrero 2014.
-gen double ylmsec_ci=ymensual2 if emp_ci==1 & cuantos_trabajos_tiene==2
+gen double ylmsec_ci = ymensual2 if emp_ci==1 & cuantos_trabajos_tiene==2
 replace ylmsec_ci=. if (ymensual2==99999) & emp_ci==1 
 label var ylmsec_ci "Ingreso laboral monetario segunda actividad" 
 
@@ -820,14 +842,12 @@ label var ylmsec_ci "Ingreso laboral monetario segunda actividad"
 ****************
 ***ylnmsec_ci***
 ****************
-
 gen ylnmsec_ci=.
 label var ylnmsec_ci "Ingreso laboral NO monetario actividad secundaria"
 
 *****************
 ***ylmotros_ci***
 *****************
-
 gen ylmotros_ci=.
 label var ylmotros_ci "Ingreso laboral monetario de otros trabajos" 
 
@@ -835,58 +855,54 @@ label var ylmotros_ci "Ingreso laboral monetario de otros trabajos"
 ******************
 ***ylnmotros_ci***
 ******************
-
 gen ylnmotros_ci=.
 label var ylnmotros_ci "Ingreso laboral NO monetario de otros trabajos" 
 
-
-************
-***ylm_ci***
-************
-
+**************
+*** ylm_ci ***
+**************
 egen double ylm_ci = rowtotal(ylmpri_ci ylmsec_ci ylmotros_ci), missing 
-replace ylm_ci=. if ylmpri_ci==. & ylmsec_ci==. & ylmotros_ci==.
 label var ylm_ci "Ingreso laboral monetario total"  
 
-
-*************
-***ylnm_ci***
-*************
-
+***************
+*** ylnm_ci ***
+***************
 egen double ylnm_ci = rowtotal(ylnmpri_ci ylnmsec_ci ylnmotros_ci), missing 
-replace ylnm_ci=. if ylnmpri_ci==. &  ylnmsec_ci==. & ylnmotros_ci==.
 label var ylnm_ci "Ingreso laboral NO monetario total"  
 
 
-*** INGRESO NO LABORAL (MONETARIO Y NO MONETARIO) ***
+*B. INGRESOS NO LABORALES A NIVEL DE INDIVIDUO	
 
 ******************
 *** ytransf_ci ***
 ******************
-* PNC - Pensiones sociales no contributivas:
-		* Programa Solidaridad Protección a la vejez
-* PTMC - Programas de transferencias monetarias condicionadas:
-		* Programa Solidaridad: Comer es primero
-		* Programa Solidaridad: Incentivo a la Asistencia Escolar
-		* Incentivo a la Educación Superior, con la Tarjeta Solidaridad
-		* Bono Escolar Estudiante en Progreso		
-* POTROT - Programas de otras transferencias monetarias no condicionadas
-		* Programa Solidaridad Bono-Luz Hogar
-		* Programa Solidaridad Bono-Gas Hogar
+	* PNC - Pensiones sociales no contributivas:
+			* 1 Programa Solidaridad Protección a la vejez
+	* PTMC - Programas de transferencias monetarias condicionadas:
+			* 2 Programa Solidaridad: Comer es primero
+			* 3 Programa Solidaridad: Incentivo a la Asistencia Escolar
+			* 4 Incentivo a la Educación Superior, con la Tarjeta Solidaridad
+			* 5 Bono Escolar Estudiante en Progreso		
+	* POTROT - Programas de otras transferencias monetarias no condicionadas
+			* 6 Programa Solidaridad Bono-Luz Hogar
+			* 7 Programa Solidaridad Bono-Gas Hogar
 
 *** Beneficiarios a nivel individual:
-	gen byte pnc_ci = (ps_apoyo_adultos_mayores == 1 & gobierno_nac == 1)
+	gen byte pnc_ci = (ps_apoyo_adultos_mayores == 1 & gobierno_nac == 1) if !missing(gobierno_nac)
 	
-	gen byte ps_comer = (ps_comer_es_primero == 1 & gobierno_nac == 1)
-	gen byte ps_iae = (ps_incentivo_asist_escolar == 1 & gobierno_nac == 1)
-	gen byte inc_es = (incentivo_educacion_superior == 1 & gobierno_nac == 1)
-	gen byte bono_eep = (bono_escolar_estudiante_prog == 1 & gobierno_nac == 1)
+	gen byte ps_comer = (ps_comer_es_primero == 1 & gobierno_nac == 1) if !missing(gobierno_nac)
+	gen byte ps_iae = (ps_incentivo_asist_escolar == 1 & gobierno_nac == 1) if !missing(gobierno_nac)
+	gen byte inc_es = (incentivo_educacion_superior == 1 & gobierno_nac == 1) if !missing(gobierno_nac)
+	gen byte bono_eep = (bono_escolar_estudiante_prog == 1 & gobierno_nac == 1) if !missing(gobierno_nac)
+	
 	gen byte ptmc_ci = (ps_comer == 1 | ps_iae == 1 | inc_es == 1 | bono_eep == 1)
+	replace ptmc_ci = . if (ps_comer == . & ps_iae == . & inc_es == . & bono_eep == .)
 	
 	gen byte ps_luz = (ps_bono_luz == 1 & gobierno_nac == 1)
 	gen byte ps_gas = (ps_bono_gas == 1 & gobierno_nac == 1)
+	
 	gen byte potrot_ci = (ps_luz == 1 | ps_gas == 1)
-
+	replace potrot_ci = . if ps_luz == . & ps_gas == .
 
 *** Montos de transferencias a nivel individual:
 	// Transferencias PNC
@@ -901,6 +917,19 @@ label var ylnm_ci "Ingreso laboral NO monetario total"
 *** Ingreso individual por transferencias no contributivas
 egen double ytransf_ci = rowtotal(ypnc_ci yptmc_ci yotrot_ci), mi
 
+***************
+*** ypen_ci ***
+***************
+gen double ypen_ci = pension_nac_monto if pension_nac == 1
+label var ypen_ci "Valor de la pension contributiva"
+
+******************
+*** ypensub_ci ***
+******************
+*DZ Octubre 2017-Se crea la variable valor de la pension subsidiada*
+gen double ypensub_ci = ypnc_ci
+replace ypensub_ci = . if gob_proteccion_vejez_monto == 0
+label var ypensub_ci "Valor de la pension subsidiada / no contributiva"
 
 ****************
 ***remesas_ci***
@@ -908,87 +937,55 @@ egen double ytransf_ci = rowtotal(ypnc_ci yptmc_ci yotrot_ci), mi
 gen double remesas_ci = remesas_prom
 label var remesas_ci "Remesas mensuales reportadas por el individuo" 
 
-*************
-***ypen_ci*** (= pension)
-*************
-gen double ypen_ci = pension_nac_monto if pension_nac == 1
-label var ypen_ci "Valor de la pension contributiva"
-
-****************
-***ypensub_ci*** ( = pnc_ci)
-****************
-*DZ Octubre 2017-Se crea la variable valor de la pension subsidiada*
-gen double ypensub_ci = gob_proteccion_vejez_monto
-label var ypensub_ci "Valor de la pension subsidiada / no contributiva"
-
 ***************
 *** ynlm_ci ***
 ***************
-
 * Diferencia de ingresos del gobierno versus las transferencias no contributivas:
-gen double ydelta_gob = (gobierno - ytransf_ci)
+	gen double aux_ytransf_ci = ytransf_ci*(-1)
+	egen double ydelta_gob = rowtotal(gobierno aux_ytransf_ci), mi
 
-
-egen double ynlm_ci = rowtotal(ypen_ci intereses alquiler remesasnac ytransf_ci ydelta_gob pension_int interes_int remesas_ci dividendos), missing 
-replace ynlm_ci=. if ypen_ci==. & intereses==. & alquiler==. & remesasnac==. & otrosing==. & ytransf_ci==. & ydelta_gob==. & pension_int==. & interes_int==. & remesas_ci==. & dividendos==.
+egen double ynlm_ci = rowtotal(ypen_ci intereses_nl alquiler_nl remesasnac ayudaemp_nl otrasayudas_nl ytransf_ci ydelta_gob /// 
+							   intereses_12m alquiler_12m remesasnac_12m ayudaemp_12m regalia_12m otrasayudas_12m ///
+							   pension_int interes_int alquiler_int otrosing_int), missing 
 label var ynlm_ci "Ingreso no laboral monetario"  
-
 
 **************
 ***ynlnm_ci***
 **************
-
-egen double ynlnm_ci = rowtotal(regalos_ext_monto otrosingnm alimento_escuela) 
-replace ynlnm_ci = . if regalos_ext_monto == . & otrosingnm == . & alimento_escuela == .
+egen double ynlnm_ci = rowtotal(ayuda_nm alimento_esc ayudanm_12m regalos_int), mi
 label var ynlnm_ci "Ingreso no laboral no monetario"
-
-
-*** INGRESO TOTAL LABORAL Y NO LABORAL (MONETARIO Y NO MONETARIO) ***
 
 ***************
 *** ytot_ci ***
 *************** 
 egen double ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci), mi
 
-
-*** INGRESO NETO INDIVIDUAL > INGRESO PRIMARIO + TRANSFERENCIAS PRIVADAS ***
-
 ***************
 *** ynet_ci ***
 ***************
-gen double aux_ytransf_ci = ytransf_ci*(-1)
 egen double ynet_ci = rowtotal(ytot_ci aux_ytransf_ci), mi
-sum ynet_ci if ynet_ci < 0
 drop aux_ytransf_ci
 
-                                                                                                                    
-************************
-*** HOUSEHOLD INCOME ***
-************************
-
+                                                                                       *C. INGRESOS A NIVEL DE HOGAR
+																					   
 *******************
 *** nrylmpri_ch ***
 *******************
-
 *Creating a Flag label for those households where someone has a ylmpri_ci as missing
-
 by idh_ch, sort: egen nrylmpri_ch=sum(nrylmpri_ci) if miembros_ci==1, missing
 replace nrylmpri_ch=1 if nrylmpri_ch>0 & nrylmpri_ch<.
 replace nrylmpri_ch=. if nrylmpri_ch==.
 label var nrylmpri_ch "Hogares con algún miembro que no respondió por ingresos"
 
-
 **************
 *** ylm_ch ***
 **************
-
 by idh_ch, sort: egen double ylm_ch = total(ylm_ci) if miembros_ci==1, missing
 label var ylm_ch "Ingreso laboral monetario del hogar"
 
 ***************
 *** ylnm_ch ***
 ***************
-
 by idh_ch, sort: egen double ylnm_ch = total(ylnm_ci) if miembros_ci==1, missing
 label var ylnm_ch "Ingreso laboral no monetario del hogar"
 
@@ -1005,20 +1002,20 @@ gen tcylmpri_ch=.
 ****************
 *** ylmnr_ch ***
 ****************
-
 by idh_ch, sort: egen ylmnr_ch=sum(ylm_ci) if miembros_ci==1, missing
 replace ylmnr_ch=. if nrylmpri_ch==1
 label var ylmnr_ch "Ingreso laboral monetario del hogar"
 
-
 ******************
 *** ytransf_ch ***
 ****************** 
-
 *** Beneficiarios a nivel hogar:
 	bys idh_ch: egen byte pnc_ch = max(pnc_ci) if miembros_ci == 1
 	bys idh_ch: egen byte ptmc_ch = max(ptmc_ci) if miembros_ci == 1
 	bys idh_ch: egen byte potrot_ch = max(potrot_ci) if miembros_ci == 1
+	
+	gen byte pcasht_ch = (pnc_ch == 1 | ptmc_ch == 1 | potrot_ch == 1)
+	replace pcasht_ch = . if pnc_ch == . & ptmc_ch == . & potrot_ch == .
 
 *** Montos de transferencias a nivel hogar:
 	bys idh_ch: egen double ypnc_ch = total(ypnc_ci) if miembros_ci == 1, mi
@@ -1028,9 +1025,9 @@ label var ylmnr_ch "Ingreso laboral monetario del hogar"
 *** Ingreso del Hogar por transferencias no contributivas
 egen double ytransf_ch = rowtotal(ypnc_ch yptmc_ch yotrot_ch) if miembros_ci == 1, mi
 
-****************
-***remesas_ch***
-****************
+******************
+*** remesas_ch ***
+******************
 bys idh_ch: egen double remesas_ch = total(remesas_ci) if miembros_ci == 1, mi
 label var remesas_ch "Remesas mensuales del hogar" 
 
@@ -1040,15 +1037,15 @@ label var remesas_ch "Remesas mensuales del hogar"
 by idh_ch, sort: egen double ynlm_ch = total(ynlm_ci) if miembros_ci == 1, mi
 label var ynlm_ch "Ingreso no laboral monetario del hogar"
 
-**************
-***ynlnm_ch***
-**************
+****************
+*** ynlnm_ch ***
+****************
 by idh_ch, sort: egen double ynlnm_ch = total(ynlnm_ci) if miembros_ci == 1, mi
 label var ynlnm_ch "Ingreso no laboral no monetario del hogar"
 
-*************
-***ytot_ch***
-*************
+***************
+*** ytot_ch ***
+***************
 by idh_ch, sort: egen double ytot_ch = total(ytot_ci) if miembros_ci == 1, mi
 
 ***************
@@ -1059,7 +1056,6 @@ egen double ynet_ch = rowtotal(ytot_ch aux_ytransf_ch) if miembros_ci == 1, mi
 gen double ynet_ch_pc = (ynet_ch)/nmiembros_ch if miembros_ci == 1
 drop aux_ytransf_ch
 
-
 ********
 ***NA***
 ********
@@ -1069,19 +1065,15 @@ label var autocons_ci "Autoconsumo reportado por el individuo"
 gen autocons_ch=.
 label var autocons_ch "Autoconsumo reportado por el hogar"
 
-
 *****************
 ***ylhopri_ci ***
 *****************
-
 gen double ylmhopri_ci=ylmpri_ci/(horaspri_ci*4.3)
 label var ylmhopri_ci "Salario monetario de la actividad principal" 
-
 
 ***************
 ***ylmho_ci ***
 ***************
-
 gen double ylmho_ci=ylm_ci/(horastot_ci*4.3)
 label var ylmho_ci "Salario monetario de todas las actividades" 
 
@@ -1089,6 +1081,7 @@ label var ylmho_ci "Salario monetario de todas las actividades"
 	****************************
 	***VARIABLES DE EDUCACION***
 	****************************
+	
 *************
 ***aedu_ci*** 
 *************
@@ -1881,16 +1874,16 @@ tab grupo_int, gen(gpo_ingneto)
 
 * Crear interacción entre recibirla la PTMC y el gpo de ingreso
 gen ptmc_ingneto1 = 0
-replace ptmc_ingneto1 = 1 if ptmc_ch == 1 & gpo_ingneto1 == 1
+replace ptmc_ingneto1 = 1 if pcasht_ch == 1 & gpo_ingneto1 == 1
 
 gen ptmc_ingneto2 = 0
-replace ptmc_ingneto2 = 1 if ptmc_ch == 1 & gpo_ingneto2 == 1
+replace ptmc_ingneto2 = 1 if pcasht_ch == 1 & gpo_ingneto2 == 1
 
 gen ptmc_ingneto3 = 0
-replace ptmc_ingneto3 = 1 if ptmc_ch == 1 & gpo_ingneto3 == 1
+replace ptmc_ingneto3 = 1 if pcasht_ch == 1 & gpo_ingneto3 == 1
 
 gen ptmc_ingneto4 = 0
-replace ptmc_ingneto4 = 1 if ptmc_ch == 1 & gpo_ingneto4 == 1
+replace ptmc_ingneto4 = 1 if pcasht_ch == 1 & gpo_ingneto4 == 1
 
 lab def grupo_int 1 "Pobre extremo" 2 "Pobre moderado" 3 "Vulnerable" 4 "No pobre"
 lab val grupo_int grupo_int
