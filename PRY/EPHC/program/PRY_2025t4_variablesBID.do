@@ -577,14 +577,16 @@ use `base_in', clear
 
 
 ********************************************************************************
-***************  VARIABLES DE PENSIONES E INGRESOS  ****************************
+***************  VARIABLES DE INGRESOS & PROTECCIÓN SOCIAL  ********************
 ********************************************************************************
 
 	/* Limpia valores outlier en variables de ingreso antes de usarlas */
-	local var_ing = "e01aimde e01bimde e01cimde e01dde e01ede e01fde e01gde e01hde e01ide e01jde e01kde e01lde e02bde ingrevasode ingrealmuerzode b20t b23 b25"
+	local var_ing = "e01aimde e01bimde e01cimde e01dde e01ede e01fde e01gde e01hde e01ide e01jde e01kde e01lde  e01mde e01kjde e02bde ingrevasode ingrealmuerzode b20t b23 b25"
 	foreach x of local var_ing {
-		capture replace `x' = . if `x' >= 99999999999
+		replace `x' = . if `x' == 99999999999 | `x' == 0
 	}
+
+*A. INGRESOS LABORALES A NIVEL DE INDIVIDUO	
 
 	********************
 	*** ylmpri_ci ***
@@ -645,30 +647,89 @@ use `base_in', clear
 	********************
 	egen double ylnm_ci = rowtotal(ylnmpri_ci ylnmsec_ci ylnmotros_ci), missing
 	replace ylnm_ci = . if ylnm_ci < 0 & ylnm_ci != .
+	
+
+	*B. INGRESOS NO LABORALES A NIVEL DE INDIVIDUO	
+
+	******************
+	*** ytransf_ci ***
+	******************
+		* PNC - Pensiones sociales no contributivas:
+				* Ingreso del Estado $ Adulto Mayor (e01kde)
+		* PTMC - Programas de transferencias monetarias condicionadas:
+				* Ingreso del Estado $ Tekoporã (e01ide)
+		* POTROT - Programas de otras transferencias monetarias no condicionadas
+
+	*** Beneficiarios a nivel individual:
+		gen byte pnc_ci = (e01kde > 0) if !missing(e01kde)
+		gen byte ptmc_ci = (e01ide > 0) if !missing(e01ide)
+		gen byte potrot_ci = .
+
+	*** Montos de transferencias a nivel individual:
+		gen double ypnc_ci = e01kde	if e01kde > 0 & e01kde != 999999999	// Transferencias PNC
+		gen double yptmc_ci = e01ide if e01ide > 0 & e01ide != 999999999		// Transferencias PTMC
+		gen double yotrot_ci = .		// Otras transferencias POTROT
+
+	*** Ingreso individual por transferencias no contributivas
+	egen double ytransf_ci = rowtotal(ypnc_ci yptmc_ci yotrot_ci), mi
+
+	********************
+	*** ypen_ci ***
+	********************
+	/* e01hde: jubilación, e01jde: pensión (ex combatiente, viudas) */
+	egen double ypen_ci = rowtotal(e01hde e01jde), missing
+	replace ypen_ci = . if e01hde == . & e01jde == .
+
+	********************
+	*** ypensub_ci ***
+	********************
+	/* e01kde: Adulto Mayor (pensión no contributiva del Estado) */
+	gen double ypensub_ci = ypen_ci
+	
+	********************
+	*** remesas_ci ***
+	********************
+	gen double remesas_ci = e02bde if e02bde > 0 & e02bde != 999999999
 
 	********************
 	*** ynlm_ci ***
 	********************
-	local var_ynlm = "e01dde e01ede e01fde e01gde e01hde e01ide e01jde e01kde e01lde e02bde"
-	foreach x of local var_ynlm {
-		capture replace `x' = . if `x' >= 99999999999
-	}
-	egen double ynlm_ci = rsum(e01dde e01ede e01fde e01gde e01hde e01ide e01jde e01kde e01lde e02bde), missing
-	replace ynlm_ci = . if e01dde == . & e01ede == . & e01fde == . & e01gde == . & ///
-	                       e01hde == . & e01ide == . & e01jde == . & e01kde == . & ///
-	                       e01lde == . & e02bde == .
+	/* Variables de ingresos no laborales
+	e01dde  Ingreso mensual por alquileres o rentas netas
+	e01ede  Ingreso mensual Por intereses o dividendos
+	e01fde  Ingreso mensual por ayuda familiar del país
+	e01gde  Ingreso mensual por divorcio / Asistencia alimentaria
+	e01hde  Ingreso mensual por jubilación > ypen_ci
+	e01ide  Ingreso mensual del Estado Monetario Tekopora > ytransf_ci
+	e01jde  Ingreso mensual por pensión > ypen_ci
+	e01kde  Ingreso mensual del Estado Monetario Adulto Mayor > ytransf_ci
+	e01mde  Otros ingresos no laborales mensuales
+	e01kjde Otros ingresos mensuales agro asignados al jefe de hogar
+	e02bde  Ingreso mensual por ayuda familiar del exterior (individual) > remesas_ci	*/
+	
+	egen double ynlm_ci = rowtotal(e01dde e01ede e01fde e01gde ypen_ci ytransf_ci e01mde e01kjde remesas_ci), missing
 
 	********************
 	*** ynlnm_ci ***
 	********************
-	/* ingrevasode: vaso de leche imputado; ingrealmuerzode: almuerzo escolar imputado */
-	egen double ynlnm_ci = rsum(ingrevasode ingrealmuerzode), missing
-
+	* e01lde Ing por víveres de alguna institución pública
+	gen double ynlnm_ci = e01lde if e01lde > 0 & e01lde != 999999999
+	
 	********************
 	*** ytot_ci ***
 	********************
 	egen double ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci), missing
 
+	********************
+	*** ynet_ci ***
+	********************
+	gen double aux_ytransf_ci = ytransf_ci*(-1)
+	egen double ynet_ci = rowtotal(ytot_ci aux_ytransf_ci), mi	
+	drop aux_ytransf_ci
+	
+
+*C. INGRESOS A NIVEL DE HOGAR
+	
 	********************
 	*** ylm_ch ***
 	********************
@@ -679,20 +740,55 @@ use `base_in', clear
 	********************
 	bysort idh_ch: egen double ylnm_ch = total(ylnm_ci) if miembros_ci == 1, missing
 
+	******************
+	*** ytransf_ch ***
+	******************
+
+	*** Beneficiarios a nivel hogar:
+		bys idh_ch: egen byte pnc_ch = max(pnc_ci) if miembros_ci == 1
+		bys idh_ch: egen byte ptmc_ch = max(ptmc_ci) if miembros_ci == 1
+		bys idh_ch: egen byte potrot_ch = max(potrot_ci) if miembros_ci == 1
+		
+		gen byte pcasht_ch = (pnc_ch == 1 | ptmc_ch == 1 | potrot_ch == 1)
+		replace pcasht_ch = . if pnc_ch == . & ptmc_ch == . & potrot_ch == .
+		
+	*** Montos de transferencias a nivel hogar:
+		bys idh_ch: egen double ypnc_ch = total(ypnc_ci) if miembros_ci == 1, mi
+		bys idh_ch: egen double yptmc_ch = total(yptmc_ci) if miembros_ci == 1, mi
+		bys idh_ch: egen double yotrot_ch = total(yotrot_ci) if miembros_ci == 1, mi
+
+	*** Ingreso del Hogar por transferencias no contributivas
+	egen double ytransf_ch = rowtotal(ypnc_ch yptmc_ch yotrot_ch) if miembros_ci == 1, mi
+	
+	********************
+	*** remesas_ch ***
+	********************
+	by idh_ch, sort: egen double remesas_ch = total (remesas_ci) if miembros_ci == 1, missing
+	
 	********************
 	*** ynlm_ch ***
 	********************
-	by idh_ch, sort: egen double ynlm_ch = sum(ynlm_ci) if miembros_ci == 1, missing
+	by idh_ch, sort: egen double ynlm_ch = total(ynlm_ci) if miembros_ci == 1, missing
 
 	********************
 	*** ynlnm_ch ***
 	********************
-	bysort idh_ch: egen double ynlnm_ch = total(ynlnm_ci) if miembros_ci == 1, missing
+	/* A nivel hogar: ingrevasode: vaso de leche imputado; ingrealmuerzode: almuerzo escolar imputado */
+	bys idh_ch: egen double ing_nm1 = total(ynlnm_ci) if miembros_ci == 1, mi // Ingresos individuales
+	egen double ynlnm_ch = rowtotal(ing_nm1 ingrevasode ingrealmuerzod) if miembros_ci == 1, mi
 
 	********************
 	*** ytot_ch ***
 	********************
-	egen double ytot_ch = rowtotal(ylm_ch ylnm_ch ynlm_ch ynlnm_ch), missing
+	egen double ytot_ch = rowtotal(ylm_ch ylnm_ch ynlm_ch ynlnm_ch) if miembros_ci == 1, missing
+	
+	********************
+	*** ynet_ch ***
+	********************
+	gen double aux_ytransf_ch = ytransf_ch*(-1)
+	egen double ynet_ch = rowtotal(ytot_ch aux_ytransf_ch) if miembros_ci == 1, mi
+	gen double ynet_ch_pc = (ynet_ch)/nmiembros_ch if miembros_ci == 1
+	drop aux_ytransf_ch
 
 	********************
 	*** ylmhopri_ci ***
@@ -717,29 +813,6 @@ use `base_in', clear
 	********************
 	bysort idh_ch: egen byte nrylmpri_ch = max(nrylmpri_ci) if miembros_ci == 1
 	replace nrylmpri_ch = 1 if nrylmpri_ch > 0 & nrylmpri_ch < .
-
-	********************
-	*** remesas_ci ***
-	********************
-	gen double remesas_ci = e02bde
-
-	********************
-	*** remesas_ch ***
-	********************
-	by idh_ch, sort: egen double remesas_ch = sum(remesas_ci) if miembros_ci == 1, missing
-
-	********************
-	*** ypen_ci ***
-	********************
-	/* e01hde: jubilación, e01jde: pensión (ex combatiente, viudas) */
-	egen double ypen_ci = rowtotal(e01hde e01jde), missing
-	replace ypen_ci = . if e01hde == . & e01jde == .
-
-	********************
-	*** ypensub_ci ***
-	********************
-	/* e01kde: Adulto Mayor (pensión no contributiva del Estado) */
-	gen double ypensub_ci = e01kde
 
 	********************
 	*** pension_ci ***
@@ -1239,16 +1312,17 @@ use `base_in', clear
 	  afroind_ci afroind_ch afroind_ano_c dis_ci dis_ch /// Género y diversidad 
 	  afro_ci ind_ci noafroind_ci afro_ch ind_ch noafroind_ch disWG_ci /// Género y diversidad
 	  /// Agregar aquí: ISO3pais_dis_ci (renombrar con código del país, ej. COL_dis_ci)
-          condocup_ci categoinac_ci emp_ci cesante_ci desemp_ci subemp_ci durades_ci pea_ci nempleos_ci antiguedad_ci desalent_ci  /// Empleo
+      condocup_ci categoinac_ci emp_ci cesante_ci desemp_ci subemp_ci durades_ci pea_ci nempleos_ci antiguedad_ci desalent_ci  /// Empleo
 	  horaspri_ci horastot_ci tiempoparc_ci categopri_ci categosec_ci rama_ci spublico_ci tamemp_ci cotizando_ci instcot_ci	afiliado_ci /// Empleo
 	  formal_ci tipocontrato_ci ocupa_ci pension_ci	pensionsub_ci tipopen_ci instpen_ci	/// Empleo
 	  ylmpri_ci ylnmpri_ci ylmsec_ci ylnmsec_ci ylmotros_ci /// Ingresos individuo
      ylnmotros_ci ylm_ci ylnm_ci ynlm_ci ynlnm_ci ytot_ci   /// Ingresos individuo
-	  ylm_ch ylnm_ch ynlm_ch ynlnm_ch   ytot_ch /// Ingresos del hogar
-	  ylmhopri_ci ylmho_ci /// ingreso por hora
+	  ylm_ch ylnm_ch ynlm_ch ynlnm_ch ytot_ch /// Ingresos del hogar
+	  ylmhopri_ci ylmho_ci /// Ingreso por hora
 	  nrylmpri_ci nrylmpri_ch /// No respuesta de ingresos 
+	  pnc_ci ptmc_ci potrot_ci ypnc_ci yptmc_ci yotrot_ci ytransf_ci ynet_ci pnc_ch ptmc_ch potrot_ch ypnc_ch yptmc_ch yotrot_ch ytransf_ch ynet_ch ynet_ch_pc /// Protección social
 	  remesas_ci remesas_ch ypen_ci ypensub_ci /// Remesas y pensiones
-          aedu_ci eduui_ci eduuc_ci edupre_ci eduac_ci asiste_ci edupub_ci razonesnoasis_ci asispre_ci /// Educación 
+      aedu_ci eduui_ci eduuc_ci edupre_ci eduac_ci asiste_ci edupub_ci razonesnoasis_ci asispre_ci /// Educación 
 	  luz_ch luzmide_ch combust_ch piso_ch pared_ch techo_ch resid_ch dorm_ch cuartos_ch cocina_ch telef_ch refrig_ch /// Vivienda 
 	  freez_ch auto_ch compu_ch internet_ch cel_ch vivi1_ch vivi2_ch viviprop_ch vivitit_ch vivialq_ch vivialqimp_ch /// Vivienda
 	  aguared_ch aguafconsumo_ch aguafuente_ch aguadist_ch aguadisp1_ch aguadisp2_ch /// Agua y saneamineto
