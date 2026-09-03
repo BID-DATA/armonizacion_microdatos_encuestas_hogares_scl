@@ -76,49 +76,56 @@ label var p61223 "Su hogar tiene: otro"
 label var p61224 "Su hogar tiene: otro"
 label var p61225 "Su hogar tiene: otro"
 label var p61226 "Su hogar tiene: otro"
-
+renlabv
 saveold "$ruta\759-Modulo18\enaho01-2021-612_1.dta", replace
 
 * Sort de bases
 use "$ruta\759-Modulo02\enaho01-2021-200.dta", clear
 duplicates report conglome vivienda hogar codperso
 sort conglome vivienda hogar codperso
+renlabv
 saveold "$ruta\759-Modulo02\enaho01-2021-200.dta", replace
 
 
 use "$ruta\759-Modulo03\enaho01a-2021-300.dta", clear
 duplicates report conglome vivienda hogar codperso
 sort conglome vivienda hogar codperso
+renlabv
 saveold "$ruta\759-Modulo03\enaho01a-2021-300.dta", replace
 
 
 use "$ruta\759-Modulo04\enaho01a-2021-400.dta", clear
 duplicates report conglome vivienda hogar codperso
 sort conglome vivienda hogar codperso
+renlabv
 saveold "$ruta\759-Modulo04\enaho01a-2021-400.dta", replace
 
 
 use "$ruta\759-Modulo05\enaho01a-2021-500.dta", clear
 duplicates report conglome vivienda hogar codperso
 sort conglome vivienda hogar codperso
+renlabv
 saveold "$ruta\759-Modulo05\enaho01a-2021-500.dta", replace
 
 
 use "$ruta\759-Modulo85\enaho01b-2021-2.dta", clear
 duplicates report conglome vivienda hogar codperso
 sort conglome vivienda hogar codperso
+renlabv
 saveold "$ruta\759-Modulo85\enaho01b-2021-2.dta", replace
 
 
 use "$ruta\759-Modulo34\sumaria-2021.dta", clear
 duplicates report conglome vivienda hogar
 sort conglome vivienda hogar 
+renlabv
 saveold "$ruta\759-Modulo34\sumaria-2021.dta", replace
 
 
 use "$ruta\759-Modulo18\enaho01-2021-612_1.dta", clear
 duplicates report conglome vivienda hogar
 sort conglome vivienda hogar
+renlabv
 saveold "$ruta\759-Modulo18\enaho01-2021-612_1.dta", replace
 
 * Merge de bases de datos
