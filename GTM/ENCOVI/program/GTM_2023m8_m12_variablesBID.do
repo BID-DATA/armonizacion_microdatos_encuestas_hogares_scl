@@ -1,7 +1,5 @@
-
-
 * (Versión Stata 17)
-clear
+clear all
 set more off
 *________________________________________________________________________________________________________________*
 
@@ -740,19 +738,6 @@ replace des1_ch=3 if p02b07==3 //excusado
 gen salmm_ci= 101.05
 label var salmm_ci "Salario minimo legal"
 
-*********
-*lp_ci***
-*********
-
-gen lp_ci =.
-label var lp_ci "Linea de pobreza oficial del pais"
-
-*********
-*lpe_ci**
-*********
-
-gen lpe_ci =.
-label var lpe_ci "Linea de indigencia oficial del pais"
 
 /************************************************************************************************************
 * 3. Creación de nuevas variables de SS and LMK a incorporar en Armonizadas
@@ -1708,6 +1693,45 @@ gen bene_cash_ch = .
 **********************	
 bys idh_ch: egen pensionsub_ch = max(pensionsub_ci)  
 
+		***************************
+		***VARIABLES DE POBREZA***
+		***************************	
+
+	****************
+	*tipo_bienestar*
+	****************	
+	gen byte tipo_bienestar = 2
+
+	********************
+	*bienestar_agregado*
+	********************	
+	gen bienestar_agregado = .
+	
+	***********
+	***ln_ci***
+	***********
+	gen ln_ci = .
+
+	*************
+	***lpe_ci ***
+	*************
+	gen lpe_ci = . 
+	
+	**************
+	*pobre_ine_ci*
+	**************
+	gen byte pobre_ine_ci= . 
+	replace pobre_ine_ci= 0 if pobreza==3
+	replace pobre_ine_ci= 1 if inlist(pobreza,1,2)
+	
+	******************
+	*pobre_ine_ext_ci*
+	******************
+	gen byte pobre_ine_ext_ci= . 
+	replace pobre_ine_ext_ci= 1 if pobreza==1
+	replace pobre_ine_ext_ci= 0 if inlist(pobreza,2,3)
+	
+
 
 
 
@@ -1740,7 +1764,8 @@ do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&Exter
 	  migrante_ci migrantiguo5_ci miglac_ci /// Migración  
 	  nmiembros_sph_ch yneto_pc_ch bene_cash_ch pensionsub_ch   /// Protección social 
           ynlm_publico_ch ynlm_privado_ch ynlm_privado_ci ynlm_publico_ci  /// Protección social ingresos
- 	  salmm_ci lp19_2011 lp31_2011 lp5_2011 lp_ci lpe_ci lp365_2017 lp685_2017 lp14_2017 lp81_2017 tc_c ratio_cpi2011 ratio_cpi2017 cpi_c cpi2011 cpi2017 ppp_c ppp_2011 ppp_2017, first /// Fuente externa
+ 	  salmm_ci lp19_2011 lp31_2011 lp5_2011 lp365_2017 lp685_2017 lp14_2017 lp81_2017 tc_c ratio_cpi2011 ratio_cpi2017 cpi_c cpi2011 cpi2017 ppp_c ppp_2011 ppp_2017 /// Fuente externa
+	  tipo_bienestar bienestar_agregado ln_ci lpe_ci pobre_ine_ci pobre_ine_ext_ci, first /// Pobreza
 
 
 
