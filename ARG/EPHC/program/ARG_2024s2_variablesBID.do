@@ -1556,41 +1556,41 @@ label var miglac_ci "=1 si es migrante proveniente de un país LAC"
 	
 	*Adulto equivalente por persona (tabla INDEC; ch06=edad, ch04: 1=varón, 2=mujer
 	gen double adequiv = .
-	replace adequiv = 0.35 if ch06==0       
-	replace adequiv = 0.37 if ch06==1
-	replace adequiv = 0.46 if ch06==2
-	replace adequiv = 0.51 if ch06==3
-	replace adequiv = 0.55 if ch06==4
-	replace adequiv = 0.60 if ch06==5
-	replace adequiv = 0.64 if ch06==6
-	replace adequiv = 0.66 if ch06==7
-	replace adequiv = 0.68 if ch06==8
-	replace adequiv = 0.69 if ch06==9
+	replace adequiv = 0.35 if edad_ci==0       
+	replace adequiv = 0.37 if edad_ci==1
+	replace adequiv = 0.46 if edad_ci==2
+	replace adequiv = 0.51 if edad_ci==3
+	replace adequiv = 0.55 if edad_ci==4
+	replace adequiv = 0.60 if edad_ci==5
+	replace adequiv = 0.64 if edad_ci==6
+	replace adequiv = 0.66 if edad_ci==7
+	replace adequiv = 0.68 if edad_ci==8
+	replace adequiv = 0.69 if edad_ci==9
 	* Varones 10+
-	replace adequiv = 0.79 if ch04==1 & ch06==10
-	replace adequiv = 0.82 if ch04==1 & ch06==11
-	replace adequiv = 0.85 if ch04==1 & ch06==12
-	replace adequiv = 0.90 if ch04==1 & ch06==13
-	replace adequiv = 0.96 if ch04==1 & ch06==14
-	replace adequiv = 1.00 if ch04==1 & ch06==15
-	replace adequiv = 1.03 if ch04==1 & ch06==16
-	replace adequiv = 1.04 if ch04==1 & ch06==17
-	replace adequiv = 1.02 if ch04==1 & inrange(ch06,18,29)
-	replace adequiv = 1.00 if ch04==1 & inrange(ch06,30,60)
-	replace adequiv = 0.83 if ch04==1 & inrange(ch06,61,75)
-	replace adequiv = 0.74 if ch04==1 & ch06>=76
+	replace adequiv = 0.79 if ch04==1 & edad_ci==10
+	replace adequiv = 0.82 if ch04==1 & edad_ci==11
+	replace adequiv = 0.85 if ch04==1 & edad_ci==12
+	replace adequiv = 0.90 if ch04==1 & edad_ci==13
+	replace adequiv = 0.96 if ch04==1 & edad_ci==14
+	replace adequiv = 1.00 if ch04==1 & edad_ci==15
+	replace adequiv = 1.03 if ch04==1 & edad_ci==16
+	replace adequiv = 1.04 if ch04==1 & edad_ci==17
+	replace adequiv = 1.02 if ch04==1 & inrange(edad_ci,18,29)
+	replace adequiv = 1.00 if ch04==1 & inrange(edad_ci,30,60)
+	replace adequiv = 0.83 if ch04==1 & inrange(edad_ci,61,75)
+	replace adequiv = 0.74 if ch04==1 & edad_ci>=76
 	
 	* Mujeres 10+
-	replace adequiv = 0.70 if ch04==2 & ch06==10
-	replace adequiv = 0.72 if ch04==2 & ch06==11
-	replace adequiv = 0.74 if ch04==2 & ch06==12
-	replace adequiv = 0.76 if ch04==2 & inrange(ch06,13,14)
-	replace adequiv = 0.77 if ch04==2 & inrange(ch06,15,17)
-	replace adequiv = 0.76 if ch04==2 & inrange(ch06,18,29)
-	replace adequiv = 0.77 if ch04==2 & inrange(ch06,30,45)
-	replace adequiv = 0.76 if ch04==2 & inrange(ch06,46,60)
-	replace adequiv = 0.67 if ch04==2 & inrange(ch06,61,75)
-	replace adequiv = 0.63 if ch04==2 & ch06>=76
+	replace adequiv = 0.70 if ch04==2 & edad_ci==10
+	replace adequiv = 0.72 if ch04==2 & edad_ci==11
+	replace adequiv = 0.74 if ch04==2 & edad_ci==12
+	replace adequiv = 0.76 if ch04==2 & inrange(edad_ci,13,14)
+	replace adequiv = 0.77 if ch04==2 & inrange(edad_ci,15,17)
+	replace adequiv = 0.76 if ch04==2 & inrange(edad_ci,18,29)
+	replace adequiv = 0.77 if ch04==2 & inrange(edad_ci,30,45)
+	replace adequiv = 0.76 if ch04==2 & inrange(edad_ci,46,60)
+	replace adequiv = 0.67 if ch04==2 & inrange(edad_ci,61,75)
+	replace adequiv = 0.63 if ch04==2 & edad_ci>=76
 
 	*Adultos equivalentes del hogar
 	bysort codusu nro_hogar: egen double adeq_hogar = total(adequiv)
