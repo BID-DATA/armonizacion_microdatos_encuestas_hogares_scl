@@ -1,6 +1,5 @@
 *(Versión stata 17)
 
-**# Bookmark #1
 clear
 set more off
 
@@ -273,7 +272,6 @@ drop if sexo_ci>2 | sexo_ci<1
 *********
 capture gen edad_ci=ch06
 replace edad_ci=0 if edad_ci==-1
-replace edad_ci=98 if edad_ci>=98
 	
 **************
 *Estado Civil*
@@ -1580,7 +1578,8 @@ label var miglac_ci "=1 si es migrante proveniente de un país LAC"
 	replace adequiv = 1.02 if ch04==1 & inrange(ch06,18,29)
 	replace adequiv = 1.00 if ch04==1 & inrange(ch06,30,60)
 	replace adequiv = 0.83 if ch04==1 & inrange(ch06,61,75)
-	replace adequiv = 0.74 if ch04==1 & inrange(ch06,76,98)
+	replace adequiv = 0.74 if ch04==1 & ch06>=76
+	
 	* Mujeres 10+
 	replace adequiv = 0.70 if ch04==2 & ch06==10
 	replace adequiv = 0.72 if ch04==2 & ch06==11
@@ -1591,7 +1590,7 @@ label var miglac_ci "=1 si es migrante proveniente de un país LAC"
 	replace adequiv = 0.77 if ch04==2 & inrange(ch06,30,45)
 	replace adequiv = 0.76 if ch04==2 & inrange(ch06,46,60)
 	replace adequiv = 0.67 if ch04==2 & inrange(ch06,61,75)
-	replace adequiv = 0.63 if ch04==2 & inrange(ch06,76,98)
+	replace adequiv = 0.63 if ch04==2 & ch06>=76
 	* (ch06==99 = Ns/Nr queda en missing a propósito)
 
 
