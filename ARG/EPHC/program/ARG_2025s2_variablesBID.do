@@ -1529,7 +1529,7 @@ use "`base_in'", clear
 	replace adequiv = 1.02 if ch04==1 & inrange(ch06,18,29)
 	replace adequiv = 1.00 if ch04==1 & inrange(ch06,30,60)
 	replace adequiv = 0.83 if ch04==1 & inrange(ch06,61,75)
-	replace adequiv = 0.74 if ch04==1 & inrange(ch06,76,98)
+	replace adequiv = 0.74 if ch04==1 & ch06>=76
 	* Mujeres 10+
 	replace adequiv = 0.70 if ch04==2 & ch06==10
 	replace adequiv = 0.72 if ch04==2 & ch06==11
@@ -1540,7 +1540,7 @@ use "`base_in'", clear
 	replace adequiv = 0.77 if ch04==2 & inrange(ch06,30,45)
 	replace adequiv = 0.76 if ch04==2 & inrange(ch06,46,60)
 	replace adequiv = 0.67 if ch04==2 & inrange(ch06,61,75)
-	replace adequiv = 0.63 if ch04==2 & inrange(ch06,76,98)
+	replace adequiv = 0.63 if ch04==2 & ch06>=76
 	* (ch06==99 = Ns/Nr queda en missing a propósito)
 	
 	*Adultos equivalentes del hogar
