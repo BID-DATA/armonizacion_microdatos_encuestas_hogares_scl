@@ -1,5 +1,5 @@
 * (Versión Stata 12)
-clear
+clear all 
 set more off
 *________________________________________________________________________________________________________________*
 
@@ -1734,17 +1734,44 @@ https://www.mtss.go.cr/temas-laborales/salarios/Documentos-Salarios/lista_salari
 gen salmm_ci= 367108.6
 label var salmm_ci "Salario minimo legal"
 
-***********
-*  lp_ci  *
-***********
-gen lp_ci = lp
-label var lp_ci "Linea de pobreza oficial del pais"
 
-************
-* lpe_ci   *
-************
-gen lpe_ci = cba
-label var lpe_ci "Linea de indigencia oficial del pais"
+		***************************
+		***VARIABLES DE POBREZA***
+		***************************	
+
+	****************
+	*tipo_bienestar*
+	****************	
+	gen byte tipo_bienestar = 1
+
+	********************
+	*bienestar_agregado*
+	********************	
+	gen bienestar_agregado = ipcn // ingreso per capita del hogar neto 
+	
+	***********
+	***ln_ci***
+	***********
+	gen ln_ci = lp
+
+	*************
+	***lpe_ci ***
+	*************
+	gen lpe_ci = cba
+	
+	**************
+	*pobre_ine_ci*
+	**************
+	gen byte pobre_ine_ci= . 
+	replace pobre_ine_ci= 0 if np==3
+	replace pobre_ine_ci= 1 if inlist(np,1,2)
+	
+	******************
+	*pobre_ine_ext_ci*
+	******************
+	gen byte pobre_ine_ext_ci= . 
+	replace pobre_ine_ext_ci= 1 if np==1
+	replace pobre_ine_ext_ci= 0 if inlist(np,2,3)
 
 
 gen tcylmpri_ci =.
@@ -1783,10 +1810,8 @@ do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&Exter
   aguared_ch aguafconsumo_ch aguafuente_ch aguadist_ch aguadisp1_ch aguadisp2_ch /// Agua y saneamineto
   aguatrat_ch aguamala_ch aguamejorada_ch aguamide_ch bano_ch banoex_ch banomejorado_ch sinbano_ch  /// Agua y saneamineto
   migrante_ci migrantiguo5_ci miglac_ci /// Migración
-  salmm_ci lp19_2011 lp31_2011 lp5_2011 lp_ci lpe_ci lp365_2017 lp685_2017 lp14_2017 lp81_2017 tc_c cpi_c cpi2011 cpi2017 ratio_cpi2011 ratio_cpi2017 /// Fuente externa
-  ppp_c ppp_2011 ppp_2017 , first /// Fuente externa 
-  /// the order was created by regex functions, sph variables are excluded /// Fuente externa 
-  /// the order was created by regex functions, sph variables are excluded
+  salmm_ci lp19_2011 lp31_2011 lp5_2011 lp365_2017 lp685_2017 lp14_2017 lp81_2017 tc_c cpi_c cpi2011 cpi2017 ratio_cpi2011 ratio_cpi2017  ppp_c ppp_2011 ppp_2017 /// Fuente externa
+  tipo_bienestar bienestar_agregado ln_ci lpe_ci pobre_ine_ci pobre_ine_ext_ci, first /// Pobreza
 
 compress
 

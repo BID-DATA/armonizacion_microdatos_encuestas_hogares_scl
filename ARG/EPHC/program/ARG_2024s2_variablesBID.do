@@ -1,6 +1,5 @@
 *(Versión stata 17)
 
-**# Bookmark #1
 clear
 set more off
 
@@ -49,6 +48,9 @@ Detalle de procesamientos o modificaciones anteriores:
 ****************************************************************************/
 
 use `base_in', clear
+
+keep if pondih>0 & pondih!=. // cambio Sept 2026 
+
 
 **********************************
 ***VARIABLES DEL IDENTIFICACION***
@@ -270,7 +272,6 @@ drop if sexo_ci>2 | sexo_ci<1
 *********
 capture gen edad_ci=ch06
 replace edad_ci=0 if edad_ci==-1
-replace edad_ci=98 if edad_ci>=98
 	
 **************
 *Estado Civil*
@@ -886,14 +887,14 @@ gen remesas_ch=. //No hay variable de remesas
 *********
 *ypen_ci: Ingreso por pensión contributiva: Variable continua que indica el monto mensual en moneda local corriente efectivamente recibido por el individuo por pensiones contributivas en sus distintas modalidades (jubilación, vejez, pensión, etc).*
 *********
-*v2_m : Monto del ingreso por jubilación o pensión
-*v21_m: Monto del ingreso por aguinaldo
+*v2_01_m  : Monto del ingreso por jubilación o pensión
+*v21_01_m  : Monto del ingreso por aguinaldo
 
-gen aguinpen=v21_m/12 if v2_m>0 & v2_m!=. //Se guardan los ingresos por aguinaldos     
+gen aguinpen=v21_01_m /12 if v2_01_m >0 & v2_01_m !=. //Se guardan los ingresos por aguinaldos     
 
-egen ypen_ci=rsum(v2_m aguinpen), missing //Se suman los ingresos de aguinaldo + los de jubilación
+egen ypen_ci=rsum(v2_01_m  aguinpen), missing //Se suman los ingresos de aguinaldo + los de jubilación
 replace ypen_ci=0 if ypen_ci<0 //Se cambian los negativos por ceros
-replace ypen_ci=. if v21_m==. & aguinpen==. //Missings
+replace ypen_ci=. if v2_01_m   ==. & aguinpen==. //Missings
 label var ypen_ci "Valor de la pension contributiva"
 	
 ************
@@ -1434,7 +1435,7 @@ label value tamemp_ci tamemp_ci
 *************
 *pension_ci*
 *************
-gen pension_ci=1 if (v2_m>0 & v2_m<.) 
+gen pension_ci=1 if (v2_01_m >0 & v2_01_m <.) 
 recode pension_ci .=0 
 label var pension_ci "1=Recibe pension contributiva"
 
@@ -1536,39 +1537,117 @@ inlist(ch15_cod, 239, 240)) & migrante_ci == 1
 replace miglac_ci = 0 if miglac_ci != 1 & migrante_ci == 1
 replace miglac_ci = . if migrante_ci == 0
 label var miglac_ci "=1 si es migrante proveniente de un país LAC"
-
-
-****************************
-***VARIABLES DE EXTERNAS***
-**************************** 
+	
+		***************************
+		***VARIABLES DE POBREZA***
+		***************************	
 
 	****************
 	*tipo_bienestar*
-	**************** 
-	gen byte tipo_bienestar = . 
-	replace tipo_bienestar  = 1 
+	****************	
+	gen byte tipo_bienestar = 1
 	
 	**********************
 	* bienestar_agregado *
 	**********************
 	gen bienestar_agregado = itf
 	
+	*Metodología oficial de cálculo de las líneas de pobreza INDEC https://www.indec.gob.ar/uploads/informesdeprensa/eph_pobreza_03_252282AE14D2.pdf
+	
+	*Adulto equivalente por persona (tabla INDEC; ch06=edad, ch04: 1=varón, 2=mujer
+	gen double adequiv = .
+	replace adequiv = 0.35 if ch06==0       
+	replace adequiv = 0.37 if ch06==1
+	replace adequiv = 0.46 if ch06==2
+	replace adequiv = 0.51 if ch06==3
+	replace adequiv = 0.55 if ch06==4
+	replace adequiv = 0.60 if ch06==5
+	replace adequiv = 0.64 if ch06==6
+	replace adequiv = 0.66 if ch06==7
+	replace adequiv = 0.68 if ch06==8
+	replace adequiv = 0.69 if ch06==9
+	* Varones 10+
+	replace adequiv = 0.79 if ch04==1 & ch06==10
+	replace adequiv = 0.82 if ch04==1 & ch06==11
+	replace adequiv = 0.85 if ch04==1 & ch06==12
+	replace adequiv = 0.90 if ch04==1 & ch06==13
+	replace adequiv = 0.96 if ch04==1 & ch06==14
+	replace adequiv = 1.00 if ch04==1 & ch06==15
+	replace adequiv = 1.03 if ch04==1 & ch06==16
+	replace adequiv = 1.04 if ch04==1 & ch06==17
+	replace adequiv = 1.02 if ch04==1 & inrange(ch06,18,29)
+	replace adequiv = 1.00 if ch04==1 & inrange(ch06,30,60)
+	replace adequiv = 0.83 if ch04==1 & inrange(ch06,61,75)
+	replace adequiv = 0.74 if ch04==1 & ch06>=76
+	
+	* Mujeres 10+
+	replace adequiv = 0.70 if ch04==2 & ch06==10
+	replace adequiv = 0.72 if ch04==2 & ch06==11
+	replace adequiv = 0.74 if ch04==2 & ch06==12
+	replace adequiv = 0.76 if ch04==2 & inrange(ch06,13,14)
+	replace adequiv = 0.77 if ch04==2 & inrange(ch06,15,17)
+	replace adequiv = 0.76 if ch04==2 & inrange(ch06,18,29)
+	replace adequiv = 0.77 if ch04==2 & inrange(ch06,30,45)
+	replace adequiv = 0.76 if ch04==2 & inrange(ch06,46,60)
+	replace adequiv = 0.67 if ch04==2 & inrange(ch06,61,75)
+	replace adequiv = 0.63 if ch04==2 & ch06>=76
+
+	*Adultos equivalentes del hogar
+	bysort codusu nro_hogar: egen double adeq_hogar = total(adequiv)
+	
+
 	*******
 	*ln_ci*
-	******
-	gen ln_ci= 952313/3.13
+	*******
+	gen double cbt_ae = .
+	replace cbt_ae = 302605.62 if region==1  & trimestre==3
+	replace cbt_ae = 286923.38 if region==42 & trimestre==3
+	replace cbt_ae = 252282.70 if region==41 & trimestre==3
+	replace cbt_ae = 244736.00 if region==40 & trimestre==3
+	replace cbt_ae = 299050.19 if region==43 & trimestre==3
+	replace cbt_ae = 353498.33 if region==44 & trimestre==3
+	replace cbt_ae = 324971.71 if region==1  & trimestre==4
+	replace cbt_ae = 307837.12 if region==42 & trimestre==4
+	replace cbt_ae = 270200.17 if region==41 & trimestre==4
+	replace cbt_ae = 261321.26 if region==40 & trimestre==4
+	replace cbt_ae = 320848.08 if region==43 & trimestre==4
+	replace cbt_ae = 379207.06 if region==44 & trimestre==4
+	
+	gen double ln_ci = cbt_ae * adeq_hogar
 
+	
 	********
 	*lpe_ci*
 	********
-	gen lpe_ci= 410604/3.04
+	gen double cba_ae = .
+	replace cba_ae = 135479.06 if region==1  & trimestre==3
+	replace cba_ae = 120706.46 if region==42 & trimestre==3
+	replace cba_ae = 120881.83 if region==41 & trimestre==3
+	replace cba_ae = 118023.71 if region==40 & trimestre==3
+	replace cba_ae = 133886.94 if region==43 & trimestre==3
+	replace cba_ae = 139523.10 if region==44 & trimestre==3
+	replace cba_ae = 142737.09 if region==1  & trimestre==4
+	replace cba_ae = 127026.27 if region==42 & trimestre==4
+	replace cba_ae = 126651.4 if region==41 & trimestre==4
+	replace cba_ae = 123649.86 if region==40 & trimestre==4
+	replace cba_ae = 140926.16 if region==43 & trimestre==4
+	replace cba_ae = 146784.52 if region==44 & trimestre==4
 	
-* https://www.indec.gob.ar/uploads/informesdeprensa/eph_pobreza_03_252282AE14D2.pdf pagina 7. Canasta Basica y Total promedio del hogar/Tamaño promedio del hogar pobre en adulto equivalente
-	
+	gen double lpe_ci = cba_ae * adeq_hogar
+
+
 	****************
-	* pobre_ine _ci*
+	* pobre_ine_ci*
 	**************** 
-	gen byte pobre_ine_ci=(bienestar_agregado<lpe_ci)
+	gen byte pobre_ine_ci = (bienestar_agregado < ln_ci) if !missing(bienestar_agregado, ln_ci)
+	
+	*******************
+	* pobre_ine_ext_ci*
+	******************* 
+	gen byte pobre_ine_ext_ci = (bienestar_agregado < lpe_ci) if !missing(bienestar_agregado, lpe_ci)
+	
+	
+	
 	
 	
 /*________________________________________________________________________________________________*/
@@ -1602,11 +1681,9 @@ do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&Exter
   aguared_ch aguafconsumo_ch aguafuente_ch aguadist_ch aguadisp1_ch aguadisp2_ch /// Agua y saneamineto
   aguatrat_ch aguamala_ch aguamejorada_ch aguamide_ch bano_ch banoex_ch banomejorado_ch sinbano_ch  /// Agua y saneamineto
   migrante_ci migrantiguo5_ci miglac_ci /// Migración
-  salmm_ci lp19_2011 lp31_2011 lp5_2011 lpe_ci lp365_2017 lp685_2017 lp14_2017 lp81_2017 tc_c cpi_c cpi2011 cpi2017 ratio_cpi2011 ratio_cpi2017 /// Fuente externa
-  ppp_c ppp_2011 ppp_2017 , first /// Fuente externa 
-  /// the order was created by regex functions, sph variables are excluded /// Fuente externa 
-  /// the order was created by regex functions, sph variables are excluded /// Fuente externa 
-  /// the order was created by regex functions, sph variables are excluded
+  salmm_ci lp19_2011 lp31_2011 lp5_2011 lp365_2017 lp685_2017 lp14_2017 lp81_2017 tc_c cpi_c cpi2011 cpi2017 ratio_cpi2011 ratio_cpi2017 /// Fuente externa
+  ppp_c ppp_2011 ppp_2017 /// Fuente externa 
+  tipo_bienestar bienestar_agregado ln_ci lpe_ci pobre_ine_ci pobre_ine_ext_ci, first /// Pobreza
 
 /*Homologar nombre del identificador de ocupaciones (isco, ciuo, etc.) y dejarlo en base armonizada 
 para analisis de trends (en el marco de estudios sobre el futuro del trabajo)*/
@@ -1621,17 +1698,7 @@ local shortlabel = substr(`"`longlabel'"',1,79)
 label var `i' `"`shortlabel'"'
 }
 
-global ruta = "${surveysFolder}"
 
-local PAIS ARG
-local ENCUESTA EPHC
-local ANO "2024"
-local ronda s2 
-
-local log_file = "$ruta\harmonized\\`PAIS'\\`ENCUESTA'\log\\`PAIS'_`ANO'`ronda'_variablesBID.log"
-local base_in  = "$ruta\survey\\`PAIS'\\`ENCUESTA'\\`ANO'\\`ronda'\data_merge\\`PAIS'_`ANO'`ronda'.dta"
-local base_out = "$ruta\harmonized\\`PAIS'\\`ENCUESTA'\data_arm\\`PAIS'_`ANO'`ronda'_BID.dta"
-   
 saveold "`base_out'", version(12) replace
 
 cap log close

@@ -47,9 +47,7 @@ use `base_in', clear
 ************
 * Region_c *
 ************
-
 gen region_c= . // No se dispone de la variable en este año
-          
 label value region_c region_c
 label var region_c "División política, departamentos"
 
@@ -479,18 +477,6 @@ label var ypensub_ci "Valor de la pension subsidiada / no contributiva"
 generat cesante_ci=0 if condocup_ci==2
 replace cesante_ci=1 if s5p12==1 & condocup_ci==2
 label var cesante_ci "Desocupado - definicion oficial del pais"
-
-*********
-*lp_ci***
-*********
-gen lp_ci =linea_ge 
-label var lp_ci "Linea de pobreza oficial del pais"
-
-***********
-*lpe_ci ***
-***********
-gen lpe_ci =linea_ex 
-label var lpe_ci "Linea de indigencia oficial del pais"
 
 
 /************************************************************************************************************
@@ -1584,6 +1570,47 @@ keep if sexo_ci!=.
 	label var miglac_ci "=1 si es migrante proveniente de un pais LAC"
 	/* Fuente Censo REDATAM */
 	
+	
+	
+		***************************
+		***VARIABLES DE POBREZA***
+		***************************	
+
+	****************
+	*tipo_bienestar*
+	****************	
+	gen byte tipo_bienestar = 2
+
+	********************
+	*bienestar_agregado*
+	********************	
+	gen bienestar_agregado = consu2pc
+	
+	***********
+	***ln_ci***
+	***********
+	gen ln_ci = linea_ge
+
+	*************
+	***lpe_ci ***
+	*************
+	gen lpe_ci = linea_ex 
+	
+	**************
+	*pobre_ine_ci*
+	**************
+	gen byte pobre_ine_ci= . 
+	replace pobre_ine_ci= 0 if pobreza==3
+	replace pobre_ine_ci= 1 if pobreza!=3
+	
+	******************
+	*pobre_ine_ext_ci*
+	******************
+	gen byte pobre_ine_ext_ci= . 
+	replace pobre_ine_ext_ci= 1 if pobreza==1
+	replace pobre_ine_ext_ci= 0 if pobreza!=1
+	
+	
 /*_____________________________________________________________________________________________________*/
 * Asignación de etiquetas e inserción de variables externas: tipo de cambio, Indice de Precios al 
 * Consumidor (2011=100), líneas de pobreza
@@ -1617,7 +1644,8 @@ cap order region_BID_c region_c pais_c anio_c mes_c zona_c factor_ch idh_ch	idp_
 	  migrante_ci migrantiguo5_ci miglac_ci /// Migración  
 	  nmiembros_sph_ch yneto_pc_ch bene_cash_ch pensionsub_ch   /// Protección social 
           ynlm_publico_ch ynlm_privado_ch ynlm_privado_ci ynlm_publico_ci  /// Protección social ingresos
- 	  salmm_ci lp19_2011 lp31_2011 lp5_2011 lp_ci lpe_ci lp365_2017 lp685_2017 lp14_2017 lp81_2017 tc_c ratio_cpi2011 ratio_cpi2017 cpi_c cpi2011 cpi2017 ppp_c ppp_2011 ppp_2017, first /// Fuente externa
+ 	  salmm_ci lp19_2011 lp31_2011 lp5_2011 lp365_2017 lp685_2017 lp14_2017 lp81_2017 tc_c ratio_cpi2011 ratio_cpi2017 cpi_c cpi2011 cpi2017 ppp_c ppp_2011 ppp_2017, first /// Fuente externa
+	  tipo_bienestar bienestar_agregado ln_ci lpe_ci pobre_ine_ci pobre_ine_ext_ci /// Pobreza
 
 
 clonevar codindustria=s5p1
