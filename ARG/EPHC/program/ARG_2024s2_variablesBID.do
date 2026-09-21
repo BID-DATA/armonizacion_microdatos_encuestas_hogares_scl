@@ -1591,8 +1591,6 @@ label var miglac_ci "=1 si es migrante proveniente de un país LAC"
 	replace adequiv = 0.76 if ch04==2 & inrange(ch06,46,60)
 	replace adequiv = 0.67 if ch04==2 & inrange(ch06,61,75)
 	replace adequiv = 0.63 if ch04==2 & ch06>=76
-	* (ch06==99 = Ns/Nr queda en missing a propósito)
-
 
 	*Adultos equivalentes del hogar
 	bysort codusu nro_hogar: egen double adeq_hogar = total(adequiv)
