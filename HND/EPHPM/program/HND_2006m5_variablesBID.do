@@ -46,7 +46,7 @@ Fecha última modificación: Noviembre de 2017
 Detalle de procesamientos o modificaciones anteriores:
 ****************************************************************************/
 
-use "`base_in'", clear
+use `base_in', clear
 
 		**********************************
 		***VARIABLES DEL IDENTIFICACION***
@@ -360,12 +360,22 @@ label value condocup_ci condocup_ci
 ************
 ***emp_ci***
 ************
-gen emp_ci=(condocup_ci==1)
+***** El código mantiene como missing values a la poblacion menor de la edad limite de la PET que no forman parte de la población de referencia de la sección laboral de la Encuesta *****.
+gen byte emp_ci = .
+replace emp_ci = (condocup_ci == 1) if (condocup_ci != . & condocup_ci != 4)
+label var emp_ci "Ocupado (empleado)"
+label define emp_ci 0"No" 1"Si", add
+label value emp_ci emp_ci
 
 ****************
 ***desemp_ci***
 ****************
-gen desemp_ci=(condocup_ci==2)
+***** El código mantiene como missing values a la poblacion menor de la edad limite de la PET que no forman parte de la población de referencia de la sección laboral de la Encuesta *****.
+gen byte desemp_ci = .
+replace desemp_ci = (condocup_ci == 2) if (condocup_ci != . & condocup_ci != 4)
+label var desemp_ci "Desocupado (desempleado)"
+label define desemp_ci 0"No " 1"Si", add
+label value desemp_ci desemp_ci
 
 *************
 ***pea_ci***
@@ -376,10 +386,13 @@ gen pea_ci=(emp_ci==1 | desemp_ci==1)
 *****************
 ***desalent_ci***
 *****************
-gen desalent_ci=.
-replace desalent_ci=0 if condocup_ci==3
-replace desalent_ci=1 if p23==6
-label var desalent_ci "Trabajadores desalentados, personas que creen que por alguna razon no conseguiran trabajo" 
+***** El código mantiene como población de referencia a las personas inactivas (condocup_ci == 3) *****.
+gen byte desalent_ci = .
+replace desalent_ci = 1 if ((p20 == 2 & p23 == 6) & condocup_ci == 3)
+replace desalent_ci = 0 if ((p23 != 6 & p23 !=.) & condocup_ci==3)
+label var desalent_ci "Desalentados"
+label define desalent_ci 0"No" 1"Si", add
+label value desalent_ci desalent_ci 
 
 *****************
 ***horaspri_ci***
@@ -554,10 +567,13 @@ label var lpe_ci "Linea de indigencia oficial del pais"
 ****************
 *cotizando_ci***
 ****************
-gen cotizando_ci=.
-replace cotizando_ci=1 if p68_01==1 | p68_02==1 | p68_03==1 | p68_04==1 | p68_05==1 | p68_06==1 | p68_07==1 | p68_08==1 | p68_09==1 | p68_10==1 
-recode cotizando_ci .=0 if condact==1 | condact==2
+***** El código mantiene a la poblacion inactiva y a los menores de la edad límite de la PET como missing values en congruencia con la variable formal_ci *****.
+gen cotizando_ci = .
+replace cotizando_ci = 1 if ((p68_01==1 | p68_02==1 | p68_03==1 | p68_04==1 | p68_05==1 | p68_06==1 | p68_07==1 | p68_08==1 | p68_09==1 | p68_10==1) & emp_ci==1)
+replace cotizando_ci = 0 if (cotizando_ci != 1 & inlist(condocup_ci, 1, 2))
 label var cotizando_ci "Cotizante a la Seguridad Social"
+label define cotizando_ci 0 "No"  1 "Si"
+label value cotizando_ci cotizando_ci
 
 ****************
 *afiliado_ci****

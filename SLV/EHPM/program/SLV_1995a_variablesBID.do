@@ -1337,8 +1337,8 @@ replace des2_ch = 1 if des1_ch==1 | des1_ch==2
 gen piso_ch=0 if piso==5
 replace piso_ch=1 if piso>=1 & piso<=4
 
-gen pared_ch=0 if paredes==2 | paredes==3 | paredes==6 | paredes==7
-replace pared_ch=1 if paredes==1 | paredes==4 | paredes==5
+gen pared_ch=0 if paredes==2 | paredes==6 | paredes==7
+replace pared_ch=1 if paredes==1 | paredes==4 | paredes==5 | paredes==3 
 
 gen techo_ch=0 if techo==5 | techo==6
 replace techo_ch=1 if techo>=1 & techo<=4

@@ -36,8 +36,28 @@ sort llave_sec  hogar
 tempfile vivienda_mod
 save `vivienda_mod' , replace
 
+use "`base_in'\panama_disability.dta", clear
+sort llave_sec  hogar nper
+egen idh_ch = group(llave_sec hogar)
+destring nper, gen (idp_ci)
+tostring idh_ch, gen(idh_ch_string) format("%20.0f")
+tostring idp_ci, gen(idp_ci_string) format("%20.0f")
+gen guion = "_"
+egen idPerson = concat(idh_ch_string guion idp_ci_string)
+tempfile panama_disability
+save `panama_disability' , replace
+
 use "`base_in'\poblacion.dta", clear
-sort llave_sec  hogar
+sort llave_sec  hogar nper
+egen idh_ch = group(llave_sec hogar)
+destring nper, gen (idp_ci)
+tostring idh_ch, gen(idh_ch_string) format("%20.0f")
+tostring idp_ci, gen(idp_ci_string) format("%20.0f")
+gen guion = "_"
+egen idPerson = concat(idh_ch_string guion idp_ci_string)
+merge m:1 idPerson using `panama_disability' 
+drop idp_ci idp_ci_string idh_ch idh_ch_string idPerson _merge
+
 merge m:1 llave_sec hogar using `hogar_mod' 
 drop _merge
 

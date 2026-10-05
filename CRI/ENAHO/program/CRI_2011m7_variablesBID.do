@@ -96,6 +96,8 @@ sort segmento cuestionario hogar
 egen idh_ch = group(segmento cuestionario hogar)
 duplicates report idh_ch
 label var idh_ch "ID del hogar"
+tostring idh_ch, replace
+
 
 ************************************************************
 *** 3.- IDP_CI: Identificador de personas                ***
@@ -110,6 +112,8 @@ label var idh_ch "ID del hogar"
 
 gen idp_ci= r1
 label var idp_ci "ID de la persona en el hogar"
+tostring idp_ci, replace
+
 
 ************************************************************
 ***4.- ZONA_C: Zona Urbana vs Rural                      ***
@@ -266,54 +270,84 @@ label value clasehog_ch clasehog_ch
 ******************************************************************
 ***12._NMIEMBROS_CH  :Numero Total de miembros del Hogar.***
 ******************************************************************
-by idh_ch, sort: egen nmiembros_ch=sum(relacion_ci>=1 & relacion_ci<=4)
+by idh_ch, sort: egen byte nmiembros_ch=sum(relacion_ci>0 & relacion_ci<=5)
 label variable nmiembros_ch "Numero de familiares en el hogar"
 
 ******************************************************************************************************************
 ***13._MIEMBROS_CI  :Indica las personas que son miembros del hogar. Sirve para construir el ingreso del hogar.***
 ******************************************************************************************************************
-gen miembros_ci=(relacion_ci<5)
+gen miembros_ci=(relacion_ci>=1 & relacion_ci<=5)
 label variable miembros_ci "Miembro del hogar"
 
 ******************************************************************************************************************
 ***14._NMAYOR21_CH  :Numero de miembros del Hogar con 21 años o mas de edad.***
 ******************************************************************************************************************
-by idh_ch, sort: egen nmayor21_ch=sum((relacion_ci>=1 & relacion_ci<=4) & edad_ci>=21)
+by idh_ch, sort: egen byte nmayor21_ch=sum((relacion_ci>0 & relacion_ci<=5) & (edad_ci>=21 & edad_ci<=98))
 label variable nmayor21_ch "Numero de familiares mayores a 21 anios"
 
 **********************************************************************************
 ***15._NMENOR21_CH  :Numero de miembros del Hogar con menos de 21 años de edad.***
 **********************************************************************************
-by idh_ch, sort: egen nmenor21_ch=sum((relacion_ci>=1 & relacion_ci<=4) & edad_ci<21)
+by idh_ch, sort: egen byte nmenor21_ch=sum((relacion_ci>0 & relacion_ci<=5) & (edad_ci<21))
 label variable nmenor21_ch "Numero de familiares menores a 21 anios"
 
 *******************************************************************************
 ***16._NMAYOR65_CH  :Numero de miembros del Hogar con 65 años o mas de edad.***
 *******************************************************************************
-by idh_ch, sort: egen nmayor65_ch=sum((relacion_ci>=1 & relacion_ci<=4) & edad_ci>=65)
+by idh_ch, sort: egen byte nmayor65_ch=sum((relacion_ci>0 & relacion_ci<=5) & (edad_ci>=65 & edad_ci!=.))
 label variable nmayor65_ch "Numero de familiares mayores a 65 anios"
 
 ********************************************************************************
 ***17._NMENOR6_CH  :Numero de miembros del Hogar con menos de 6 años de edad.***
 ********************************************************************************
-by idh_ch, sort: egen nmenor6_ch=sum((relacion_ci>=1 & relacion_ci<=4) & edad_ci<6)
+by idh_ch, sort: egen byte nmenor6_ch=sum((relacion_ci>0 & relacion_ci<=5) & (edad_ci<6))
 label variable nmenor6_ch "Numero de familiares menores a 6 anios"
 
 ********************************************************************************
 ***18._NMENOR1_CH  :Numero de miembros del Hogar con menos de 1 año de edad.***
 ********************************************************************************
-by idh_ch, sort: egen nmenor1_ch=sum((relacion_ci>=1 & relacion_ci<=4) & edad_ci<1)
+by idh_ch, sort: egen byte nmenor1_ch=sum((relacion_ci>0 & relacion_ci<=5) & (edad_ci<1))
 label variable nmenor1_ch "Numero de familiares menores a 1 anio"
 
 ******************************************************************************
 *	VARIABLES DE DIVERSIDAD
 ******************************************************************************
 **María Antonella Pereira & Nathalia Maya - Marzo 2021 
+
+	*********
+	* afro_ci
+	*********
+gen afro_ci = .
+
+	********
+	* ind_ci   
+	********
+gen ind_ci = .
+
+	****************
+	* noafroind_ci  
+	****************
+gen byte noafroind_ci = .
+
 	***************
 	***afroind_ci***
 	***************
 gen afroind_ci=. 
 
+	*********
+	* afro_ch 
+	*********
+gen afro_ch = .
+
+	********
+	* ind_ch 
+	********
+gen ind_ch = .
+
+	****************
+	* noafroind_ch 
+	****************
+gen noafroind_ch = . 
 
 	***************
 	***afroind_ch***
@@ -460,21 +494,6 @@ replace lpe_ci = 71297 if zona_c==0
 label var lpe_ci "Linea de indigencia oficial del pais"
 
 ****************
-*cotizando_ci***
-****************
-gen cotizando_ci=1 if (a10>=1 & a10<=3) | a13==1
-recode cotizando_ci .=0 
-label var cotizando_ci "Cotizante a la Seguridad Social"
-label define cotizando_ci 0"No cotiza" 1"Cotiza a la SS" 
-label value cotizando_ci cotizando_ci
-
-****************
-*afiliado_ci****
-****************
-gen afiliado_ci=.
-label var afiliado_ci "Afiliado a la Seguridad Social"
-
-****************
 *tipopen_ci*****
 ****************
 gen tipopen_ci=.
@@ -590,18 +609,25 @@ gen salmm_ci= 	198681 if zona_c==0
 replace salmm_ci= 249601.8 if zona_c==1
 label var salmm_ci "Salario minimo legal"
 
-
 ************
 ***emp_ci***
 ************
-gen byte emp_ci=(condocup_ci==1)
+***** El código mantiene como missing values a la poblacion menor de la edad limite de la PET que no forman parte de la población de referencia de la sección laboral de la Encuesta *****.
+gen byte emp_ci = .
+replace emp_ci = (condocup_ci == 1) if (condocup_ci != . & condocup_ci != 4)
 label var emp_ci "Ocupado (empleado)"
+label define emp_ci 0"No" 1"Si", add
+label value emp_ci emp_ci
 
 ****************
 ***desemp_ci***
 ****************
-gen desemp_ci=(condocup_ci==2)
-label var desemp_ci "Desempleado que buscó empleo en el periodo de referencia"
+***** El código mantiene como missing values a la poblacion menor de la edad limite de la PET que no forman parte de la población de referencia de la sección laboral de la Encuesta *****.
+gen byte desemp_ci = .
+replace desemp_ci = (condocup_ci == 2) if (condocup_ci != . & condocup_ci != 4)
+label var desemp_ci "Desocupado (desempleado)"
+label define desemp_ci 0"No " 1"Si", add
+label value desemp_ci desemp_ci
   
 *************
 ***pea_ci***
@@ -610,13 +636,39 @@ gen pea_ci=0
 replace pea_ci=1 if emp_ci==1 |desemp_ci==1
 label var pea_ci "Población Económicamente Activa"
 
-
 ***********************************************************************************************************************************************
 ***8._DESALENT_CI : Trabajadores desalentados: personas que creen que por alguna razon no conseguiran trabajo.***
 ***********************************************************************************************************************************************
-gen desalent_ci=(emp_ci==0 & (b8==5 | b8==6 |b8==7 |b8==8))
-replace desalent_ci=. if condactre==.
-label var desalent_ci "Trabajadores desalentados"
+***** El código mantiene como población de referencia a las personas inactivas (condocup_ci == 3) *****.
+gen byte desalent_ci = .
+replace desalent_ci = 1 if (b7i == 0 & (inlist(b8, 5,7) | inlist(g3, 13,14)) & condocup_ci == 3)
+replace desalent_ci = 0 if (desalent_ci != 1 & condocup_ci==3)
+label var desalent_ci "Desalentados"
+label define desalent_ci 0"No" 1"Si", add
+label value desalent_ci desalent_ci
+
+****************
+*cotizando_ci***
+****************
+***** El código mantiene a la poblacion inactiva y a los menores de la edad límite de la PET como missing values en congruencia con la variable formal_ci *****.
+gen byte cotizando_ci = .
+replace cotizando_ci = 1 if (((a10>=1 & a10<=4) | a13==1) & emp_ci==1)
+replace cotizando_ci = 0 if (cotizando_ci != 1 & inlist(condocup_ci, 1, 2))
+label var cotizando_ci "Cotizante a la Seguridad Social"
+label define cotizando_ci 0 "No"  1 "Si"
+label value cotizando_ci cotizando_ci
+
+****************
+*afiliado_ci****
+****************
+***** El código mantiene a la poblacion inactiva y a los menores de la edad límite de la PET como missing values en congruencia con la variable formal_ci *****.
+gen byte afiliado_ci = .
+replace afiliado_ci = 1 if((a10>0 & a10<99) & emp_ci==1)
+replace afiliado_ci = 0 if (afiliado_ci != 1 & inlist(condocup_ci, 1, 2))
+label var afiliado_ci "Afiliado a la Seguridad Social"
+label define afiliado_ci 0 "No"  1 "Si"
+label value afiliado_ci afiliado_ci
+
 
 **************************************************************************
 ***9._HORASPRI_CI : Horas totales trabajadas en la actividad principal.***
@@ -1361,6 +1413,8 @@ gen ynlnm_ci=tnm
 replace ynlnm_ci= . if ithn == . 
 replace ynlnm_ci= 0 if ithn == 0
 label var ynlnm_ci "Ingreso no laboral no monetario"
+egen ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci)
+
 
 **********************************************************************
 ***36._REMESAS_CI : Remesas reportadas por el individuo.***
@@ -1515,86 +1569,62 @@ replace aedu_ci=11+4 if a15==89
 ********************************************************************************************************************************
 ***EDUNO_CI: Personas sin educacion (se refiere a primaria, secundaria y universitaria(o terciaria); excluye preescolar)
 ********************************************************************************************************************************
-gen eduno_ci=(a15==0 | a15==1 | a15==19) //ninguno, preparatoria, anios de primaria ignorados
-replace eduno_ci=. if aedu_ci==. 
-label variable eduno_ci "Cero anios de educacion"
-
+* Line of code with indicator eduno_ci was deleted* Line of code with indicator eduno_ci was deleted* Line of code with indicator eduno_ci was deleted
 ********************************************************************************************************************************
 ***EDUPI_CI: Personas que no han completado la educacion primaria
 ********************************************************************************************************************************
-gen edupi_ci=(a15>=11 & a15<=15) 
-replace edupi_ci=. if aedu_ci==.  
-label variable edupi_ci "Primaria incompleta"
-
+* Line of code with indicator edupi_ci was deleted* Line of code with indicator edupi_ci was deleted* Line of code with indicator edupi_ci was deleted
 ********************************************************************************************************************************
 ***EDUPC_CI: Personas que han completado la educacion primaria
 ********************************************************************************************************************************
-gen edupc_ci=a15==16  | (a15==29 | a15==39) 
-replace edupc_ci=. if aedu_ci==.
-label variable edupc_ci "Primaria completa"
-
+* Line of code with indicator edupc_ci was deleted* Line of code with indicator edupc_ci was deleted* Line of code with indicator edupc_ci was deleted
 ********************************************************************************************************************************
 ***EDUSI_CI: Peronas que no han completado la educacion secundaria
 ********************************************************************************************************************************
-gen edusi_ci=(a15>=21 & a15<=24)  | (a15>=31 & a15<=35) 
-replace edusi_ci=. if  aedu_ci==.
-label variable edusi_ci "Secundaria incompleta"
-
+* Line of code with indicator edusi_ci was deleted* Line of code with indicator edusi_ci was deleted* Line of code with indicator edusi_ci was deleted
 ********************************************************************************************************************************
 ***EDUSC_CI: Personas que han completado la educacion secundaria
 ********************************************************************************************************************************
-gen edusc_ci=(a15>=25 & a15<=26)  | (a15>=36 & a15<=37) | (a15==49 | a15==59)  
-replace edusc_ci=. if aedu_ci==.
-label variable edusc_ci "Secundaria completa"
-
+* Line of code with indicator edusc_ci was deleted* Line of code with indicator edusc_ci was deleted* Line of code with indicator edusc_ci was deleted
 ********************************************************************************************************************************
 ***EDUS1I_CI: Personas que no han completado el primer ciclo de la educacion secundaria
 ********************************************************************************************************************************
-gen edus1i_ci=(a15>=21 & a15<=22) | (a15>=31 & a15<=32)
-replace edus1i_ci=. if aedu_ci==.
-label variable edus1i_ci "1er ciclo de la secundaria incompleto"
-
+* Line of code with indicator edus1i_ci was deleted* Line of code with indicator edus1i_ci was deleted* Line of code with indicator edus1i_ci was deleted
 ********************************************************************************************************************************
 ***EDUS1C_CI: Personas que han completado el primer ciclo de la educacion secundaria
 ********************************************************************************************************************************
-gen edus1c_ci= a15==23 | a15==33
-replace edus1c_ci=. if aedu_ci==.
-label variable edus1c_ci "1er ciclo de la secundaria completo"
-
+* Line of code with indicator edus1c_ci was deleted* Line of code with indicator edus1c_ci was deleted* Line of code with indicator edus1c_ci was deleted
 ********************************************************************************************************************************
 ***EDUS2I_CI: Personas que no han completado el segundo ciclo de la educacion secundaria
 ********************************************************************************************************************************
-gen edus2i_ci=(a15==24 | a15 == 34| a15 == 35 )
-replace edus2i_ci=. if aedu_ci==.
-label variable edus2i_ci "2do ciclo de la secundaria incompleto"
-
+* Line of code with indicator edus2i_ci was deleted* Line of code with indicator edus2i_ci was deleted* Line of code with indicator edus2i_ci was deleted
 ********************************************************************************************************************************
 ***EDUS2C_CI: Personas que han completado el segundo ciclo de la educacion secundaria
 ********************************************************************************************************************************
-gen edus2c_ci=a15==25 | a15==26 | a15==36 | a15==37 | a15==49 | a15==59 //incluye superior anios ignorado
-replace edus2c_ci=. if aedu_ci==.
-label variable edus2c_ci "2do ciclo de la secundaria completo"
-
+* Line of code with indicator edus2c_ci was deleted* Line of code with indicator edus2c_ci was deleted* Line of code with indicator edus2c_ci was deleted
 ********************************************************************************************************************************
 ***EDUUI_CI: Peronas que no han completado la educacion universitaria o terciaria
 ********************************************************************************************************************************
-gen eduui_ci=0
-replace eduui_ci=1 if (a15>=41 & a14<=42) // hasta dos anios de educacion parauniversitaria
-replace eduui_ci=1 if (a15>=51 & a15<=53) // hasta tres anios de universidad
-replace eduui_ci=1 if (a15==54 & a17b<=3) // cuatro anios pero sin titulo superior
-replace eduui_ci=. if aedu_ci==. 
-label variable eduui_ci "Superior incompleto"
+gen byte eduui_ci = (a15 >= 41 & a15 <= 59) & (a17b == 0)
+replace eduui_ci = . if aedu_ci == .
+label variable eduui_ci "Universitaria incompleta"
+
 
 ********************************************************************************************************************************
-***EDUUC_CI: Peronas que han completado la educacion universitaria o terciaria
+***EDUUC_CI: Personas que han completado la educacion universitaria o terciaria
 ********************************************************************************************************************************
-gen byte eduuc_ci=0
-replace eduuc_ci=1 if a15==43 // tres anios de parauniversitaria
-replace eduuc_ci=1 if (a15==54 & a17b>3) // cuatro anios de universitaria y titulo de licenciatura o superior
-replace eduuc_ci=1 if a15>=55 & a15<59 // cinco anios o mas de universitaria, o postgrados
-replace eduuc_ci=1 if a15>59 & a15<=89
-replace eduuc_ci=. if aedu_ci==.
-label variable eduuc_ci "Superior completo"
+gen byte eduuc_ci = ((a15 >= 41 & a15 <= 59) & inlist(a17b, 1, 2, 3, 4, 5 , 6)) | (a15 >= 71 & a15 <= 89)
+replace eduuc_ci = . if aedu_ci == .
+label variable eduuc_ci "Universitaria completa"
+
+********************************************************************************************************************************
+***EDUAC_CI: Educación terciaria académica versus educación terciaria no-académica
+********************************************************************************************************************************
+gen eduac_ci = . 
+replace eduac_ci = 1 if (a15 >= 51 & a15 <= 89)
+replace eduac_ci = 0 if (a15 >= 41 & a15 <= 43)
+label variable eduac_ci "Superior universitario vs superior no universitario"
+
 
 ********************************************************************************************************************************
 ***EDUPRE_CI: Educacion preescolar
@@ -1610,15 +1640,6 @@ g asispre_ci=(a14==1 | a14==2)
 la var asispre_ci "Asiste a educacion prescolar"
 
 ********************************************************************************************************************************
-***EDUAC_CI: Educación terciaria académica versus educación terciaria no-académica
-********************************************************************************************************************************
-gen eduac_ci=.
-replace eduac_ci=1 if a15>=51 & a15<=59 |( a15>=41 & a15<=49 & a17b==2)
-replace eduac_ci=0 if a15>=41 & a15<=49 & a17b!=2
-replace eduac_ci=1 if a15>=71 & a15<=89 // especialidad, maestria y doctorados.
-label variable eduac_ci "Superior universitario vs superior no universitario"
-
-********************************************************************************************************************************
 ***ASISTE_CI: Personas que actualmente asisten a centros de enseñanza
 ********************************************************************************************************************************
 gen asiste_ci=(a14>=1 & a14<=8)
@@ -1628,15 +1649,11 @@ label variable asiste_ci "Asiste actualmente a la escuela"
 ********************************************************************************************************************************
 ***PQNOASIS_CI: Razones para no asistir a la escuela
 ********************************************************************************************************************************
-gen pqnoasis_ci=a18
-label define pqnoasis_ci 1  "tiene que trabajar" 2  "prefiere trabajar" 3  "tiene que cuidar niños, ancianos u otras personas" ///
-4  "tiene que ayudar en oficios domésticos  " 5  "no puede pagar los estudios  " 6  "problemas de acceso al sistema escolar" ///
+* Line of code with indicator pqnoasis_ci was deleted* Line of code with indicator pqnoasis_ci was deleted4  "tiene que ayudar en oficios domésticos  " 5  "no puede pagar los estudios  " 6  "problemas de acceso al sistema escolar" ///
 7  "le cuesta el estudio" 8  "no está interesado en el aprendizaje formal" 9  "embarazo o matrimonio" 10  "enfermedad o discapacidad" ///
 11  "no tiene edad" 12  "falta ganar pruebas del mep; exámenes de admisión.  " 13  "otro" 99  "ignorado"
 
-label value pqnoasis_ci pqnoasis_ci
-label variable pqnoasis_ci  " Razón por que no asiste a la escuela"
-
+* Line of code with indicator pqnoasis_ci was deleted* Line of code with indicator pqnoasis_ci was deleted
 ******************
 ***pqnoasis1_ci***
 ******************
@@ -1658,17 +1675,12 @@ label value  pqnoasis1_ci pqnoasis1_ci
 ***REPITE_CI: Personas que han repetido al menos un año o grado
 ********************************************************************************************************************************
 
-gen repite_ci=.
-label var repite_ci "Personas que han repetido al menos un grado o año"
-
+* Line of code with indicator repite_ci was deleted* Line of code with indicator repite_ci was deleted
 ********************************************************************************************************************************
 ***REPITEULT_CI: Personas que han repetido el ultimo grado
 ********************************************************************************************************************************
 
-gen repiteult_ci=.
-label var repiteult_ci "Personas que han repetido el último grado"
-
-********************************************************************************************************************************
+* Line of code with indicator repiteult was deleted********************************************************************************************************************************
 ***EDUPUB_CI: Personas que asisten a centros de enseñanza publicos
 ********************************************************************************************************************************
 gen edupub_ci=.
@@ -2108,19 +2120,26 @@ do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&Exter
 * Verificación de que se encuentren todas las variables armonizadas 
 /*_____________________________________________________________________________________________________*/
 
-order region_BID_c region_c pais_c anio_c mes_c zona_c factor_ch	idh_ch	idp_ci	factor_ci sexo_ci edad_ci ///
-afroind_ci afroind_ch afroind_ano_c dis_ci dis_ch relacion_ci civil_ci jefe_ci nconyuges_ch nhijos_ch notropari_ch notronopari_ch nempdom_ch ///
-clasehog_ch nmiembros_ch miembros_ci nmayor21_ch nmenor21_ch nmayor65_ch nmenor6_ch	nmenor1_ch	condocup_ci ///
-categoinac_ci nempleos_ci emp_ci antiguedad_ci	desemp_ci cesante_ci durades_ci	pea_ci desalent_ci subemp_ci ///
-tiempoparc_ci categopri_ci categosec_ci rama_ci spublico_ci tamemp_ci cotizando_ci instcot_ci	afiliado_ci ///
-formal_ci tipocontrato_ci ocupa_ci horaspri_ci horastot_ci	pensionsub_ci pension_ci tipopen_ci instpen_ci	ylmpri_ci nrylmpri_ci ///
-tcylmpri_ci ylnmpri_ci ylmsec_ci ylnmsec_ci	ylmotros_ci	ylnmotros_ci ylm_ci	ylnm_ci	ynlm_ci	ynlnm_ci ylm_ch	ylnm_ch	ylmnr_ch  ///
-ynlm_ch	ynlnm_ch ylmhopri_ci ylmho_ci rentaimp_ch autocons_ci autocons_ch nrylmpri_ch tcylmpri_ch remesas_ci remesas_ch	ypen_ci	ypensub_ci ///
-salmm_ci tc_c ipc_c lp19_c lp31_c lp5_c lp_ci lpe_ci aedu_ci eduno_ci edupi_ci edupc_ci	edusi_ci edusc_ci eduui_ci eduuc_ci	edus1i_ci ///
-edus1c_ci edus2i_ci edus2c_ci edupre_ci eduac_ci asiste_ci pqnoasis_ci pqnoasis1_ci	repite_ci repiteult_ci edupub_ci ///
-aguared_ch aguafconsumo_ch aguafuente_ch aguadist_ch aguadisp1_ch aguadisp2_ch aguamala_ch aguamejorada_ch aguamide_ch bano_ch banoex_ch banomejorado_ch sinbano_ch aguatrat_ch luz_ch luzmide_ch combust_ch des1_ch des2_ch piso_ch ///
-pared_ch techo_ch resid_ch dorm_ch cuartos_ch cocina_ch telef_ch refrig_ch freez_ch auto_ch compu_ch internet_ch cel_ch ///
-vivi1_ch vivi2_ch viviprop_ch vivitit_ch vivialq_ch	vivialqimp_ch , first
+    order region_BID_c region_c pais_c anio_c mes_c zona_c factor_ch idh_ch	idp_ci factor_ci factor_ch /// Identificación 
+  sexo_ci edad_ci relacion_ci civil_ci jefe_ci nconyuges_ch nhijos_ch notropari_ch notronopari_ch nempdom_ch /// Demográficas 
+  clasehog_ch nmiembros_ch miembros_ci nmayor21_ch nmenor21_ch nmayor65_ch nmenor6_ch nmenor1_ch /// Demográficas 
+  condocup_ci categoinac_ci emp_ci cesante_ci desemp_ci subemp_ci durades_ci pea_ci nempleos_ci antiguedad_ci desalent_ci  /// Empleo
+  horaspri_ci horastot_ci tiempoparc_ci categopri_ci categosec_ci rama_ci spublico_ci tamemp_ci cotizando_ci instcot_ci	afiliado_ci /// Empleo 
+  formal_ci tipocontrato_ci ocupa_ci pension_ci	pensionsub_ci tipopen_ci instpen_ci	ylmpri_ci /// Empleo 
+  ylmpri_ci ylnmpri_ci ylmsec_ci ylnmsec_ci ylmotros_ci	ylnmotros_ci  ylm_ci ylnm_ci ynlm_ci ynlnm_ci nrylmpri_ci /// Ingresos individuo 
+  ylm_ch ylnm_ch ylmnr_ch ynlm_ch ynlnm_ch ylmhopri_ci ylmho_ci /// Ingresos del hogar 
+  nrylmpri_ci nrylmpri_ch /// No respuesta de ingresos  
+  remesas_ci remesas_ch ypen_ci ypensub_ci /// Remesas y pensiones
+  aedu_ci eduui_ci eduuc_ci edupre_ci eduac_ci asiste_ci edupub_ci pqnoasis1_ci asispre_ci /// Educación
+  luz_ch luzmide_ch combust_ch piso_ch pared_ch techo_ch resid_ch dorm_ch cuartos_ch cocina_ch telef_ch refrig_ch /// Vivienda
+  freez_ch auto_ch compu_ch internet_ch cel_ch vivi1_ch vivi2_ch viviprop_ch vivitit_ch vivialq_ch vivialqimp_ch /// Vivienda
+  aguared_ch aguafconsumo_ch aguafuente_ch aguadist_ch aguadisp1_ch aguadisp2_ch /// Agua y saneamineto
+  aguatrat_ch aguamala_ch aguamejorada_ch aguamide_ch bano_ch banoex_ch banomejorado_ch sinbano_ch  /// Agua y saneamineto
+  migrante_ci migrantiguo5_ci miglac_ci /// Migración
+  salmm_ci lp19_2011 lp31_2011 lp5_2011 lp_ci lpe_ci lp365_2017 lp685_2017 lp14_2017 lp81_2017 tc_c cpi_c cpi2011 cpi2017 ratio_cpi2011 ratio_cpi2017 /// Fuente externa
+  ppp_c ppp_2011 ppp_2017 , first /// Fuente externa 
+  /// the order was created by regex functions, sph variables are excluded /// Fuente externa 
+  /// the order was created by regex functions, sph variables are excluded
 
 
 rename c8 codindustria 

@@ -1,4 +1,5 @@
 * (Versi󮠓tata 12)
+
 clear
 set more off
 
@@ -46,6 +47,16 @@ forvalues i = 1/3 {
 use "$ruta\r0`i'_ephc2019.dta", clear
 cap sort upm nvivi nhoga
 cap sort upm nvivi nhoga l02
+
+quietly ds, has(vallabel)
+foreach v of varlist `r(varlist)' {
+    local oldlbl : value label `v'
+    if "`oldlbl'" != "" {
+        capture label copy `oldlbl' `v'_lbl, replace
+        capture label values `v' `v'_lbl
+    }
+}
+
 save, replace
 }
 
@@ -55,6 +66,15 @@ save, replace
 use "$ruta\reg02_ephc_t4_2019.dta", clear
 cap sort upm nvivi nhoga
 cap sort upm nvivi nhoga l02
+
+quietly ds, has(vallabel)
+foreach v of varlist `r(varlist)' {
+    local oldlbl : value label `v'
+    if "`oldlbl'" != "" {
+        capture label copy `oldlbl' `v'_lbl, replace
+        capture label values `v' `v'_lbl
+    }
+}
 merge m:1 upm nvivi nhoga using "$ruta\r01_ephc2019.dta"
 drop _merge
 sort upm nvivi nhoga l02
@@ -71,4 +91,6 @@ merge m:m upm nvivi nhoga l02 using "$ruta\r02_ephc2019.dta", force
 drop _merge
 sort upm nvivi nhoga
 
-saveold "`base_out'", v(12) replace
+saveold "`base_out'", v(12) replace //  18,233 obs
+
+

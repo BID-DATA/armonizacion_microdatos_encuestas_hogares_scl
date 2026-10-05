@@ -1724,8 +1724,8 @@ gen piso_ch=0 if r302c_pi==5
 replace piso_ch=1 if r302c_pi>=1 & r302c_pi<=4
 replace piso_ch=2 if r302c_pi==6
 
-gen pared_ch=0 if r302b_pa==2 | r302b_pa==3 | r302b_pa==6 | r302b_pa==7
-replace pared_ch=1 if r302b_pa==1 | r302b_pa==4 | r302b_pa==5
+gen pared_ch=0 if r302b_pa==2 | r302b_pa==6 | r302b_pa==7
+replace pared_ch=1 if r302b_pa==1 | r302b_pa==4 | r302b_pa==5 | r302b_pa==3 
 replace pared_ch=2 if r302b_pa==8
 
 gen techo_ch=0 if r302a_te==5 | r302a_te==6
