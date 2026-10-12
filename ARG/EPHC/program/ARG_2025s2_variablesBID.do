@@ -842,93 +842,172 @@ use "`base_in'", clear
 ***VARIABLES DE EDUCACION***
 ****************************
 
-	replace ch11 = . if ch11 == 9
-	replace ch12 = . if ch12 == 99 | ch12 == 9 /* 9 = educación especial, recuperada por nivel_ed */
-	replace ch13 = . if ch13 == 9
-	destring ch14, replace
-	replace ch14 = . if ch14 == 98 | ch14 == 99
+* Reemplazar missing *
+*====================*
 
-	***************
-	*** aedu_ci ***
-	***************
-	/* primaria completa=6, EGB=9,
-	   secundario/polimodal=12, terciario=15, universitario=17, posgrado=19 */
-	gen aedu_ci = .
+replace ch10 =. if inlist(ch10, 0,9) 
+	
+replace ch11 = . if ch11 == 9
+replace ch12 = . if ch12 == 99 | ch12 == 9 /* 9 = educación especial, recuperada por nivel_ed */
+replace ch13 = . if ch13 == 9
+destring ch14, replace
+replace ch14 = . if ch14 == 98 | ch14 == 99
 
-	/* Quienes no terminaron el último nivel al que asistieron */
-	replace aedu_ci = 0 if (ch10 == 0 | ch10 == 3) /* nunca asistió / no corresponde */
-	replace aedu_ci = 0 if ch12 == 1 /* preescolar */
-	replace aedu_ci = ch14 if ch12 == 2 | ch12 == 3 & ch13 == 2
-	replace aedu_ci = ch14+6  if ch12 == 4 & ch13 == 2
-	replace aedu_ci = ch14+9  if ch12 == 5 & ch13 == 2
-	replace aedu_ci = ch14+12 if ch12 == 6 & ch13 == 2
-	replace aedu_ci = ch14+12 if ch12 == 7 & ch13 == 2
-	replace aedu_ci = ch14+17 if ch12 == 8 & ch13 == 2
+/*
+Pregunta ch10: ¿Asiste o asistió a algún establecimiento educativo (colegio, escuela, universidad)?
+*--------------------------------------------------------------------------------------------------*
 
-	/* Quienes terminaron el último nivel al que asistieron */
-	replace aedu_ci = 6  if ch12 == 2 & ch13 == 1
-	replace aedu_ci = 9  if ch12 == 3 & ch13 == 1
-	replace aedu_ci = 12 if ch12 == 4 & ch13 == 1
-	replace aedu_ci = 12 if ch12 == 5 & ch13 == 1
-	replace aedu_ci = 15 if ch12 == 6 & ch13 == 1
-	replace aedu_ci = 17 if ch12 == 7 & ch13 == 1
-	replace aedu_ci = 19 if ch12 == 8 & ch13 == 1
+  1. Sí asiste
+  2. No asiste, pero asistió
+  3. Nunca asistió
 
-	/* Imputación de respaldo por nivel_ed */
-	replace aedu_ci = 6  if nivel_ed == 2 & aedu_ci == .
-	replace aedu_ci = 12 if nivel_ed == 4 & aedu_ci == .
-	replace aedu_ci = 17 if nivel_ed == 6 & aedu_ci == .
-	replace aedu_ci = 0  if nivel_ed == 7 & aedu_ci == .
+Pregunta ch11: ¿Ese establecimiento es?
+*--------------------------------------*
 
-	****************
-	*** eduui_ci ***
-	****************
-	gen byte eduui_ci = (ch12 == 6 | ch12 == 7) & ch13 == 2
-	replace eduui_ci = . if aedu_ci == .
+ 1. Público
+ 2. Privado
 
-	****************
-	*** eduuc_ci ***
-	****************
-	gen byte eduuc_ci = ((ch12 == 6 | ch12 == 7) & ch13 == 1) | ch12 == 8
-	replace eduuc_ci = . if aedu_ci == .
+Pregunta ch12: ¿Cuál es el nivel más alto que cursa o cursó?
+*-----------------------------------------------------------*
+	
+	1. Jardín/Preescolar = 0 años
+	2. Primario = 6 años
+	3. EGB = 9 años
+	4/5. Secundario/polimodal = 12 años
+	6. Terciario = 15 años
+	7. Universitario = 17 años
+	8. Posgrado = 19 años  (maestría); 21 años (doctorado) - Para los que finalizaron el nivel se asume 19 años	
 
-	****************
-	*** eduac_ci ***
-	****************
-	gen byte eduac_ci = 1 if ch12 == 7 | ch12 == 8
-	replace eduac_ci = 0 if ch12 == 6
-	replace eduac_ci = . if aedu_ci == .
+Pregunta ch13: ¿Finalizó ese nivel?
+*----------------------------------*
 
-	*****************
-	*** edupre_ci ***
-	*****************
-	gen byte edupre_ci = .
+ 1. Sí
+ 2. No
 
-	******************
-	*** asispre_ci ***
-	******************
-	gen byte asispre_ci = (ch10 == 1 & ch12 == 1)
+Pregunta ch14: ¿Cuál fue el último año aprobado?
+*-----------------------------------------------*
 
-	****************
-	*** asiste_ci ***
-	****************
-	gen byte asiste_ci = (ch10 == 1)
-	replace asiste_ci = . if ch10 == 0 | ch10 == 9
+ 0. Ninguno 
+ 1. Primero
+ 2. Segundo
+ 3. Tercero
+ 4. Cuarto
+ 5. Quinto
+ 6. Sexto
+ 7. Séptimo
+ 8. Octavo
+ 9. Noveno
+ 98. Educ. especial
+ 99. N/s N/r
 
-	************************
-	*** razonesnoasis_ci ***
-	************************
-	/* La EPH no pregunta motivos de no asistencia */
-	gen razonesnoasis_ci = .
+Años de estudios acumulados: 
 
-	*****************
-	*** edupub_ci ***
-	*****************
-	/* Missing para quienes no asisten actualmente */
-	gen byte edupub_ci = .
-	replace edupub_ci = 1 if ch11 == 1 & asiste_ci == 1
-	replace edupub_ci = 0 if ch11 == 2 & asiste_ci == 1
+ primaria 6 años, secundaria 12 años, Grado 17 años, maestría 19 años, doctorado 21 años
+*/
 
+***************
+*** aedu_ci ***
+***************
+	
+gen aedu_ci = .
+replace aedu_ci = 0 if ch10 == 3                                   				/*Nunca asistió*/
+replace aedu_ci = 0 if ch12 == 1                                   				/*Preescolar*/   
+replace aedu_ci = 0 if ch12 == 2 & ch13 == 2 & ch14 == 0           				/*Primaria: empezó y no terminó ningún grado*/
+replace aedu_ci = 6 if ch12 == 2 & ch13 == 1 									/*Primaria completa*/
+replace aedu_ci = ch14 if ch12 == 2 & ch13 == 2 & ch14 != 0 					/*Primaria: todos los grados (incompleta)*/
+replace aedu_ci = 9 if ch12 == 3 & ch13 == 1 									/*EGB completa*/
+replace aedu_ci = 0 if ch12 == 3 & ch13 == 2 & ch14 == 0 						/*EGB: empezó y no terminó ningún grado*/
+replace aedu_ci = ch14 if ch12 == 3 & ch13 == 2 & ch14 != 0 					/*EGB: todos los grados (incompleta)*/
+replace aedu_ci = 12 if ch12 == 4 & ch13 == 1 									/*Secundaria completa (ch12=4)*/
+replace aedu_ci = 12 if ch12 == 5 & ch13 == 1 									/*Polimodal completo (ch12=5)*/
+replace aedu_ci = 6 if ch12 == 4 & ch13 == 2 & ch14 == 0 						/*Secundaria sin grado aprobado (primaria completa)*/
+replace aedu_ci = 6 if ch12 == 5 & ch13 == 2 & ch14 == 0						/*Polimodal sin grado aprobado (primaria completa)*/
+replace aedu_ci = 6 + ch14 if ch12 == 4 & ch13 == 2 & ch14 != 0 				/*Secundaria: todos los grados (incompleta)*/
+replace aedu_ci = 10 if ch12 == 5 & ch13 == 2 & ch14 == 1 						/*Polimodal: 3er grado*/
+replace aedu_ci = 11 if ch12 == 5 & ch13 == 2 & ch14 == 2 						/*Polimodal: 4to grado*/
+replace aedu_ci = 12 if ch12 == 5 & ch13 == 2 & ch14 == 3 						/*Polimodal: 5to grado*/
+replace aedu_ci = 15 if ch12 == 6 & ch13 == 1 									/*Terciario completo*/
+replace aedu_ci = 12 if ch12 == 6 & ch13 == 2 & ch14 == 0 						/*Terciario: secundaria completa (sin año terciario)*/
+replace aedu_ci = 12 + ch14 if ch12 == 6 & ch13 == 2 & inlist(ch14,1,2) 		/*Terciario incompleto (1 o 2 años)*/
+replace aedu_ci = 15 if ch12 == 6 & ch13 == 2 & ch14 >= 3 & !missing(ch14) 		/*Terciario completo (3 o más años)*/
+replace aedu_ci = 17 if ch12 == 7 & ch13 == 1 									/*Universitario completo*/
+replace aedu_ci = 12 if ch12 == 7 & ch13 == 2 & ch14 == 0 						/*Universitario: secundaria completa*/
+replace aedu_ci = 12 + ch14 if ch12 == 7 & ch13 == 2 & inrange(ch14,1,4) 		/*Universitario incompleto (1 a 4 años)*/
+replace aedu_ci = 17 if ch12 == 7 & ch13 == 2 & ch14 >= 5 & !missing(ch14) 		/*Universitario completo (5 o más años)*/
+replace aedu_ci = 19 if ch12 == 8 & ch13 == 1 									/*Posgrado completo (maestría)*/
+replace aedu_ci = 17 if ch12 == 8 & ch13 == 2 & ch14 == 0 						/*Posgrado: universitario completo (sin año de posgrado)*/
+replace aedu_ci = 17 + ch14 if ch12 == 8 & ch13 == 2 & inrange(ch14,1,3) 		/*Posgrado incompleto (1 a 3 años)*/
+replace aedu_ci = 21 if ch12 == 8 & ch13 == 2 & ch14 >= 4 & !missing(ch14) 		/*Posgrado doctorado (4 o más años)*/
+
+*****************
+*** edupre_ci ***
+*****************
+gen byte edupre_ci = .
+	
+****************
+*** eduui_ci ***
+****************
+
+gen eduui_ci = 0
+replace eduui_ci = . if missing(aedu_ci)
+replace eduui_ci = 1 if ch12 == 6 & ch13 == 2 & inlist(ch14,1,2)
+replace eduui_ci = 1 if ch12 == 7 & ch13 == 2 & inrange(ch14,1,4)
+
+****************
+*** eduuc_ci ***
+****************
+
+* Crear la variable partiendo de 0 (caso TRUE ~ 0)
+gen eduuc_ci = 0
+replace eduuc_ci = . if missing(aedu_ci)                                      /*aedu_ci es missing*/
+replace eduuc_ci = 1 if ch12 == 6 & ch13 == 1                                 /*Terciaria técnica completa (terminó el nivel)*/
+replace eduuc_ci = 1 if ch12 == 6 & ch13 == 2 & ch14 >= 3 & !missing(ch14)    /*Terciaria técnica completa (3 o más años aprobados)*/
+replace eduuc_ci = 1 if ch12 == 7 & ch13 == 1                                 /*Terciaria universitaria completa (terminó el nivel)*/
+replace eduuc_ci = 1 if ch12 == 7 & ch13 == 2 & ch14 >= 5 & !missing(ch14)    /*Terciaria universitaria completa (5 o más años aprobados)*/
+replace eduuc_ci = 1 if ch12 == 8 & ch13 == 2 & ch14 == 0                     /*Terciaria universitaria completa (posgrado sin año aprobado)*/
+replace eduuc_ci = 1 if ch12 == 8 & ch13 == 1                                 /*Posgrado completo (maestría)*/
+replace eduuc_ci = 1 if ch12 == 8 & ch13 == 2 & ch14 >= 4 & !missing(ch14)    /*Posgrado doctorado (4 o más años aprobados)*/
+
+****************
+*** eduac_ci ***
+****************
+
+gen eduac_ci = .
+replace eduac_ci = 0 if ch12 == 6 & ch13 == 1                         			/*Terciaria técnica completa (ch12 = 6, ch13 = 1) -> 0*/
+replace eduac_ci = 0 if ch12 == 6 & ch13 == 2 & inlist(ch14,1,2)     			/*Terciaria técnica incompleta*/
+replace eduac_ci = 0 if ch12 == 6 & ch13 == 2 & ch14 >= 3 & !missing(ch14)    	/*Terciaria técnica completa */
+replace eduac_ci = 1 if ch12 == 7 & ch13 == 1                      				/*Terciaria universitaria completa*/
+replace eduac_ci = 1 if ch12 == 7 & ch13 == 2 & inrange(ch14,1,4)               /*Terciaria universitaria incompleta */
+replace eduac_ci = 1 if ch12 == 7 & ch13 == 2 & ch14 >= 5 & !missing(ch14)      /*Terciaria universitaria completa*/
+replace eduac_ci = 1 if ch12 == 8 & ch13 == 1                      				/*Posgrado completo maestría*/
+replace eduac_ci = 1 if ch12 == 8 & ch13 == 2 & ch14 == 0            			/*Universitario completo*/
+replace eduac_ci = 1 if ch12 == 8 & ch13 == 2 & inrange(ch14,1,3)             	/*Posgrado incompleto */
+replace eduac_ci = 1 if ch12 == 8 & ch13 == 2 & ch14 >= 4 & !missing(ch14)      /*Posgrado doctorado*/
+
+****************
+*** asiste_ci ***
+****************
+gen byte asiste_ci = (ch10 == 1)
+replace asiste_ci = . if ch10 == 0 | ch10 == 9
+
+*****************
+*** edupub_ci ***
+*****************
+
+gen byte edupub_ci = .
+replace edupub_ci = 1 if ch11 == 1 & asiste_ci == 1
+replace edupub_ci = 0 if ch11 == 2 & asiste_ci == 1
+
+******************
+*** asispre_ci ***
+******************
+gen byte asispre_ci = (ch10 == 1 & ch12 == 1)
+
+************************
+*** razonesnoasis_ci ***
+************************
+/* La EPH no pregunta motivos de no asistencia */
+gen razonesnoasis_ci = .
 
 ******************************
 ***VARIABLES DE LA VIVIENDA***
