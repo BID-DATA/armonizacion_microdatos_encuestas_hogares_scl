@@ -38,18 +38,41 @@ Fecha última modificación: 12/22/2015
 
 	*CONFORMACIÓN BASE ÚNICA BAHAMAS 2012*
 
-
 use  "$ruta\Bahamas_LFS_2014_housing.dta", clear
-sort island hhno
-drop _merge
-save "$ruta\Bahamas_LFS_2014_housing.dta", replace
+sort island hhno result_code 
+duplicates report  island hhno result_code 
+duplicates report  island hhno 
+*duplicates tag  island hhno result_code , gen(dup)
+duplicates tag  island hhno , gen(dup)
+tab dup
+br if dup>=1
+drop if hhno ==.
+drop if dup ==1 & result_code!=1 //al revisar la base los duplicados con result_code 1 no tienen información en los campos
+duplicates report island hhno
+save "$ruta\housing.dta", replace
 
 use "$ruta\Bahamas_LFS_2014_individual.dta", clear
-sort island hhno
-merge island hhno using "$ruta\Bahamas_LFS_2014_housing.dta"
+duplicates report  island hhno  ind_no  // hay duplicados en obs pero al revisar tienen características diferentes
+duplicates tag  island hhno ind_no , gen(dup)  //52
+tab dup
+br if dup>=1
+sort island hhno result_code 
+merge  m:1 island hhno using "$ruta\housing.dta"
+br if _merge ==1
+drop if _merge ==2
+
 tab _merge
+/*
+   Matching result from |
+                  merge |      Freq.     Percent        Cum.
+------------------------+-----------------------------------
+        Master only (1) |          3        0.05        0.05
+            Matched (3) |      6,014       99.95      100.00
+------------------------+-----------------------------------
+                  Total |      6,017      100.00
+*/
+
 drop _merge
 
-
-saveold "`base_out'", replace
+save "`base_out'", replace
 

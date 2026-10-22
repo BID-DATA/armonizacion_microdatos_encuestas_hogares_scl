@@ -21,6 +21,8 @@
 *.log
 *.lnk
 
+~*.stswp
+
 *.oka
 *.oku
 *.t

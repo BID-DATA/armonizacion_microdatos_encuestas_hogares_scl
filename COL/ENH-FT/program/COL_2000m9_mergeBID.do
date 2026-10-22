@@ -232,6 +232,19 @@ drop _merge* fex idh_ch
 saveold "`out'COL_2000m9_resto.dta",  replace
 
 
+
+**Append de la base cabecera y resto. Se verific[o en el do-file de armonización y los nombres de las variables de los dos cuestionarios eran las mismas. 
+
+use "`out'COL_2000m9_cabecera.dta",  clear
+rename ca_* v_*
+save "`out'COL_2000m9_cabecera_temp.dta",  replace
+ 
+use  "`out'COL_2000m9_resto.dta", clear
+rename re_* v_*
+append using  "`out'COL_2000m9_cabecera_temp.dta"
+save "`out'COL_2000m9.dta",  replace
+
+erase  "`out'COL_2000m9_cabecera_temp.dta"
  
  
  

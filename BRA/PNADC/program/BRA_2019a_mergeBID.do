@@ -50,8 +50,8 @@ local anio 2019
               1: txt. to .dta 
 ==================================================*/
 
-infile using "${surveysFolder}\survey\BRA\PNADC\2019\a\data_orig\input_2019.do", using("${surveysFolder}\survey\BRA\PNADC\2019\a\data_orig\PNADC_2019_visita1.txt")
-		save   "${output}\PNADC_`ano'_visita.dta", replace
+infile using "${surveysFolder}\survey\BRA\PNADC\2019\a\data_orig\stata_inputBRA_2019v1.do", using("${surveysFolder}\survey\BRA\PNADC\2019\a\data_orig\PNADC_2019_visita1v1.txt")
+		save   "${output}\PNADC_`ano'_visita1v2.dta", replace
 
 foreach v of varlist _all {
       capture rename `v' `=lower("`v'")'

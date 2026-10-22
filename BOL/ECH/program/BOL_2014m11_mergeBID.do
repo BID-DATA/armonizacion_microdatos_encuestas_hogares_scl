@@ -7,10 +7,10 @@ set more off
 * Fecha: Marzo 2016
 * Última versión: 2021/03/09 (Cesar Lins)
 
-global in  = "${surveysFolder}\survey\BOL\ECH\2014\m11\data_orig\"
+global in  = "${surveysFolder}\survey\BOL\ECH\2014\m11\data_orig\BOL_2014_ECH-m11_V02_M\"
 global out = "${surveysFolder}\survey\BOL\ECH\2014\m11\data_merge"
 
-use "$in\eh2014_equipamiento.dta", clear
+use "$in\eh2014_Equipamiento.dta", clear
 *Modificación Cesar Lins - Feb 2021, data was updated by INE and some variable names changed to UPPERCASE
 rename *, lower
 
@@ -20,7 +20,7 @@ rename s8_15 anios_
 rename s8_16 monto_ 
 
 * reshape del módulo
-reshape wide posee nro anios monto, i(folio factor) j(item)
+reshape wide posee nro anios monto, i(folio factor_2014) j(item)
 
 /*
            1 juego de living 
@@ -55,7 +55,7 @@ duplicates report folio
 sort folio
 save "$in\eh2014_equipamiento_reshape.dta", replace
 
-use "$in\eh2014_gastosalimentarios.dta", clear
+use "$in\eh2014_GastosAlimentarios.dta", clear
 *Modificación Cesar Lins - Feb 2021, data was updated by INE and some variable names changed to UPPERCASE
 rename *, lower
 
@@ -69,7 +69,7 @@ rename s8a_07  s8g_
 rename s8a_08  s8h_
 rename s8a_09  s8i_
 
-reshape wide s8a s8b s8c s8d s8e s8f s8g s8h s8i, i(folio factor) j(item)
+reshape wide s8a s8b s8c s8d s8e s8f s8g s8h s8i, i(folio factor_2014) j(producto)
 
 foreach i of numlist 1/66 {
 label var s8a_`i' "¿En el último mes en su hogar compraron, consiguieron o consumieron.."
@@ -156,14 +156,14 @@ duplicates report folio
 sort folio
 save "$in\eh2014_gastosalimentarios_reshape.dta", replace
 
-use "$in\eh2014_persona.dta", clear
+use "$in\eh2014_Persona.dta", clear
 *Modificación Cesar Lins - Feb 2021, data was updated by INE and some variable names changed to UPPERCASE
 rename *, lower
 
 sort folio nro
 save, replace
 
-use "$in\eh2014_vivienda.dta", clear
+use "$in\eh2014_Vivienda.dta", clear
 *Modificación Cesar Lins - Feb 2021, data was updated by INE and some variable names changed to UPPERCASE
 rename *, lower
 
@@ -172,11 +172,11 @@ save, replace
 
 * Merge
 
-use "$in\eh2014_persona.dta", clear
+use "$in\eh2014_Persona.dta", clear
 *Modificación Cesar Lins - Feb 2021, data was updated by INE and some variable names changed to UPPERCASE
 rename *, lower
 
-merge m:1 folio using "$in\eh2014_vivienda.dta", force
+merge m:1 folio using "$in\eh2014_Vivienda.dta", force
 drop _merge
 
 merge m:1 folio using "$in\eh2014_equipamiento_reshape.dta", force

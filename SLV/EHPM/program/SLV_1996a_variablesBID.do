@@ -1363,8 +1363,8 @@ replace des2_ch = 1 if des1_ch==1 | des1_ch==2
 gen piso_ch=0 if PISO==5
 replace piso_ch=1 if PISO>=1 & PISO<=4
 
-gen pared_ch=0 if PAREDES==2 | PAREDES==3 | PAREDES==6 | PAREDES==7
-replace pared_ch=1 if PAREDES==1 | PAREDES==4 | PAREDES==5
+gen pared_ch=0 if PAREDES==2  | PAREDES==6 | PAREDES==7
+replace pared_ch=1 if PAREDES==1 | PAREDES==4 | PAREDES==5 | PAREDES==3
 
 gen techo_ch=0 if TECHO==5 | TECHO==6
 replace techo_ch=1 if TECHO>=1 & TECHO<=4
