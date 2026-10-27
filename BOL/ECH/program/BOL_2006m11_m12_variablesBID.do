@@ -1,6 +1,5 @@
-
 * (Versión Stata 12)
-clear
+clear all
 set more off
 *________________________________________________________________________________________________________________*
 
@@ -159,6 +158,12 @@ label define relacion_ci 6 "Empleado/a domestico/a", add
 label value relacion_ci relacion_ci
 
 
+	*****************************************
+	*CPI, IPC, Flag si tiene renta imputada*
+	****************************************
+	merge m:1 pais_c anio_c using "$datalibweb_IDB\SUPPORT\support_0926.dta", keepusing(cpi icp flag_renta_imp) keep(3) nogen 
+	
+	
 ****************************
 ***VARIABLES DEMOGRAFICAS***
 ****************************
@@ -1357,12 +1362,11 @@ yguarde */
 ***************
 ***ylmpri_ci***
 ***************
-
-egen ylmpri_ci=rsum(yliquido ycomisio yhrsextr yprima yaguina yactpri), missing
-replace ylmpri_ci=. if yliquido ==. & ycomisio ==. &  yhrsextr ==. & yprima ==. &  yaguina ==. &  yactpri==.  
-replace ylmpri_ci=. if emp_ci~=1
-replace ylmpri_ci=0 if categopri_ci==4
-label var ylmpri_ci "Ingreso laboral monetario actividad principal" 
+	gen double ylmpri_ci = yapf   
+	label var ylmpri_ci "Ingreso laboral monetario actividad principal"
+	replace ylmpri_ci = .  if emp_ci != 1
+	replace ylmpri_ci = .  if ylmpri_ci < 0
+	replace ylmpri_ci = 0  if categopri_ci == 4
 
 
 *******************
@@ -1376,47 +1380,34 @@ label var nrylmpri_ci "Id no respuesta ingreso de la actividad principal"
 ******************
 *** ylnmpri_ci ***
 ******************
-*Aqui se venían contando ingresos del segundo empleo. Por ello, se cambia la programación. Se debe revisar desde cuando
-*se han generado estos ingresos así.
-*egen ylnmprid=rsum(yalimen ytranspo yvesti yvivien yguarde yalimen2 yhrsextr2 yvivien2), missing
-*replace ylnmprid=. if yalimen==. & ytranspo==. & yvesti==. & yvivien==. & yguarde==. & yalimen2==. & yhrsextr2==. & yvivien2==.  
-*replace ylnmprid=0 if categopri_ci==4
 
-egen ylnmprid=rsum(yalimen ytranspo yvesti yvivien yguarde), missing
-replace ylnmprid=. if yalimen==. & ytranspo==. & yvesti==. & yvivien==. & yguarde==.   
-replace ylnmprid=0 if categopri_ci==4
-
-*Ingreso laboral no monetario de los independientes (autoconsumo)
-
-gen ylnmprii=.
-
-*Ingreso laboral no monetario para todos
-
-egen ylnmpri_ci=rsum(ylnmprid ylnmprii), missing
-replace ylnmpri_ci=. if ylnmprid==. & ylnmprii==.
-replace ylnmpri_ci=. if emp_ci~=1
-label var ylnmpri_ci "Ingreso laboral NO monetario actividad principal"   
+	gen double ylnmpri_ci = yeap   
+	label var ylnmpri_ci "Ingreso laboral NO monetario actividad principal"
+	replace ylnmpri_ci = .  if emp_ci != 1
+	replace ylnmpri_ci = .  if ylnmpri_ci < 0
+	replace ylnmpri_ci = 0  if categopri_ci == 4
 
 
 ***************
 ***ylmsec_ci***
 ***************
 
-gen ylmsec_ci= yliquido2 
-replace ylmsec_ci=. if emp_ci~=1
-replace ylmsec_ci=0 if categosec_ci==4
-label var ylmsec_ci "Ingreso laboral monetario segunda actividad" 
+	gen double ylmsec_ci = yasf   
+	label var ylmsec_ci "Ingreso laboral monetario segunda actividad"
+	replace ylmsec_ci = .  if emp_ci != 1
+	replace ylmsec_ci = 0  if ylmsec_ci < 0
+	replace ylmsec_ci = 0  if categopri_ci == 4
 
 
 ******************
 ****ylnmsec_ci****
 ******************
 
-egen ylnmsec_ci=rsum(yalimen2 yhrsextr2 yvivien2), missing
-replace ylnmsec_ci=. if yalimen2==. & yhrsextr2==. & yvivien2==.  
-replace ylnmsec_ci=0 if categosec_ci==4
-replace ylnmsec_ci=. if emp_ci==0
-label var ylnmsec_ci "Ingreso laboral NO monetario actividad secundaria"
+	gen double ylnmsec_ci = yeas   
+	label var ylnmsec_ci "Ingreso laboral NO monetario actividad secundaria"
+	replace ylnmsec_ci = .  if emp_ci != 1
+	replace ylnmsec_ci = .  if ylnmsec_ci < 0
+	replace ylnmsec_ci = 0  if categopri_ci == 4
 
 *****************
 ***ylmotros_ci***
@@ -1492,11 +1483,11 @@ yjoyas */
 *************
 ***ynlm_ci***
 *************
-
-egen ynlm_ci=rsum(yinteres yalqui yjubi ybene yinvali yviudez yotren yalqagri ydivi yalqmaqui yindtr yindseg ybono yotring yasistfam ytransmon yremesas ), missing
-replace ynlm_ci=. if 	yinteres==. & yalqui==. & yjubi==. & ybene==. & yinvali==. & yviudez==. & yotren==. & yalqagri==. & ydivi==. & yalqmaqui==. & yindtr==. & yindseg==. & ///
-			ybono==. & yotring==. & yasistfam==. & ytransmon==. & yremesas==. 
-label var ynlm_ci "Ingreso no laboral monetario"  
+	gen remesas_ci = yremesas  
+	gen double d_ynlm_nosp = ynolab - cond(missing(ypen_ci), 0, ypen_ci) - cond(missing(yremesas), 0, yremesas) if !missing(ynolab)
+	replace d_ynlm_nosp = 0 if d_ynlm_nosp < 0        
+	egen double ynlm_ci = rowtotal(d_ynlm_nosp ypen_ci ypensub_ci remesas_ci), missing
+	label var ynlm_ci "Ingreso no laboral monetario"
 
 **************
 ***ynlnm_ci***
@@ -1504,7 +1495,36 @@ label var ynlm_ci "Ingreso no laboral monetario"
 
 gen ynlnm_ci=.
 label var ynlnm_ci "Ingreso no laboral no monetario" 
-egen ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci)
+
+	capture drop d_ynlm_nosp  
+	
+	*********
+	*ytot_ci* 
+	*********
+	foreach v in ylmpri_ci ylnmpri_ci ylmsec_ci ylnmsec_ci ylmotros_ci ylnmotros_ci {
+		capture confirm variable `v'
+		if _rc gen double `v' = .
+		replace `v' = . if emp_ci != 1
+		replace `v' = . if `v' < 0
+		replace `v' = 0 if categopri_ci == 4 & emp_ci == 1 & missing(`v')
+	}
+
+	* Ingreso laboral primario (monetario + no monetario)
+	egen double yl_pri = rowtotal(ylmpri_ci ylnmpri_ci), missing
+	replace yl_pri = . if yl_pri < 0
+	* Ingreso laboral secundario y laboral otro (monetario + no monetario)
+	egen double yl_sec = rowtotal(ylmsec_ci ylnmsec_ci ylmotros_ci ylnmotros_ci), missing
+	replace yl_sec = . if yl_sec < 0
+	* Ingreso laboral total (primario + secundario)
+	egen double yl_ci = rowtotal(yl_pri yl_sec), missing
+	replace yl_ci = . if missing(yl_pri)
+	* Ingreso no Laboral total (monetario + no monetario)
+	egen double ynl_ci = rowtotal(ynlm_ci ynlnm_ci), missing
+	replace ynl_ci = . if ynl_ci < 0
+	* Ingreso total
+	egen double ytot_ci = rowtotal(yl_ci ynl_ci), missing
+	replace ytot_ci = . if condocup_ci == 1 & (missing(yl_pri) | (yl_pri <= 0 & categopri_ci != 4))
+	replace ytot_ci = . if condocup_ci != 1 & (missing(ynl_ci) | ynl_ci <= 0)
 
 
 
@@ -1522,12 +1542,7 @@ label var tcylmpri_ch "Id hogar donde algún miembro reporta como top-code el in
 gen tcylmpri_ci = .
 label var tcylmpri_ci "Identificador de top-code del ingreso de la actividad principal"
 
-*****************
-***remesas_ci***
-*****************
 
-gen remesas_ci=yremesas
-label var remesas_ci "Remesas mensuales reportadas por el individuo" 
 
 
 
@@ -1538,8 +1553,6 @@ label var remesas_ci "Remesas mensuales reportadas por el individuo"
 *******************
 *** nrylmpri_ch ***
 *******************
-*Creating a Flag label for those households where someone has a ylmpri_ci as missing
-
 by idh_ch, sort: egen nrylmpri_ch=sum(nrylmpri_ci) if miembros_ci==1, missing
 replace nrylmpri_ch=1 if nrylmpri_ch>0 & nrylmpri_ch<.
 replace nrylmpri_ch=. if nrylmpri_ch==.
@@ -2270,6 +2283,69 @@ label var vivialqimp_ch "Alquiler mensual imputado"
 	label var miglac_ci "=1 si es migrante proveniente de un pais LAC"
 
 
+	****************************
+	*** VARIABLES DE POBREZA *** 
+	****************************
+	
+	*************
+	*top_edu_ocp*
+	*************
+	bysort idh_ch: egen max_edu_ocp = max(cond(condocup_ci==1 & miembros_ci==1, aedu_ci, .))
+	gen byte top_edu_ocp = condocup_ci==1 & miembros_ci==1 & aedu_ci==max_edu_ocp
+	bysort idh_ch top_edu_ocp (idp_ci): gen rank = _n
+	replace top_edu_ocp = 0 if rank > 1
+	drop max_edu_ocp rank
+
+	bysort idh_ch: egen byte jefe_ocup_ch = max(jefe_ci==1 & condocup_ci==1)
+	* Ingreso invalido = missing o <= 0
+	bysort idh_ch: egen byte _jefe_inv  = max(jefe_ci==1 & (missing(ytot_ci) | ytot_ci<=0))
+	bysort idh_ch: egen byte _topedu_ok = max(top_edu_ocp==1 & !missing(ytot_ci) & ytot_ci>0)
+	* Jefe ocupado: el hogar sigue la regla del jefe
+	* Jefe no ocupado: manda top_edu_ocp; si no tiene ingreso valido (o no hay ocupados), vuelve a la regla del jefe
+	gen byte flag_ref_ch = cond(jefe_ocup_ch==1, _jefe_inv, _jefe_inv & !_topedu_ok)
+	
+	*********
+	*ynivhog*
+	*********
+	gen ynivhog = 0 // replace if var exists
+
+	*************
+	*rentaimp_ch*
+	*************
+	local var_ri 
+	capture confirm numeric variable `var_ri'
+	if _rc & "`var_ri'" != "" di as err "`var_ri' no existe: renta imputada = 10% del ITF"
+	if _rc local var_ri "."
+	bysort idh_ch: egen double renta_imp_ch = max(cond(jefe_ci==1 & inlist(viviprop_ch,1,2,4), `var_ri', .))
+
+	*******************
+	*welfare_income_ch*
+	*******************
+	bysort idh_ch: egen double welfare_income_ch = total(cond(miembros_ci==1, ytot_ci, .)), missing
+	replace welfare_income_ch = welfare_income_ch + ynivhog
+	replace welfare_income_ch = . if flag_ref_ch==1
+	replace renta_imp_ch = 0.10 * welfare_income_ch if missing(renta_imp_ch) & inlist(viviprop_ch,1,2,4) & !missing(welfare_income_ch)
+	replace welfare_income_ch = (welfare_income_ch + cond(missing(renta_imp_ch), 0, renta_imp_ch)) * cond(zona_c==0, 1.15, 1)
+	replace welfare_income_ch = welfare_income_ch/ ((365/12) * cpi * icp)
+	
+	***********************
+	*welfare_income_ci*
+	***********************
+	gen double welfare_income_ci = welfare_income_ch / nmiembros_ch
+	replace    welfare_income_ci = . if nmiembros_ch == 0 | missing(nmiembros_ch)
+	replace    welfare_income_ci = . if welfare_income_ci < 0
+	
+	***********
+	*pobre_umi*
+	***********
+	gen byte pobre_umi = (welfare_income_ci < 8.3) if !missing(welfare_income_ci)
+
+	***********
+	*pobre_lmi*
+	***********
+	gen byte pobre_lmi = (welfare_income_ci < 4.2) if !missing(welfare_income_ci)
+
+
 /*_____________________________________________________________________________________________________*/
 * Asignación de etiquetas e inserción de variables externas: tipo de cambio, Indice de Precios al 
 * Consumidor (2011=100), Paridad de Poder Adquisitivo (PPA 2011),  líneas de pobreza
@@ -2300,9 +2376,9 @@ do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&Exter
   aguatrat_ch aguamala_ch aguamejorada_ch aguamide_ch bano_ch banoex_ch banomejorado_ch sinbano_ch  /// Agua y saneamineto
   migrante_ci migrantiguo5_ci miglac_ci /// Migración
   salmm_ci lp19_2011 lp31_2011 lp5_2011 lp_ci lpe_ci lp365_2017 lp685_2017 lp14_2017 lp81_2017 tc_c cpi_c cpi2011 cpi2017 ratio_cpi2011 ratio_cpi2017 /// Fuente externa
+  top_edu_ocp ynivhog renta_imp_ch welfare_income_ch welfare_income_ci flag_ref_ch pobre_umi pobre_lmi yl_pri yl_sec yl_ci ynl_ci ///
   ppp_c ppp_2011 ppp_2017 , first /// Fuente externa 
-  /// the order was created by regex functions, sph variables are excluded /// Fuente externa 
-  /// the order was created by regex functions, sph variables are excluded
+
 
 /*Homologar nombre del identificador de ocupaciones (isco, ciuo, etc.) y de industrias y dejarlo en base armonizada 
 para análisis de trends (en el marco de estudios sobre el futuro del trabajo) 

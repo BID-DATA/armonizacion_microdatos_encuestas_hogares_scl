@@ -50,6 +50,7 @@ Detalle de procesamientos o modificaciones anteriores:
 
 use `base_in', clear
 
+
 		**********************************
 		***VARIABLES DEL IDENTIFICACION***
 		**********************************
@@ -159,7 +160,7 @@ tostring idp_ci, replace
 	*pais*
 	******
 
-	gen str3 pais_c="ARG"
+	gen pais_c="ARG"
 
 	******
 	*anio*
@@ -184,6 +185,13 @@ tostring idp_ci, replace
 	replace relacion_ci=4 if ch03>=4 & ch03<=9
 	replace relacion_ci=5 if ch03==10 
 
+	
+	*****************************************
+	*CPI, IPC, Flag si tiene renta imputada*
+	****************************************
+	cap drop _merge
+	merge m:1 pais_c anio_c using "$datalibweb_IDB\SUPPORT\support_0926.dta", keepusing(cpi icp flag_renta_imp) keep(3) nogen
+		
 
 			****************************
 			***VARIABLES DEMOGRAFICAS***
@@ -807,8 +815,12 @@ replace rama_ci = 9 if (pp04b_cod>=75 & pp04b_cod<=95) |(pp04b_cod>=7501 &  pp04
 	*Pero en general correspone a la variable p21. Esos chequeos estan en la version anterior de este
 	*programa
 		
-	gen ylmpri_ci=.
-	replace ylmpri_ci=p21 if p21>=0 & p21!=. & emp_ci==1
+
+gen ylmpri_ci=.	
+replace ylmpri_ci=p21 if emp_ci==1 //Se iguala a la variable
+replace ylmpri_ci=0 if p21<0 & emp_ci==1 //Se reemplazan por ceros los ingresos negativos
+replace ylmpri_ci=. if p21==. | p21==-9 //Se reemplazan los missings
+
 
 			
 	*************
@@ -829,7 +841,10 @@ replace rama_ci = 9 if (pp04b_cod>=75 & pp04b_cod<=95) |(pp04b_cod>=7501 &  pp04
 	***ylmsec_ci***
 	***************
 
-	gen ylmsec_ci=.
+	gen ylmsec_ci=.	// Existe la variable tot_p12: Monto de ingreso de otras ocupaciones (incluye ocupación secundaria, ocupación previa a la semana de referencia, deudas/retroactivos por ocupaciones anteriores al mes de referencia, etc. Por tanto, la variable queda como missing
+replace ylmsec_ci=tot_p12 if emp_ci==1 //Se iguala a la variable
+replace ylmsec_ci=0 if tot_p12<0 & emp_ci==1 //Se reemplazan por ceros los ingresos negativos
+replace ylmsec_ci=. if tot_p12==. | tot_p12==-9 //Se reemplazan los missings
 	
 
 	****************
@@ -884,8 +899,36 @@ replace rama_ci = 9 if (pp04b_cod>=75 & pp04b_cod<=95) |(pp04b_cod>=7501 &  pp04
 	**********
 	
 	gen ynlnm_ci=.
-egen ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci)
 
+	
+	*********
+	*ytot_ci*
+	********
+	foreach v in ylmpri_ci ylnmpri_ci ylmsec_ci ylnmsec_ci ylmotros_ci ylnmotros_ci {
+		capture confirm variable `v'
+		if _rc gen double `v' = .
+		replace `v' = . if emp_ci != 1
+		replace `v' = . if `v' < 0
+		replace `v' = 0 if categopri_ci == 4 & emp_ci == 1 & missing(`v')
+	}
+
+	* Ingreso laboral primario (monetario + no monetario)
+	egen double yl_pri = rowtotal(ylmpri_ci), missing
+	replace yl_pri = . if yl_pri < 0
+	* Ingreso laboral secundario y laboral otro (monetario + no monetario)
+	egen double yl_sec = rowtotal(ylmsec_ci), missing
+	replace yl_sec = . if yl_sec < 0
+	* Ingreso laboral total (primario + secundario)
+	egen double yl_ci = rowtotal(yl_pri yl_sec), missing
+	replace yl_ci = . if missing(yl_pri)
+	* Ingreso no Laboral total (monetario + no monetario)
+	egen double ynl_ci = rowtotal(ynlm_ci), missing
+	replace ynl_ci = . if ynl_ci < 0
+	* Ingreso total
+	egen double ytot_ci = rowtotal(yl_ci ynl_ci), missing
+	replace ytot_ci = . if condocup_ci == 1 & (missing(yl_pri) | (yl_pri <= 0 & categopri_ci != 4))
+	replace ytot_ci = . if condocup_ci != 1 & (missing(ynl_ci) | ynl_ci <= 0)
+	
 
 /*
 	*Para ignorar el 0.5% más alto y más bajo de los ingreso se hace lo siguiente:
@@ -1437,11 +1480,11 @@ gen aguatrat_ch = 9
 	*************
 	*NOTA: aqui se genera una variable parecida, pues no se puede saber si es propia total o parcialmente pagada
 	
-	gen viviprop_ch1=0 if ii7==3
-	replace viviprop_ch1=1 if ii7==1 | ii7==2
-	replace viviprop_ch1=3 if ii7>=4 & ii7<=9 
-	replace viviprop_ch1=. if ii7==99
-
+	gen viviprop_ch=0 if ii7==3
+	replace viviprop_ch=1 if ii7==1 | ii7==2
+	replace viviprop_ch=3 if ii7>=4 & ii7<=9
+	replace viviprop_ch=. if ii7==99
+	
 	************
 	*vivitit_ch*
 	************
@@ -1472,10 +1515,9 @@ gen aguatrat_ch = 9
 *********
 *lp_ci***
 *********
-capture drop lp_ci
-gen lp_ci = 510.3
+capture drop ln_ci
+gen ln_ci = 510.3
 
-label var lp_ci "Linea de pobreza oficial del pais"
 
 *********
 *lpe_ci***
@@ -1483,7 +1525,6 @@ label var lp_ci "Linea de pobreza oficial del pais"
 
 gen lpe_ci = 228.89
 
-label var lpe_ci "Linea de indigencia oficial del pais"
 
 ****************
 *cotizando_ci***
@@ -1685,27 +1726,83 @@ gen instcot_ci=.
 	label var miglac_ci "=1 si es migrante proveniente de un pais LAC" 
 
 	
-****************************
-***VARIABLES DE EXTERNAS***
-**************************** 
+		***************************
+		***VARIABLES DE POBREZA***
+		***************************	
 
 	****************
 	*tipo_bienestar*
-	**************** 
-	gen byte tipo_bienestar = . 
-	****************
-	* pobre_ine _ci*
-	**************** 
-	gen byte pobre_ine_ci= . 
-	****************
-	* bienestar_agregado *
-	**************** 
-	gen bienestar_agregado = . 
-	****************
-	* ln_ci *
-	**************** 
-	gen ln_ci = lp_ci	
+	****************	
+	gen byte tipo_bienestar = 1
 	
+	**********************
+	* bienestar_agregado *
+	**********************
+	gen bienestar_agregado = itf
+
+	
+	**************
+	*pobre_ine_ci*
+	**************	
+	gen byte pobre_ine_ci = .
+	
+	******************
+	*pobre_ine_ext_ci*
+	******************	
+	gen byte pobre_ine_ext_ci = .
+	
+	**************
+	*top_edu_ocup*
+	**************
+	bysort idh_ch: egen max_edu_ocp = max(cond(condocup_ci==1 & miembros_ci==1, aedu_ci, .))
+	gen byte top_edu_ocp = condocup_ci==1 & miembros_ci==1 & aedu_ci==max_edu_ocp
+	bysort idh_ch top_edu_ocp (idp_ci): gen rank = _n
+	replace top_edu_ocp = 0 if rank > 1
+	drop max_edu_ocp rank
+
+	bysort idh_ch: egen byte jefe_ocup_ch = max(jefe_ci==1 & condocup_ci==1)
+	bysort idh_ch: egen byte flag_ref_ch = max((jefe_ci==1 & missing(p47t)) | (cond(jefe_ocup_ch==1, jefe_ci==1, top_edu_ocp==1) & (missing(p47t) | p47t<=0)))
+
+	*********
+	*ynivhog*
+	*********
+	gen ynivhog = 0 // replace if var exists
+
+	*************
+	*rentaimp_ch*
+	*************
+	local var_ri 
+	capture confirm numeric variable `var_ri'
+	if _rc & "`var_ri'" != "" di as err "`var_ri' no existe: renta imputada = 10% del ITF"
+	if _rc local var_ri "."
+	bysort idh_ch: egen double renta_imp_ch = max(cond(jefe_ci==1 & inlist(viviprop_ch,1,2,4), `var_ri', .))
+
+	*******************
+	*welfare_income_ch*
+	*******************
+	bysort idh_ch: egen double welfare_income_ch = total(cond(miembros_ci==1, p47t, .)), missing
+	replace welfare_income_ch = welfare_income_ch + ynivhog
+	replace welfare_income_ch = . if flag_ref_ch==1
+	replace renta_imp_ch = 0.10 * welfare_income_ch if missing(renta_imp_ch) & inlist(viviprop_ch,1,2,4) & !missing(welfare_income_ch) & flag_renta_imp == 0 
+	replace welfare_income_ch = (welfare_income_ch + cond(missing(renta_imp_ch), 0, renta_imp_ch)) * cond(zona_c==0, 1.15, 1)
+	replace welfare_income_ch = welfare_income_ch/ ((365/12) * cpi * icp) 
+
+	***********************
+	*welfare_income_ci*
+	***********************
+	gen double welfare_income_ci = welfare_income_ch / nmiembros_ch
+	replace    welfare_income_ci = . if nmiembros_ch == 0 | missing(nmiembros_ch)
+	replace    welfare_income_ci = . if welfare_income_ci < 0
+
+	***********
+	*pobre_umi*
+	***********
+	gen byte pobre_umi = (welfare_income_ci < 8.3) if !missing(welfare_income_ci)
+
+	***********
+	*pobre_lmi*
+	***********
+	gen byte pobre_lmi = (welfare_income_ci < 4.2) if !missing(welfare_income_ci)
 
 /*_____________________________________________________________________________________________________*/
 * Asignación de etiquetas e inserción de variables externas: tipo de cambio, Indice de Precios al 
@@ -1736,10 +1833,11 @@ do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&Exter
   aguared_ch aguafconsumo_ch aguafuente_ch aguadist_ch aguadisp1_ch aguadisp2_ch /// Agua y saneamineto
   aguatrat_ch aguamala_ch aguamejorada_ch aguamide_ch bano_ch banoex_ch banomejorado_ch sinbano_ch  /// Agua y saneamineto
   migrante_ci migrantiguo5_ci miglac_ci /// Migración
-  salmm_ci lp19_2011 lp31_2011 lp5_2011 lp_ci lpe_ci lp365_2017 lp685_2017 lp14_2017 lp81_2017 tc_c cpi_c cpi2011 cpi2017 ratio_cpi2011 ratio_cpi2017 /// Fuente externa
-  ppp_c ppp_2011 ppp_2017 , first /// Fuente externa 
-  /// the order was created by regex functions, sph variables are excluded /// Fuente externa 
-  /// the order was created by regex functions, sph variables are excluded
+  salmm_ci lp19_2011 lp31_2011 lp5_2011 lp365_2017 lp685_2017 lp14_2017 lp81_2017 tc_c cpi_c cpi2011 cpi2017 ratio_cpi2011 ratio_cpi2017 /// Fuente externa
+  ppp_c ppp_2011 ppp_2017 /// Fuente externa 
+  top_edu_ocp ynivhog renta_imp_ch welfare_income_ch welfare_income_ci /// Ingresos 
+  tipo_bienestar bienestar_agregado ln_ci lpe_ci  pobre_ine_ci pobre_ine_ext_ci pobre_umi pobre_lmi, first /// Pobreza  
+
 
 /*Homologar nombre del identificador de ocupaciones (isco, ciuo, etc.) y de industrias y dejarlo en base armonizada 
 para análisis de trends (en el marco de estudios sobre el futuro del trabajo)*/

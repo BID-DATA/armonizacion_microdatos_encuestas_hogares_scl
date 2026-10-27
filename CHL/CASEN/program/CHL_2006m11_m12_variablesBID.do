@@ -1,5 +1,5 @@
 * (Versión Stata 12)
-clear
+clear all
 set more off
 *________________________________________________________________________________________________________________*
 
@@ -196,6 +196,11 @@ label var relacion_ci "Relación de parentesco con el jefe"
 label def relacion_ci 1"Jefe" 2"Conyuge" 3"Hijo/a" 4"Otros parientes" 5"Otros no parientes" 6"Servicio doméstico"
 label val relacion_ci relacion_ci	
 
+
+	*****************************************
+	*CPI, IPC, Flag si tiene renta imputada*
+	****************************************
+	merge m:1 pais_c anio_c using "$datalibweb_IDB\SUPPORT\support_0926.dta", keepusing(cpi icp flag_renta_imp) keep(3) nogen
 
 **************************
 * VARIABLES DEMOGRAFICAS *
@@ -530,6 +535,7 @@ gen horastot_ci=horaspri_ci
 
 gen ylmpri_ci=yopraj 
 replace ylmpri_ci=. if emp_ci==0
+replace ylmpri_ci = ytrabaj if missing(yopraj) & !missing(ytrabaj) & emp_ci==1
 
 /*********
 ylmpri1_ci
@@ -617,12 +623,6 @@ drop aux1 aux3
 **************** 
 
 gen ylnmpri_ci=.
-
-****************
-* ylmsec_ci    * 
-**************** 
-
-gen ylmsec_ci=.
 
 ****************
 * ylnmsec_ci   * 
@@ -726,7 +726,6 @@ replace ynlm_ci=. if yautaj==. & ylm_ci==. & ysubaj==.
 **************** 
 
 gen ynlnm_ci=.
-egen ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci)
 
 
 ****************
@@ -929,6 +928,38 @@ replace categopri_ci=2 if o19==2
 replace categopri_ci=3 if o19>=3 & o19<=7
 replace categopri_ci=4 if o19==8
 replace categopri_ci=. if emp_ci==0
+gen double ylmsec_ci = ytrabaj - ylmpri_ci
+replace ylmsec_ci = . if emp_ci != 1
+replace ylmsec_ci = 0 if ylmsec_ci < 0
+replace ylmsec_ci = 0 if categopri_ci==4 & emp_ci==1
+
+	*********
+	*ytot_ci* 
+	*********
+	foreach v in ylmpri_ci ylnmpri_ci ylmsec_ci ylnmsec_ci ylmotros_ci ylnmotros_ci {
+		capture confirm variable `v'
+		if _rc gen double `v' = .
+		replace `v' = . if emp_ci != 1
+		replace `v' = . if `v' < 0
+		replace `v' = 0 if categopri_ci == 4 & emp_ci == 1 & missing(`v')
+	}
+
+	* Ingreso laboral primario (monetario + no monetario)
+	egen double yl_pri = rowtotal(ylmpri_ci ylnmpri_ci), missing
+	replace yl_pri = . if yl_pri < 0
+	* Ingreso laboral secundario y laboral otro (monetario + no monetario)
+	egen double yl_sec = rowtotal(ylmsec_ci ylnmsec_ci ylmotros_ci ylnmotros_ci), missing
+	replace yl_sec = . if yl_sec < 0
+	* Ingreso laboral total (primario + secundario)
+	egen double yl_ci = rowtotal(yl_pri yl_sec), missing
+	replace yl_ci = . if missing(yl_pri)
+	* Ingreso no Laboral total (monetario + no monetario)
+	egen double ynl_ci = rowtotal(ynlm_ci ynlnm_ci), missing
+	replace ynl_ci = . if ynl_ci < 0
+	* Ingreso total
+	egen double ytot_ci = rowtotal(yl_ci ynl_ci), missing
+	replace ytot_ci = . if condocup_ci == 1 & (missing(yl_pri) | (yl_pri <= 0 & categopri_ci != 4))
+	replace ytot_ci = . if condocup_ci != 1 & (missing(ynl_ci) | ynl_ci <= 0)
 gen categosec_ci=.
 /*
 ****************
@@ -1407,22 +1438,22 @@ la var asispre_ci "Asiste a educacion prescolar"
 * y la variable e5 es para niños de 0 a 6 años.
 * Line of code with indicator pqnoasis_ci was deleted
 **************
-*pqnoasis1_ci*
+*razonesnoasis_ci *
 **************
-**Daniela Zuluaga- Enero 2018: Se agrega la variable pqnoasis1_ci cuya sintaxis fue elaborada por Mayra Saenz**
+**Daniela Zuluaga- Enero 2018: Se agrega la variable razonesnoasis_ci  cuya sintaxis fue elaborada por Mayra Saenz**
 
-g       pqnoasis1_ci = 1 if e6 == 3
-replace pqnoasis1_ci = 2 if e6 == 4
-replace pqnoasis1_ci = 3 if e6 == 6 | e6 == 10 | e6 == 13 | e6 == 14
-replace pqnoasis1_ci = 4 if e6 == 9
-replace pqnoasis1_ci = 5 if e6 == 5 | e6 == 7 | e6 == 8
-replace pqnoasis1_ci = 6 if e6 == 17
-replace pqnoasis1_ci = 7 if e6 == 18 
-replace pqnoasis1_ci = 8 if e6 == 1  | e6 == 2  
-replace pqnoasis1_ci = 9 if e6 == 11 | e6 == 12 | e6 == 15 | e6 == 16 | e6 == 19 | e6 == 20
+g       razonesnoasis_ci  = 1 if e6 == 3
+replace razonesnoasis_ci  = 2 if e6 == 4
+replace razonesnoasis_ci  = 3 if e6 == 6 | e6 == 10 | e6 == 13 | e6 == 14
+replace razonesnoasis_ci  = 4 if e6 == 9
+replace razonesnoasis_ci  = 5 if e6 == 5 | e6 == 7 | e6 == 8
+replace razonesnoasis_ci  = 6 if e6 == 17
+replace razonesnoasis_ci  = 7 if e6 == 18 
+replace razonesnoasis_ci  = 8 if e6 == 1  | e6 == 2  
+replace razonesnoasis_ci  = 9 if e6 == 11 | e6 == 12 | e6 == 15 | e6 == 16 | e6 == 19 | e6 == 20
 
-label define pqnoasis1_ci 1 "Problemas económicos" 2 "Por trabajo" 3 "Problemas familiares o de salud" 4 "Falta de interés" 5	"Quehaceres domésticos/embarazo/cuidado de niños/as" 6 "Terminó sus estudios" 7	"Edad" 8 "Problemas de acceso"  9 "Otros"
-label value  pqnoasis1_ci pqnoasis1_ci
+label define razonesnoasis_ci  1 "Problemas económicos" 2 "Por trabajo" 3 "Problemas familiares o de salud" 4 "Falta de interés" 5	"Quehaceres domésticos/embarazo/cuidado de niños/as" 6 "Terminó sus estudios" 7	"Edad" 8 "Problemas de acceso"  9 "Otros"
+label value  razonesnoasis_ci  razonesnoasis_ci 
 
 ***************
 * Line of code with indicator repite_ci was deleted***************
@@ -2141,7 +2172,7 @@ label var formal_ci "1=afiliado o cotizante / PEA"
 gen tcylmpri_ci =.
 gen tcylmpri_ch =.
 gen region_c=.
-gen ylmotros_ci=.
+
 gen autocons_ci=.
 gen autocons_ch=.
 
@@ -2353,6 +2384,70 @@ lab val atencion_ci atencion_ci
 /*_____________________________________________________________________________________________________*/
 
 
+	****************************
+	*** VARIABLES DE POBREZA ***
+	****************************
+	
+	*************
+	*top_edu_ocp*
+	*************
+	bysort idh_ch: egen max_edu_ocp = max(cond(condocup_ci==1 & miembros_ci==1, aedu_ci, .))
+	gen byte top_edu_ocp = condocup_ci==1 & miembros_ci==1 & aedu_ci==max_edu_ocp
+	bysort idh_ch top_edu_ocp (idp_ci): gen rank = _n
+	replace top_edu_ocp = 0 if rank > 1
+	drop max_edu_ocp rank
+
+	bysort idh_ch: egen byte jefe_ocup_ch = max(jefe_ci==1 & condocup_ci==1)
+	* Ingreso invalido = missing o <= 0
+	bysort idh_ch: egen byte _jefe_inv  = max(jefe_ci==1 & (missing(ytot_ci) | ytot_ci<=0))
+	bysort idh_ch: egen byte _topedu_ok = max(top_edu_ocp==1 & !missing(ytot_ci) & ytot_ci>0)
+	* Jefe ocupado: el hogar sigue la regla del jefe
+	* Jefe no ocupado: manda top_edu_ocp; si no tiene ingreso valido (o no hay ocupados), vuelve a la regla del jefe
+	gen byte flag_ref_ch = cond(jefe_ocup_ch==1, _jefe_inv, _jefe_inv & !_topedu_ok)
+	
+	*********
+	*ynivhog*
+	*********
+	gen ynivhog = 0 // replace if var exists
+
+	*************
+	*rentaimp_ch*
+	*************
+	gen byte ri_univ = inlist(tenencia,1,2,3,4,7,8,9,10)
+	local var_ri vivialqimp_ch  
+	capture confirm numeric variable `var_ri'
+	if _rc & "`var_ri'" != "" di as err "`var_ri' no existe: renta imputada = 10% del ITF"
+	if _rc local var_ri "."
+	bysort idh_ch: egen double renta_imp_ch = max(cond(jefe_ci==1 & ri_univ==1, `var_ri', .))
+
+	*******************
+	*welfare_income_ch*
+	*******************
+	bysort idh_ch: egen double welfare_income_ch = total(cond(miembros_ci==1, ytot_ci, .)), missing
+	replace welfare_income_ch = welfare_income_ch + ynivhog
+	replace welfare_income_ch = . if flag_ref_ch==1
+	replace renta_imp_ch = 0.10 * welfare_income_ch if missing(renta_imp_ch) & ri_univ==1 & !missing(welfare_income_ch) & flag_renta_imp == 0 
+	replace welfare_income_ch = (welfare_income_ch + cond(missing(renta_imp_ch), 0, renta_imp_ch)) * cond(zona_c==0, 1.15, 1)
+	replace welfare_income_ch = welfare_income_ch/ ((365/12) * cpi * icp)
+	
+	***********************
+	*welfare_income_ci*
+	***********************
+	gen double welfare_income_ci = welfare_income_ch / nmiembros_ch
+	replace    welfare_income_ci = . if nmiembros_ch == 0 | missing(nmiembros_ch)
+	replace    welfare_income_ci = . if welfare_income_ci < 0
+	
+	***********
+	*pobre_umi*
+	***********
+	gen byte pobre_umi = (welfare_income_ci < 8.3) if !missing(welfare_income_ci)
+
+	***********
+	*pobre_lmi*
+	***********
+	gen byte pobre_lmi = (welfare_income_ci < 4.2) if !missing(welfare_income_ci)
+
+
 do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&ExternalVars_Harmonized_DataBank.do"
 
 /*_____________________________________________________________________________________________________*/
@@ -2365,11 +2460,11 @@ do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&Exter
   condocup_ci categoinac_ci emp_ci cesante_ci desemp_ci subemp_ci durades_ci pea_ci nempleos_ci antiguedad_ci desalent_ci  /// Empleo
   horaspri_ci horastot_ci tiempoparc_ci categopri_ci categosec_ci rama_ci spublico_ci tamemp_ci cotizando_ci instcot_ci	afiliado_ci /// Empleo 
   formal_ci tipocontrato_ci ocupa_ci pension_ci	pensionsub_ci tipopen_ci instpen_ci	ylmpri_ci /// Empleo 
-  ylmpri_ci ylnmpri_ci ylmsec_ci ylnmsec_ci ylmotros_ci	ylnmotros_ci  ylm_ci ylnm_ci ynlm_ci ynlnm_ci nrylmpri_ci /// Ingresos individuo 
+  ylmpri_ci ylnmpri_ci ylmsec_ci ylnmsec_ci ylmotros_ci	ylnmotros_ci  ylm_ci ylnm_ci ynlm_ci ynlnm_ci nrylmpri_ci yl_pri yl_sec yl_ci ynl_ci top_edu_ocp ynivhog renta_imp_ch welfare_income_ch welfare_income_ci flag_ref_ch pobre_umi pobre_lmi /// Ingresos individuo 
   ylm_ch ylnm_ch ylmnr_ch ynlm_ch ynlnm_ch ylmhopri_ci ylmho_ci /// Ingresos del hogar 
   nrylmpri_ci nrylmpri_ch /// No respuesta de ingresos  
   remesas_ci remesas_ch ypen_ci ypensub_ci /// Remesas y pensiones
-  aedu_ci eduui_ci eduuc_ci edupre_ci eduac_ci asiste_ci edupub_ci pqnoasis1_ci asispre_ci /// Educación
+  aedu_ci eduui_ci eduuc_ci edupre_ci eduac_ci asiste_ci edupub_ci razonesnoasis_ci  asispre_ci /// Educación
   luz_ch luzmide_ch combust_ch piso_ch pared_ch techo_ch resid_ch dorm_ch cuartos_ch cocina_ch telef_ch refrig_ch /// Vivienda
   freez_ch auto_ch compu_ch internet_ch cel_ch vivi1_ch vivi2_ch viviprop_ch vivitit_ch vivialq_ch vivialqimp_ch /// Vivienda
   aguared_ch aguafconsumo_ch aguafuente_ch aguadist_ch aguadisp1_ch aguadisp2_ch /// Agua y saneamineto
@@ -2377,8 +2472,7 @@ do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&Exter
   migrante_ci migrantiguo5_ci miglac_ci /// Migración
   salmm_ci lp19_2011 lp31_2011 lp5_2011 lp_ci lpe_ci lp365_2017 lp685_2017 lp14_2017 lp81_2017 tc_c cpi_c cpi2011 cpi2017 ratio_cpi2011 ratio_cpi2017 /// Fuente externa
   ppp_c ppp_2011 ppp_2017 , first /// Fuente externa 
-  /// the order was created by regex functions, sph variables are excluded /// Fuente externa 
-  /// the order was created by regex functions, sph variables are excluded
+
 
 rename c_o12 codindustria
 rename c_o11 codocupa

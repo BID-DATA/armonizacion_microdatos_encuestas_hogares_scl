@@ -1,7 +1,6 @@
 *(Versión stata 17)
 
-**# Bookmark #1
-clear
+clear all
 set more off
 
 *________________________________________________________________________________________________________________*
@@ -43,7 +42,7 @@ Versión ...: v1
 Detalle de procesamientos o modificaciones anteriores:
 ****************************************************************************/
 
-use `base_in', clear
+use `base_in', clear 
 
 **********************************
 ***VARIABLES DEL IDENTIFICACION***
@@ -159,6 +158,10 @@ label value region_c region_c
 	*******************************************
 	gen factor_ch=w_ano 
 	
+	*****************************************
+	*CPI, IPC, Flag si tiene renta imputada*
+	****************************************
+	merge m:1 pais_c anio_c using "$datalibweb_IDB\SUPPORT\support_0926.dta", keepusing(cpi icp flag_renta_imp) keep(3) nogen
 
 ****************************
 ***VARIABLES DEMOGRAFICAS***
@@ -645,6 +648,121 @@ label value region_c region_c
 	gen byte instpen_ci=.
 	
 
+
+****************************
+***VARIABLES DE EDUCACION***
+****************************
+
+
+	*********	
+	*aedu_ci*
+	*********
+
+	// Reemplazar 9 con 0 - es inicio de ese año escolar 
+	foreach v of varlist e51_2 e51_4_a e51_4_b e51_5 e51_6 e51_8 e51_9 e51_10 e51_11 {
+		replace `v' = 0 if `v' == 9
+	}	
+
+	replace e51_2=0 if e51_2==12
+
+	** Se generan años aprobados para los niveles ** 	
+	egen mb_añostc = rowmax(e51_4_a e51_4_b) /*computa el maximo de Media Básica Liceo o tecnico (CETP-UTU)*/	
+	egen ms_añostc = rowmax(e51_5 e51_6) /*computa el maximo de Media Superior Liceo o tecnico (CETP-UTU)*/		
+	egen sup_años = rowmax(e51_8 e51_9 e51_10) /*computa el maximo de superior: magisterio, universitario o terciario no universitario */
+
+	gen años_prim = e51_2
+	gen años_cb_mb = mb_añostc
+	gen años_cb_ms = ms_añostc
+	gen años_sup = sup_años
+	gen años_post = e51_11
+
+	foreach v of varlist años_prim años_cb_mb años_cb_ms años_sup años_post {
+		destring `v', replace force
+	}
+
+	gen aedu_ci = 0
+	qui foreach v of varlist años_prim años_cb_mb años_cb_ms años_sup años_post {
+		replace aedu_ci = aedu_ci + `v' if !missing(`v')
+	}
+
+	replace aedu_ci =. if (años_prim==. & años_cb_mb==. & años_cb_ms==. & años_sup==. & años_post==.)
+
+	** eliminamos variables temporales
+	drop años_prim años_cb_mb años_cb_ms años_sup años_post
+
+
+	**********
+	*eduui_ci*
+	**********
+	gen byte eduui_ci =0
+	replace eduui_ci=1 if e215_1==2 & (e218_1!=1 & e221_1!=1)  
+	replace eduui_ci=1 if e218_1==2 & (e215_1!=1 & e221_1!=1)
+	replace eduui_ci=1 if e221_1==2 & (e215_1!=1 & e218_1!=1)
+	
+
+	**********
+	*eduuc_ci*
+	**********
+	gen byte eduuc_ci =0
+	replace eduuc_ci=1 if e215_1==1 | e218_1==1 | e221_1==1  
+
+	**********
+	*eduac_ci*
+	**********
+	gen eduac_ci =.
+	replace eduac_ci=0 if e215_1==1 | e221_1==1 & (e218_1!=1)   
+	replace eduac_ci=0 if (e215_1==2 | e221_1==2) & (e218_1==0)  
+	replace eduac_ci=1 if e218_1==1 
+	replace eduac_ci=1 if e218_1==2 & (e215_1!=1 & e221_1!=1)  
+	replace eduac_ci = . if aedu_ci == .
+	
+		
+	***********
+	*edupre_ci*
+	***********
+	gen byte edupre_ci=.
+
+	************
+	*asispre_ci*
+	************
+	g asispre_ci=.
+	replace asispre_ci =1 if e579==13 | e579==14
+
+	***********
+	*asiste_ci*
+	***********
+	gen asiste_ci=(e49 == 3)
+
+
+	******************
+	*razonesnoasis_ci*
+	******************
+	gen razonesnoasis_ci=. 
+	replace razonesnoasis_ci =  1 if inlist(e202, 7, 9)
+	replace razonesnoasis_ci =  2 if inlist(e202, 1, 2, 5)
+	replace razonesnoasis_ci =  3 if inlist(e202, 8, 10, 11)
+	replace razonesnoasis_ci =  4 if inlist(e202, 3, 4, 6)
+	
+	replace razonesnoasis_ci = . if asiste_ci==1 // Consistencia: No se debe contar con razones de no asistencia si la variable de asiste_ci==1. 
+
+	***********
+	*edupub_ci*
+	***********
+	
+	/*  e581: TIPO DE INSTITUCIÓN DE NIVEL AL QUE ASISTE
+		1 Pública
+		2 Privada
+		3 CAIF - CAPI - Nuestros niños
+		
+		e581a: TIPO DE INSTITUCIÓN DE OTRO NIVEL EDUCATIVO
+		1 Pública
+		2 Privada */
+		
+
+	gen edupub_ci =. if (asiste_ci != 1)
+	replace edupub_ci = 1 if (e581 == 1 | e581a == 1) & (asiste_ci == 1)
+	replace edupub_ci = 0 if (e581 == 2 | e581 == 3 | e581a == 2) & (asiste_ci == 1)
+	
 *************************************************
 *** VARIABLES DE INGRESOS & PROTECCION SOCIAL ***
 *************************************************
@@ -851,10 +969,36 @@ label value region_c region_c
 	gen double canasta_emer = (e247 * indaemer) if e246 == 14
 	egen double ynlnm_ci = rowtotal(canasta_celi canasta_emer), mi
 
-	**********
-	* ytot_ci *
-	**********
-	egen double ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci), mi
+
+	*********
+	*ytot_ci*
+	********
+	foreach v in ylmpri_ci ylnmpri_ci ylmsec_ci ylnmsec_ci ylmotros_ci ylnmotros_ci {
+		capture confirm variable `v'
+		if _rc gen double `v' = .
+		replace `v' = . if emp_ci != 1
+		replace `v' = . if `v' < 0
+		replace `v' = 0 if categopri_ci == 4 & emp_ci == 1 & missing(`v')
+	}
+
+	* Ingreso laboral primario (monetario + no monetario)
+	egen double yl_pri = rowtotal(ylmpri_ci ylnmpri_ci), missing
+	replace yl_pri = . if yl_pri < 0
+	* Ingreso laboral secundario y laboral otro (monetario + no monetario)
+	egen double yl_sec = rowtotal(ylmsec_ci ylnmsec_ci ylmotros_ci ylnmotros_ci), missing
+	replace yl_sec = . if yl_sec < 0
+	* Ingreso laboral total (primario + secundario)
+	egen double yl_ci = rowtotal(yl_pri yl_sec), missing
+	replace yl_ci = . if missing(yl_pri)
+	* Ingreso no Laboral total (monetario + no monetario)
+	egen double ynl_ci = rowtotal(ynlm_ci ynlnm_ci), missing
+	replace ynl_ci = . if ynl_ci < 0
+	* Ingreso total
+	egen double ytot_ci = rowtotal(yl_ci ynl_ci), missing
+	replace ytot_ci = . if condocup_ci == 1 & (missing(yl_pri) | (yl_pri <= 0 & categopri_ci != 4))
+	replace ytot_ci = . if condocup_ci != 1 & (missing(ynl_ci) | ynl_ci <= 0)
+	
+
 	
 	***************
 	*** ynet_ci: Ingreso neto individual = Ingreso primario + transferencias privadas ***
@@ -955,123 +1099,6 @@ label value region_c region_c
 	* nrylmpri_ch *
 	**************
 	bysort idh_ch: egen byte nrylmpri_ch = max(nrylmpri_ci) if miembros_ci==1
-
-
-	
-	
-****************************
-***VARIABLES DE EDUCACION***
-****************************
-
-
-	*********	
-	*aedu_ci*
-	*********
-
-	// Reemplazar 9 con 0 - es inicio de ese año escolar 
-	foreach v of varlist e51_2 e51_4_a e51_4_b e51_5 e51_6 e51_8 e51_9 e51_10 e51_11 {
-		replace `v' = 0 if `v' == 9
-	}	
-
-	replace e51_2=0 if e51_2==12
-
-	** Se generan años aprobados para los niveles ** 	
-	egen mb_añostc = rowmax(e51_4_a e51_4_b) /*computa el maximo de Media Básica Liceo o tecnico (CETP-UTU)*/	
-	egen ms_añostc = rowmax(e51_5 e51_6) /*computa el maximo de Media Superior Liceo o tecnico (CETP-UTU)*/		
-	egen sup_años = rowmax(e51_8 e51_9 e51_10) /*computa el maximo de superior: magisterio, universitario o terciario no universitario */
-
-	gen años_prim = e51_2
-	gen años_cb_mb = mb_añostc
-	gen años_cb_ms = ms_añostc
-	gen años_sup = sup_años
-	gen años_post = e51_11
-
-	foreach v of varlist años_prim años_cb_mb años_cb_ms años_sup años_post {
-		destring `v', replace force
-	}
-
-	gen aedu_ci = 0
-	qui foreach v of varlist años_prim años_cb_mb años_cb_ms años_sup años_post {
-		replace aedu_ci = aedu_ci + `v' if !missing(`v')
-	}
-
-	replace aedu_ci =. if (años_prim==. & años_cb_mb==. & años_cb_ms==. & años_sup==. & años_post==.)
-
-	** eliminamos variables temporales
-	drop años_prim años_cb_mb años_cb_ms años_sup años_post
-
-
-	**********
-	*eduui_ci*
-	**********
-	gen byte eduui_ci =0
-	replace eduui_ci=1 if e215_1==2 & (e218_1!=1 & e221_1!=1)  
-	replace eduui_ci=1 if e218_1==2 & (e215_1!=1 & e221_1!=1)
-	replace eduui_ci=1 if e221_1==2 & (e215_1!=1 & e218_1!=1)
-	
-
-	**********
-	*eduuc_ci*
-	**********
-	gen byte eduuc_ci =0
-	replace eduuc_ci=1 if e215_1==1 | e218_1==1 | e221_1==1  
-
-	**********
-	*eduac_ci*
-	**********
-	gen eduac_ci =.
-	replace eduac_ci=0 if e215_1==1 | e221_1==1 & (e218_1!=1)   
-	replace eduac_ci=0 if (e215_1==2 | e221_1==2) & (e218_1==0)  
-	replace eduac_ci=1 if e218_1==1 
-	replace eduac_ci=1 if e218_1==2 & (e215_1!=1 & e221_1!=1)  
-	replace eduac_ci = . if aedu_ci == .
-	
-		
-	***********
-	*edupre_ci*
-	***********
-	gen byte edupre_ci=.
-
-	************
-	*asispre_ci*
-	************
-	g asispre_ci=.
-	replace asispre_ci =1 if e579==13 | e579==14
-
-	***********
-	*asiste_ci*
-	***********
-	gen asiste_ci=(e49 == 3)
-
-
-	******************
-	*razonesnoasis_ci*
-	******************
-	gen razonesnoasis_ci=. 
-	replace razonesnoasis_ci =  1 if inlist(e202, 7, 9)
-	replace razonesnoasis_ci =  2 if inlist(e202, 1, 2, 5)
-	replace razonesnoasis_ci =  3 if inlist(e202, 8, 10, 11)
-	replace razonesnoasis_ci =  4 if inlist(e202, 3, 4, 6)
-	
-	replace razonesnoasis_ci = . if asiste_ci==1 // Consistencia: No se debe contar con razones de no asistencia si la variable de asiste_ci==1. 
-
-	***********
-	*edupub_ci*
-	***********
-	
-	/*  e581: TIPO DE INSTITUCIÓN DE NIVEL AL QUE ASISTE
-		1 Pública
-		2 Privada
-		3 CAIF - CAPI - Nuestros niños
-		
-		e581a: TIPO DE INSTITUCIÓN DE OTRO NIVEL EDUCATIVO
-		1 Pública
-		2 Privada */
-		
-
-	gen edupub_ci =. if (asiste_ci != 1)
-	replace edupub_ci = 1 if (e581 == 1 | e581a == 1) & (asiste_ci == 1)
-	replace edupub_ci = 0 if (e581 == 2 | e581 == 3 | e581a == 2) & (asiste_ci == 1)
 	
 	
 ****************************
@@ -1346,7 +1373,7 @@ label value region_c region_c
 	
 
 ****************************
-***VARIABLES DE EXTERNAS***
+***VARIABLES DE Pobreza***
 ****************************	
 	
 	****************
@@ -1381,6 +1408,65 @@ label value region_c region_c
 	gen ln_ci = . 
 	replace ln_ci = lp_17
 	
+	*************
+	*top_edu_ocp*
+	*************
+	bysort idh_ch: egen max_edu_ocp = max(cond(condocup_ci==1 & miembros_ci==1, aedu_ci, .))
+	gen byte top_edu_ocp = condocup_ci==1 & miembros_ci==1 & aedu_ci==max_edu_ocp
+	bysort idh_ch top_edu_ocp (idp_ci): gen rank = _n
+	replace top_edu_ocp = 0 if rank > 1
+	drop max_edu_ocp rank
+
+	bysort idh_ch: egen byte jefe_ocup_ch = max(jefe_ci==1 & condocup_ci==1)
+	* Ingreso invalido = missing o <= 0
+	bysort idh_ch: egen byte _jefe_inv  = max(jefe_ci==1 & (missing(ytot_ci) | ytot_ci<=0))
+	bysort idh_ch: egen byte _topedu_ok = max(top_edu_ocp==1 & !missing(ytot_ci) & ytot_ci>0)
+	* Jefe ocupado: el hogar sigue la regla del jefe
+	* Jefe no ocupado: manda top_edu_ocp; si no tiene ingreso valido (o no hay ocupados), vuelve a la regla del jefe
+	gen byte flag_ref_ch = cond(jefe_ocup_ch==1, _jefe_inv, _jefe_inv & !_topedu_ok)
+	
+	*********
+	*ynivhog*
+	*********
+	gen ynivhog = 0 // replace if var exists
+
+	*************
+	*rentaimp_ch*
+	*************
+	local var_ri ht13
+	capture confirm numeric variable `var_ri'
+	if _rc & "`var_ri'" != "" di as err "`var_ri' no existe: renta imputada = 10% del ITF"
+	if _rc local var_ri "."
+	bysort idh_ch: egen double renta_imp_ch = max(cond(jefe_ci==1 & inlist(viviprop_ch,1,2,4), `var_ri', .))
+
+	*******************
+	*welfare_income_ch*
+	*******************
+	bysort idh_ch: egen double welfare_income_ch = total(cond(miembros_ci==1, ytot_ci, .)), missing
+	replace welfare_income_ch = welfare_income_ch + ynivhog
+	replace welfare_income_ch = . if flag_ref_ch==1
+	replace renta_imp_ch = 0.10 * welfare_income_ch if missing(renta_imp_ch) & inlist(viviprop_ch,1,2,4) & !missing(welfare_income_ch) & flag_renta_imp == 0 
+	replace welfare_income_ch = (welfare_income_ch + cond(missing(renta_imp_ch), 0, renta_imp_ch)) * cond(zona_c==0, 1.15, 1)
+	replace welfare_income_ch = welfare_income_ch/ ((365/12) * cpi * icp)
+	
+	***********************
+	*welfare_income_ci*
+	***********************
+	gen double welfare_income_ci = welfare_income_ch / nmiembros_ch
+	replace    welfare_income_ci = . if nmiembros_ch == 0 | missing(nmiembros_ch)
+	replace    welfare_income_ci = . if welfare_income_ci < 0
+	
+	***********
+	*pobre_umi*
+	***********
+	gen byte pobre_umi = (welfare_income_ci < 8.3) if !missing(welfare_income_ci)
+
+	***********
+	*pobre_lmi*
+	***********
+	gen byte pobre_lmi = (welfare_income_ci < 4.2) if !missing(welfare_income_ci)
+	
+	gen pobre_ine_ext_ci=. 
 		
 /*_____________________________________________________________________________________________________*/
 * Asignación de etiquetas e inserción de variables externas: tipo de cambio, Indice de Precios al 
@@ -1411,19 +1497,14 @@ do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&Exter
   aguared_ch aguafconsumo_ch aguafuente_ch aguadist_ch aguadisp1_ch aguadisp2_ch /// Agua y saneamineto
   aguatrat_ch aguamala_ch aguamejorada_ch aguamide_ch bano_ch banoex_ch banomejorado_ch sinbano_ch  /// Agua y saneamineto
   migrante_ci migrantiguo5_ci miglac_ci /// Migración
-  lp19_2011 lp31_2011 lp5_2011 lpe_ci lp365_2017 lp685_2017 lp14_2017 lp81_2017 tc_c cpi_c cpi2011 cpi2017 ratio_cpi2011 ratio_cpi2017 /// Fuente externa
-  ppp_c ppp_2011 ppp_2017 , first /// Fuente externa 
-  /// the order was created by regex functions, sph variables are excluded /// Fuente externa 
-  /// the order was created by regex functions, sph variables are excluded
+  lp19_2011 lp31_2011 lp5_2011 lp365_2017 lp685_2017 lp14_2017 lp81_2017 tc_c cpi_c cpi2011 cpi2017 ratio_cpi2011 ratio_cpi2017 /// Fuente externa
+  ppp_c ppp_2011 ppp_2017 /// Fuente externa
+  top_edu_ocp ynivhog renta_imp_ch welfare_income_ch welfare_income_ci /// Ingresos 
+  tipo_bienestar bienestar_agregado ln_ci lpe_ci  pobre_ine_ci pobre_ine_ext_ci pobre_umi pobre_lmi, first /// Pobreza  
 
 
 compress
 
-local PAIS URY
-local ENCUESTA ECH
-local ANO "2024"
-local ronda a  
-local base_out = "$ruta\\harmonized\\`PAIS'\\`ENCUESTA'\\data_arm\\`PAIS'_`ANO'`ronda'_BID.dta"
 saveold "`base_out'", version(12) replace
 
 log close

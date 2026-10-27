@@ -1,5 +1,5 @@
 * (Versión Stata 16)
-clear
+clear all
 set more off
 *________________________________________________________________________________________________________________*
 
@@ -154,6 +154,11 @@ label variable anio_c "Anio de la encuesta"
 ***********
 gen mes_c=r015
 label variable mes_c "Mes de la encuesta"
+
+	*****************************************
+	*CPI, IPC, Flag si tiene renta imputada*
+	****************************************
+	merge m:1 pais_c anio_c using "$datalibweb_IDB\SUPPORT\support_0926.dta", keepusing(cpi icp flag_renta_imp) keep(3) nogen
 
 
 
@@ -649,23 +654,15 @@ label var antiguedad_ci "Antiguedad en la actividad actual en anios"
 ***ylmpri_ci***
 ***************
 *Para asalariados
-gen yprid=imeds
 
 /*gen yprid=.
 replace yprid=r424*30 	if r423==1
 replace yprid=r424*4.3 	if r423==2
 replace yprid=r424*2 	if r423==3
 replace yprid=r424 		if r423==4 | r423==5*/
-gen hrsextrasd=		r42501a*r42501b/12 
-gen vacacionesd=	r42502a*r42502b/12 
-gen aguinaldod=		r42503a*r42503b/12 
-gen bonificacionesd=r42504a*r42504b/12 
-gen propina=r42511a*r42511b/12 
-egen yprijbd=rsum(yprid hrsextrasd vacacionesd aguinaldod bonificacionesd propina), missing
-drop yprid-propina
+
 
 *Para trabajadores independientes
-gen yprijbi= ingreso_independientes
 
 /*gen cost = r429*-1
 egen ingrneto= rsum(r428 cost), missing
@@ -680,9 +677,24 @@ replace yprijbi=ingrneto/3 		if r427==6
 replace yprijbi=ingrneto/6 		if r427==7
 replace yprijbi=ingrneto/12 	if r427==8*/
 
-egen ylmpri_ci=rsum(yprijbi yprijbd), missing
+
+* Dependientes: imeds + bonos (hrs extra, vacaciones, aguinaldo, bonificaciones, propina)
+gen double d_yprid           = imeds
+gen double d_hrsextrasd      = r42501a*r42501b/12
+gen double d_vacacionesd     = r42502a*r42502b/12
+gen double d_aguinaldod      = r42503a*r42503b/12
+gen double d_bonificacionesd = r42504a*r42504b/12
+gen double d_propina         = r42511a*r42511b/12
+egen double d_yprijbd = rowtotal(d_yprid d_hrsextrasd d_vacacionesd d_aguinaldod d_bonificacionesd d_propina), missing
+* Independientes: ingreso_independientes
+gen double d_yprijbi = ingreso_independientes
+replace d_yprijbi = ingreso_agro if r427==8 & missing(d_yprijbi)
+egen double ylmpri_ci = rowtotal(d_yprijbi d_yprijbd), missing
+drop d_yprid d_hrsextrasd d_vacacionesd d_aguinaldod d_bonificacionesd d_propina d_yprijbd d_yprijbi
+replace ylmpri_ci = .  if emp_ci != 1
+replace ylmpri_ci = .  if ylmpri_ci < 0
+replace ylmpri_ci = 0  if categopri_ci == 4
 label var ylmpri_ci "Ingreso laboral monetario actividad principal"
-drop yprijbi yprijbd
 
 ******************
 ****nrylmpri_ci***
@@ -694,51 +706,50 @@ la var nrylmpri_ci "Identificador de No respuesta del ingreso de la actividad pr
 ****************
 ***ylnmpri_ci***
 ****************
-
-g food1=r42505a*r42505b/12 
-g ropa1=r42506a*r42506b/12 
-g merca1=r42507a*r42507b/12 
-g vivi1=r42508a*r42508b/12 
-g trans1=r42509a*r42509b/12 
-g segur1=r42510a*r42510b/12 
-g otross1=r42512a*r42512b/12 
-
-egen ylnmpri_ci=rsum(food1 ropa1 merca1 vivi1 trans1 segur1 otross1), missing
-replace ylnmpri_ci=. if emp_ci!=1
-label var ylnmpri_ci "Ingreso laboral NO monetario actividad principal"  
-drop food1-otross1
+gen double d_food1   = r42505a*r42505b/12
+gen double d_ropa1   = r42506a*r42506b/12
+gen double d_merca1  = r42507a*r42507b/12
+gen double d_vivi1   = r42508a*r42508b/12
+gen double d_trans1  = r42509a*r42509b/12
+gen double d_segur1  = r42510a*r42510b/12
+gen double d_otross1 = r42512a*r42512b/12
+egen double ylnmpri_ci = rowtotal(d_food1 d_ropa1 d_merca1 d_vivi1 d_trans1 d_segur1 d_otross1), missing
+drop d_food1 d_ropa1 d_merca1 d_vivi1 d_trans1 d_segur1 d_otross1
+replace ylnmpri_ci = .  if emp_ci != 1
+replace ylnmpri_ci = .  if ylnmpri_ci < 0
+replace ylnmpri_ci = 0  if categopri_ci == 4
+label var ylnmpri_ci "Ingreso laboral NO monetario actividad principal"
 
 ***************
 ***ylmsec_ci***
 ***************
-
-gen hrsextrasd1     =r43501a*r43501b/12 
-gen vacacionesd1    =r43502a*r43502b/12 
-gen aguinaldod1     =r43503a*r43503b/12 
-gen bonificacionesd1=r43504a*r43504b/12 
-gen propina1        =r43511a*r43511b/12 
-egen yprijbd1 =rsum(hrsextrasd1 vacacionesd1 aguinaldod1 bonificacionesd1 propina1), missing
-
-egen ylmsec_ci=rsum(r434 yprijbd1), missing
-replace ylmsec_ci=. if emp_ci!=1
-label var ylmsec_ci "Ingreso laboral monetario segunda actividad" 
-drop  hrsextrasd1-yprijbd1
+gen double d_hrsextrasd1      = r43501a*r43501b/12
+gen double d_vacacionesd1     = r43502a*r43502b/12
+gen double d_aguinaldod1      = r43503a*r43503b/12
+gen double d_bonificacionesd1 = r43504a*r43504b/12
+gen double d_propina1         = r43511a*r43511b/12
+egen double d_yprijbd1 = rowtotal(d_hrsextrasd1 d_vacacionesd1 d_aguinaldod1 d_bonificacionesd1 d_propina1), missing
+egen double ylmsec_ci = rowtotal(r434 d_yprijbd1), missing
+drop d_hrsextrasd1 d_vacacionesd1 d_aguinaldod1 d_bonificacionesd1 d_propina1 d_yprijbd1
+replace ylmsec_ci = .  if emp_ci != 1
+replace ylmsec_ci = 0  if ylmsec_ci < 0
+label var ylmsec_ci "Ingreso laboral monetario segunda actividad"
 
 ****************
 ***ylnmsec_ci***
 ****************
-g food2=r43505a*r43505b/12 
-g ropa2=r43506a*r43506b/12 
-g merca2=r43507a*r43507b/12 
-g vivi2=r43508a*r43508b/12 
-g trans2=r43509a*r43509b/12 
-g segur2=r43510a*r43510b/12 
-g otross2=r43512a*r43512b/12 
-
-egen ylnmsec_ci=rsum(food2 ropa2 merca2 vivi2 trans2 segur2 otross2), missing
-replace ylnmsec_ci=. if emp_ci!=1 
+gen double d_food2   = r43505a*r43505b/12
+gen double d_ropa2   = r43506a*r43506b/12
+gen double d_merca2  = r43507a*r43507b/12
+gen double d_vivi2   = r43508a*r43508b/12
+gen double d_trans2  = r43509a*r43509b/12
+gen double d_segur2  = r43510a*r43510b/12
+gen double d_otross2 = r43512a*r43512b/12
+egen double ylnmsec_ci = rowtotal(d_food2 d_ropa2 d_merca2 d_vivi2 d_trans2 d_segur2 d_otross2), missing
+drop d_food2 d_ropa2 d_merca2 d_vivi2 d_trans2 d_segur2 d_otross2
+replace ylnmsec_ci = .  if emp_ci != 1
+replace ylnmsec_ci = .  if ylnmsec_ci < 0
 label var ylnmsec_ci "Ingreso laboral no monetario actividad secundaria"
-drop food2-otross2
 
 *****************
 ***ylmotros_ci***
@@ -832,31 +843,28 @@ label var ypensub_ci "Valor de la pension subsidiada / no contributiva"
 ***************
 *** ynlm_ci ***
 ***************
-	gen double remesas_nac   = r44001a * r44001b / 12  /* "remesas" Nacionales (transferencias desde otros hogares del país) */
-	gen double cuotalim       = r44002a * r44002b / 12
-	gen double alqui          = r44003a * r44003b / 12
-	gen double alqneg         = r44004a * r44004b / 12
-	gen double alqterr        = r44005a * r44005b / 12
-	gen double jubil          = ingreso_pensiones		 // ypen_ci
-	gen double deveh          = r44007a * r44007b / 12
-	gen double pension_temp   = r44008a * r44008b / 12   /* pensión por sobrevivencia */
-	gen double ahorros        = r44009a * r44009b / 12
-	gen double otros_nl       = r44010a * r44010b / 12
+	gen double d_remesas       = r44001a*r44001b/12   // ayuda de familiares/amigos residentes EN EL PAIS
+	gen double d_cuotalim      = r44002a*r44002b/12
+	gen double d_alqui         = r44003a*r44003b/12
+	gen double d_alqneg        = r44004a*r44004b/12
+	gen double d_alqterr       = r44005a*r44005b/12
+	gen double d_deveh         = r44007a*r44007b/12
+	gen double d_pension       = r44008a*r44008b/12   // pension por sobrevivencia (item propio, fuera de ingreso_pensiones)
+	gen double d_ahorros       = r44009a*r44009b/12
+	gen double d_otros         = r44010a*r44010b/12
+	gen double d_utilidades    = r44101/12
+	gen double d_dividendos    = r44102/12
+	gen double d_intereses     = r44103/12
+	gen double d_herencias     = r44104/12
+	gen double d_indemnizacion = r44105/12
+	gen double d_acteventual   = r44107/12
+	gen double d_arrendamiento = r44108/12
+	gen double d_remesaevent1  = r44109/12            // remesas eventuales DEL EXTERIOR; item individual, distinto de irefb
+	gen double d_remesaevloc   = r44110/12            // remesas eventuales LOCALES 
+	gen double d_aguinaldo     = r44111/12            // aguinaldo
+
 	
-	gen double utilidades     = r44101 / 12
-	gen double dividendos     = r44102 / 12
-	gen double intereses      = r44103 / 12
-	gen double herencias      = r44104 / 12
-	gen double indemnizacion  = r44105 / 12
-	gen double ayudagob       = r44106 / 12		// ytransf_ci
-	gen double acteventual    = r44107 / 12
-	gen double arrendamiento  = r44108 / 12
-	*gen double remesaevent1   = r44109 / 12	// Se excluyen porque son ingresos excepcionales de "remesas" Nacionales
-	gen double aguinaldo_nl   = r44110 / 12
-	gen double otrosy         = r44111 / 12
-	
-egen double ynlm_ci = rowtotal(remesas_nac cuotalim alqui alqneg alqterr ypen_ci deveh pension_temp ahorros otros_nl utilidades dividendos intereses herencias indemnizacion acteventual arrendamiento aguinaldo_nl otrosy ytransf_ci remesas_ci), mi
-drop remesas_nac cuotalim alqui alqneg alqterr jubil deveh pension_temp ahorros otros_nl utilidades dividendos intereses herencias indemnizacion ayudagob acteventual arrendamiento aguinaldo_nl otrosy
+	egen double ynlm_ci = rowtotal(d_remesas d_cuotalim d_alqui d_alqneg d_alqterr d_deveh d_pension d_ahorros d_otros d_utilidades d_dividendos d_intereses d_herencias d_indemnizacion d_acteventual d_arrendamiento d_remesaevent1 d_remesaevloc d_aguinaldo ypen_ci ytransf_ci remesas_ci), missing
 label var ynlm_ci "Ingreso no laboral monetario" 
 
 *******************
@@ -871,12 +879,38 @@ label var nrylmpri_ch "Hogares con algún miembro que no respondió por ingresos
 ***ylnm_ci***
 *************
 gen ynlnm_ci=.
-label var ynlnm_ci "Ingreso no laboral no monetario" 
+label var ynlnm_ci "Ingreso no laboral no monetario"
 
-***********
-**ytot_ci**
-***********
-egen double ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci), mi
+capture drop d_remesas d_cuotalim d_alqui d_alqneg d_alqterr d_deveh d_pension d_ahorros d_otros d_utilidades d_dividendos d_intereses d_herencias d_indemnizacion d_acteventual d_arrendamiento d_remesaevent1 d_remesaevloc d_aguinaldo  
+
+
+	*********
+	*ytot_ci* 
+	*********
+	foreach v in ylmpri_ci ylnmpri_ci ylmsec_ci ylnmsec_ci ylmotros_ci ylnmotros_ci {
+		capture confirm variable `v'
+		if _rc gen double `v' = .
+		replace `v' = . if emp_ci != 1
+		replace `v' = . if `v' < 0
+		replace `v' = 0 if categopri_ci == 4 & emp_ci == 1 & missing(`v')
+	}
+
+	* Ingreso laboral primario (monetario + no monetario)
+	egen double yl_pri = rowtotal(ylmpri_ci ylnmpri_ci), missing
+	replace yl_pri = . if yl_pri < 0
+	* Ingreso laboral secundario y laboral otro (monetario + no monetario)
+	egen double yl_sec = rowtotal(ylmsec_ci ylnmsec_ci ylmotros_ci ylnmotros_ci), missing
+	replace yl_sec = . if yl_sec < 0
+	* Ingreso laboral total (primario + secundario)
+	egen double yl_ci = rowtotal(yl_pri yl_sec), missing
+	replace yl_ci = . if missing(yl_pri)
+	* Ingreso no Laboral total (monetario + no monetario)
+	egen double ynl_ci = rowtotal(ynlm_ci ynlnm_ci), missing
+	replace ynl_ci = . if ynl_ci < 0
+	* Ingreso total
+	egen double ytot_ci = rowtotal(yl_ci ynl_ci), missing
+	replace ytot_ci = . if condocup_ci == 1 & (missing(yl_pri) | (yl_pri <= 0 & categopri_ci != 4))
+	replace ytot_ci = . if condocup_ci != 1 & (missing(ynl_ci) | ynl_ci <= 0)
 
 ***************
 *** ynet_ci ***
@@ -921,7 +955,7 @@ label var ylmnr_ch "Ingreso laboral monetario del hogar"
 	replace solidario_ch = . if r319a3 == . & r319a4 == .
 
 	gen byte ptmc_ch = (becaesc_ch == 1 | solidario_ch == 1) if miembros_ci == 1
-	replace ptmc_ch = (becaesc_ch == . & solidario_ch == .)
+	replace ptmc_ch = . if becaesc_ch == . & solidario_ch == .
 	
 	bys idh_ch: egen byte potrot_ch = max(potrot_ci) if miembros_ci == 1
 	
@@ -1827,6 +1861,70 @@ lab val atencion_ci atencion_ci
 /*_____________________________________________________________________________________________________*/
 
 
+	****************************
+	*** VARIABLES DE POBREZA ***
+	****************************
+	
+	*************
+	*top_edu_ocp*
+	*************
+	bysort idh_ch: egen max_edu_ocp = max(cond(condocup_ci==1 & miembros_ci==1, aedu_ci, .))
+	gen byte top_edu_ocp = condocup_ci==1 & miembros_ci==1 & aedu_ci==max_edu_ocp
+	bysort idh_ch top_edu_ocp (idp_ci): gen rank = _n
+	replace top_edu_ocp = 0 if rank > 1
+	drop max_edu_ocp rank
+
+	bysort idh_ch: egen byte jefe_ocup_ch = max(jefe_ci==1 & condocup_ci==1)
+	* Ingreso invalido = missing o <= 0
+	bysort idh_ch: egen byte _jefe_inv  = max(jefe_ci==1 & (missing(ytot_ci) | ytot_ci<=0))
+	bysort idh_ch: egen byte _topedu_ok = max(top_edu_ocp==1 & !missing(ytot_ci) & ytot_ci>0)
+	* Jefe ocupado: el hogar sigue la regla del jefe
+	* Jefe no ocupado: manda top_edu_ocp; si no tiene ingreso valido (o no hay ocupados), vuelve a la regla del jefe
+	gen byte flag_ref_ch = cond(jefe_ocup_ch==1, _jefe_inv, _jefe_inv & !_topedu_ok)
+	
+	*********
+	*ynivhog*
+	*********
+	gen ynivhog = 0 // replace if var exists
+
+	*************
+	*rentaimp_ch*
+	*************
+	gen byte ri_univ = inlist(r308,2,3,4) | (r308>=5 & r308<5.5)
+	local var_ri r310a 
+	capture confirm numeric variable `var_ri'
+	if _rc & "`var_ri'" != "" di as err "`var_ri' no existe: renta imputada = 10% del ITF"
+	if _rc local var_ri "."
+	bysort idh_ch: egen double renta_imp_ch = max(cond(jefe_ci==1 & ri_univ==1, `var_ri', .))
+
+	*******************
+	*welfare_income_ch*
+	*******************
+	bysort idh_ch: egen double welfare_income_ch = total(cond(miembros_ci==1, ytot_ci, .)), missing
+	replace welfare_income_ch = welfare_income_ch + ynivhog
+	replace welfare_income_ch = . if flag_ref_ch==1
+	replace renta_imp_ch = 0.10 * welfare_income_ch if missing(renta_imp_ch) & ri_univ==1 & !missing(welfare_income_ch) & flag_renta_imp == 0 
+	replace welfare_income_ch = (welfare_income_ch + cond(missing(renta_imp_ch), 0, renta_imp_ch)) * cond(zona_c==0, 1.15, 1)
+	replace welfare_income_ch = welfare_income_ch/ ((365/12) * cpi * icp)
+	
+	***********************
+	*welfare_income_ci*
+	***********************
+	gen double welfare_income_ci = welfare_income_ch / nmiembros_ch
+	replace    welfare_income_ci = . if nmiembros_ch == 0 | missing(nmiembros_ch)
+	replace    welfare_income_ci = . if welfare_income_ci < 0
+	
+	***********
+	*pobre_umi*
+	***********
+	gen byte pobre_umi = (welfare_income_ci < 8.3) if !missing(welfare_income_ci)
+
+	***********
+	*pobre_lmi*
+	***********
+	gen byte pobre_lmi = (welfare_income_ci < 4.2) if !missing(welfare_income_ci)
+
+
 do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&ExternalVars_Harmonized_DataBank.do"
 
 *_____________________________________________________________________________________________________*
@@ -1870,6 +1968,7 @@ lab val grupo_int grupo_int
   horaspri_ci horastot_ci tiempoparc_ci categopri_ci categosec_ci rama_ci spublico_ci tamemp_ci cotizando_ci instcot_ci	afiliado_ci /// Empleo 
   formal_ci tipocontrato_ci ocupa_ci pension_ci	pensionsub_ci tipopen_ci instpen_ci	ylmpri_ci /// Empleo 
   ylmpri_ci ylnmpri_ci ylmsec_ci ylnmsec_ci ylmotros_ci	ylnmotros_ci  ylm_ci ylnm_ci ynlm_ci ynlnm_ci ytot_ci nrylmpri_ci /// Ingresos individuo 
+  yl_pri yl_sec yl_ci ynl_ci top_edu_ocp ynivhog renta_imp_ch welfare_income_ch welfare_income_ci flag_ref_ch pobre_umi pobre_lmi /// 
   ylm_ch ylnm_ch ylmnr_ch ynlm_ch ynlnm_ch ytot_ch ylmhopri_ci ylmho_ci /// Ingresos del hogar 
   nrylmpri_ci nrylmpri_ch /// No respuesta de ingresos  
   pnc_ci ptmc_ci potrot_ci ypnc_ci yptmc_ci yotrot_ci ytransf_ci ynet_ci pnc_ch ptmc_ch potrot_ch ypnc_ch yptmc_ch yotrot_ch ytransf_ch ynet_ch ynet_ch_pc /// Protección social

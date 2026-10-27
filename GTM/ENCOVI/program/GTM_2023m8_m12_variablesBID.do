@@ -1,5 +1,7 @@
+
+
 * (Versión Stata 17)
-clear all
+clear
 set more off
 *________________________________________________________________________________________________________________*
 
@@ -94,8 +96,10 @@ label variable pais_c "Nonmbre del Pais"
 gen anio_c=2023
 label variable anio_c "Año de la Encuesta"
 
-* Periodo de Referencia: del 07/00 al 11/00.
-* This is the middle of the reference period
+	*****************************************
+	*CPI, IPC, Flag si tiene renta imputada*
+	****************************************
+	merge m:1 pais_c anio_c using "$datalibweb_IDB\SUPPORT\support_0926.dta", keepusing(cpi icp flag_renta_imp) keep(3) nogen 
 gen byte mes_c=9
 label variable mes_c "Mes de la Encuesta"
 
@@ -174,19 +178,19 @@ sort idh_ch
 egen nmiembros_ch=sum(relacion_ci>0 & relacion_ci<5 ), by (idh_ch)
 label variable nmiembros_ch "numero de miembros en el hogar"
 
-egen nmayor21_ch=sum((relacion_ci>0 & relacion_ci<5 ) & (edad>=21)), by (idh_ch)
+egen nmayor21_ch=sum((relacion_ci>0 & relacion_ci<5 ) & (edad_ci>=21)), by (idh_ch)
 label variable nmayor21_ch "numero de personas de 21 años o mas dentro del hogar"
 
-egen nmenor21_ch=sum((relacion_ci>0 & relacion_ci<5 ) & (edad<21)), by (idh_ch)
+egen nmenor21_ch=sum((relacion_ci>0 & relacion_ci<5 ) & (edad_ci<21)), by (idh_ch)
 label variable nmenor21_ch "numero de personas menores a 21 años dentro del hogar"
 
-egen nmayor65_ch=sum((relacion_ci>0 & relacion_ci<5 ) & (edad>=65)), by (idh_ch)
+egen nmayor65_ch=sum((relacion_ci>0 & relacion_ci<5 ) & (edad_ci>=65)), by (idh_ch)
 label variable nmayor65_ch "numero de personas de 65 años o mas dentro del hogar"
 
-egen nmenor6_ch=sum((relacion_ci>0 & relacion_ci<5 ) & (edad<6)), by (idh_ch)
+egen nmenor6_ch=sum((relacion_ci>0 & relacion_ci<5 ) & (edad_ci<6)), by (idh_ch)
 label variable nmenor6_ch "numero de niños menores a 6 años dentro del hogar"
 
-egen nmenor1_ch=sum((relacion_ci>0 & relacion_ci<5 ) & (edad<1)),  by (idh_ch)
+egen nmenor1_ch=sum((relacion_ci>0 & relacion_ci<5 ) & (edad_ci<1)),  by (idh_ch)
 label variable nmenor1_ch "numero de niños menores a 1 año dentro del hogar"
 
 
@@ -738,6 +742,19 @@ replace des1_ch=3 if p02b07==3 //excusado
 gen salmm_ci= 101.05
 label var salmm_ci "Salario minimo legal"
 
+*********
+*lp_ci***
+*********
+
+gen lp_ci =.
+label var lp_ci "Linea de pobreza oficial del pais"
+
+*********
+*lpe_ci**
+*********
+
+gen lpe_ci =.
+label var lpe_ci "Linea de indigencia oficial del pais"
 
 /************************************************************************************************************
 * 3. Creación de nuevas variables de SS and LMK a incorporar en Armonizadas
@@ -747,7 +764,7 @@ gen condocup_ci=.
 replace condocup_ci=1 if ocupados ==1 
 replace condocup_ci=2 if desocupados ==1
 replace condocup_ci=3 if inactivos ==1  & edad_ci>=7 & edad_ci!=.
-replace condocup_ci=4 if edad<7
+replace condocup_ci=4 if edad_ci<7
 
 label var condocup_ci "Condicion de ocupación de acuerdo a def de cada pais"
 label define condocup_ci 1 "Ocupado" 2 "Desocupado" 3 "Inactivo" 4 "Menor que 7" 
@@ -1174,7 +1191,15 @@ P04C21B	(p05c37b) CUÁNTO DINERO RECIBIÓ bonos de productividad, de desempeño 
 No incluye lo que recibió por alimentación/subsidio, vivienda, transporte recibidos en el trabajo
 */
 
-egen ylmpri_ci = rsum(p10c27 p10c28c p10c29b  *tdp), missing
+* FUSION-OLD: egen ylmpri_ci = rsum(p10c27 p10c28c p10c29b  *tdp), missing
+* FUSION 2026-09: ylmpri_ci segun David GTM_2023_ingreso.do secc 1.1 (tdp de (A) identicos a los de David; agrega la rama del independiente p10c47/p10c48, desviacion #1)
+gen double d_iindep = .
+egen double d_iindep_raw = rowtotal(p10c47 p10c48), missing
+replace d_iindep = d_iindep_raw if inlist(categopri_ci,1,2)
+egen double ylmpri_ci = rowtotal(p10c27 p10c28c p10c29b p10c30btdp p10c31btdp p10c32btdp p10c33btdp p10c34btdp d_iindep), missing
+replace ylmpri_ci = .  if emp_ci != 1
+replace ylmpri_ci = .  if ylmpri_ci < 0
+replace ylmpri_ci = 0  if categopri_ci == 4
 label var ylmpri_ci "Ingreso laboral monetario actividad principal" 
 
 *****************
@@ -1194,7 +1219,11 @@ p04c18b (p05c34b) Valoración de los alimentos recibidos en el trabajo
 p04c19b (p05c35b) Valoración del costo de la vivienda recibida en el trabajo
 p04c20b (p05c36b) Valoración del costo del transporte recibido en el trabajo
 */
-egen ylnmpri_ci=rsum(p10c36b p10c36b p10c37b), missing
+
+egen double ylnmpri_ci = rowtotal(p10c35b p10c36b p10c37b p10c50b), missing
+replace ylnmpri_ci = .  if emp_ci != 1
+replace ylnmpri_ci = .  if ylnmpri_ci < 0
+replace ylnmpri_ci = 0  if categopri_ci == 4
 label var ylnmpri_ci "Ingreso laboral NO monetario actividad principal"   
 
 ***************
@@ -1215,7 +1244,10 @@ foreach var of varlist p10d12b p10d13b{
 g `var'tdpsec=`var'/12
 }
 
-egen ylmsec_ci=rsum(p10d09 p10d11b *tdpsec p10d14), missing
+egen double ylmsec_ci = rowtotal(p10d09 p10d11b p10d12btdpsec p10d13btdpsec p10d14), missing
+replace ylmsec_ci = .  if emp_ci != 1
+replace ylmsec_ci = 0  if ylmsec_ci < 0
+replace ylmsec_ci = 0  if categosec_ci == 4
 label var ylmsec_ci "Ingreso laboral monetario segunda actividad" 
 
 ****************
@@ -1224,7 +1256,10 @@ label var ylmsec_ci "Ingreso laboral monetario segunda actividad"
 
 * 2021 (2022) 
 * p04d07b (p05d09b) Vivienda sin tener que pagarla, alimentación, Transporte
-g ylnmsec_ci=p10d10b
+egen double ylnmsec_ci = rowtotal(p10d10b p10d16b), missing
+replace ylnmsec_ci = .  if emp_ci != 1
+replace ylnmsec_ci = .  if ylnmsec_ci < 0
+replace ylnmsec_ci = 0  if categosec_ci == 4
 label var ylnmsec_ci "Ingreso laboral NO monetario actividad secundaria"
 
 *****************
@@ -1292,7 +1327,9 @@ g `var'tdp3=`var'/3
 foreach var of varlist p11b01b p11b02b p11b03b p11b04b p11b05b p11b06b p11b07b p11b08b {
 g `var'tdp3=`var'/12
 }
-egen ynlm_ci=rsum(*tdp3*), missing
+g remesas_ci=remtdp3
+la var remesas_ci "Cash remittances from abroad"
+egen double ynlm_ci = rowtotal(p11a01btdp3 p11a02btdp3 p11a03btdp3 p11a04btdp3 p11a06btdp3 p11b01btdp3 p11b02btdp3 p11b03btdp3 p11b08btdp3 ypen_ci remesas_ci), missing
 label var ynlm_ci "Ingreso no laboral monetario" 
 
 
@@ -1424,12 +1461,6 @@ bys idh_ch: egen autocons_ch=sum(autocons_ci) if miembros_ci==1, missing
 la var autocons_ch "Autoconsumo del Hogar"
 
 ****************
-***remesas_ci***
-****************
-g remesas_ci=remtdp3
-la var remesas_ci "Cash remittances from abroad"
-
-****************
 ***remesas_ch***
 ****************
 by idh_ch, sort: egen remesas_ch=sum(remesas_ci) if miembros_ci==1, missing
@@ -1454,7 +1485,35 @@ label var ylmho_ci "Salario monetario de todas las actividades"
 ***ytot_ci ***
 ***************
 	
-egen double ytot_ci= rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci), mi 	
+capture drop d_iindep d_iindep_raw
+
+	*********
+	*ytot_ci*
+	*********
+	foreach v in ylmpri_ci ylnmpri_ci ylmsec_ci ylnmsec_ci ylmotros_ci ylnmotros_ci {
+		capture confirm variable `v'
+		if _rc gen double `v' = .
+		replace `v' = . if emp_ci != 1
+		replace `v' = . if `v' < 0
+		replace `v' = 0 if categopri_ci == 4 & emp_ci == 1 & missing(`v')
+	}
+
+	* Ingreso laboral primario (monetario + no monetario)
+	egen double yl_pri = rowtotal(ylmpri_ci ylnmpri_ci), missing
+	replace yl_pri = . if yl_pri < 0
+	* Ingreso laboral secundario y laboral otro (monetario + no monetario)
+	egen double yl_sec = rowtotal(ylmsec_ci ylnmsec_ci ylmotros_ci ylnmotros_ci), missing
+	replace yl_sec = . if yl_sec < 0
+	* Ingreso laboral total (primario + secundario)
+	egen double yl_ci = rowtotal(yl_pri yl_sec), missing
+	replace yl_ci = . if missing(yl_pri)
+	* Ingreso no Laboral total (monetario + no monetario)
+	egen double ynl_ci = rowtotal(ynlm_ci ynlnm_ci), missing
+	replace ynl_ci = . if ynl_ci < 0
+	* Ingreso total
+	egen double ytot_ci = rowtotal(yl_ci ynl_ci), missing
+	replace ytot_ci = . if condocup_ci == 1 & (missing(yl_pri) | (yl_pri <= 0 & categopri_ci != 4))
+	replace ytot_ci = . if condocup_ci != 1 & (missing(ynl_ci) | ynl_ci <= 0)
 	
 	
 ***************
@@ -1693,45 +1752,6 @@ gen bene_cash_ch = .
 **********************	
 bys idh_ch: egen pensionsub_ch = max(pensionsub_ci)  
 
-		***************************
-		***VARIABLES DE POBREZA***
-		***************************	
-
-	****************
-	*tipo_bienestar*
-	****************	
-	gen byte tipo_bienestar = 2
-
-	********************
-	*bienestar_agregado*
-	********************	
-	gen bienestar_agregado = .
-	
-	***********
-	***ln_ci***
-	***********
-	gen ln_ci = .
-
-	*************
-	***lpe_ci ***
-	*************
-	gen lpe_ci = . 
-	
-	**************
-	*pobre_ine_ci*
-	**************
-	gen byte pobre_ine_ci= . 
-	replace pobre_ine_ci= 0 if pobreza==3
-	replace pobre_ine_ci= 1 if inlist(pobreza,1,2)
-	
-	******************
-	*pobre_ine_ext_ci*
-	******************
-	gen byte pobre_ine_ext_ci= . 
-	replace pobre_ine_ext_ci= 1 if pobreza==1
-	replace pobre_ine_ext_ci= 0 if inlist(pobreza,2,3)
-	
-
 
 
 
@@ -1740,6 +1760,78 @@ bys idh_ch: egen pensionsub_ch = max(pensionsub_ci)
 * también se incluyen variables que se manejaban en versiones anteriores, estas son:
 * firmapeq_ci nrylmpri_ch nrylmpri_ci tcylmpri_ch tcylmpri_ci tipopen_ci
 /*_____________________________________________________________________________________________________*/
+
+	****************************
+	*** VARIABLES DE POBREZA ***
+	****************************
+	
+	*************
+	*top_edu_ocp*
+	*************
+	bysort idh_ch: egen max_edu_ocp = max(cond(condocup_ci==1 & miembros_ci==1, aedu_ci, .))
+	gen byte top_edu_ocp = condocup_ci==1 & miembros_ci==1 & aedu_ci==max_edu_ocp
+	bysort idh_ch top_edu_ocp (idp_ci): gen rank = _n
+	replace top_edu_ocp = 0 if rank > 1
+	drop max_edu_ocp rank
+
+	bysort idh_ch: egen byte jefe_ocup_ch = max(jefe_ci==1 & condocup_ci==1)
+	* Ingreso invalido = missing o <= 0
+	bysort idh_ch: egen byte _jefe_inv  = max(jefe_ci==1 & (missing(ytot_ci) | ytot_ci<=0))
+	bysort idh_ch: egen byte _topedu_ok = max(top_edu_ocp==1 & !missing(ytot_ci) & ytot_ci>0)
+	* Jefe ocupado: el hogar sigue la regla del jefe
+	* Jefe no ocupado: manda top_edu_ocp; si no tiene ingreso valido (o no hay ocupados), vuelve a la regla del jefe
+	gen byte flag_ref_ch = cond(jefe_ocup_ch==1, _jefe_inv, _jefe_inv & !_topedu_ok)
+	
+	*********
+	*ynivhog*
+	*********
+	gen ynivhog = 0 // replace if var exists
+
+	*************
+	*rentaimp_ch*
+	*************
+	* p01b01: 1,2,4,98 = todo salvo alquilada(3); incluye cedidas/otra forma
+	gen byte ri_univ = inlist(p01b01, 1, 2, 4, 98)
+	* p01b02 (alquiler mensual imputado relevado, ya mensual, monto de hogar)
+	local var_ri p01b02
+	capture confirm numeric variable `var_ri'
+	if _rc & "`var_ri'" != "" di as err "`var_ri' no existe: renta imputada = 10% del ITF"
+	if _rc local var_ri "."
+	bysort idh_ch: egen double renta_imp_ch = max(cond(jefe_ci==1 & ri_univ==1, `var_ri', .))
+
+	*******************
+	*welfare_income_ch*
+	*******************
+	bysort idh_ch: egen double welfare_income_ch = total(cond(miembros_ci==1, ytot_ci, .)), missing
+	replace welfare_income_ch = welfare_income_ch + ynivhog
+	replace welfare_income_ch = . if flag_ref_ch==1
+	replace renta_imp_ch = 0.10 * welfare_income_ch if missing(renta_imp_ch) & ri_univ==1 & !missing(welfare_income_ch) & flag_renta_imp == 0 
+	replace welfare_income_ch = (welfare_income_ch + cond(missing(renta_imp_ch), 0, renta_imp_ch)) * cond(zona_c==0, 1.15, 1)
+	replace welfare_income_ch = welfare_income_ch/ ((365/12) * cpi * icp)
+	
+	***********************
+	*welfare_income_ci*
+	***********************
+	gen double welfare_income_ci = welfare_income_ch / nmiembros_ch
+	replace    welfare_income_ci = . if nmiembros_ch == 0 | missing(nmiembros_ch)
+	replace    welfare_income_ci = . if welfare_income_ci < 0
+	
+	***********
+	*pobre_umi*
+	***********
+	gen byte pobre_umi = (welfare_income_ci < 8.3) if !missing(welfare_income_ci)
+
+	***********
+	*pobre_lmi*
+	***********
+	gen byte pobre_lmi = (welfare_income_ci < 4.2) if !missing(welfare_income_ci)
+
+	drop _jefe_inv _topedu_ok
+	mean pobre_umi [aw=factor_ch]
+	mean pobre_lmi [aw=factor_ch]
+	capture drop ri_aux
+	capture drop ri_univ
+	capture drop cpi icp flag_renta_imp // evita que Labels&ExternalVars tome el cpi del support
 
 do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&ExternalVars_Harmonized_DataBank.do"
 
@@ -1752,6 +1844,7 @@ do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&Exter
 	  horaspri_ci horastot_ci tiempoparc_ci categopri_ci categosec_ci rama_ci spublico_ci tamemp_ci cotizando_ci instcot_ci	afiliado_ci /// Empleo
 	  formal_ci tipocontrato_ci ocupa_ci pension_ci	pensionsub_ci tipopen_ci instpen_ci	ylmpri_ci /// Empleo
 	  ylmpri_ci ylnmpri_ci ylmsec_ci ylnmsec_ci ylmotros_ci	ylnmotros_ci ylm_ci ylnm_ci ynlm_ci ynlnm_ci ytot_ci ynlm_publico_ci ynlm_privado_ci  /// Ingresos individuo
+	  top_edu_ocp ynivhog renta_imp_ch welfare_income_ch welfare_income_ci flag_ref_ch pobre_umi pobre_lmi yl_pri yl_sec yl_ci ynl_ci /// FUSION 2026-09: variables del bloque de pobreza
 	  ylm_ch ylnm_ch ylmnr_ch ynlm_ch ynlnm_ch ynlm_publico_ch ynlm_privado_ch  ytot_ch /// Ingresos del hogar
 	  ylmhopri_ci ylmho_ci /// ingreso por hora
 	  nrylmpri_ci nrylmpri_ch /// No respuesta de ingresos 
@@ -1764,8 +1857,7 @@ do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&Exter
 	  migrante_ci migrantiguo5_ci miglac_ci /// Migración  
 	  nmiembros_sph_ch yneto_pc_ch bene_cash_ch pensionsub_ch   /// Protección social 
           ynlm_publico_ch ynlm_privado_ch ynlm_privado_ci ynlm_publico_ci  /// Protección social ingresos
- 	  salmm_ci lp19_2011 lp31_2011 lp5_2011 lp365_2017 lp685_2017 lp14_2017 lp81_2017 tc_c ratio_cpi2011 ratio_cpi2017 cpi_c cpi2011 cpi2017 ppp_c ppp_2011 ppp_2017 /// Fuente externa
-	  tipo_bienestar bienestar_agregado ln_ci lpe_ci pobre_ine_ci pobre_ine_ext_ci, first /// Pobreza
+ 	  salmm_ci lp19_2011 lp31_2011 lp5_2011 lp_ci lpe_ci lp365_2017 lp685_2017 lp14_2017 lp81_2017 tc_c ratio_cpi2011 ratio_cpi2017 cpi_c cpi2011 cpi2017 ppp_c ppp_2011 ppp_2017, first /// Fuente externa
 
 
 

@@ -1,6 +1,5 @@
-
 * (Versión Stata 12)
-clear
+clear all
 set more off
 *________________________________________________________________________________________________________________*
 
@@ -151,6 +150,11 @@ label define relacion_ci 6 "Empleado/a domestico/a", add
 label value relacion_ci relacion_ci
 
 
+	*****************************************
+	*CPI, IPC, Flag si tiene renta imputada*
+	****************************************
+	merge m:1 pais_c anio_c using "$datalibweb_IDB\SUPPORT\support_0926.dta", keepusing(cpi icp flag_renta_imp) keep(3) nogen  
+	
 ****************************
 ***VARIABLES DEMOGRAFICAS***
 ****************************
@@ -1245,15 +1249,131 @@ yvesti
 yvivien 
 yguarde */
 
+	gen double d_dias_pri = s6b_22  
+	gen double d_dias_sec = s6e_39a   
+	qui count if s6c_25b == 1 & missing(d_dias_pri)
+	di as txt "AVISO mensualizacion: `r(N)' con pago diario en la ocupacion principal sin dias declarados; se asume 6."
+	replace d_dias_pri = 6 if missing(d_dias_pri)   // misma convencion que BOL_2011 y BOL_2017
+	replace d_dias_sec = 6 if missing(d_dias_sec)
+	gen double d_fdia_pri = d_dias_pri * 4.33
+	gen double d_fdia_sec = d_dias_sec * 4.33
+	gen double d_yliquido = .                                   
+	replace d_yliquido = s6c_25a*d_fdia_pri   if s6c_25b==1
+	replace d_yliquido = s6c_25a*4.33  if s6c_25b==2
+	replace d_yliquido = s6c_25a*2.165    if s6c_25b==3
+	replace d_yliquido = s6c_25a      if s6c_25b==4
+	replace d_yliquido = s6c_25a/2    if s6c_25b==5
+	replace d_yliquido = s6c_25a/3    if s6c_25b==6
+	replace d_yliquido = s6c_25a/6    if s6c_25b==7
+	replace d_yliquido = s6c_25a/12   if s6c_25b==8
+	gen double d_ycomisio = .                                 
+	replace d_ycomisio = s6c_27aa*d_fdia_pri  if s6c_27ab==1
+	replace d_ycomisio = s6c_27aa*4.33 if s6c_27ab==2
+	replace d_ycomisio = s6c_27aa*2.165   if s6c_27ab==3
+	replace d_ycomisio = s6c_27aa     if s6c_27ab==4
+	replace d_ycomisio = s6c_27aa/2   if s6c_27ab==5
+	replace d_ycomisio = s6c_27aa/3   if s6c_27ab==6
+	replace d_ycomisio = s6c_27aa/6   if s6c_27ab==7
+	replace d_ycomisio = s6c_27aa/12  if s6c_27ab==8
+	gen double d_yhrsextr = .                                  
+	replace d_yhrsextr = s6c_27ba*d_fdia_pri  if s6c_27bb==1
+	replace d_yhrsextr = s6c_27ba*4.33 if s6c_27bb==2
+	replace d_yhrsextr = s6c_27ba*2.165   if s6c_27bb==3
+	replace d_yhrsextr = s6c_27ba     if s6c_27bb==4
+	replace d_yhrsextr = s6c_27ba/2   if s6c_27bb==5
+	replace d_yhrsextr = s6c_27ba/3   if s6c_27bb==6
+	replace d_yhrsextr = s6c_27ba/6   if s6c_27bb==7
+	replace d_yhrsextr = s6c_27ba/12  if s6c_27bb==8
+	gen double d_yactpri = .                                    
+	replace d_yactpri = s6d_33a*d_fdia_pri  if s6d_33b==1
+	replace d_yactpri = s6d_33a*4.33 if s6d_33b==2
+	replace d_yactpri = s6d_33a*2.165   if s6d_33b==3
+	replace d_yactpri = s6d_33a     if s6d_33b==4
+	replace d_yactpri = s6d_33a/2   if s6d_33b==5
+	replace d_yactpri = s6d_33a/3   if s6d_33b==6
+	replace d_yactpri = s6d_33a/6   if s6d_33b==7
+	replace d_yactpri = s6d_33a/12  if s6d_33b==8
+	recode s6c_30c1a (777777=.)
+	gen double d_yalimen = .                                    
+	replace d_yalimen = s6c_30a1a*d_fdia_pri  if s6c_30a1b==1 & s6c_30a==1
+	replace d_yalimen = s6c_30a1a*4.33 if s6c_30a1b==2 & s6c_30a==1
+	replace d_yalimen = s6c_30a1a*2.165   if s6c_30a1b==3 & s6c_30a==1
+	replace d_yalimen = s6c_30a1a     if s6c_30a1b==4 & s6c_30a==1
+	replace d_yalimen = s6c_30a1a/2   if s6c_30a1b==5 & s6c_30a==1
+	replace d_yalimen = s6c_30a1a/3   if s6c_30a1b==6 & s6c_30a==1
+	replace d_yalimen = s6c_30a1a/6   if s6c_30a1b==7 & s6c_30a==1
+	replace d_yalimen = s6c_30a1a/12  if s6c_30a1b==8 & s6c_30a==1
+	gen double d_ytranspo = .                                   
+	replace d_ytranspo = s6c_30b1a*d_fdia_pri  if s6c_30b1b==1 & s6c_30b==1
+	replace d_ytranspo = s6c_30b1a*4.33 if s6c_30b1b==2 & s6c_30b==1
+	replace d_ytranspo = s6c_30b1a*2.165   if s6c_30b1b==3 & s6c_30b==1
+	replace d_ytranspo = s6c_30b1a     if s6c_30b1b==4 & s6c_30b==1
+	replace d_ytranspo = s6c_30b1a/2   if s6c_30b1b==5 & s6c_30b==1
+	replace d_ytranspo = s6c_30b1a/3   if s6c_30b1b==6 & s6c_30b==1
+	replace d_ytranspo = s6c_30b1a/6   if s6c_30b1b==7 & s6c_30b==1
+	replace d_ytranspo = s6c_30b1a/12  if s6c_30b1b==8 & s6c_30b==1
+	gen double d_yvesti = .                                    
+	replace d_yvesti = s6c_30c1a*d_fdia_pri  if s6c_30c1b==1 & s6c_30c==1
+	replace d_yvesti = s6c_30c1a*4.33 if s6c_30c1b==2 & s6c_30c==1
+	replace d_yvesti = s6c_30c1a*2.165   if s6c_30c1b==3 & s6c_30c==1
+	replace d_yvesti = s6c_30c1a     if s6c_30c1b==4 & s6c_30c==1
+	replace d_yvesti = s6c_30c1a/2   if s6c_30c1b==5 & s6c_30c==1
+	replace d_yvesti = s6c_30c1a/3   if s6c_30c1b==6 & s6c_30c==1
+	replace d_yvesti = s6c_30c1a/6   if s6c_30c1b==7 & s6c_30c==1
+	replace d_yvesti = s6c_30c1a/12  if s6c_30c1b==8 & s6c_30c==1
+	gen double d_yvivien = .                                    
+	replace d_yvivien = s6c_30d1a*d_fdia_pri  if s6c_30d1b==1 & s6c_30d==1
+	replace d_yvivien = s6c_30d1a*4.33 if s6c_30d1b==2 & s6c_30d==1
+	replace d_yvivien = s6c_30d1a*2.165   if s6c_30d1b==3 & s6c_30d==1
+	replace d_yvivien = s6c_30d1a     if s6c_30d1b==4 & s6c_30d==1
+	replace d_yvivien = s6c_30d1a/2   if s6c_30d1b==5 & s6c_30d==1
+	replace d_yvivien = s6c_30d1a/3   if s6c_30d1b==6 & s6c_30d==1
+	replace d_yvivien = s6c_30d1a/6   if s6c_30d1b==7 & s6c_30d==1
+	replace d_yvivien = s6c_30d1a/12  if s6c_30d1b==8 & s6c_30d==1
+	gen double d_yotros = .                                     
+	replace d_yotros = s6c_30e1a*d_fdia_pri  if s6c_30e1b==1 & s6c_30e==1
+	replace d_yotros = s6c_30e1a*4.33 if s6c_30e1b==2 & s6c_30e==1
+	replace d_yotros = s6c_30e1a*2.165   if s6c_30e1b==3 & s6c_30e==1
+	replace d_yotros = s6c_30e1a     if s6c_30e1b==4 & s6c_30e==1
+	replace d_yotros = s6c_30e1a/2   if s6c_30e1b==5 & s6c_30e==1
+	replace d_yotros = s6c_30e1a/3   if s6c_30e1b==6 & s6c_30e==1
+	replace d_yotros = s6c_30e1a/6   if s6c_30e1b==7 & s6c_30e==1
+	replace d_yotros = s6c_30e1a/12  if s6c_30e1b==8 & s6c_30e==1
+	gen double d_yliquido2 = .                                  
+	replace d_yliquido2 = s6f_41a*d_fdia_sec  if s6f_41b==1
+	replace d_yliquido2 = s6f_41a*4.33 if s6f_41b==2
+	replace d_yliquido2 = s6f_41a*2.165   if s6f_41b==3
+	replace d_yliquido2 = s6f_41a     if s6f_41b==4
+	replace d_yliquido2 = s6f_41a/2   if s6f_41b==5
+	replace d_yliquido2 = s6f_41a/3   if s6f_41b==6
+	replace d_yliquido2 = s6f_41a/6   if s6f_41b==7
+	replace d_yliquido2 = s6f_41a/12  if s6f_41b==8
+	gen double d_yasistfam = .                                  
+	replace d_yasistfam = s7b_5aa*4.33 if s7b_5ab==2
+	replace d_yasistfam = s7b_5aa*2.165   if s7b_5ab==3
+	replace d_yasistfam = s7b_5aa     if s7b_5ab==4
+	replace d_yasistfam = s7b_5aa/2   if s7b_5ab==5
+	replace d_yasistfam = s7b_5aa/3   if s7b_5ab==6
+	replace d_yasistfam = s7b_5aa/6   if s7b_5ab==7
+	replace d_yasistfam = s7b_5aa/12  if s7b_5ab==8
+	gen double d_ytransmon = .                                  
+	replace d_ytransmon = s7b_5ba*4.33 if s7b_5bb==2
+	replace d_ytransmon = s7b_5ba*2.165   if s7b_5bb==3
+	replace d_ytransmon = s7b_5ba     if s7b_5bb==4
+	replace d_ytransmon = s7b_5ba/2   if s7b_5bb==5
+	replace d_ytransmon = s7b_5ba/3   if s7b_5bb==6
+	replace d_ytransmon = s7b_5ba/6   if s7b_5bb==7
+	replace d_ytransmon = s7b_5ba/12  if s7b_5bb==8
+
 
 ***************
 ***ylmpri_ci***
 ***************
-
-egen ylmpri_ci=rsum(yliquido ycomisio yhrsextr yprima yaguina yactpri), missing
-replace ylmpri_ci=. if yliquido ==. & ycomisio ==. &  yhrsextr ==. & yprima ==. &  yaguina ==. &  yactpri==.  
-replace ylmpri_ci=. if emp_ci~=1
-replace ylmpri_ci=0 if categopri_ci==4
+	egen double ylmpri_ci = rowtotal(d_yliquido d_ycomisio d_yhrsextr yprima yaguina d_yactpri), missing
+	replace ylmpri_ci = . if d_yliquido == . & d_ycomisio == . & d_yhrsextr == . & yprima == . & yaguina == . & d_yactpri == .
+	replace ylmpri_ci = .  if emp_ci != 1
+	replace ylmpri_ci = 0  if categopri_ci == 4
+	replace ylmpri_ci = 0  if ylmpri_ci < 0
 label var ylmpri_ci "Ingreso laboral monetario actividad principal" 
 
 
@@ -1269,6 +1389,7 @@ label var nrylmpri_ci "Id no respuesta ingreso de la actividad principal"
 *** ylnmpri_ci ***
 ******************
 
+/*
 egen ylnmprid=rsum(yalimen ytranspo yvesti yvivien yotros), missing
 replace ylnmprid=. if yalimen==. & ytranspo==. & yvesti==. & yvivien==. & yotros==.   
 replace ylnmprid=0 if categopri_ci==4
@@ -1282,6 +1403,12 @@ gen ylnmprii=.
 egen ylnmpri_ci=rsum(ylnmprid ylnmprii), missing
 replace ylnmpri_ci=. if ylnmprid==. & ylnmprii==.
 replace ylnmpri_ci=. if emp_ci~=1
+*/
+	egen double ylnmpri_ci = rowtotal(d_yalimen d_ytranspo d_yvesti d_yvivien d_yotros), missing
+	replace ylnmpri_ci = . if d_yalimen == . & d_ytranspo == . & d_yvesti == . & d_yvivien == . & d_yotros == .
+	replace ylnmpri_ci = .  if emp_ci != 1
+	replace ylnmpri_ci = 0  if categopri_ci == 4
+	replace ylnmpri_ci = .  if ylnmpri_ci < 0
 label var ylnmpri_ci "Ingreso laboral NO monetario actividad principal"   
 
 
@@ -1289,20 +1416,22 @@ label var ylnmpri_ci "Ingreso laboral NO monetario actividad principal"
 ***ylmsec_ci***
 ***************
 
-egen ylmsec_ci= rsum(yliquido2 yhrsextr2), missing
-replace ylmsec_ci=. if emp_ci~=1 & yhrsextr2==. & yliquido2 ==.
-replace ylmsec_ci=0 if categosec_ci==4
+	egen double ylmsec_ci = rowtotal(d_yliquido2 yhrsextr2), missing
+	replace ylmsec_ci = . if emp_ci != 1 & d_yliquido2 == . & yhrsextr2 == .
+	replace ylmsec_ci = 0  if categosec_ci == 4
+	replace ylmsec_ci = .  if emp_ci == 0
+	replace ylmsec_ci = 0  if ylmsec_ci < 0
 label var ylmsec_ci "Ingreso laboral monetario segunda actividad" 
 
 
 ******************
 ****ylnmsec_ci****
 ******************
-
-egen ylnmsec_ci=rsum(yalimen2  yvivien2), missing
-replace ylnmsec_ci=. if yalimen2==.  & yvivien2==.  
-replace ylnmsec_ci=0 if categosec_ci==4
-replace ylnmsec_ci=. if emp_ci==0
+	egen double ylnmsec_ci = rowtotal(yalimen2 yvivien2), missing
+	replace ylnmsec_ci = . if yalimen2 == . & yvivien2 == .
+	replace ylnmsec_ci = 0  if categosec_ci == 4
+	replace ylnmsec_ci = .  if emp_ci == 0
+	replace ylnmsec_ci = .  if ylnmsec_ci < 0
 label var ylnmsec_ci "Ingreso laboral NO monetario actividad secundaria"
 
 **********************************************************************************************
@@ -1393,29 +1522,47 @@ yjoyas */
 *************
 ***ynlm_ci***
 *************
-
-egen ynlm_ci=rsum(yinteres yalqui yjubi ybene yinvali yviudez yotren yalqagri ydivi yalqmaqui yindtr yindseg ybono yotring yasistfam ytransmon yremesas ), missing
-replace ynlm_ci=. if 	yinteres==. & yalqui==. & yjubi==. & ybene==. & yinvali==. & yviudez==. & yotren==. & yalqagri==. & ydivi==. & yalqmaqui==. & yindtr==. & yindseg==. & ///
-			ybono==. & yotring==. & yasistfam==. & ytransmon==. & yremesas==. 
+	gen remesas_ci = yremesas 
+	egen double ynlm_ci = rowtotal(yinteres yalqui yotren yalqagri ydivi yalqmaqui yindtr yindseg yotring d_yasistfam d_ytransmon ypen_ci ypensub_ci remesas_ci), missing
+	replace ynlm_ci = . if ynlm_ci < 0
 label var ynlm_ci "Ingreso no laboral monetario"  
 
 
 **************
 ***ynlnm_ci***
 **************
-
-gen ynlnm_ci=.
+	egen double d_ynlnm_raw = rowtotal(s8g_* s8i_*), missing
+	gen double ynlnm_ci = d_ynlnm_raw if jefe_ci == 1
+	capture drop d_dias_pri d_dias_sec d_fdia_pri d_fdia_sec d_yliquido d_ycomisio d_yhrsextr d_yactpri d_yalimen d_ytranspo d_yvesti d_yvivien d_yotros d_yliquido2 d_yasistfam d_ytransmon d_ynlnm_raw 
 label var ynlnm_ci "Ingreso no laboral no monetario" 
-egen ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci)
 
+	*********
+	*ytot_ci* 
+	*********
+	foreach v in ylmpri_ci ylnmpri_ci ylmsec_ci ylnmsec_ci ylmotros_ci ylnmotros_ci {
+		capture confirm variable `v'
+		if _rc gen double `v' = .
+		replace `v' = . if emp_ci != 1
+		replace `v' = . if `v' < 0
+		replace `v' = 0 if categopri_ci == 4 & emp_ci == 1 & missing(`v')
+	}
 
-
-*****************
-***remesas_ci***
-*****************
-
-gen remesas_ci=yremesas
-label var remesas_ci "Remesas mensuales reportadas por el individuo" 
+	* Ingreso laboral primario (monetario + no monetario)
+	egen double yl_pri = rowtotal(ylmpri_ci ylnmpri_ci), missing
+	replace yl_pri = . if yl_pri < 0
+	* Ingreso laboral secundario y laboral otro (monetario + no monetario)
+	egen double yl_sec = rowtotal(ylmsec_ci ylnmsec_ci ylmotros_ci ylnmotros_ci), missing
+	replace yl_sec = . if yl_sec < 0
+	* Ingreso laboral total (primario + secundario)
+	egen double yl_ci = rowtotal(yl_pri yl_sec), missing
+	replace yl_ci = . if missing(yl_pri)
+	* Ingreso no Laboral total (monetario + no monetario)
+	egen double ynl_ci = rowtotal(ynlm_ci ynlnm_ci), missing
+	replace ynl_ci = . if ynl_ci < 0
+	* Ingreso total
+	egen double ytot_ci = rowtotal(yl_ci ynl_ci), missing
+	replace ytot_ci = . if condocup_ci == 1 & (missing(yl_pri) | (yl_pri <= 0 & categopri_ci != 4))
+	replace ytot_ci = . if condocup_ci != 1 & (missing(ynl_ci) | ynl_ci <= 0)
 
 
 ************************
@@ -2276,6 +2423,69 @@ lab val pnc_ci pnc_ci
 /*_____________________________________________________________________________________________________*/
 
 
+	****************************
+	*** VARIABLES DE POBREZA *** 
+	****************************
+	
+	*************
+	*top_edu_ocp*
+	*************
+	bysort idh_ch: egen max_edu_ocp = max(cond(condocup_ci==1 & miembros_ci==1, aedu_ci, .))
+	gen byte top_edu_ocp = condocup_ci==1 & miembros_ci==1 & aedu_ci==max_edu_ocp
+	bysort idh_ch top_edu_ocp (idp_ci): gen rank = _n
+	replace top_edu_ocp = 0 if rank > 1
+	drop max_edu_ocp rank
+
+	bysort idh_ch: egen byte jefe_ocup_ch = max(jefe_ci==1 & condocup_ci==1)
+	* Ingreso invalido = missing o <= 0
+	bysort idh_ch: egen byte _jefe_inv  = max(jefe_ci==1 & (missing(ytot_ci) | ytot_ci<=0))
+	bysort idh_ch: egen byte _topedu_ok = max(top_edu_ocp==1 & !missing(ytot_ci) & ytot_ci>0)
+	* Jefe ocupado: el hogar sigue la regla del jefe
+	* Jefe no ocupado: manda top_edu_ocp; si no tiene ingreso valido (o no hay ocupados), vuelve a la regla del jefe
+	gen byte flag_ref_ch = cond(jefe_ocup_ch==1, _jefe_inv, _jefe_inv & !_topedu_ok)
+	
+	*********
+	*ynivhog*
+	*********
+	gen ynivhog = 0 // replace if var exists
+
+	*************
+	*rentaimp_ch*
+	*************
+	gen double ri_aux = s1a_04 if s1a_04 != 9999
+	local var_ri ri_aux
+	capture confirm numeric variable `var_ri'
+	if _rc & "`var_ri'" != "" di as err "`var_ri' no existe: renta imputada = 10% del ITF"
+	if _rc local var_ri "."
+	bysort idh_ch: egen double renta_imp_ch = max(cond(jefe_ci==1 & inlist(viviprop_ch,1,2,4), `var_ri', .))
+
+	*******************
+	*welfare_income_ch*
+	*******************
+	bysort idh_ch: egen double welfare_income_ch = total(cond(miembros_ci==1, ytot_ci, .)), missing
+	replace welfare_income_ch = welfare_income_ch + ynivhog
+	replace welfare_income_ch = . if flag_ref_ch==1
+	replace renta_imp_ch = 0.10 * welfare_income_ch if missing(renta_imp_ch) & inlist(viviprop_ch,1,2,4) & !missing(welfare_income_ch) & flag_renta_imp == 0 
+	replace welfare_income_ch = (welfare_income_ch + cond(missing(renta_imp_ch), 0, renta_imp_ch)) * cond(zona_c==0, 1.15, 1)
+	replace welfare_income_ch = welfare_income_ch/ ((365/12) * cpi * icp)
+	
+	***********************
+	*welfare_income_ci*
+	***********************
+	gen double welfare_income_ci = welfare_income_ch / nmiembros_ch
+	replace    welfare_income_ci = . if nmiembros_ch == 0 | missing(nmiembros_ch)
+	replace    welfare_income_ci = . if welfare_income_ci < 0
+	
+	***********
+	*pobre_umi*
+	***********
+	gen byte pobre_umi = (welfare_income_ci < 8.3) if !missing(welfare_income_ci)
+
+	***********
+	*pobre_lmi*
+	***********
+	gen byte pobre_lmi = (welfare_income_ci < 4.2) if !missing(welfare_income_ci)
+
 do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&ExternalVars_Harmonized_DataBank.do"
 
 *_____________________________________________________________________________________________________*
@@ -2328,9 +2538,9 @@ lab val grupo_int grupo_int
   aguatrat_ch aguamala_ch aguamejorada_ch aguamide_ch bano_ch banoex_ch banomejorado_ch sinbano_ch  /// Agua y saneamineto
   migrante_ci migrantiguo5_ci miglac_ci /// Migración
   salmm_ci lp19_2011 lp31_2011 lp5_2011 lp_ci lpe_ci lp365_2017 lp685_2017 lp14_2017 lp81_2017 tc_c cpi_c cpi2011 cpi2017 ratio_cpi2011 ratio_cpi2017 /// Fuente externa
+  top_edu_ocp ynivhog renta_imp_ch welfare_income_ch welfare_income_ci flag_ref_ch pobre_umi pobre_lmi yl_pri yl_sec yl_ci ynl_ci ///
   ppp_c ppp_2011 ppp_2017 , first /// Fuente externa 
-  /// the order was created by regex functions, sph variables are excluded /// Fuente externa 
-  /// the order was created by regex functions, sph variables are excluded
+
 
 
 /*Homologar nombre del identificador de ocupaciones (isco, ciuo, etc.) y de industrias y dejarlo en base armonizada 

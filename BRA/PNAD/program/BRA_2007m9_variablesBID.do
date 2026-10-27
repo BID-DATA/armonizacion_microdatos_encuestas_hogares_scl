@@ -1,5 +1,5 @@
 * (versión Stata 13)
-clear
+clear all
 set more off
 *________________________________________________________________________________________________________________*
 
@@ -108,6 +108,10 @@ replace relacion_ci=6 if v0402==7
 label define relacion_ci 1 "Jefe" 2 "Conyuge" 3 "Hijo" 4 "Otros Parientes" 5 "Otros no Parientes" 6 "Servicio Domestico"
 label values relacion_ci relacion_ci
 
+	*****************************************
+	*CPI, IPC, Flag si tiene renta imputada*
+	****************************************
+	merge m:1 pais_c anio_c using "$datalibweb_IDB\SUPPORT\support_0926.dta", keepusing(cpi icp flag_renta_imp) keep(3) nogen 
 
 /************************************************************************/
 /*				vARIABLES DEMOGRAFICAS			*/
@@ -563,17 +567,37 @@ replace horastot_ci = . if  (horaspri_ci==. & v9101==. & v9105==.) | v4814!=1 /*
 replace horastot_ci = . if horastot_ci < 0
 replace horastot_ci = . if horastot_ci > 150
 
-gen ylmpri_ci=v9532 
+gen categopri_ci=1 if v9029==4 | (v9008>=8 & v9008<=10)
+replace categopri_ci=1 if v0708==4 | v0711==4
+replace categopri_ci=2 if v0708==3 | v9029==3 |v0711==3 |(v9008>=5 & v9008<=7)
+replace categopri_ci=3 if v0708==1 | v0708==2 |v9029==1 |v9029==2 |v0711==1 |v0711==2 | (v9008>=1 & v9008<=4)
+replace categopri_ci=4 if (v0708>=5 & v0708<=8) |(v9029>=5 & v9029<=8) |(v0711>=5 & v0711<=8) | (v9008>=11 & v9008<=13)
+replace categopri_ci=. if emp_ci!=1
 
-replace ylmpri_ci=. if v9532==-1 | v9532>=999999 | v4814!=1
+gen categosec_ci=1 if v9092==4
+replace categosec_ci=2 if v9092==3
+replace categosec_ci=3 if v9092==1
+replace categosec_ci=4 if v9092==5 |v9092==6
+replace categosec_ci=. if emp_ci!=1
+
+
+gen double ylmpri_ci = v9532
+replace ylmpri_ci = . if v9532 == -1 | v9532 >= 999999 | v4814 != 1
+replace ylmpri_ci = . if emp_ci != 1
+replace ylmpri_ci = . if ylmpri_ci < 0
+replace ylmpri_ci = 0 if categopri_ci == 4
 
 gen ylmprik_ci=v9532
 replace ylmprik_ci=. if v9532==-1 | v9532>=999999 | emp_ci==0 
 capture replace ylmprik_ci=v7122 if edad_ci>=5 & edad_ci<=9
 capture replace ylmprik_ci=. if  edad_ci>=5 & edad_ci<=9 & (v7122==-1 | v7122>=999999 |emp_ci==0)
 
-gen ylnmpri_ci=v9535 if edad_ci>=10
-replace ylnmpri_ci=. if v9535==-1 | v9535>=999999 | v4814!=1
+
+gen double ylnmpri_ci = v9535 if edad_ci >= 10
+replace ylnmpri_ci = . if v9535 == -1 | v9535 >= 999999 | v4814 != 1
+replace ylnmpri_ci = . if emp_ci != 1
+replace ylnmpri_ci = . if ylnmpri_ci < 0
+replace ylnmpri_ci = 0 if categopri_ci == 4
 
 gen ylnmprik_ci=v9535
 replace ylnmprik_ci=. if v9535==-1 | v9535>=999999 | emp_ci==0
@@ -584,11 +608,19 @@ capture replace ylnmprik_ci=. if edad_ci>=5 & edad_ci<=9 & (v7125==-1 | v7125>=9
 LOS MAYORES DE 10 AÑOS. POR LO TANTO LAS vARIABLES AGREGADAS CON SUFIJO k EN REALIDAD SÓLO SE REFIEREN A LA ACTIvIDAD 
 PRINCIPAL DE LOS NIÑOS*/
 
-gen ylmsec_ci=v9982 if edad_ci>=10
-replace ylmsec_ci=. if v9982==-1 | v9982>=999999 | v4814!=1
 
-gen ylnmsec_ci=v9985 if edad_ci>=10
-replace ylnmsec_ci=. if v9985==-1 | v9985>=999999 | v4814!=1
+gen double ylmsec_ci = v9982 if edad_ci >= 10
+replace ylmsec_ci = . if v9982 == -1 | v9982 >= 999999 | v4814 != 1
+replace ylmsec_ci = . if emp_ci != 1
+replace ylmsec_ci = 0 if ylmsec_ci < 0
+replace ylmsec_ci = 0 if categosec_ci == 4
+
+
+gen double ylnmsec_ci = v9985 if edad_ci >= 10
+replace ylnmsec_ci = . if v9985 == -1 | v9985 >= 999999 | v4814 != 1
+replace ylnmsec_ci = . if emp_ci != 1
+replace ylnmsec_ci = . if ylnmsec_ci < 0
+replace ylnmsec_ci = 0 if categosec_ci == 4
 
 gen ylmotros_ci=v1022 if edad_ci>=10
 replace ylmotros_ci=. if v1022==-1 | v1022>=999999 | v4814!=1
@@ -615,15 +647,42 @@ egen ylnmk_ci=rsum(ylnmprik_ci ylnmsec_ci ylnmotros_ci)
 replace ylnmk_ci=. if ylnmprik_ci==. & ylnmsec_ci==. & ylnmotros_ci==.
 
 
-foreach var of varlist v1252 v1255 v1258 v1261 v1264 v1267 v1270 v1273{ 
-replace `var'=. if `var'>=999999 | `var'==-1
+foreach var of varlist v1252 v1255 v1258 v1261 v1264 v1267 v1270 v1273 { 
+replace `var' = . if `var' >= 999999 | `var' == -1
 }
 
-egen ynlm_ci=rsum(v1252 v1255 v1258 v1261 v1264 v1267 v1270 v1273) if edad_ci>=10
-replace ynlm_ci=. if (v1252==. &  v1255==. &  v1258==. &  v1261==. &  v1264==. &  v1267==. & v1270==. & v1273==.) | ynlm_ci<0
+egen double ynlm_ci = rowtotal(v1252 v1255 v1258 v1261 v1264 v1267 v1270 v1273) if edad_ci >= 10, missing 
+replace ynlm_ci = . if (v1252 == . & v1255 == . & v1258 == . & v1261 == . & v1264 == . & v1267 == . & v1270 == . & v1273 == .) | ynlm_ci < 0
 
 gen ynlnm_ci=.
-egen ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci)
+
+	*********
+	*ytot_ci*
+	*********
+	foreach v in ylmpri_ci ylnmpri_ci ylmsec_ci ylnmsec_ci ylmotros_ci ylnmotros_ci {
+		capture confirm variable `v'
+		if _rc gen double `v' = .
+		replace `v' = . if emp_ci != 1
+		replace `v' = . if `v' < 0
+		replace `v' = 0 if categopri_ci == 4 & emp_ci == 1 & missing(`v')
+	}
+
+	* Ingreso laboral primario (monetario + no monetario)
+	egen double yl_pri = rowtotal(ylmpri_ci ylnmpri_ci), missing
+	replace yl_pri = . if yl_pri < 0
+	* Ingreso laboral secundario y laboral otro (monetario + no monetario)
+	egen double yl_sec = rowtotal(ylmsec_ci ylnmsec_ci ylmotros_ci ylnmotros_ci), missing
+	replace yl_sec = . if yl_sec < 0
+	* Ingreso laboral total (primario + secundario)
+	egen double yl_ci = rowtotal(yl_pri yl_sec), missing
+	replace yl_ci = . if missing(yl_pri)
+	* Ingreso no Laboral total (monetario + no monetario)
+	egen double ynl_ci = rowtotal(ynlm_ci ynlnm_ci), missing
+	replace ynl_ci = . if ynl_ci < 0
+	* Ingreso total
+	egen double ytot_ci = rowtotal(yl_ci ynl_ci), missing
+	replace ytot_ci = . if condocup_ci == 1 & (missing(yl_pri) | (yl_pri <= 0 & categopri_ci != 4))
+	replace ytot_ci = . if condocup_ci != 1 & (missing(ynl_ci) | ynl_ci <= 0)
 
 sort idh_ch 
 by idh_ch: egen nrylmpri_ch=max(nrylmpri_ci) if miembros_ci==1
@@ -688,18 +747,6 @@ gen desalent_ci=.
 gen subemp_ci=.
 gen tiempoparc_ci=.
 
-gen categopri_ci=1 if v9029==4 | (v9008>=8 & v9008<=10)
-replace categopri_ci=1 if v0708==4 | v0711==4
-replace categopri_ci=2 if v0708==3 | v9029==3 |v0711==3 |(v9008>=5 & v9008<=7)
-replace categopri_ci=3 if v0708==1 | v0708==2 |v9029==1 |v9029==2 |v0711==1 |v0711==2 | (v9008>=1 & v9008<=4)
-replace categopri_ci=4 if (v0708>=5 & v0708<=8) |(v9029>=5 & v9029<=8) |(v0711>=5 & v0711<=8) | (v9008>=11 & v9008<=13)
-replace categopri_ci=. if emp_ci!=1
-
-gen categosec_ci=1 if v9092==4
-replace categosec_ci=2 if v9092==3
-replace categosec_ci=3 if v9092==1
-replace categosec_ci=4 if v9092==5 |v9092==6
-replace categosec_ci=. if emp_ci!=1 
 gen nempleos_ci=1 if v9005==1  
 replace nempleos_ci=2 if v9005>1 & v9005!=.
 /*
@@ -1258,6 +1305,70 @@ gen vivitit_ch=.
 /*_____________________________________________________________________________________________________*/
 
 
+	****************************
+	*** VARIABLES DE POBREZA *** 
+	****************************
+
+	*************
+	*top_edu_ocp*
+	*************
+	bysort idh_ch: egen max_edu_ocp = max(cond(condocup_ci==1 & miembros_ci==1, aedu_ci, .))
+	gen byte top_edu_ocp = condocup_ci==1 & miembros_ci==1 & aedu_ci==max_edu_ocp
+	bysort idh_ch top_edu_ocp (idp_ci): gen rank = _n
+	replace top_edu_ocp = 0 if rank > 1
+	drop max_edu_ocp rank
+
+	bysort idh_ch: egen byte jefe_ocup_ch = max(jefe_ci==1 & condocup_ci==1)
+	* Ingreso invalido = missing o <= 0
+	bysort idh_ch: egen byte _jefe_inv  = max(jefe_ci==1 & (missing(ytot_ci) | ytot_ci<=0))
+	bysort idh_ch: egen byte _topedu_ok = max(top_edu_ocp==1 & !missing(ytot_ci) & ytot_ci>0)
+	* Jefe ocupado: el hogar sigue la regla del jefe
+	* Jefe no ocupado: manda top_edu_ocp; si no tiene ingreso valido (o no hay ocupados), vuelve a la regla del jefe
+	gen byte flag_ref_ch = cond(jefe_ocup_ch==1, _jefe_inv, _jefe_inv & !_topedu_ok)
+
+	*********
+	*ynivhog*
+	*********
+	gen ynivhog = 0 // replace if var exists
+
+	*************
+	*rentaimp_ch*
+	*************
+	gen byte ri_univ = inlist(v0207, 1, 2)
+	local var_ri
+	capture confirm numeric variable `var_ri'
+	if _rc & "`var_ri'" != "" di as err "`var_ri' no existe: renta imputada = 10% del ITF"
+	if _rc local var_ri "."
+	bysort idh_ch: egen double renta_imp_ch = max(cond(jefe_ci==1 & ri_univ==1, `var_ri', .))
+
+	*******************
+	*welfare_income_ch*
+	*******************
+	bysort idh_ch: egen double welfare_income_ch = total(cond(miembros_ci==1, ytot_ci, .)), missing
+	replace welfare_income_ch = welfare_income_ch + ynivhog
+	replace welfare_income_ch = . if flag_ref_ch==1
+	replace renta_imp_ch = 0.10 * welfare_income_ch if missing(renta_imp_ch) & ri_univ==1 & !missing(welfare_income_ch) & flag_renta_imp == 0
+	replace welfare_income_ch = (welfare_income_ch + cond(missing(renta_imp_ch), 0, renta_imp_ch)) * cond(zona_c==0, 1.15, 1)
+	replace welfare_income_ch = welfare_income_ch/ ((365/12) * cpi * icp)
+
+	***********************
+	*welfare_income_ci*
+	***********************
+	gen double welfare_income_ci = welfare_income_ch / nmiembros_ch
+	replace    welfare_income_ci = . if nmiembros_ch == 0 | missing(nmiembros_ch)
+	replace    welfare_income_ci = . if welfare_income_ci < 0
+
+	***********
+	*pobre_umi*
+	***********
+	gen byte pobre_umi = (welfare_income_ci < 8.3) if !missing(welfare_income_ci)
+
+	***********
+	*pobre_lmi*
+	***********
+	gen byte pobre_lmi = (welfare_income_ci < 4.2) if !missing(welfare_income_ci)
+
+
 do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&ExternalVars_Harmonized_DataBank.do"
 
 /*_____________________________________________________________________________________________________*/
@@ -1274,6 +1385,7 @@ do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&Exter
   ylmpri_ci ylnmpri_ci ylmsec_ci ylnmsec_ci ylmotros_ci	ylnmotros_ci  ylm_ci ylnm_ci ynlm_ci ynlnm_ci nrylmpri_ci /// Ingresos individuo 
   ylm_ch ylnm_ch ylmnr_ch ynlm_ch ynlnm_ch ylmhopri_ci ylmho_ci /// Ingresos del hogar 
   nrylmpri_ci nrylmpri_ch /// No respuesta de ingresos  
+  top_edu_ocp ynivhog renta_imp_ch welfare_income_ch welfare_income_ci flag_ref_ch pobre_umi pobre_lmi yl_pri yl_sec yl_ci ynl_ci ///
   remesas_ci remesas_ch ypen_ci ypensub_ci /// Remesas y pensiones
   aedu_ci eduui_ci eduuc_ci edupre_ci eduac_ci asiste_ci edupub_ci pqnoasis1_ci asispre_ci /// Educación
   luz_ch luzmide_ch combust_ch piso_ch pared_ch techo_ch resid_ch dorm_ch cuartos_ch cocina_ch telef_ch refrig_ch /// Vivienda
@@ -1283,8 +1395,6 @@ do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&Exter
   migrante_ci migrantiguo5_ci miglac_ci /// Migración
   salmm_ci lp19_2011 lp31_2011 lp5_2011 lp_ci lpe_ci lp365_2017 lp685_2017 lp14_2017 lp81_2017 tc_c cpi_c cpi2011 cpi2017 ratio_cpi2011 ratio_cpi2017 /// Fuente externa
   ppp_c ppp_2011 ppp_2017 , first /// Fuente externa 
-  /// the order was created by regex functions, sph variables are excluded /// Fuente externa 
-  /// the order was created by regex functions, sph variables are excluded
 
 /*Homologar nombre del identificador de ocupaciones (isco, ciuo, etc.) y de industrias y dejarlo en base armonizada 
 para análisis de trends (en el marco de estudios sobre el futuro del trabajo)*/

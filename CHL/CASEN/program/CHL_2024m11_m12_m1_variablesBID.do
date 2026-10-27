@@ -1,6 +1,5 @@
 *(Versión stata 17)
-
-clear
+clear all
 set more off
 
 *________________________________________________________________________________________________________________*
@@ -43,7 +42,8 @@ Nombre de autor (SCL/SCL) - Email: linarias8@gmail.com, Fecha: 01/13/2026
 Detalle de procesamientos o modificaciones anteriores:
 ****************************************************************************/
 
-use `base_in', clear
+use `base_in', clear */
+
 
 **********************************
 ***VARIABLES DEL IDENTIFICACION***
@@ -58,7 +58,7 @@ use `base_in', clear
 	*** region_c ****
 	********************
 	gen byte region_c = region
-	label define region_c ///
+	/*label define region_c ///
 	1"Tarapacá"                               		///
 	2"Antofagasta"							  		///
 	3"Atacama"                                		///
@@ -74,7 +74,7 @@ use `base_in', clear
 	13"Metropolitana de Santiago"                   ///
 	14"Los Ríos"                                    /// 
 	15"Arica y Parinacota"							/// 
-	16 "Ñuble"
+	16 "Ñuble" */
    label value region_c region_c
 
 	
@@ -132,6 +132,12 @@ use `base_in', clear
 	*******************************************
 	gen factor_ch=expr 
 	
+	
+	*****************************************
+	*CPI, IPC, Flag si tiene renta imputada*
+	****************************************
+	merge m:1 pais_c anio_c using "$datalibweb_IDB\SUPPORT\support_0926.dta", keepusing(cpi icp flag_renta_imp) keep(3) nogen
+
 
 ****************************
 ***VARIABLES DEMOGRAFICAS***
@@ -660,18 +666,24 @@ drop vejez invalidez montepio orfandad otros
 	*************
 	* ylmpri_ci *
 	*************
-	generate double ylmpri_ci = yoprcor  if emp_ci==1
+	gen double ylmpri_ci = yoprcor
+	replace ylmpri_ci = .  if emp_ci != 1
+	replace ylmpri_ci = .  if ylmpri_ci < 0
+	replace ylmpri_ci = 0  if categopri_ci == 4
 
 	************
 	* ylmsec_ci *
 	************
-	gen  double ylmsec_ci = ytrabajocor-yoprcor   if emp_ci==1
+	gen double ylmsec_ci = ytrabajocor - yoprcor
+	replace ylmsec_ci = .  if emp_ci != 1
+	replace ylmsec_ci = 0  if ylmsec_ci < 0
+	replace ylmsec_ci = 0  if categopri_ci == 4
 
 	**************
 	* ylmotros_ci *
 	**************
     generate double ylmotros_ci = . if emp_ci==1
- 
+
 	*********
 	* ylm_ci *
 	*********
@@ -888,6 +900,7 @@ drop vejez invalidez montepio orfandad otros
 		egen double aux_ypriv = rowtotal(ingaut ytrabajocor ypen_ci remesas_ci), mi
 		gen double yprivado_ci = aux_ypriv *(-1)
 
+
 	egen double ynlm_ci = rowtotal(ytransf_ci ydelta_sub ypen_ci remesas_ci yprivado_ci), mi
 	replace ynlm_ci = . if (ytransf_ci==. &  ydelta_sub==. &  ypen_ci==. & remesas_ci==. &  yprivado_ci==. )
 		
@@ -918,10 +931,33 @@ Estado a través de los programas sociales.
 	***********
 	gen double ynlnm_ci =.
 
-	**********
-	* ytot_ci *
-	**********
-	egen double ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci), mi
+	*********
+	*ytot_ci* 
+	*********
+	foreach v in ylmpri_ci ylnmpri_ci ylmsec_ci ylnmsec_ci ylmotros_ci ylnmotros_ci {
+		capture confirm variable `v'
+		if _rc gen double `v' = .
+		replace `v' = . if emp_ci != 1
+		replace `v' = . if `v' < 0
+		replace `v' = 0 if categopri_ci == 4 & emp_ci == 1 & missing(`v')
+	}
+
+	* Ingreso laboral primario (monetario + no monetario)
+	egen double yl_pri = rowtotal(ylmpri_ci ylnmpri_ci), missing
+	replace yl_pri = . if yl_pri < 0
+	* Ingreso laboral secundario y laboral otro (monetario + no monetario)
+	egen double yl_sec = rowtotal(ylmsec_ci ylnmsec_ci ylmotros_ci ylnmotros_ci), missing
+	replace yl_sec = . if yl_sec < 0
+	* Ingreso laboral total (primario + secundario)
+	egen double yl_ci = rowtotal(yl_pri yl_sec), missing
+	replace yl_ci = . if missing(yl_pri)
+	* Ingreso no Laboral total (monetario + no monetario)
+	egen double ynl_ci = rowtotal(ynlm_ci ynlnm_ci), missing
+	replace ynl_ci = . if ynl_ci < 0
+	* Ingreso total
+	egen double ytot_ci = rowtotal(yl_ci ynl_ci), missing
+	replace ytot_ci = . if condocup_ci == 1 & (missing(yl_pri) | (yl_pri <= 0 & categopri_ci != 4))
+	replace ytot_ci = . if condocup_ci != 1 & (missing(ynl_ci) | ynl_ci <= 0)
 	
 	***************
 	*** ynet_ci ***
@@ -973,6 +1009,7 @@ Estado a través de los programas sociales.
 	*********
 	by idh_ch, sort: egen double ynlm_ch = total(ynlm_ci) if miembros_ci==1, mi
 	
+
 	***********
 	* ynlnm_ch *
 	***********
@@ -1010,6 +1047,13 @@ Estado a través de los programas sociales.
 	* nrylmpri_ch *
 	**************
 	bysort idh_ch: egen byte nrylmpri_ch = max(nrylmpri_ci) if miembros_ci==1
+	
+	************
+	* ylmnr_ch *
+	************
+	by idh_ch, sort: egen ylmnr_ch=sum(ylm_ci) if miembros_ci==1, mi
+	replace ylmnr_ch=. if nrylmpri_ch==1
+	
 
 
 		
@@ -1081,14 +1125,14 @@ Estado a través de los programas sociales.
 
 
 	*************
-	*pqnoasis1_ci*
+	*razonesnoasis_ci*
 	**************
-	gen pqnoasis1_ci=. 
-	replace pqnoasis1_ci =  1 if e4a==6
-	replace pqnoasis1_ci =  2 if e4a==9 
-	replace pqnoasis1_ci =  3 if e4a==3 | e4a==4 | e4a==10 | e4a==12 | e4a==5
-	replace pqnoasis1_ci =  4 if e4a==11 | e4a==8
-	replace pqnoasis1_ci =  5 if e4a==13 | e4a==1 | e4a==2 | e4a==7
+	gen razonesnoasis_ci=. 
+	replace razonesnoasis_ci =  1 if e4a==6
+	replace razonesnoasis_ci =  2 if e4a==9 
+	replace razonesnoasis_ci =  3 if e4a==3 | e4a==4 | e4a==10 | e4a==12 | e4a==5
+	replace razonesnoasis_ci =  4 if e4a==11 | e4a==8
+	replace razonesnoasis_ci =  5 if e4a==13 | e4a==1 | e4a==2 | e4a==7
 	
 	
 	***********
@@ -1201,6 +1245,8 @@ Estado a través de los programas sociales.
 	***********
 	gen compu_ch=.
 
+	gen cel_ch=. // No está la pregunta en la encuesta 2024
+
 		
 	***********
 	*internet_ch*
@@ -1248,6 +1294,11 @@ Estado a través de los programas sociales.
 	gen vivialqimp_ch=.
 	replace vivialqimp_ch=v19 if v19!=-88
 	
+	***************
+	* vivi2_ch    * 
+	*************** 
+	gen vivi2_ch=(vivi1_ch==1 | vivi1_ch==2)
+		
 ****************************
 ***VARIABLES DE WASH***
 ****************************
@@ -1385,16 +1436,14 @@ Estado a través de los programas sociales.
 	replace miglac_ci = 1 if (inlist(r1b_pais_esp,32, 44, 52, 84, 68, 76, 170, 188, 218, 222, 320, 332, 340, 388, 484, 558, 591, 780, 858, 862) & migrante_ci==1)
 	
 
-****************************
-***VARIABLES DE EXTERNAS***
-****************************	
+	****************************
+	*** VARIABLES DE POBREZA ***
+	****************************
 	
 	****************
 	 *tipo_bienestar*
 	****************	
-	gen byte tipo_bienestar = . 
-	replace tipo_bienestar  = 1 
-	*replace tipo_bienestar  = 2
+	gen byte tipo_bienestar = 1
 
 	****************
 	 * pobre_ine _ci*
@@ -1402,12 +1451,22 @@ Estado a través de los programas sociales.
 	gen byte pobre_ine_ci= . 
 	replace pobre_ine_ci= 0 if pobreza==3
 	replace pobre_ine_ci= 1 if pobreza==1 | pobreza==2
-
+	
+	
 	****************
-	 * bienestar_agregado *
+	 * pobre_ine_ext_ci*
 	****************	
-	gen bienestar_agregado = . 
-	replace bienestar_agregado = yae
+	gen byte pobre_ine_ext_ci= . 
+	replace pobre_ine_ext_ci= 0 if pobreza==3 | pobreza==2
+	replace pobre_ine_ext_ci= 1 if pobreza==1 
+
+
+	
+	
+	****************
+	*bienestar_agregado *
+	****************	
+	gen bienestar_agregado =  yae
 
 	****************
 	* lpe_ci *
@@ -1428,11 +1487,75 @@ foreach v of varlist _all {
         label variable `v' `"`=substr("`lbl'", 1, 80)'"'
     }
 }
+
 	
 /*_____________________________________________________________________________________________________*/
 * Asignación de etiquetas e inserción de variables externas: tipo de cambio, Indice de Precios al 
 * Consumidor (2011=100), Paridad de Poder Adquisitivo (PPA 2011),  líneas de pobreza
 /*_____________________________________________________________________________________________________*/
+
+	****************************
+	*** VARIABLES DE POBREZA *** 
+	****************************
+	
+	*************
+	*top_edu_ocp*
+	*************
+	bysort idh_ch: egen max_edu_ocp = max(cond(condocup_ci==1 & miembros_ci==1, aedu_ci, .))
+	gen byte top_edu_ocp = condocup_ci==1 & miembros_ci==1 & aedu_ci==max_edu_ocp
+	bysort idh_ch top_edu_ocp (idp_ci): gen rank = _n
+	replace top_edu_ocp = 0 if rank > 1
+	drop max_edu_ocp rank
+
+	bysort idh_ch: egen byte jefe_ocup_ch = max(jefe_ci==1 & condocup_ci==1)
+	* Ingreso invalido = missing o <= 0
+	bysort idh_ch: egen byte _jefe_inv  = max(jefe_ci==1 & (missing(ytot_ci) | ytot_ci<=0))
+	bysort idh_ch: egen byte _topedu_ok = max(top_edu_ocp==1 & !missing(ytot_ci) & ytot_ci>0)
+	* Jefe ocupado: el hogar sigue la regla del jefe
+	* Jefe no ocupado: manda top_edu_ocp; si no tiene ingreso valido (o no hay ocupados), vuelve a la regla del jefe
+	gen byte flag_ref_ch = cond(jefe_ocup_ch==1, _jefe_inv, _jefe_inv & !_topedu_ok)
+	
+	*********
+	*ynivhog*
+	*********
+	gen ynivhog = 0 // replace if var exists
+
+	*************
+	*rentaimp_ch*
+	*************
+	gen byte ri_univ = (v13==1 & inlist(v13_propia,1,2,3,4)) | inlist(v13,3,9)
+	local var_ri yaimcorh  
+	capture confirm numeric variable `var_ri'
+	if _rc & "`var_ri'" != "" di as err "`var_ri' no existe: renta imputada = 10% del ITF"
+	if _rc local var_ri "."
+	bysort idh_ch: egen double renta_imp_ch = max(cond(jefe_ci==1 & ri_univ==1, `var_ri', .))
+
+	*******************
+	*welfare_income_ch*
+	*******************
+	bysort idh_ch: egen double welfare_income_ch = total(cond(miembros_ci==1, ytot_ci, .)), missing
+	replace welfare_income_ch = welfare_income_ch + ynivhog
+	replace welfare_income_ch = . if flag_ref_ch==1
+	replace renta_imp_ch = 0.10 * welfare_income_ch if missing(renta_imp_ch) & ri_univ==1 & !missing(welfare_income_ch) & flag_renta_imp == 0 
+	replace welfare_income_ch = (welfare_income_ch + cond(missing(renta_imp_ch), 0, renta_imp_ch)) * cond(zona_c==0, 1.15, 1)
+	replace welfare_income_ch = welfare_income_ch/ ((365/12) * cpi * icp)
+	
+	***********************
+	*welfare_income_ci*
+	***********************
+	gen double welfare_income_ci = welfare_income_ch / nmiembros_ch
+	replace    welfare_income_ci = . if nmiembros_ch == 0 | missing(nmiembros_ch)
+	replace    welfare_income_ci = . if welfare_income_ci < 0
+	
+	***********
+	*pobre_umi*
+	***********
+	gen byte pobre_umi = (welfare_income_ci < 8.3) if !missing(welfare_income_ci)
+
+	***********
+	*pobre_lmi*
+	***********
+	gen byte pobre_lmi = (welfare_income_ci < 4.2) if !missing(welfare_income_ci)
 
 do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&ExternalVars_Harmonized_DataBank.do"
 
@@ -1440,7 +1563,7 @@ do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&Exter
 * Verificación de que se encuentren todas las variables armonizadas 
 /*_____________________________________________________________________________________________________*/
 
-    order region_BID_c region_c pais_c anio_c mes_c zona_c factor_ch idh_ch	idp_ci factor_ci factor_ch /// Identificación 
+    order region_BID_c region_c pais_c anio_c mes_c zona_c factor_ch idh_ch	idp_ci factor_ci factor_ch estrato_ci /// Identificación 
   sexo_ci edad_ci relacion_ci civil_ci jefe_ci nconyuges_ch nhijos_ch notropari_ch notronopari_ch nempdom_ch /// Demográficas 
   clasehog_ch nmiembros_ch miembros_ci nmayor21_ch nmenor21_ch nmayor65_ch nmenor6_ch nmenor1_ch /// Demográficas 
   condocup_ci categoinac_ci emp_ci cesante_ci desemp_ci subemp_ci durades_ci pea_ci nempleos_ci antiguedad_ci desalent_ci  /// Empleo
@@ -1457,10 +1580,17 @@ do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&Exter
   aguared_ch aguafconsumo_ch aguafuente_ch aguadist_ch aguadisp1_ch aguadisp2_ch /// Agua y saneamineto
   aguatrat_ch aguamala_ch aguamejorada_ch aguamide_ch bano_ch banoex_ch banomejorado_ch sinbano_ch  /// Agua y saneamineto
   migrante_ci migrantiguo5_ci miglac_ci /// Migración
-  salmm_ci lp19_2011 lp31_2011 lp5_2011 lp_ci lpe_ci lp365_2017 lp685_2017 lp14_2017 lp81_2017 tc_c cpi_c cpi2011 cpi2017 ratio_cpi2011 ratio_cpi2017 /// Fuente externa
-  ppp_c ppp_2011 ppp_2017 , first /// Fuente externa 
+  lp19_2011 lp31_2011 lp5_2011 lp365_2017 lp685_2017 lp14_2017 lp81_2017 tc_c cpi_c cpi2011 cpi2017 ratio_cpi2011 ratio_cpi2017 /// Fuente externa
+  ppp_c ppp_2011 ppp_2017 /// Fuente externa 
+  top_edu_ocp ynivhog renta_imp_ch welfare_income_ch welfare_income_ci flag_ref_ch yl_pri yl_sec yl_ci ynl_ci /// 
+  tipo_bienestar bienestar_agregado ln_ci lpe_ci  pobre_ine_ci pobre_ine_ext_ci pobre_umi pobre_lmi, first /// Pobreza  
+  
+  
+  
+
 
 compress
+
 saveold "`base_out'", version(12) replace
 
 cap log close
