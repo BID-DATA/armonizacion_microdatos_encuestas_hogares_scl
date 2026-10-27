@@ -1,5 +1,5 @@
 * (Version Stata 14)
-clear
+clear all
 set more off  
 *________________________________________________________________________________________________________________*
 
@@ -142,6 +142,11 @@ gen upm_ci=.
 ***************
 gen estrato_ci=.
 
+
+	*****************************************
+	*CPI, IPC, Flag si tiene renta imputada*
+	****************************************
+	merge m:1 pais_c anio_c using "$datalibweb_IDB\SUPPORT\support_0926.dta", keepusing(cpi icp flag_renta_imp) keep(3) nogen
 
 		****************************
 		***VARIABLES DEMOGRAFICAS***
@@ -820,7 +825,6 @@ la var subemp_ci "Personas en subempleo por horas"
 ****************
 	egen double ylnmpri_ci = rsum(ie iees), m
 	replace ylnmpri_ci=. if ie==. & iees==.
-	/*YL -> Nota: "ie" and "iees"corresponden al ingreso por especie de la act principal*/
 	la var ylnmpri_ci "Ingreso laboral NO monetario actividad principal"   
 
 ***************
@@ -852,7 +856,6 @@ la var subemp_ci "Personas en subempleo por horas"
 ***ylm_ci***
 ************
 	egen double ylm_ci = rowtotal(ylmpri_ci ylmsec_ci ylmotros_ci), m
-	*YL -> Incremento el ingreso laboral de inactivos & desocupados
 	la var ylm_ci "Ingreso laboral monetario total"  
 
 *************
@@ -927,42 +930,18 @@ la var subemp_ci "Personas en subempleo por horas"
 *************
 ***ynlm_ci***
 *************
-	foreach var in p7500s1 p7500s2 p7500s3 p7510s1 p7510s2 p7510s3 p7510s5 p7510s6 p7510s7 { 
-	gen m_`var' = `var'a1
-	replace m_`var' = . if `var'a1 == 9999 | `var'a1 == 98
-	}
-
-	gen double yarriendo  = m_p7500s1 	// iof6*
-	replace yarriendo = iof6es if iof6 == 0 & iof6es != . & (p7500s1a1 == 98 | p7500s1a1 == 9999 | p7500s1 == 9)
-	replace yarriendo = iof6es if iof6 == 0 & iof6es != . & iof6es < m_p7500s1 
-	
-	gen double yjubilacion = m_p7500s2	// iof2* // = ypen_ci
-	replace yjubilacion = iof2es if iof2 == 0 & iof2es != . & (p7500s2a1 == 98 | p7500s2a1 == 9999 | p7500s2 == 9)
-	replace yjubilacion = iof2es if iof2 == 0 & iof2es < m_p7500s2 & p7500s2 == 1
-	replace yjubilacion = iof2   if iof2 != . & iof2es == . & p7500s2 == 1 & iof2 < m_p7500s2 & m_p7500s2 > 7000000
-	
-	
-	gen double ypenalimento  = m_p7500s3	// iof3h*
-	gen double yayudafamil  = m_p7510s1/12	// iof3h*
-	gen double yremesas	  = m_p7510s2/12	// iof3h* // = remesas_ci
-	
-	gen double yayudainsti = m_p7510s3/12	// iof3i*
-	
-	gen double yintereses = m_p7510s5/12	// iof1*
-	replace yintereses = iof1es if iof1 == 0 & iof1es != . & (p7510s5a1 == 98 | p7510s5a1 == 9999 | p7510s5 == 9)
-	replace yintereses = iof1es if iof1 == 0 & iof1es != . & iof1es < m_p7510s5 
-	
-	gen double ycesantia  = m_p7510s6/12
-	gen double yotros	  = m_p7510s7/12
-	
-	* Variable auxiliar para complemento de transferencias de instituciones (privadas y del extranjero)
-	gen double aux_ytransf_ci = ytransf_ci*(-1)
-	egen double delta_transf = rowtotal(yayudainsti aux_ytransf_ci), mi
-	
-	egen double ynlm_ci = rowtotal(yarriendo yjubilacion ypenalimento yayudafamil remesas_ci ytransf_ci delta_transf yintereses ycesantia yotros), mi
+	gen double aux_ytransf_ci = ytransf_ci*(-1) 
+	egen double d_iof2_nr = rowtotal(iof2 iof2es), missing
+	replace d_iof2_nr = max(d_iof2_nr - ypen_ci, 0) if !missing(d_iof2_nr) & !missing(ypen_ci)
+	egen double d_iof3h_nr = rowtotal(iof3h iof3hes), missing
+	replace d_iof3h_nr = max(d_iof3h_nr - remesas_ci, 0) if !missing(d_iof3h_nr) & !missing(remesas_ci)
+	egen double d_iof3i_nr = rowtotal(iof3i iof3ies), missing
+	replace d_iof3i_nr = max(d_iof3i_nr - ytransf_ci, 0) if !missing(d_iof3i_nr) & !missing(ytransf_ci)
+	egen double ynlm_ci = rowtotal(iof1 iof1es iof6 iof6es d_iof2_nr d_iof3h_nr d_iof3i_nr ypen_ci remesas_ci ytransf_ci), missing
 	la var ynlm_ci "Ingreso no laboral monetario"
-	*egen double ynlm_ci = rsum(iof1 iof2  iof3h iof3i iof6 iof1es iof2es  iof3hes iof3ies iof6es), m // Para contrastar programación previa al 2020
-	drop m_p7500s1 m_p7500s2 m_p7500s3 m_p7510s1 m_p7510s2 m_p7510s3 m_p7510s5 m_p7510s6 m_p7510s7	
+	foreach v in d_iof2_nr d_iof3h_nr d_iof3i_nr { 
+		capture drop `v'
+	}
 	
 **************
 ***ynlnm_ci***
@@ -970,10 +949,34 @@ la var subemp_ci "Personas en subempleo por horas"
 	g ynlnm_ci = .
 	la var ynlnm_ci "Ingreso no laboral no monetario" 
 
-**************
-***ytot_ci***
-**************
-	egen double ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci), mi
+
+	*********
+	*ytot_ci* 
+	*********
+	foreach v in ylmpri_ci ylnmpri_ci ylmsec_ci ylnmsec_ci ylmotros_ci ylnmotros_ci {
+		capture confirm variable `v'
+		if _rc gen double `v' = .
+		replace `v' = . if emp_ci != 1
+		replace `v' = . if `v' < 0
+		replace `v' = 0 if categopri_ci == 4 & emp_ci == 1 & missing(`v')
+	}
+
+	* Ingreso laboral primario (monetario + no monetario)
+	egen double yl_pri = rowtotal(ylmpri_ci ylnmpri_ci), missing
+	replace yl_pri = . if yl_pri < 0
+	* Ingreso laboral secundario y laboral otro (monetario + no monetario)
+	egen double yl_sec = rowtotal(ylmsec_ci ylnmsec_ci ylmotros_ci ylnmotros_ci), missing
+	replace yl_sec = . if yl_sec < 0
+	* Ingreso laboral total (primario + secundario)
+	egen double yl_ci = rowtotal(yl_pri yl_sec), missing
+	replace yl_ci = . if missing(yl_pri)
+	* Ingreso no Laboral total (monetario + no monetario)
+	egen double ynl_ci = rowtotal(ynlm_ci ynlnm_ci), missing
+	replace ynl_ci = . if ynl_ci < 0
+	* Ingreso total
+	egen double ytot_ci = rowtotal(yl_ci ynl_ci), missing
+	replace ytot_ci = . if condocup_ci == 1 & (missing(yl_pri) | (yl_pri <= 0 & categopri_ci != 4))
+	replace ytot_ci = . if condocup_ci != 1 & (missing(ynl_ci) | ynl_ci <= 0)
 
 ***************
 *** ynet_ci ***
@@ -1635,6 +1638,71 @@ label var ybenefdes_ci "Monto de seguro de desempleo"
 
 
 
+	****************************
+	*** VARIABLES DE POBREZA *** 
+	****************************
+	
+	*************
+	*top_edu_ocp*
+	*************
+	bysort idh_ch: egen max_edu_ocp = max(cond(condocup_ci==1 & miembros_ci==1, aedu_ci, .))
+	gen byte top_edu_ocp = condocup_ci==1 & miembros_ci==1 & aedu_ci==max_edu_ocp
+	bysort idh_ch top_edu_ocp (idp_ci): gen rank = _n
+	replace top_edu_ocp = 0 if rank > 1
+	drop max_edu_ocp rank
+
+	bysort idh_ch: egen byte jefe_ocup_ch = max(jefe_ci==1 & condocup_ci==1)
+	* Ingreso invalido = missing o <= 0
+	bysort idh_ch: egen byte _jefe_inv  = max(jefe_ci==1 & (missing(ytot_ci) | ytot_ci<=0))
+	bysort idh_ch: egen byte _topedu_ok = max(top_edu_ocp==1 & !missing(ytot_ci) & ytot_ci>0)
+	* Jefe ocupado: el hogar sigue la regla del jefe
+	* Jefe no ocupado: manda top_edu_ocp; si no tiene ingreso valido (o no hay ocupados), vuelve a la regla del jefe
+	gen byte flag_ref_ch = cond(jefe_ocup_ch==1, _jefe_inv, _jefe_inv & !_topedu_ok)
+	
+	*********
+	*ynivhog*
+	*********
+	gen ynivhog = 0 // replace if var exists
+
+	*************
+	*rentaimp_ch*
+	*************
+	gen byte ri_univ = inlist(p5090, 1, 2, 4)
+	local RI_MAX = 3000000
+	gen double ri_aux = p5130 if !missing(p5130) & p5130 >= 10000 & p5130 <= `RI_MAX'
+	local var_ri ri_aux
+	capture confirm numeric variable `var_ri'
+	if _rc & "`var_ri'" != "" di as err "`var_ri' no existe: renta imputada = 10% del ITF"
+	if _rc local var_ri "."
+	bysort idh_ch: egen double renta_imp_ch = max(cond(jefe_ci==1 & ri_univ==1, `var_ri', .))
+
+	*******************
+	*welfare_income_ch*
+	*******************
+	bysort idh_ch: egen double welfare_income_ch = total(cond(miembros_ci==1, ytot_ci, .)), missing
+	replace welfare_income_ch = welfare_income_ch + ynivhog
+	replace welfare_income_ch = . if flag_ref_ch==1
+	replace renta_imp_ch = 0.10 * welfare_income_ch if missing(renta_imp_ch) & ri_univ==1 & !missing(welfare_income_ch) & flag_renta_imp == 0 
+	replace welfare_income_ch = (welfare_income_ch + cond(missing(renta_imp_ch), 0, renta_imp_ch)) * cond(zona_c==0, 1.15, 1)
+	replace welfare_income_ch = welfare_income_ch/ ((365/12) * cpi * icp)
+	
+	***********************
+	*welfare_income_ci*
+	***********************
+	gen double welfare_income_ci = welfare_income_ch / nmiembros_ch
+	replace    welfare_income_ci = . if nmiembros_ch == 0 | missing(nmiembros_ch)
+	replace    welfare_income_ci = . if welfare_income_ci < 0
+	
+	***********
+	*pobre_umi*
+	***********
+	gen byte pobre_umi = (welfare_income_ci < 8.3) if !missing(welfare_income_ci)
+
+	***********
+	*pobre_lmi*
+	***********
+	gen byte pobre_lmi = (welfare_income_ci < 4.2) if !missing(welfare_income_ci)
+
 /*_____________________________________________________________________________________________________*/
 * AsignaciÃ³n de etiquetas e inserciÃ³n de variables externas: tipo de cambio, Indice de Precios al 
 * Consumidor (2011=100), Paridad de Poder Adquisitivo (PPA 2011),  lÃ­neas de pobreza
@@ -1686,6 +1754,7 @@ destring idh_ch, replace
   formal_ci tipocontrato_ci ocupa_ci pension_ci	pensionsub_ci tipopen_ci instpen_ci	ylmpri_ci /// Empleo 
   ylmpri_ci ylnmpri_ci ylmsec_ci ylnmsec_ci ylmotros_ci	ylnmotros_ci  ylm_ci ylnm_ci ynlm_ci ynlnm_ci ytot_ci nrylmpri_ci /// Ingresos individuo 
   ylm_ch ylnm_ch ylmnr_ch ynlm_ch ynlnm_ch ytot_ch ylmhopri_ci ylmho_ci /// Ingresos del hogar 
+  top_edu_ocp ynivhog renta_imp_ch welfare_income_ch welfare_income_ci flag_ref_ch pobre_umi pobre_lmi yl_pri yl_sec yl_ci ynl_ci /// 
   nrylmpri_ci nrylmpri_ch /// No respuesta de ingresos  
   ptmc_ci pnc_ci potrot_ci ptmc_ch pnc_ch potrot_ch yptmc_ci ypnc_ci yotrot_ci yptmc_ch ypnc_ch yotrot_ch ytransf_ci ytransf_ch ynet_ci ynet_ch ynet_ch_pc /// Protección social
   remesas_ci remesas_ch ypen_ci ypensub_ci /// Remesas y pensiones
@@ -1697,8 +1766,6 @@ destring idh_ch, replace
   migrante_ci migrantiguo5_ci miglac_ci /// Migración
   salmm_ci lp19_2011 lp31_2011 lp5_2011 lp_ci lpe_ci lp365_2017 lp685_2017 lp14_2017 lp81_2017 tc_c cpi_c cpi2011 cpi2017 ratio_cpi2011 ratio_cpi2017 /// Fuente externa
   ppp_c ppp_2011 ppp_2017 , first /// Fuente externa 
-  /// the order was created by regex functions, sph variables are excluded /// Fuente externa 
-  /// the order was created by regex functions, sph variables are excluded
 
 
 

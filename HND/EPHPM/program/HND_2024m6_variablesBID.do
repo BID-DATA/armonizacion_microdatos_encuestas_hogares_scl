@@ -1,6 +1,5 @@
 *(Versión stata 18)
-
-clear
+clear all
 set more off
 
 *________________________________________________________________________________________________________________*
@@ -166,6 +165,11 @@ use `base_in', clear
 	*******************************************
 	gen factor_ch=factor
 	label var factor_ch "Factor de Expansion del Hogar" // Es el mismo que el factor del individiuo
+
+	*****************************************
+	*CPI, IPC, Flag si tiene renta imputada*
+	****************************************
+	merge m:1 pais_c anio_c using "$datalibweb_IDB\SUPPORT\support_0926.dta", keepusing(cpi icp flag_renta_imp) keep(3) nogen
 
 
 ********************************************************************************
@@ -904,10 +908,16 @@ use `base_in', clear
 /*			YSMOP	Ingreso salario monetario ocupación principal
 			YCMOP	Ingreso monetario por cuenta propia ocupación principal
 */
+	/* 
 	egen ylmpri_ci=rowtotal(ysmop ycmop) if emp_ci==1, missing //Se suman los ingresos principales solo para los individuos ocupados (emp_ci==1)
 	replace ylmpri_ci=0 if inlist(condocup_ci,2,3) //Inactivos o Desocupados registran ingresos de 0
 	replace ylmpri_ci=0 if categopri_ci==4 //Aquellos trabajadores con categoría ocupacional no remunerado (categopri_ci==4) registran ingresos de 0
 	replace ylmpri_ci=0 if ylmpri_ci<0 //Se reemplazan los valores negativos por 0
+	*/
+	egen double ylmpri_ci = rowtotal(ysmop ycmop), missing
+	replace ylmpri_ci = .  if emp_ci != 1            // solo ocupados
+	replace ylmpri_ci = .  if ylmpri_ci < 0          
+	replace ylmpri_ci = 0  if categopri_ci == 4      // trabajador no remunerado (ingreso cero)
 	label var ylmpri_ci "Ingreso Laboral Monetario de la Actividad Principal"
 
 	************
@@ -916,10 +926,15 @@ use `base_in', clear
 /*			YSMOS	Ingreso salario monetario ocupación secundaria
 			YCMOS	Ingreso monetario por cuenta propia ocupación secundaria
 */
+	/* 
 	egen ylmsec_ci=rowtotal(ysmos ycmos) if emp_ci==1, missing //Se suman los ingresos secundarios solo para los individuos ocupados (emp_ci==1)
 	replace ylmsec_ci=0 if inlist(condocup_ci,2,3) //Inactivos o Desocupados registran ingresos de 0
 	replace ylmsec_ci=0 if categopri_ci==4 //Aquellos trabajadores con categoría ocupacional no remunerado (categopri_ci==4) registran ingresos de 0
 	replace ylmsec_ci=0 if ylmsec_ci<0 //Se reemplazan los valores negativos por 0
+	*/
+	egen double ylmsec_ci = rowtotal(ysmos ycmos), missing
+	replace ylmsec_ci = .  if emp_ci != 1            // solo ocupados
+	replace ylmsec_ci = 0  if ylmsec_ci < 0          // residuo negativo = artefacto de la resta
 	label var ylmsec_ci "Ingreso Laboral Monetario de la Actividad Secundaria"
 	
 	**************
@@ -939,8 +954,14 @@ use `base_in', clear
 /*			YCEOP	Ingreso en especies por cuenta propia ocupación principal
 			YSEOP	Ingreso salario en especies ocupación principal
 */	
+	/* 
 	egen ylnmpri_ci=rowtotal(yceop yseop) if emp_ci==1, missing //Se considera la suma de los ingresos PRINCIPALES en especies (YCEOP & YSEOP) de las personas ocupadas (emp_ci==1).
 	replace ylnmpri_ci = . if ylnmpri_ci < 0 & ylnmpri_ci != .
+	*/
+	egen double ylnmpri_ci = rowtotal(yseop yceop), missing
+	replace ylnmpri_ci = .  if emp_ci != 1            // solo ocupados
+	replace ylnmpri_ci = .  if ylnmpri_ci < 0          
+	replace ylnmpri_ci = 0  if categopri_ci == 4      // trabajador no remunerado (ingreso cero)
 	label var ylnmpri_ci "Ingreso Laboral No Monetario de la Actividad Principal"
 	
 	**************
@@ -949,8 +970,13 @@ use `base_in', clear
 /*			YSEOS	Ingreso salario en especies ocupación secundaria
 			YCEOS	Ingreso en especies por cuenta propia ocupación secundaria
 */
+	/* 
    	egen ylnmsec_ci=rowtotal(yseos yceos) if emp_ci==1, missing //Se considera la suma de los ingresos SECUNDARIAS en especies (YSMOS & YCMOS) de las personas ocupadas (emp_ci==1).
     replace ylnmsec_ci = . if ylnmsec_ci < 0 & ylnmsec_ci != .
+	*/
+	egen double ylnmsec_ci = rowtotal(yseos yceos), missing
+	replace ylnmsec_ci = .  if emp_ci != 1            // solo ocupados
+	replace ylnmsec_ci = .  if ylnmsec_ci < 0          
 
 	****************
 	* ylnmotros_ci: Ingresos laboral no monetario de otras actividades: Variable continua que representa el monto mensual del ingreso laboral no monetario derivado de actividades distintas de la principal y/o secundaria de cada miembro del hogar.*
@@ -1053,9 +1079,14 @@ use `base_in', clear
 	gen otros = oih20_lps/3 
 	gen otrosesp = oih20_lps_esp/3
 
-	*Se suman todas las variables for filas
-	egen ynlm_ci=rsum(jubi jubid pens pensd alqui alquid desc3ed pendiv pendivd ayuf ayufd ayup ayupd  beca remesa remesad bondis  bonoro bonotec bonorosa subsidio otrospro otros), missing
-	label var ynlm_ci "Ingreso No Laboral Monetario"	
+
+	egen ypen_ci=rowtotal(jubi jubid pens pensd), missing
+	label var ypen_ci "Valor de la pension contributiva"
+	egen remesas_ci=rsum(remesa remesad remesp remespd), missing
+	label var remesas_ci "Remesas Individuales"
+
+	egen double ynlm_ci = rowtotal(alqui alquid desc3ed pendiv pendivd ayuf ayufd ayup ayupd beca bondis bonoro bonotec bonorosa subsidio otrospro otros ypen_ci remesas_ci), missing
+	label var ynlm_ci "Ingreso No Laboral Monetario"
 	
 	***********
 	* ynlnm_ci:Ingreso no laboral no monetario. Variable continua que indica el monto mensual del ingreso no laboral no monetario (otras fuentes). En esta categoría se encuentran otros beneficios y transferencias no monetarias como las donaciones en alimentos, útiles escolares, becas, entre otros.*
@@ -1073,14 +1104,38 @@ use `base_in', clear
 			otrosproesp	Otros programas del gobierno en especie
 			otrosesp	Otros ingresos en especie
 */	
-	egen ynlnm_ci=rsum(ayufes ayufesd ayupes ayupesd alimes bolspra meresc remesp remespd otrosproesp otrosesp), missing //Suma de las variables no laborales y no monetarias construidas previamente
+	
+	egen double ynlnm_ci = rowtotal(ayufes ayufesd ayupes ayupesd alimes bolspra meresc otrosproesp otrosesp), missing
 	label var ynlnm_ci "Ingreso No Laboral No Monetario" 
 
-	**********
-	* ytot_ci: Ingreso mensual total del individuo que incluye las variables ylm_ci ylnm_ci ynlm_ci ynlnm_ci*
-	**********
-	*Codigo extraído del manual
-	egen double ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci), mi
+	
+	*********
+	*ytot_ci* 
+	*********
+	foreach v in ylmpri_ci ylnmpri_ci ylmsec_ci ylnmsec_ci ylmotros_ci ylnmotros_ci {
+		capture confirm variable `v'
+		if _rc gen double `v' = .
+		replace `v' = . if emp_ci != 1
+		replace `v' = . if `v' < 0
+		replace `v' = 0 if categopri_ci == 4 & emp_ci == 1 & missing(`v')
+	}
+
+	* Ingreso laboral primario (monetario + no monetario)
+	egen double yl_pri = rowtotal(ylmpri_ci ylnmpri_ci), missing
+	replace yl_pri = . if yl_pri < 0
+	* Ingreso laboral secundario y laboral otro (monetario + no monetario)
+	egen double yl_sec = rowtotal(ylmsec_ci ylnmsec_ci ylmotros_ci ylnmotros_ci), missing
+	replace yl_sec = . if yl_sec < 0
+	* Ingreso laboral total (primario + secundario)
+	egen double yl_ci = rowtotal(yl_pri yl_sec), missing
+	replace yl_ci = . if missing(yl_pri)
+	* Ingreso no Laboral total (monetario + no monetario)
+	egen double ynl_ci = rowtotal(ynlm_ci ynlnm_ci), missing
+	replace ynl_ci = . if ynl_ci < 0
+	* Ingreso total
+	egen double ytot_ci = rowtotal(yl_ci ynl_ci), missing
+	replace ytot_ci = . if condocup_ci == 1 & (missing(yl_pri) | (yl_pri <= 0 & categopri_ci != 4))
+	replace ytot_ci = . if condocup_ci != 1 & (missing(ynl_ci) | ynl_ci <= 0)
 
 	*********
 	* ylm_ch: Ingreso laboral monetario del hogar. Variable continua que indica el monto mensual del ingreso laboral monetario del hogar, ignora las `No respuesta'.  *
@@ -1152,25 +1207,17 @@ use `base_in', clear
 	replace nrylmpri_ch = 1 if nrylmpri_ch > 0 & nrylmpri_ch < .
 	replace nrylmpri_ch = . if nrylmpri_ch == .
 	
-	*************
-	* remesas_ci: Variable continua que indica el monto mensual por remesas reportadas por el individuo en moneda local corriente. *
-	*************
-	egen remesas_ci=rsum(remesa remesad remesp remespd), missing
-	label var remesas_ci "Remesas Individuales"
-	
+
+
 	*************
 	* remesas_ch: Variable continua que indica el monto mensual por remesas del hogar. Esta variable se genera a partir de la variable remesas_ci.*
 	*************
 	*Codigo extraído del manual 
 	by idh_ch, sort: egen byte remesas_ch = sum(remesas_ci) if miembros_ci == 1
 	
+
 	**********
-	* ypen_ci: Ingreso por pensión contributiva: Variable continua que indica el monto mensual en moneda local corriente efectivamente recibido por el individuo por pensiones contributivas en sus distintas modalidades (jubilación, vejez, pensión, etc).*
-	**********
-	*Suma de variables de pension/jubilación
-	egen ypen_ci=rowtotal(jubi jubid pens pensd), missing
-	label var ypen_ci "Valor de la pension contributiva" 
-	
+
 	*************
 	* ypensub_ci: Ingreso por pensión no contributiva: Variable continua que indica el monto mensual en moneda local corriente recibido por la persona por pensiones no contributivas (adultos mayores).*
 	*************
@@ -1179,7 +1226,6 @@ use `base_in', clear
 	
 	*************
 	* pension_ci: Variable dicotómica que indica con valor 1 si la persona recibe una pensión o jubilación contributiva y con 0 al resto. 
-	
 	*************
 	generate byte pension_ci = .
 	replace pension_ci=1 if 0<ypen_ci
@@ -1951,6 +1997,68 @@ restore
 /*_____________________________________________________________________________________________________*/
 
 
+	****************************
+	*** VARIABLES DE POBREZA *** 
+	****************************
+	
+	*************
+	*top_edu_ocp*
+	*************
+	bysort idh_ch: egen max_edu_ocp = max(cond(condocup_ci==1 & miembros_ci==1, aedu_ci, .))
+	gen byte top_edu_ocp = condocup_ci==1 & miembros_ci==1 & aedu_ci==max_edu_ocp
+	bysort idh_ch top_edu_ocp (idp_ci): gen rank = _n
+	replace top_edu_ocp = 0 if rank > 1
+	drop max_edu_ocp rank
+
+	bysort idh_ch: egen byte jefe_ocup_ch = max(jefe_ci==1 & condocup_ci==1)
+	* Ingreso invalido = missing o <= 0
+	bysort idh_ch: egen byte _jefe_inv  = max(jefe_ci==1 & (missing(ytot_ci) | ytot_ci<=0))
+	bysort idh_ch: egen byte _topedu_ok = max(top_edu_ocp==1 & !missing(ytot_ci) & ytot_ci>0)
+	* Jefe ocupado: el hogar sigue la regla del jefe
+	* Jefe no ocupado: manda top_edu_ocp; si no tiene ingreso valido (o no hay ocupados), vuelve a la regla del jefe
+	gen byte flag_ref_ch = cond(jefe_ocup_ch==1, _jefe_inv, _jefe_inv & !_topedu_ok)
+	
+	*********
+	*ynivhog*
+	*********
+	gen ynivhog = 0 // replace if var exists
+
+	*************
+	*rentaimp_ch*
+	*************
+	local var_ri 
+	capture confirm numeric variable `var_ri'
+	if _rc & "`var_ri'" != "" di as err "`var_ri' no existe: renta imputada = 10% del ITF"
+	if _rc local var_ri "."
+	bysort idh_ch: egen double renta_imp_ch = max(cond(jefe_ci==1 & inlist(viviprop_ch,1,2,4), `var_ri', .))
+
+	*******************
+	*welfare_income_ch*
+	*******************
+	bysort idh_ch: egen double welfare_income_ch = total(cond(miembros_ci==1, ytot_ci, .)), missing
+	replace welfare_income_ch = welfare_income_ch + ynivhog
+	replace welfare_income_ch = . if flag_ref_ch==1
+	replace renta_imp_ch = 0.10 * welfare_income_ch if missing(renta_imp_ch) & inlist(viviprop_ch,1,2,4) & !missing(welfare_income_ch) & flag_renta_imp == 0 
+	replace welfare_income_ch = (welfare_income_ch + cond(missing(renta_imp_ch), 0, renta_imp_ch)) * cond(zona_c==0, 1.15, 1)
+	replace welfare_income_ch = welfare_income_ch/ ((365/12) * cpi * icp)
+	
+	***********************
+	*welfare_income_ci*
+	***********************
+	gen double welfare_income_ci = welfare_income_ch / nmiembros_ch
+	replace    welfare_income_ci = . if nmiembros_ch == 0 | missing(nmiembros_ch)
+	replace    welfare_income_ci = . if welfare_income_ci < 0
+	
+	***********
+	*pobre_umi*
+	***********
+	gen byte pobre_umi = (welfare_income_ci < 8.3) if !missing(welfare_income_ci)
+
+	***********
+	*pobre_lmi*
+	***********
+	gen byte pobre_lmi = (welfare_income_ci < 4.2) if !missing(welfare_income_ci)
+
 do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&ExternalVars_Harmonized_DataBank.do"
 
 /*_____________________________________________________________________________________________________*/
@@ -1964,7 +2072,7 @@ afro_ci ind_ci noafroind_ci afroind_ci afro_ch ind_ch noafroind_ch afroind_ch di
 condocup_ci categoinac_ci emp_ci cesante_ci desemp_ci subemp_ci durades_ci pea_ci nempleos_ci antiguedad_ci desalent_ci  /// Empleo
 horaspri_ci horastot_ci tiempoparc_ci categopri_ci categosec_ci rama_ci spublico_ci tamemp_ci cotizando_ci instcot_ci	afiliado_ci /// Empleo 
 formal_ci tipocontrato_ci ocupa_ci pension_ci	pensionsub_ci tipopen_ci instpen_ci	ylmpri_ci /// Empleo 
-ylmpri_ci ylnmpri_ci ylmsec_ci ylnmsec_ci ylmotros_ci	ylnmotros_ci  ylm_ci ylnm_ci ynlm_ci ynlnm_ci nrylmpri_ci /// Ingresos individuo 
+ylmpri_ci ylnmpri_ci ylmsec_ci ylnmsec_ci ylmotros_ci	ylnmotros_ci  ylm_ci ylnm_ci ynlm_ci ynlnm_ci nrylmpri_ci top_edu_ocp ynivhog renta_imp_ch welfare_income_ch welfare_income_ci flag_ref_ch pobre_umi pobre_lmi yl_pri yl_sec yl_ci ynl_ci ///
 ylm_ch ylnm_ch ynlm_ch ynlnm_ch ylmhopri_ci ylmho_ci /// Ingresos del hogar 
 nrylmpri_ci nrylmpri_ch /// No respuesta de ingresos  
 remesas_ci remesas_ch ypen_ci ypensub_ci /// Remesas y pensiones

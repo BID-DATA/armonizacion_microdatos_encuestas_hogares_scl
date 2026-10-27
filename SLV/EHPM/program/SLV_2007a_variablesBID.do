@@ -175,6 +175,12 @@ label define relacion_ci 6 "Empleado/a domestico/a", add
 label value relacion_ci relacion_ci
 
 
+	*****************************************
+	*CPI, IPC, Flag si tiene renta imputada*
+	****************************************
+	merge m:1 pais_c anio_c using "$datalibweb_IDB\SUPPORT\support_0926.dta", keepusing(cpi icp flag_renta_imp) keep(3) nogen
+
+
 ******************************************************************************
 *	DEMOGRAPHIC VARIABLES
 ******************************************************************************
@@ -618,9 +624,9 @@ replace yprijbi=ingrneto/12 if r426==8
 replace yprijbi=999999 if ingrneto==999999 | r426==99
 replace yprijbi=. if categopri_ci>2 | r426==. 
 
-egen ylmpri_ci=rsum(yprijbi yprid), missing
+egen double ylmpri_ci = rowtotal(yprijbi yprijbd), missing
 label var ylmpri_ci "Ingreso laboral monetario actividad principal"
-replace ylmpri_ci=. if yprijbi==999999 | yprid==999999
+replace ylmpri_ci=. if yprijbi==999999 | yprijbd==999999
 replace ylmpri_ci=. if emp!=1
 
 egen ylmpri1_ci=rsum(yprijbi yprijbd), missing
@@ -635,6 +641,9 @@ replace nrylmpri_ci=. if emp_ci!=1
 label var nrylmpri_ci "Identificador de No respuesta del ingreso de la actividad principal"
 gen nrylmpri1_ci=(ylmpri1_ci==. & emp_ci==1)
 replace nrylmpri1_ci=. if emp_ci!=1
+replace ylmpri_ci = .  if emp_ci != 1
+replace ylmpri_ci = .  if ylmpri_ci < 0
+replace ylmpri_ci = 0  if categopri_ci == 4
 
 ******************************
 *	ylnmpri_ci & ylnmpri1_ci
@@ -651,6 +660,8 @@ replace ylnmpri_ci=. if emp_ci!=1
 
 egen ylnmpri1_ci=rsum(ylnmpri_ci r430), missing
 replace ylnmpri1_ci=. if emp_ci!=1
+replace ylnmpri_ci = .  if ylnmpri_ci < 0
+replace ylnmpri_ci = 0  if categopri_ci == 4
 
 ******************************
 *	ylmsec_ci
@@ -663,6 +674,12 @@ gen bonificaciones=r43404a*r43404b/12 if emp_ci==1
 
 egen ylmsec1_ci=rsum(ylmsec_ci hrsextras vacaciones aguinaldo bonificaciones), missing
 replace ylmsec1_ci=. if emp_ci!=1 | r431!=1
+drop ylmsec_ci
+egen double ylmsec_ci = rowtotal(r433 hrsextras vacaciones aguinaldo bonificaciones), missing
+label var ylmsec_ci "Ingreso laboral monetario segunda actividad"
+replace ylmsec_ci = . if emp_ci!=1 | r431!=1
+replace ylmsec_ci = .  if emp_ci != 1
+replace ylmsec_ci = 0  if ylmsec_ci < 0
 
 ******************************
 *	ylnmsec_ci
@@ -677,6 +694,7 @@ gen otross2=r43412a*r43412b/12 if emp_ci==1
 egen ylnmsec_ci=rsum(food2 ropa2 merca2 vivi2 trans2 segur2 otross2), missing
 label var ylnmsec_ci "Ingreso laboral no monetario actividad secundaria"
 replace ylnmsec_ci=. if emp_ci!=1 | r431!=1
+replace ylnmsec_ci = .  if ylnmsec_ci < 0
 
 ******************************
 *	ylm_ci & ylm1_ci
@@ -697,30 +715,59 @@ egen ylnm1_ci=rsum(ylnmpri1_ci ylnmsec_ci) if emp_ci==1, missing
 ******************************
 *	ynlm_ci
 ******************************
-gen remesas=r44301a*r44301b/12
-gen ayuda=r44302a*r44302b/12
-gen cuotalim=r44303a*r44303b/12
-gen alqui=r44304a*r44304b/12
-gen alqneg=r44305a*r44305b/12
-gen jubil=r44307a*r44307b/12
-gen deveh=r44308a*r44308b/12
-gen otros=r44309a*r44309b/12
-
-gen utilidades=r44401/12
-gen dividendos=r44402/12
-gen intereses=r44403/12
-gen herencias=r44404/12
-gen indemnizacion=r44405/12
-gen ayudagob=r44406/12
-gen acteventual=r44407/12
-gen arrendamiento=r44408/12
-gen otrosy=r44410/12
-
-egen ynlm_ci=rsum(remesas ayuda cuotalim alqui alqneg jubil deveh otros utilidades dividendos intereses herencias indemnizacion ayudagob acteventual arrendamiento otrosy), missing
+gen double d_remesas = r44301a*r44301b/12
+gen double d_ayuda = r44302a*r44302b/12
+gen double d_cuotalim = r44303a*r44303b/12
+gen double d_alqui = r44304a*r44304b/12
+gen double d_alqneg = r44305a*r44305b/12
+gen double d_alqterr = r44306a*r44306b/12
+gen double d_jubil = r44307a*r44307b/12
+gen double d_deveh = r44308a*r44308b/12
+gen double d_otros = r44309a*r44309b/12
+gen double d_utilidades = r44401/12
+gen double d_dividendos = r44402/12
+gen double d_intereses = r44403/12
+gen double d_herencias = r44404/12
+gen double d_indemnizacion = r44405/12
+gen double d_ayudagob = r44406/12
+gen double d_acteventual = r44407/12
+gen double d_arrendamiento = r44408/12
+gen double d_remesaevent = r44409/12
+gen double d_otrosy = r44410/12
+egen double ynlm_ci = rowtotal(d_remesas d_ayuda d_cuotalim d_alqui d_alqneg d_alqterr d_jubil d_deveh d_otros d_utilidades d_dividendos d_intereses d_herencias d_indemnizacion d_ayudagob d_acteventual d_arrendamiento d_remesaevent d_otrosy), missing
+capture drop d_remesas d_ayuda d_cuotalim d_alqui d_alqneg d_alqterr d_jubil d_deveh d_otros d_utilidades d_dividendos d_intereses d_herencias d_indemnizacion d_ayudagob d_acteventual d_arrendamiento d_remesaevent d_otrosy
 label var ynlm_ci "Ingreso no laboral monetario" 
 
 gen ynlnm_ci=.
-egen ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci)
+gen ylmotros_ci=.
+gen ylnmotros_ci=.
+	*********
+	*ytot_ci*
+	*********
+	foreach v in ylmpri_ci ylnmpri_ci ylmsec_ci ylnmsec_ci ylmotros_ci ylnmotros_ci {
+		capture confirm variable `v'
+		if _rc gen double `v' = .
+		replace `v' = . if emp_ci != 1
+		replace `v' = . if `v' < 0
+		replace `v' = 0 if categopri_ci == 4 & emp_ci == 1 & missing(`v')
+	}
+
+	* Ingreso laboral primario (monetario + no monetario)
+	egen double yl_pri = rowtotal(ylmpri_ci ylnmpri_ci), missing
+	replace yl_pri = . if yl_pri < 0
+	* Ingreso laboral secundario y laboral otro (monetario + no monetario)
+	egen double yl_sec = rowtotal(ylmsec_ci ylnmsec_ci ylmotros_ci ylnmotros_ci), missing
+	replace yl_sec = . if yl_sec < 0
+	* Ingreso laboral total (primario + secundario)
+	egen double yl_ci = rowtotal(yl_pri yl_sec), missing
+	replace yl_ci = . if missing(yl_pri)
+	* Ingreso no Laboral total (monetario + no monetario)
+	egen double ynl_ci = rowtotal(ynlm_ci ynlnm_ci), missing
+	replace ynl_ci = . if ynl_ci < 0
+	* Ingreso total
+	egen double ytot_ci = rowtotal(yl_ci ynl_ci), missing
+	replace ytot_ci = . if condocup_ci == 1 & (missing(yl_pri) | (yl_pri <= 0 & categopri_ci != 4))
+	replace ytot_ci = . if condocup_ci != 1 & (missing(ynl_ci) | ynl_ci <= 0)
 
 gen ynlnm_ch=.
 
@@ -1430,8 +1477,6 @@ label var formal_ci "1=afiliado o cotizante / PEA"
 gen tcylmpri_ci =.
 gen tcylmpri_ch =.
 gen tipopen_ci=.
-gen ylmotros_ci=.
-gen ylnmotros_ci=.
 gen rentaimp_ch=.
 gen categosec_ci=.
 *gen cuartos_ch=.
@@ -1478,6 +1523,76 @@ gen vivialqimp_ch=.
 /*_____________________________________________________________________________________________________*/
 
 
+	****************************
+	*** VARIABLES DE POBREZA ***
+	****************************
+	
+	*************
+	*top_edu_ocp*
+	*************
+	bysort idh_ch: egen max_edu_ocp = max(cond(condocup_ci==1 & miembros_ci==1, aedu_ci, .))
+	gen byte top_edu_ocp = condocup_ci==1 & miembros_ci==1 & aedu_ci==max_edu_ocp
+	bysort idh_ch top_edu_ocp (idp_ci): gen rank = _n
+	replace top_edu_ocp = 0 if rank > 1
+	drop max_edu_ocp rank
+
+	bysort idh_ch: egen byte jefe_ocup_ch = max(jefe_ci==1 & condocup_ci==1)
+	* Ingreso invalido = missing o <= 0
+	bysort idh_ch: egen byte _jefe_inv  = max(jefe_ci==1 & (missing(ytot_ci) | ytot_ci<=0))
+	bysort idh_ch: egen byte _topedu_ok = max(top_edu_ocp==1 & !missing(ytot_ci) & ytot_ci>0)
+	* Jefe ocupado: el hogar sigue la regla del jefe
+	* Jefe no ocupado: manda top_edu_ocp; si no tiene ingreso valido (o no hay ocupados), vuelve a la regla del jefe
+	gen byte flag_ref_ch = cond(jefe_ocup_ch==1, _jefe_inv, _jefe_inv & !_topedu_ok)
+	
+	*********
+	*ynivhog*
+	*********
+	gen ynivhog = 0 // replace if var exists
+
+	*************
+	*rentaimp_ch*
+	*************
+	gen byte ri_univ = inlist(r308a, 2, 3, 4, 5)
+	local var_ri r311
+	capture confirm numeric variable `var_ri'
+	if _rc & "`var_ri'" != "" di as err "`var_ri' no existe: renta imputada = 10% del ITF"
+	if _rc local var_ri "."
+	bysort idh_ch: egen double renta_imp_ch = max(cond(jefe_ci==1 & ri_univ==1, `var_ri', .))
+
+	*******************
+	*welfare_income_ch*
+	*******************
+	bysort idh_ch: egen double welfare_income_ch = total(cond(miembros_ci==1, ytot_ci, .)), missing
+	replace welfare_income_ch = welfare_income_ch + ynivhog
+	replace welfare_income_ch = . if flag_ref_ch==1
+	replace renta_imp_ch = 0.10 * welfare_income_ch if missing(renta_imp_ch) & ri_univ==1 & !missing(welfare_income_ch) & flag_renta_imp == 0 
+	replace welfare_income_ch = (welfare_income_ch + cond(missing(renta_imp_ch), 0, renta_imp_ch)) * cond(zona_c==0, 1.15, 1)
+	replace welfare_income_ch = welfare_income_ch/ ((365/12) * cpi * icp)
+	
+	***********************
+	*welfare_income_ci*
+	***********************
+	gen double welfare_income_ci = welfare_income_ch / nmiembros_ch
+	replace    welfare_income_ci = . if nmiembros_ch == 0 | missing(nmiembros_ch)
+	replace    welfare_income_ci = . if welfare_income_ci < 0
+	
+	***********
+	*pobre_umi*
+	***********
+	gen byte pobre_umi = (welfare_income_ci < 8.3) if !missing(welfare_income_ci)
+
+	***********
+	*pobre_lmi*
+	***********
+	gen byte pobre_lmi = (welfare_income_ci < 4.2) if !missing(welfare_income_ci)
+
+	drop _jefe_inv _topedu_ok
+	mean pobre_umi [aw=factor_ch]
+	mean pobre_lmi [aw=factor_ch]
+	capture drop ri_aux
+	capture drop ri_univ
+	capture drop cpi icp flag_renta_imp
+
 do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&ExternalVars_Harmonized_DataBank.do"
 
 /*_____________________________________________________________________________________________________*/
@@ -1491,7 +1606,8 @@ do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&Exter
   condocup_ci categoinac_ci emp_ci cesante_ci desemp_ci subemp_ci durades_ci pea_ci nempleos_ci antiguedad_ci desalent_ci  /// Empleo
   horaspri_ci horastot_ci tiempoparc_ci categopri_ci categosec_ci rama_ci spublico_ci tamemp_ci cotizando_ci instcot_ci	afiliado_ci /// Empleo 
   formal_ci tipocontrato_ci ocupa_ci pension_ci	pensionsub_ci tipopen_ci instpen_ci	ylmpri_ci /// Empleo 
-  ylmpri_ci ylnmpri_ci ylmsec_ci ylnmsec_ci ylmotros_ci	ylnmotros_ci  ylm_ci ylnm_ci ynlm_ci ynlnm_ci nrylmpri_ci /// Ingresos individuo 
+  ylmpri_ci ylnmpri_ci ylmsec_ci ylnmsec_ci ylmotros_ci	ylnmotros_ci  ylm_ci ylnm_ci ynlm_ci ynlnm_ci ytot_ci nrylmpri_ci /// Ingresos individuo
+  yl_pri yl_sec yl_ci ynl_ci top_edu_ocp ynivhog renta_imp_ch welfare_income_ch welfare_income_ci flag_ref_ch pobre_umi pobre_lmi /// Ingresos y pobreza
   ylm_ch ylnm_ch ylmnr_ch ynlm_ch ynlnm_ch ylmhopri_ci ylmho_ci /// Ingresos del hogar 
   nrylmpri_ci nrylmpri_ch /// No respuesta de ingresos  
   remesas_ci remesas_ch ypen_ci ypensub_ci /// Remesas y pensiones

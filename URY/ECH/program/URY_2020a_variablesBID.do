@@ -1,5 +1,5 @@
 * (Versión Stata 16)
-clear
+clear all
 set more off
 *________________________________________________________________________________________________________________*
 
@@ -38,9 +38,9 @@ Round: a
 Detalle de procesamientos o modificaciones anteriores:
 ****************************************************************************/
 
-use `base_in', clear
+use `base_in', clear 
 
-
+*/
 /************************************************************************/
 /*				VARIABLES DEL HOGAR			*/
 /************************************************************************/
@@ -101,14 +101,16 @@ A partir de 2006 se incluye una muestra rural, sin embargo en 2006-2009 sólo se
  (3) interior con menos de 5000 habitantes y (4) rural. 
  Por lo tanto, para hacer comparables los datos se genera la variable zona considerando a las zonas de
  menos de 5000 habitantes como rural. Es decir, zona rural=interior con menos de 5000 habitantes y rural.*/
- 
 gen zona_c=.
-replace zona_c=1 if region_4 == 1 | region_4 == 2
-replace zona_c=0 if region_4 == 3 | region_4 == 4
-
+replace zona_c=1 if region_4 == 1 | region_4 == 2 
+replace zona_c=0 if region_4 == 3 | region_4 == 4 
+/*
+gen zona_c=.
+replace zona_c=1 if region_4 == 1 | region_4 == 2 | region_4 == 3 
+replace zona_c=0 if region_4 == 4 
 label variable zona_c "Zona del pais"
 label define zona_c 1 "Urbana" 0 "Rural"
-label value zona_c zona_c
+label value zona_c zona_c */
 
 *5. País
 gen str3 pais_c="URY"
@@ -167,6 +169,11 @@ gen upm_ci=loc_agr_13
 * MM en 2020 no hay variable loc_agr_13
 * gen estrato_ci=estred13
 gen estrato_ci=.
+
+	*****************************************
+	*CPI, IPC, Flag si tiene renta imputada*
+	****************************************
+	merge m:1 pais_c anio_c using "$datalibweb_IDB\SUPPORT\support_0926.dta", keepusing(cpi icp flag_renta_imp) keep(3) nogen
 
 
 *10. Sexo
@@ -1294,10 +1301,34 @@ egen double ynlnm_ci = rowtotal(canasta_celi canasta_emer), mi
 label var ynlnm_ci "Ingreso no laboral no monetario" 
 
 
-***************
-*** ytot_ci ***
-*************** 
-egen double ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci), mi
+	*********
+	*ytot_ci*
+	********
+	foreach v in ylmpri_ci ylnmpri_ci ylmsec_ci ylnmsec_ci ylmotros_ci ylnmotros_ci {
+		capture confirm variable `v'
+		if _rc gen double `v' = .
+		replace `v' = . if emp_ci != 1
+		replace `v' = . if `v' < 0
+		replace `v' = 0 if categopri_ci == 4 & emp_ci == 1 & missing(`v')
+	}
+
+	* Ingreso laboral primario (monetario + no monetario)
+	egen double yl_pri = rowtotal(ylmpri_ci ylnmpri_ci), missing
+	replace yl_pri = . if yl_pri < 0
+	* Ingreso laboral secundario y laboral otro (monetario + no monetario)
+	egen double yl_sec = rowtotal(ylmsec_ci ylnmsec_ci ylmotros_ci ylnmotros_ci), missing
+	replace yl_sec = . if yl_sec < 0
+	* Ingreso laboral total (primario + secundario)
+	egen double yl_ci = rowtotal(yl_pri yl_sec), missing
+	replace yl_ci = . if missing(yl_pri)
+	* Ingreso no Laboral total (monetario + no monetario)
+	egen double ynl_ci = rowtotal(ynlm_ci ynlnm_ci), missing
+	replace ynl_ci = . if ynl_ci < 0
+	* Ingreso total
+	egen double ytot_ci = rowtotal(yl_ci ynl_ci), missing
+	replace ytot_ci = . if condocup_ci == 1 & (missing(yl_pri) | (yl_pri <= 0 & categopri_ci != 4))
+	replace ytot_ci = . if condocup_ci != 1 & (missing(ynl_ci) | ynl_ci <= 0)
+	
 
 ***************
 *** ynet_ci ***
@@ -1809,6 +1840,10 @@ gen viviprop_ch=.
 replace viviprop_ch=1 if d8_1==2 | d8_1==4
 replace viviprop_ch=2 if d8_1==1 | d8_1==3
 replace viviprop_ch=3 if d8_1>=6 & d8_1<=9*/
+*la base 2020 no trae d8_1 ni H5_CV (tenencia de la vivienda), por lo que viviprop_ch quedaba vacia y la renta imputada nunca entraba al bienestar.
+* se usa ht13 (valor locativo INE, 0 para los inquilinos) como proxy de "no alquila". 0=alquilada, 3=no alquila (propietario u ocupante; el subtipo no se puede separar)
+replace viviprop_ch=0 if ht13==0 
+replace viviprop_ch=3 if ht13>0 & ht13<. 
 
 
 *121. El hogar posee un título de propiedad
@@ -1954,6 +1989,88 @@ lab val atencion_ci atencion_ci*/
 	label var miglac_ci "=1 si es migrante proveniente de un pais LAC"
 	
 	
+
+	****************************
+	*** VARIABLES DE POBREZA ***
+	****************************
+	
+	****************
+	 *tipo_bienestar*
+	****************	
+	gen byte tipo_bienestar = 1 
+	
+	****************
+	 * pobre_ine _ci*
+	****************	
+	gen byte pobre_ine_ci = .
+	
+	  gen ln_ci=.
+	gen pobre_ine_ext_ci=. 
+
+	****************
+	 * bienestar_agregado *
+	****************	
+	gen bienestar_agregado = . 
+	
+	
+	*************
+	*top_edu_ocp*
+	*************
+	bysort idh_ch: egen max_edu_ocp = max(cond(condocup_ci==1 & miembros_ci==1, aedu_ci, .))
+	gen byte top_edu_ocp = condocup_ci==1 & miembros_ci==1 & aedu_ci==max_edu_ocp
+	bysort idh_ch top_edu_ocp (idp_ci): gen rank = _n
+	replace top_edu_ocp = 0 if rank > 1
+	drop max_edu_ocp rank
+
+	bysort idh_ch: egen byte jefe_ocup_ch = max(jefe_ci==1 & condocup_ci==1)
+	* Ingreso invalido = missing o <= 0
+	bysort idh_ch: egen byte _jefe_inv  = max(jefe_ci==1 & (missing(ytot_ci) | ytot_ci<=0))
+	bysort idh_ch: egen byte _topedu_ok = max(top_edu_ocp==1 & !missing(ytot_ci) & ytot_ci>0)
+	* Jefe ocupado: el hogar sigue la regla del jefe
+	* Jefe no ocupado: manda top_edu_ocp; si no tiene ingreso valido (o no hay ocupados), vuelve a la regla del jefe
+	gen byte flag_ref_ch = cond(jefe_ocup_ch==1, _jefe_inv, _jefe_inv & !_topedu_ok)
+	
+	*********
+	*ynivhog*
+	*********
+	gen ynivhog = 0 // replace if var exists
+
+	*************
+	*rentaimp_ch*
+	*************
+	local var_ri ht13
+	capture confirm numeric variable `var_ri'
+	if _rc & "`var_ri'" != "" di as err "`var_ri' no existe: renta imputada = 10% del ITF"
+	if _rc local var_ri "."
+	bysort idh_ch: egen double renta_imp_ch = max(cond(jefe_ci==1 & inlist(viviprop_ch,1,2,3), `var_ri', .)) 
+
+	*******************
+	*welfare_income_ch*
+	*******************
+	bysort idh_ch: egen double welfare_income_ch = total(cond(miembros_ci==1, ytot_ci, .)), missing
+	replace welfare_income_ch = welfare_income_ch + ynivhog
+	replace welfare_income_ch = . if flag_ref_ch==1
+	replace renta_imp_ch = 0.10 * welfare_income_ch if missing(renta_imp_ch) & inlist(viviprop_ch,1,2,3) & !missing(welfare_income_ch) & flag_renta_imp == 0 
+	replace welfare_income_ch = (welfare_income_ch + cond(missing(renta_imp_ch), 0, renta_imp_ch)) * cond(zona_c==0, 1.15, 1)
+	replace welfare_income_ch = welfare_income_ch/ ((365/12) * cpi * icp)
+	
+	***********************
+	*welfare_income_ci*
+	***********************
+	gen double welfare_income_ci = welfare_income_ch / nmiembros_ch
+	replace    welfare_income_ci = . if nmiembros_ch == 0 | missing(nmiembros_ch)
+	replace    welfare_income_ci = . if welfare_income_ci < 0
+	
+	***********
+	*pobre_umi*
+	***********
+	gen byte pobre_umi = (welfare_income_ci < 8.3) if !missing(welfare_income_ci)
+
+	***********
+	*pobre_lmi*
+	***********
+	gen byte pobre_lmi = (welfare_income_ci < 4.2) if !missing(welfare_income_ci)
+
 /*_____________________________________________________________________________________________________*/
 * Asignación de etiquetas e inserción de variables externas: tipo de cambio, Indice de Precios al 
 * Consumidor (2011=100), líneas de pobreza
@@ -1987,10 +2104,12 @@ do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&Exter
   aguatrat_ch aguamala_ch aguamejorada_ch aguamide_ch bano_ch banoex_ch banomejorado_ch sinbano_ch  /// Agua y saneamineto
   migrante_ci migrantiguo5_ci miglac_ci /// Migración
   salmm_ci lp19_2011 lp31_2011 lp5_2011 lp_ci lpe_ci lp365_2017 lp685_2017 lp14_2017 lp81_2017 tc_c cpi_c cpi2011 cpi2017 ratio_cpi2011 ratio_cpi2017 /// Fuente externa
-  ppp_c ppp_2011 ppp_2017 , first /// Fuente externa 
-  /// the order was created by regex functions, sph variables are excluded /// Fuente externa 
-  /// the order was created by regex functions, sph variables are excluded
+  ppp_c ppp_2011 ppp_2017 /// Fuente externa 
+  top_edu_ocp ynivhog renta_imp_ch welfare_income_ch welfare_income_ci /// Ingresos 
+  tipo_bienestar bienestar_agregado ln_ci lpe_ci  pobre_ine_ci pobre_ine_ext_ci pobre_umi pobre_lmi, first /// Pobreza 
+  
 
+  
 
 rename f72_2 codindustria
 rename f71_2 codocupa

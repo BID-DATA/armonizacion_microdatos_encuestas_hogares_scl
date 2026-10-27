@@ -1,4 +1,3 @@
-
 * (Versión stata 12)
 clear
 set more off
@@ -48,6 +47,9 @@ Detalle de procesamientos o modificaciones anteriores:
 
 
 use `base_in', clear
+
+
+keep if pondih>0 & pondih!=. // cambio Sept 2026 
 
 		**********************************
 		***VARIABLES DEL IDENTIFICACION***
@@ -128,7 +130,7 @@ replace region_c=24 if aglomerado==29                          /*Tucuman*/
 	*Factor de expansion del hogar (factor_ch)*
 	*******************************************
 
-	gen factor_ch=pondera
+	gen factor_ch=pondih
 	label var factor_ch "Factor de expansion del hogar"
 	
 
@@ -216,6 +218,11 @@ tostring idp_ci, replace
 label define relacion_ci 1 "Jefe/a" 2 "Esposo/a" 3 "Hijo/a" 4  "Otros parientes" 5 "Otros no parientes"
 label variable relacion_ci "Relacion con el jefe del hogar"
 
+	*****************************************
+	*CPI, IPC, Flag si tiene renta imputada*
+	****************************************
+	cap drop _merge
+	merge m:1 pais_c anio_c using "$datalibweb_IDB\SUPPORT\support_0926.dta", keepusing(cpi icp flag_renta_imp) keep(3) nogen
 
 
 			****************************
@@ -752,8 +759,10 @@ label val rama_ci rama_ci
 	*Pero en general correspone a la variable p21. Esos chequeos estan en la version anterior de este
 	*programa
 		
-	gen ylmpri_ci=.
-	replace ylmpri_ci=p21 if p21>=0 & p21!=. & emp_ci==1
+gen ylmpri_ci=.	
+replace ylmpri_ci=p21 if emp_ci==1 //Se iguala a la variable
+replace ylmpri_ci=0 if p21<0 & emp_ci==1 //Se reemplazan por ceros los ingresos negativos
+replace ylmpri_ci=. if p21==. | p21==-9 //Se reemplazan los missings
 			
 	*************
 	*nrylmpri_ci*
@@ -772,8 +781,10 @@ label val rama_ci rama_ci
 	***ylmsec_ci***
 	***************
 
-	gen ylmsec_ci=.
-	
+gen ylmsec_ci=.	// Existe la variable tot_p12: Monto de ingreso de otras ocupaciones (incluye ocupación secundaria, ocupación previa a la semana de referencia, deudas/retroactivos por ocupaciones anteriores al mes de referencia, etc. Por tanto, la variable queda como missing
+replace ylmsec_ci=tot_p12 if emp_ci==1 //Se iguala a la variable
+replace ylmsec_ci=0 if tot_p12<0 & emp_ci==1 //Se reemplazan por ceros los ingresos negativos
+replace ylmsec_ci=. if tot_p12==. | tot_p12==-9 //Se reemplazan los missings	
 
 	****************
 	***ylnmsec_ci***
@@ -833,8 +844,35 @@ label val rama_ci rama_ci
 	**********
 	
 	gen ynlnm_ci=.
-egen ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci)
 
+	*********
+	*ytot_ci*
+	********
+	foreach v in ylmpri_ci ylnmpri_ci ylmsec_ci ylnmsec_ci ylmotros_ci ylnmotros_ci {
+		capture confirm variable `v'
+		if _rc gen double `v' = .
+		replace `v' = . if emp_ci != 1
+		replace `v' = . if `v' < 0
+		replace `v' = 0 if categopri_ci == 4 & emp_ci == 1 & missing(`v')
+	}
+
+	* Ingreso laboral primario (monetario + no monetario)
+	egen double yl_pri = rowtotal(ylmpri_ci), missing
+	replace yl_pri = . if yl_pri < 0
+	* Ingreso laboral secundario y laboral otro (monetario + no monetario)
+	egen double yl_sec = rowtotal(ylmsec_ci), missing
+	replace yl_sec = . if yl_sec < 0
+	* Ingreso laboral total (primario + secundario)
+	egen double yl_ci = rowtotal(yl_pri yl_sec), missing
+	replace yl_ci = . if missing(yl_pri)
+	* Ingreso no Laboral total (monetario + no monetario)
+	egen double ynl_ci = rowtotal(ynlm_ci), missing
+	replace ynl_ci = . if ynl_ci < 0
+	* Ingreso total
+	egen double ytot_ci = rowtotal(yl_ci ynl_ci), missing
+	replace ytot_ci = . if condocup_ci == 1 & (missing(yl_pri) | (yl_pri <= 0 & categopri_ci != 4))
+	replace ytot_ci = . if condocup_ci != 1 & (missing(ynl_ci) | ynl_ci <= 0)
+	
 	
 
 		**********************
@@ -1403,13 +1441,11 @@ replace aguared_ch=. if iv7==9
 	*viviprop_ch*
 	*************
 	*NOTA: aqui se genera una variable parecida, pues no se puede saber si es propia total o parcialmente pagada
-	gen viviprop_ch=.
+	gen viviprop_ch=0 if ii7==3
+	replace viviprop_ch=1 if ii7==1 | ii7==2
+	replace viviprop_ch=3 if ii7>=4 & ii7<=9
+	replace viviprop_ch=. if ii7==99
 	
-	gen viviprop_ch1=0 if ii7==3
-	replace viviprop_ch1=1 if ii7==1 | ii7==2
-	replace viviprop_ch1=3 if ii7>=4 & ii7<=9 
-	replace viviprop_ch1=. if ii7==99
-
 	************
 	*vivitit_ch*
 	************
@@ -1686,37 +1722,164 @@ gen instcot_ci=.
 	label var miglac_ci "=1 si es migrante proveniente de un pais LAC" 
 	
 	
-****************************
-***VARIABLES DE EXTERNAS***
-**************************** 
+		***************************
+		***VARIABLES DE POBREZA***
+		***************************	
 
 	****************
 	*tipo_bienestar*
-	**************** 
-	gen byte tipo_bienestar = . 
-	replace tipo_bienestar  = 1 
+	****************	
+	gen byte tipo_bienestar = 1
 	
 	**********************
 	* bienestar_agregado *
 	**********************
 	gen bienestar_agregado = itf
-
-	*********
-	*ln_ci***
-	*********
-	gen ln_ci = 36575/3.28
-
-	*********
-	*lpe_ci***
-	*********
-	gen lpe_ci =14874/3.31
 	
-* https://www.indec.gob.ar/uploads/informesdeprensa/eph_pobreza_02_195EFE752E31.pdf pÃ¡gina 4-5. Canasta Basica y Total promedio del hogar/Tamaño promedio del hogar pobre en adulto equivalente
+	*Metodología oficial de cálculo de las líneas de pobreza INDEC
+	
+	*Adulto equivalente por persona (tabla INDEC; ch06=edad, ch04: 1=varón, 2=mujer
+	gen double adequiv = .
+	replace adequiv = 0.35 if edad_ci==0       
+	replace adequiv = 0.37 if edad_ci==1
+	replace adequiv = 0.46 if edad_ci==2
+	replace adequiv = 0.51 if edad_ci==3
+	replace adequiv = 0.55 if edad_ci==4
+	replace adequiv = 0.60 if edad_ci==5
+	replace adequiv = 0.64 if edad_ci==6
+	replace adequiv = 0.66 if edad_ci==7
+	replace adequiv = 0.68 if edad_ci==8
+	replace adequiv = 0.69 if edad_ci==9
+	* Varones 10+
+	replace adequiv = 0.79 if ch04==1 & edad_ci==10
+	replace adequiv = 0.82 if ch04==1 & edad_ci==11
+	replace adequiv = 0.85 if ch04==1 & edad_ci==12
+	replace adequiv = 0.90 if ch04==1 & edad_ci==13
+	replace adequiv = 0.96 if ch04==1 & edad_ci==14
+	replace adequiv = 1.00 if ch04==1 & edad_ci==15
+	replace adequiv = 1.03 if ch04==1 & edad_ci==16
+	replace adequiv = 1.04 if ch04==1 & edad_ci==17
+	replace adequiv = 1.02 if ch04==1 & inrange(edad_ci,18,29)
+	replace adequiv = 1.00 if ch04==1 & inrange(edad_ci,30,60)
+	replace adequiv = 0.83 if ch04==1 & inrange(edad_ci,61,75)
+	replace adequiv = 0.74 if ch04==1 & edad_ci>=76
+	
+	* Mujeres 10+
+	replace adequiv = 0.70 if ch04==2 & edad_ci==10
+	replace adequiv = 0.72 if ch04==2 & edad_ci==11
+	replace adequiv = 0.74 if ch04==2 & edad_ci==12
+	replace adequiv = 0.76 if ch04==2 & inrange(edad_ci,13,14)
+	replace adequiv = 0.77 if ch04==2 & inrange(edad_ci,15,17)
+	replace adequiv = 0.76 if ch04==2 & inrange(edad_ci,18,29)
+	replace adequiv = 0.77 if ch04==2 & inrange(edad_ci,30,45)
+	replace adequiv = 0.76 if ch04==2 & inrange(edad_ci,46,60)
+	replace adequiv = 0.67 if ch04==2 & inrange(edad_ci,61,75)
+	replace adequiv = 0.63 if ch04==2 & edad_ci>=76
 
+	*Adultos equivalentes del hogar
+	bysort codusu nro_hogar: egen double adeq_hogar = total(adequiv)
+	
+	*******
+	*ln_ci*
+	*******
+	gen double cbt_ae = .
+	replace cbt_ae =10758.6 if region==1  & trimestre==3
+	replace cbt_ae =10179.9 if region==42 & trimestre==3
+	replace cbt_ae =9003.2 if region==41 & trimestre==3
+	replace cbt_ae =8691.6 if region==40 & trimestre==3
+	replace cbt_ae =10626.4 if region==43 & trimestre==3
+	replace cbt_ae =12656.7  if region==44 & trimestre==3
+	replace cbt_ae =12104.0  if region==1  & trimestre==4
+	replace cbt_ae =11499.7  if region==42 & trimestre==4
+	replace cbt_ae =10177.9  if region==41 & trimestre==4
+	replace cbt_ae =9821.9  if region==40 & trimestre==4
+	replace cbt_ae =11990.5  if region==43 & trimestre==4
+	replace cbt_ae =14287.9  if region==44 & trimestre==4
+	
+	gen double ln_ci = cbt_ae * adeq_hogar
+
+	
+	********
+	*lpe_ci*
+	********
+	gen double cba_ae = .
+	replace cba_ae =4309.2  if region==1  & trimestre==3
+	replace cba_ae =3831.8  if region==42 & trimestre==3
+	replace cba_ae = 3853.0 if region==41 & trimestre==3
+	replace cba_ae = 3751.8 if region==40 & trimestre==3
+	replace cba_ae =4256.2  if region==43 & trimestre==3
+	replace cba_ae =4461.8  if region==44 & trimestre==3
+	replace cba_ae =4842.0  if region==1  & trimestre==4
+	replace cba_ae =4323.5  if region==42 & trimestre==4
+	replace cba_ae =4349.9  if region==41 & trimestre==4
+	replace cba_ae = 4234.0 if region==40 & trimestre==4
+	replace cba_ae =4803.1  if region==43 & trimestre==4
+	replace cba_ae =5037.3  if region==44 & trimestre==4
+
+	gen double lpe_ci = cba_ae * adeq_hogar
+	
 	****************
-	* pobre_ine _ci*
+	* pobre_ine_ci*
 	**************** 
-	gen byte pobre_ine_ci=(bienestar_agregado<lpe_ci)
+	gen byte pobre_ine_ci = (bienestar_agregado < ln_ci) if !missing(bienestar_agregado, ln_ci)
+	
+	*******************
+	* pobre_ine_ext_ci*
+	******************* 
+	gen byte pobre_ine_ext_ci = (bienestar_agregado < lpe_ci) if !missing(bienestar_agregado, lpe_ci)
+	
+	**************
+	*top_edu_ocup*
+	**************
+	bysort idh_ch: egen max_edu_ocp = max(cond(condocup_ci==1 & miembros_ci==1, aedu_ci, .))
+	gen byte top_edu_ocp = condocup_ci==1 & miembros_ci==1 & aedu_ci==max_edu_ocp
+	bysort idh_ch top_edu_ocp (idp_ci): gen rank = _n
+	replace top_edu_ocp = 0 if rank > 1
+	drop max_edu_ocp rank
+
+	bysort idh_ch: egen byte jefe_ocup_ch = max(jefe_ci==1 & condocup_ci==1)
+	bysort idh_ch: egen byte flag_ref_ch = max((jefe_ci==1 & missing(p47t)) | (cond(jefe_ocup_ch==1, jefe_ci==1, top_edu_ocp==1) & (missing(p47t) | p47t<=0)))
+
+	*********
+	*ynivhog*
+	*********
+	gen ynivhog = 0 // replace if var exists
+
+	*************
+	*rentaimp_ch*
+	*************
+	local var_ri 
+	capture confirm numeric variable `var_ri'
+	if _rc & "`var_ri'" != "" di as err "`var_ri' no existe: renta imputada = 10% del ITF"
+	if _rc local var_ri "."
+	bysort idh_ch: egen double renta_imp_ch = max(cond(jefe_ci==1 & inlist(viviprop_ch,1,2,4), `var_ri', .))
+
+	*******************
+	*welfare_income_ch*
+	*******************
+	bysort idh_ch: egen double welfare_income_ch = total(cond(miembros_ci==1, p47t, .)), missing
+	replace welfare_income_ch = welfare_income_ch + ynivhog
+	replace welfare_income_ch = . if flag_ref_ch==1
+	replace renta_imp_ch = 0.10 * welfare_income_ch if missing(renta_imp_ch) & inlist(viviprop_ch,1,2,4) & !missing(welfare_income_ch) & flag_renta_imp == 0 
+	replace welfare_income_ch = (welfare_income_ch + cond(missing(renta_imp_ch), 0, renta_imp_ch)) * cond(zona_c==0, 1.15, 1)
+	replace welfare_income_ch = welfare_income_ch/ ((365/12) * cpi * icp) 
+
+	***********************
+	*welfare_income_ci*
+	***********************
+	gen double welfare_income_ci = welfare_income_ch / nmiembros_ch
+	replace    welfare_income_ci = . if nmiembros_ch == 0 | missing(nmiembros_ch)
+	replace    welfare_income_ci = . if welfare_income_ci < 0
+
+	***********
+	*pobre_umi*
+	***********
+	gen byte pobre_umi = (welfare_income_ci < 8.3) if !missing(welfare_income_ci)
+
+	***********
+	*pobre_lmi*
+	***********
+	gen byte pobre_lmi = (welfare_income_ci < 4.2) if !missing(welfare_income_ci)
 
 
 /*_____________________________________________________________________________________________________*/
@@ -1751,9 +1914,9 @@ do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&Exter
   aguatrat_ch aguamala_ch aguamejorada_ch aguamide_ch bano_ch banoex_ch banomejorado_ch sinbano_ch  /// Agua y saneamineto
   migrante_ci migrantiguo5_ci miglac_ci /// Migración
   salmm_ci lp19_2011 lp31_2011 lp5_2011 lpe_ci lp365_2017 lp685_2017 lp14_2017 lp81_2017 tc_c cpi_c cpi2011 cpi2017 ratio_cpi2011 ratio_cpi2017 /// Fuente externa
-  ppp_c ppp_2011 ppp_2017 , first /// Fuente externa 
-  /// the order was created by regex functions, sph variables are excluded /// Fuente externa 
-  /// the order was created by regex functions, sph variables are excluded
+  ppp_c ppp_2011 ppp_2017 /// Fuente externa 
+  top_edu_ocp ynivhog renta_imp_ch welfare_income_ch welfare_income_ci /// Ingresos 
+  tipo_bienestar bienestar_agregado ln_ci lpe_ci  pobre_ine_ci pobre_ine_ext_ci pobre_umi pobre_lmi, first /// Pobreza  
 
 
 /*Homologar nombre del identificador de ocupaciones (isco, ciuo, etc.) y dejarlo en base armonizada 

@@ -1,5 +1,5 @@
 * (Versión Stata 12)
-clear
+clear all
 set more off
 *________________________________________________________________________________________________________________*
 
@@ -19,7 +19,6 @@ local ANO "2006"
 local ronda m8_m11
 
 local log_file = "$ruta\harmonized\\`PAIS'\\`ENCUESTA'\log\\`PAIS'_`ANO'`ronda'_variablesBID.log"
-*local base_in  = "$ruta\survey\\`PAIS'\\`ENCUESTA'\\`ANO'\\`ronda'\data_orig\\`PAIS'_`ANO'`ronda'.dta"
 local base_in  = "$ruta\survey\\`PAIS'\\`ENCUESTA'\\`ANO'\\`ronda'\data_merge\\`PAIS'_`ANO'`ronda'.dta"
 local base_out = "$ruta\harmonized\\`PAIS'\\`ENCUESTA'\data_arm\\`PAIS'_`ANO'`ronda'_BID.dta"
 
@@ -123,8 +122,10 @@ label value zona_c zona_c
 */
 
 *Modificación Mayra Sáenz - Agosto 2015 Se reemplaza la clasificación de zona por la que consta en la sintaxis de CONEVAL
-gen zona_c=1      if estrato<=2
-replace zona_c=0  if (estrato>2 & estrato!=.)
+*gen zona_c=1      if estrato<=2
+*replace zona_c=0  if (estrato>2 & estrato!=.)
+
+	gen zona_c= 1 - rururb 
 
 label define zona_c 1 "Urbano" 0 "Rural"
 label value zona_c zona_c
@@ -174,6 +175,11 @@ replace relacion_ci=6 if parentesco=="400"
 label var relacion_ci "Relacion con el jefe del hogar"
 label define relacion_ci 1 "Jefe/a" 2 "Esposo/a" 3 "Hijo/a" 4 "Otros parientes" 5 "Otros no parientes" 6 "Empleado/a domestico/a"
 label value relacion_ci relacion_ci
+
+*****************************************
+*CPI, IPC, Flag si tiene renta imputada*
+****************************************
+merge m:1 pais_c anio_c using "$datalibweb_IDB\SUPPORT\support_0926.dta", keepusing(cpi icp flag_renta_imp) keep(3) nogen
 
 ******************************************************************************
 *	DEMOGRAPHIC VARIABLES
@@ -356,6 +362,16 @@ replace condocup_ci=1 if (trabajo==1) | (((verific>="1" & verific<="3") | (mot_a
 replace condocup_ci=2 if bus_trab==10 |  (bus_trab>=120 & bus_trab<=170) /*combina las opciones ej. 120 selecciono cat 1 y cat2*/
 replace condocup_ci=3 if condocup_ci!=1 & condocup_ci!=2 & trabajo!=.
 replace condocup_ci=4 if edad<12
+
+
+/*
+	gen condocup_ci=.
+	replace condocup_ci = 1 if !missing(posicion07)                                  // ocupado: posicion07 (posición en el trabajo, act. principal) no missing
+	replace condocup_ci = 0 if missing(posicion07) & substr(bus_trab,1,1) == "1"     // desocupado: bus_trab (buscadores de trabajo y PNEA), dígito líder de razón == 1
+	replace condocup_ci = 0 if missing(posicion07) & inlist(substr(bus_trab,1,1),"2","3","4","5","6","7")  // inactivo: dígito líder de razón en {2..7}, */
+
+	
+	
 label define condocup_ci 1"ocupados" 2"desocupados" 3"inactivos" 4"menor que 12"
 label value condocup_ci condocup_ci
 label var condocup_ci "Condicion de ocupacion utilizando definicion del pais"
@@ -3121,11 +3137,12 @@ label var tiempoparc_ci "Trabajan menos de 30 hs semanales y no quieren trabajar
 ******************************
 *	categopri_ci
 ******************************
-gen categopri_ci=.
-replace categopri_ci=1 if posicion07=="6"
-replace categopri_ci=2 if posicion07=="5" 
-replace categopri_ci=3 if posicion07=="1" | posicion07=="2" | (posicion07=="7" & sueldo08=="1")
-replace categopri_ci=4 if posicion07=="4"
+destring posicion07, replace 
+	gen categopri_ci=.
+	replace categopri_ci = 1 if posicion07 == 6                    // patrón(a)
+	replace categopri_ci = 2 if posicion07 == 5                    // cuenta propia
+	replace categopri_ci = 3 if inlist(posicion07,1,2,7)           // obrero(a)/empleado(a), jornalero(a) rural/peón, miembro de cooperativa
+	replace categopri_ci = 4 if inlist(posicion07,3,4)             // trabajador sin pago (no del hogar / del hogar)
 replace categopri_ci=. if emp_ci!=1
 label var categopri_ci "Categoria ocupacional trabajo principal"
 label define categopri_ci 1"Patron" 2"Cuenta propia" 3"Empleado" 4"Familiar no remunerado"
@@ -3421,7 +3438,21 @@ El diccionario de X no menciona dimension temporal pero calcule mensual.Pregunta
 ****************
 ***ylmpri_ci ***
 ****************
-egen ylmpri_ci=rsum(ing_trab1 ing_negp1), missing
+egen double d_pri_raw = rowtotal(ing_trab1 ing_negp1), missing
+egen double d_sec_raw = rowtotal(ing_trab2 ing_negp2), missing
+egen double d_exc_lab = rowtotal(P006 P007 P024)
+gen double d_pri_pos = cond(missing(d_pri_raw), 0, d_pri_raw)
+replace    d_pri_pos = 0 if d_pri_pos < 0
+gen double d_sec_pos = cond(missing(d_sec_raw), 0, d_sec_raw)
+replace    d_sec_pos = 0 if d_sec_pos < 0
+gen double d_cut_pri = min(d_exc_lab, d_pri_pos)
+gen double d_cut_sec = min(d_exc_lab - d_cut_pri, d_sec_pos)
+
+gen double ylmpri_ci = ing_trab1 + ing_negp1
+replace ylmpri_ci = .  if emp_ci != 1            // solo ocupados
+replace ylmpri_ci = .  if ylmpri_ci < 0          // SEDLAC p.23: negativos -> missing
+replace ylmpri_ci = 0  if categopri_ci == 4      // trabajador no remunerado (ingreso cero)
+
 
 
 
@@ -3448,8 +3479,10 @@ gen tcylmpri_ci=.
 ***************
 ***ylmsec_ci***
 ***************
-egen ylmsec_ci=rsum(ing_trab2 ing_negp2), missing
-
+gen double ylmsec_ci = ing_trab2 + ing_negp2 
+replace ylmsec_ci = .  if emp_ci != 1            // solo ocupados
+replace ylmsec_ci = 0  if ylmsec_ci < 0          // residuo negativo = artefacto de la resta, no pérdida real
+replace ylmsec_ci = 0  if categopri_ci == 4      // trabajador no remunerado (ingreso cero)
 
 ******************
 ****ylnmsec_ci****
@@ -3483,23 +3516,56 @@ gen ylnmotros_ci=.
 *************
 ***ynlm_ci***
 *************
+gen double remesas_ci = remesas
+gen double d_p059_resto = P059 if !(edad_ci >= 70)
+*egen double ynlm_ci = rowtotal(ing_rent ypen_ci ypensub_ci remesas_ci P049 P050 P053 P054 P055 P056 P057 P060 d_p059_resto), mi
+*replace ynlm_ci = 0 if ynlm_ci < 0 & !missing(ynlm_ci) 
 
-egen ynlm_ci=rsum(ing_rent ing_tran otros), missing //CONEVAL no incluye otros
+gen ynlm_ci = ing_rent  
+replace ynlm_ci = ynlm_ci + ing_tran if !missing(ing_tran) 
+replace ynlm_ci = ynlm_ci + otros    if !missing(otros)      
+
+
+
 
 *************
 ***ynlnm_ci***
 *************
 *No se incluye el alquiler estimado
-egen ynlnm = rsum(autocons pago_esp reg_esp redan reg_espn), missing
+egen double ynlnm = rowtotal(pago_esp reg_esp), missing
+*gen ynlnm_ci= ynlnm/nmiembros_ch
+gen ynlnm_ci= .
 
-gen ynlnm_ci= ynlnm/nmiembros_ch
+capture drop d_pri_raw d_sec_raw d_exc_lab d_pri_pos d_sec_pos d_cut_pri d_cut_sec d_p059_resto
+	*********
+	*ytot_ci* 
+	*********
+	foreach v in ylmpri_ci ylnmpri_ci ylmsec_ci ylnmsec_ci ylmotros_ci ylnmotros_ci {
+		capture confirm variable `v'
+		if _rc gen double `v' = .
+		replace `v' = . if emp_ci != 1
+		replace `v' = . if `v' < 0
+		replace `v' = 0 if categopri_ci == 4 & emp_ci == 1 & missing(`v')
+	}
+
+	* Ingreso laboral primario (monetario + no monetario)
+	egen double yl_pri = rowtotal(ylmpri_ci ylnmpri_ci), missing
+	replace yl_pri = . if yl_pri < 0
+	* Ingreso laboral secundario y laboral otro (monetario + no monetario)
+	egen double yl_sec = rowtotal(ylmsec_ci ylnmsec_ci ylmotros_ci ylnmotros_ci), missing
+	replace yl_sec = . if yl_sec < 0
+	* Ingreso laboral total (primario + secundario)
+	egen double yl_ci = rowtotal(yl_pri yl_sec), missing
+	replace yl_ci = . if missing(yl_pri)
+	* Ingreso no Laboral total (monetario + no monetario)
+	egen double ynl_ci = rowtotal(ynlm_ci ynlnm_ci), missing
+	replace ynl_ci = . if ynl_ci < 0
+	* Ingreso total
+	egen double ytot_ci = rowtotal(yl_ci ynl_ci), missing
+	replace ytot_ci = . if condocup_ci == 1 & (missing(yl_pri) | (yl_pri <= 0 & categopri_ci != 4))
+	replace ytot_ci = . if condocup_ci != 1 & (missing(ynl_ci) | ynl_ci <= 0)
 
 
-*****************
-***remesas_ci***
-*****************
-
-gen remesas_ci=remesas
 
 
 ************************
@@ -3713,6 +3779,7 @@ replace aedu_ci = grado_ed + 12 if nivel_ed == 5 | nivel_ed == 7
 replace aedu_ci = grado_ed + 12 if nivel_ed == 6 & antec_esc == 3
 replace aedu_ci = grado_ed + 12 + 5 if nivel_ed == 8
 replace aedu_ci = grado_ed + 12 + 5 + 2 if nivel_ed == 9
+
 
 ******************************
 * Line of code with indicator eduno_ci was deleted******************************
@@ -4080,6 +4147,9 @@ replace viviprop_ch=1 if tenencia12=="5"
 replace viviprop_ch=2 if tenencia12=="4"
 replace viviprop_ch=3 if tenencia12=="2" | tenencia12=="3"| tenencia12=="6"
 label var viviprop_ch "Propiedad de la vivienda" 
+
+
+
 /*
 0 Alquilada
 1 Propia y totalmente pagada
@@ -4132,6 +4202,69 @@ label var vivialqimp_ch "Alquiler mensual imputado"
 /*_____________________________________________________________________________________________________*/
 
 
+	****************************
+	*** VARIABLES DE POBREZA *** 
+	****************************
+	
+	*************
+	*top_edu_ocp*
+	*************
+	bysort idh_ch: egen max_edu_ocp = max(cond(condocup_ci==1 & miembros_ci==1, aedu_ci, .))
+	gen byte top_edu_ocp = condocup_ci==1 & miembros_ci==1 & aedu_ci==max_edu_ocp
+	bysort idh_ch top_edu_ocp (idp_ci): gen rank = _n
+	replace top_edu_ocp = 0 if rank > 1
+	drop max_edu_ocp rank
+
+	bysort idh_ch: egen byte jefe_ocup_ch = max(jefe_ci==1 & condocup_ci==1)
+	* Ingreso invalido = missing o <= 0
+	bysort idh_ch: egen byte _jefe_inv  = max(jefe_ci==1 & (missing(ytot_ci) | ytot_ci<=0))
+	bysort idh_ch: egen byte _topedu_ok = max(top_edu_ocp==1 & !missing(ytot_ci) & ytot_ci>0)
+	* Jefe ocupado: el hogar sigue la regla del jefe
+	* Jefe no ocupado: manda top_edu_ocp; si no tiene ingreso valido (o no hay ocupados), vuelve a la regla del jefe
+	gen byte flag_ref_ch = cond(jefe_ocup_ch==1, _jefe_inv, _jefe_inv & !_topedu_ok)
+	
+	*********
+	*ynivhog*
+	*********
+	gen ynivhog = 0 // replace if var exists
+
+	*************
+	*rentaimp_ch*
+	*************
+	local var_ri est_alq 
+	capture confirm numeric variable `var_ri'
+	if _rc & "`var_ri'" != "" di as err "`var_ri' no existe: renta imputada = 10% del ITF"
+	if _rc local var_ri "."
+	bysort idh_ch: egen double renta_imp_ch = max(cond(jefe_ci==1 & inlist(viviprop_ch,1,2,4), `var_ri', .))
+
+	*******************
+	*welfare_income_ch*
+	*******************
+	bysort idh_ch: egen double welfare_income_ch = total(cond(miembros_ci==1, ytot_ci, .)), missing
+	replace welfare_income_ch = welfare_income_ch + ynivhog
+	replace welfare_income_ch = . if flag_ref_ch==1
+	replace renta_imp_ch = 0.10 * welfare_income_ch if missing(renta_imp_ch) & inlist(viviprop_ch,1,2,4) & !missing(welfare_income_ch) & flag_renta_imp == 0 
+	replace welfare_income_ch = (welfare_income_ch + cond(missing(renta_imp_ch), 0, renta_imp_ch)) * cond(zona_c==0, 1.15, 1)
+	replace welfare_income_ch = welfare_income_ch/ ((365/12) * cpi * icp)
+	
+	***********************
+	*welfare_income_ci*
+	***********************
+	gen double welfare_income_ci = welfare_income_ch / nmiembros_ch
+	replace    welfare_income_ci = . if nmiembros_ch == 0 | missing(nmiembros_ch)
+	replace    welfare_income_ci = . if welfare_income_ci < 0
+	
+	***********
+	*pobre_umi*
+	***********
+	gen byte pobre_umi = (welfare_income_ci < 8.3) if !missing(welfare_income_ci)
+
+	***********
+	*pobre_lmi*
+	***********
+	gen byte pobre_lmi = (welfare_income_ci < 4.2) if !missing(welfare_income_ci)
+	
+
 do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&ExternalVars_Harmonized_DataBank.do"
 
 /*_____________________________________________________________________________________________________*/
@@ -4144,7 +4277,7 @@ do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&Exter
   condocup_ci categoinac_ci emp_ci cesante_ci desemp_ci subemp_ci durades_ci pea_ci nempleos_ci antiguedad_ci desalent_ci  /// Empleo
   horaspri_ci horastot_ci tiempoparc_ci categopri_ci categosec_ci rama_ci spublico_ci tamemp_ci cotizando_ci instcot_ci	afiliado_ci /// Empleo 
   formal_ci tipocontrato_ci ocupa_ci pension_ci	pensionsub_ci tipopen_ci instpen_ci	ylmpri_ci /// Empleo 
-  ylmpri_ci ylnmpri_ci ylmsec_ci ylnmsec_ci ylmotros_ci	ylnmotros_ci  ylm_ci ylnm_ci ynlm_ci ynlnm_ci nrylmpri_ci /// Ingresos individuo 
+  ylmpri_ci ylnmpri_ci ylmsec_ci ylnmsec_ci ylmotros_ci	ylnmotros_ci  ylm_ci ylnm_ci ynlm_ci ynlnm_ci nrylmpri_ci yl_pri yl_sec yl_ci ynl_ci top_edu_ocp ynivhog renta_imp_ch welfare_income_ch welfare_income_ci flag_ref_ch pobre_umi pobre_lmi /// Ingresos individuo 
   ylm_ch ylnm_ch ylmnr_ch ynlm_ch ynlnm_ch ylmhopri_ci ylmho_ci /// Ingresos del hogar 
   nrylmpri_ci nrylmpri_ch /// No respuesta de ingresos  
   remesas_ci remesas_ch ypen_ci ypensub_ci /// Remesas y pensiones
@@ -4170,13 +4303,6 @@ saveold "`base_out'", replace
 
 
 log close
-
-
-
-
-
-
-
 
 
 

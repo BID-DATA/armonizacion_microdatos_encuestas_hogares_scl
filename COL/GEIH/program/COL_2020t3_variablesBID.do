@@ -1,5 +1,5 @@
 * (Version Stata 14)
-clear
+clear all
 set more off  
 *________________________________________________________________________________________________________________*
 
@@ -147,6 +147,10 @@ gen upm_ci=.
 gen estrato_ci=.
 
 
+	*****************************************
+	*CPI, IPC, Flag si tiene renta imputada*
+	****************************************
+	merge m:1 pais_c anio_c using "$datalibweb_IDB\SUPPORT\support_0926.dta", keepusing(cpi icp flag_renta_imp) keep(3) nogen
 		****************************
 		***VARIABLES DEMOGRAFICAS***
 		****************************
@@ -780,7 +784,6 @@ la var subemp_ci "Personas en subempleo por horas"
 ****************
 	egen ylnmpri_ci = rsum(ie iees), m
 	replace ylnmpri_ci=. if ie==. & iees==.
-	/*YL -> Nota: "ie" and "iees"corresponden al ingreso por especie de la act principal*/
 	la var ylnmpri_ci "Ingreso laboral NO monetario actividad principal"   
 
 ***************
@@ -821,10 +824,51 @@ la var subemp_ci "Personas en subempleo por horas"
 	egen ylnm_ci = rowtotal(ylnmpri_ci ylnmsec_ci ylnmotros_ci), m
 	la var ylnm_ci "Ingreso laboral NO monetario total"  
 
+****************
+***ytransf_ci***
+****************
+	* Ajuste 2026-10-18: bloque estandar de transferencias, igual al de COL_2021t3
+	* PNC - Pensiones sociales no contributivas: Colombia mayor (p1661s3a1)
+	* PTMC - Mas familias en accion (p1661s1a1), Jovenes en accion (p1661s2a1)
+	* POTROT - Otras ayudas monetarias del gobierno (p1661s4a2)
+
+	*** Beneficiarios a nivel individual:
+		gen byte pnc_ci = (p1661s3 == 1) if !missing(p1661s3)
+		gen byte ptmc_ci = (p1661s1 == 1 | p1661s2 == 1)
+		replace ptmc_ci  = . if p1661s1 == .  & p1661s2 == .
+		gen byte potrot_ci = (p1661s4 == 1) if !missing(p1661s4)
+
+	*** Montos de transferencias a nivel individual (mensualizado):
+		gen double ypnc_ci = p1661s3a1/12
+		replace ypnc_ci = . if p1661s3a1 == 99 | p1661s3a1 == 98
+
+		gen double yfamac_ci = p1661s1a1/12
+		replace yfamac_ci = . if p1661s1a1 == 99 | p1661s1a1 == 98
+		gen double yjovac_ci = p1661s2a1/12
+		replace yjovac_ci = . if p1661s2a1 == 99 | p1661s2a1 == 98
+		egen double yptmc_ci = rowtotal(yfamac_ci yjovac_ci) if ptmc_ci == 1, mi
+
+		gen double yotrot_ci = p1661s4a2/12
+		replace yotrot_ci = . if p1661s4a2 == 99 | p1661s4a2 == 98
+
+	*** Ingreso individual por transferencias no contributivas:
+	egen double ytransf_ci = rowtotal(ypnc_ci yptmc_ci yotrot_ci), mi
+	drop yfamac_ci yjovac_ci
+
 *************
 ***ynlm_ci***
 *************
-	egen ynlm_ci = rowtotal(iof1 iof2  iof3h iof3i iof6 iof1es iof2es  iof3hes iof3ies iof6es), m
+	gen double d_remesas = p7510s2a1/12 if p7510s2a1>9999 & p7510s2a1!=.
+	egen double d_iof2_nr = rowtotal(iof2 iof2es), missing
+	replace d_iof2_nr = max(d_iof2_nr - ypen_ci, 0) if !missing(d_iof2_nr) & !missing(ypen_ci)
+	egen double d_iof3h_nr = rowtotal(iof3h iof3hes), missing
+	replace d_iof3h_nr = max(d_iof3h_nr - d_remesas, 0) if !missing(d_iof3h_nr) & !missing(d_remesas)
+	egen double d_iof3i_nr = rowtotal(iof3i iof3ies), missing
+	replace d_iof3i_nr = max(d_iof3i_nr - ytransf_ci, 0) if !missing(d_iof3i_nr) & !missing(ytransf_ci)
+	egen double ynlm_ci = rowtotal(iof1 iof1es iof6 iof6es d_iof2_nr d_iof3h_nr d_iof3i_nr ypen_ci d_remesas ytransf_ci), missing
+	foreach v in d_remesas d_iof2_nr d_iof3h_nr d_iof3i_nr { 
+		capture drop `v'
+	}
 	la var ynlm_ci "Ingreso no laboral monetario"  
    
 **************
@@ -832,6 +876,41 @@ la var subemp_ci "Personas en subempleo por horas"
 **************
 	g ynlnm_ci = .
 	la var ynlnm_ci "Ingreso no laboral no monetario" 
+
+	*********
+	*ytot_ci* 
+	*********
+	foreach v in ylmpri_ci ylnmpri_ci ylmsec_ci ylnmsec_ci ylmotros_ci ylnmotros_ci {
+		capture confirm variable `v'
+		if _rc gen double `v' = .
+		replace `v' = . if emp_ci != 1
+		replace `v' = . if `v' < 0
+		replace `v' = 0 if categopri_ci == 4 & emp_ci == 1 & missing(`v')
+	}
+
+	* Ingreso laboral primario (monetario + no monetario)
+	egen double yl_pri = rowtotal(ylmpri_ci ylnmpri_ci), missing
+	replace yl_pri = . if yl_pri < 0
+	* Ingreso laboral secundario y laboral otro (monetario + no monetario)
+	egen double yl_sec = rowtotal(ylmsec_ci ylnmsec_ci ylmotros_ci ylnmotros_ci), missing
+	replace yl_sec = . if yl_sec < 0
+	* Ingreso laboral total (primario + secundario)
+	egen double yl_ci = rowtotal(yl_pri yl_sec), missing
+	replace yl_ci = . if missing(yl_pri)
+	* Ingreso no Laboral total (monetario + no monetario)
+	egen double ynl_ci = rowtotal(ynlm_ci ynlnm_ci), missing
+	replace ynl_ci = . if ynl_ci < 0
+	* Ingreso total
+	egen double ytot_ci = rowtotal(yl_ci ynl_ci), missing
+	replace ytot_ci = . if condocup_ci == 1 & (missing(yl_pri) | (yl_pri <= 0 & categopri_ci != 4))
+	replace ytot_ci = . if condocup_ci != 1 & (missing(ynl_ci) | ynl_ci <= 0)
+
+***************
+*** ynet_ci: Ingreso neto individual = Ingreso total - transferencias no contributivas ***
+***************
+	gen double aux_transf_ci = ytransf_ci * (-1)
+	egen double ynet_ci = rowtotal(ytot_ci aux_transf_ci), mi
+	drop aux_transf_ci
 
 
 			************************
@@ -865,6 +944,35 @@ la var subemp_ci "Personas en subempleo por horas"
 	bys idh_ch: egen ylmnr_ch = sum(ylm_ci) if miembros_ci == 1
 	replace ylmnr_ch = . if nrylmpri_ch == 1
 	la var ylmnr_ch "Ingreso laboral monetario del hogar"
+
+*****************
+*** ytransf_ch : Ingreso del hogar por transferencias no contributivas (igual a COL_2021t3)
+*****************
+		bys idh_ch: egen byte pnc_ch = max(pnc_ci) if miembros_ci == 1
+		bys idh_ch: egen byte ptmc_ch = max(ptmc_ci) if miembros_ci == 1
+		bys idh_ch: egen byte potrot_ch = max(potrot_ci) if miembros_ci == 1
+
+		gen byte pcasht_ch = (ptmc_ch == 1 | pnc_ch == 1 | potrot_ch == 1)
+		replace pcasht_ch = . if ptmc_ch == . & pnc_ch == . & potrot_ch == .
+
+		bys idh_ch: egen double ypnc_ch = total(ypnc_ci) if miembros_ci == 1, mi
+		bys idh_ch: egen double yptmc_ch = total(yptmc_ci) if miembros_ci == 1, mi
+		bys idh_ch: egen double yotrot_ch = total(yotrot_ci) if miembros_ci == 1, mi
+
+	egen double ytransf_ch = rowtotal(ypnc_ch yptmc_ch yotrot_ch) if miembros_ci == 1, mi
+
+**************
+***ytot_ch***
+**************
+	bys idh_ch: egen double ytot_ch = total(ytot_ci) if miembros_ci==1, mi
+
+***************
+*** ynet_ch ***
+***************
+	gen double aux_ytransf_ch = ytransf_ch*(-1)
+	egen double ynet_ch = rowtotal(ytot_ch aux_ytransf_ch) if miembros_ci == 1, mi
+	gen double ynet_ch_pc = (ynet_ch)/nmiembros_ch if miembros_ci == 1
+	drop aux_ytransf_ch
 	
 **************
 ***ynlnm_ch***
@@ -1421,6 +1529,8 @@ label var ybenefdes_ci "Monto de seguro de desempleo"
 	label var miglac_ci "=1 si es migrante proveniente de un pais LAC"
 	
 	
+/* Ajuste 2026-10-18: bloque SPH viejo desactivado; las variables de proteccion social
+   se generan ahora con el bloque estandar (ytransf_ci / ytransf_ch).
 ******************************
 * Variables SPH - PMTC y PNC *
 ******************************
@@ -1470,6 +1580,7 @@ lab val ptmc_ch ptmc_ch
 
 lab def pnc_ci 1 "Beneficiario PNC" 0 "No beneficiario PNC"
 lab val pnc_ci pnc_ci
+*/
 
 
 /*_____________________________________________________________________________________________________*/
@@ -1478,11 +1589,77 @@ lab val pnc_ci pnc_ci
 /*_____________________________________________________________________________________________________*/
 
 
+	****************************
+	*** VARIABLES DE POBREZA ***
+	****************************
+	
+	*************
+	*top_edu_ocp*
+	*************
+	bysort idh_ch: egen max_edu_ocp = max(cond(condocup_ci==1 & miembros_ci==1, aedu_ci, .))
+	gen byte top_edu_ocp = condocup_ci==1 & miembros_ci==1 & aedu_ci==max_edu_ocp
+	bysort idh_ch top_edu_ocp (idp_ci): gen rank = _n
+	replace top_edu_ocp = 0 if rank > 1
+	drop max_edu_ocp rank
+
+	bysort idh_ch: egen byte jefe_ocup_ch = max(jefe_ci==1 & condocup_ci==1)
+	* Ingreso invalido = missing o <= 0
+	bysort idh_ch: egen byte _jefe_inv  = max(jefe_ci==1 & (missing(ytot_ci) | ytot_ci<=0))
+	bysort idh_ch: egen byte _topedu_ok = max(top_edu_ocp==1 & !missing(ytot_ci) & ytot_ci>0)
+	* Jefe ocupado: el hogar sigue la regla del jefe
+	* Jefe no ocupado: manda top_edu_ocp; si no tiene ingreso valido (o no hay ocupados), vuelve a la regla del jefe
+	gen byte flag_ref_ch = cond(jefe_ocup_ch==1, _jefe_inv, _jefe_inv & !_topedu_ok)
+	
+	*********
+	*ynivhog*
+	*********
+	gen ynivhog = 0 // replace if var exists
+
+	*************
+	*rentaimp_ch*
+	*************
+	gen byte ri_univ = inlist(p5090, 1, 2, 4)
+	gen double ri_aux = .
+	replace ri_aux = p5130 if inlist(p5090,1,4) & !missing(p5130) & p5130 >= 10000 & p5130 <= 3000000
+	replace ri_aux = max(p5130 - cond(missing(p5100) | p5100 < 10000 | p5100 > 3000000, 0, p5100), 0) if p5090 == 2 & !missing(p5130) & p5130 >= 10000 & p5130 <= 3000000
+	local var_ri ri_aux
+	capture confirm numeric variable `var_ri'
+	if _rc & "`var_ri'" != "" di as err "`var_ri' no existe: renta imputada = 10% del ITF"
+	if _rc local var_ri "."
+	bysort idh_ch: egen double renta_imp_ch = max(cond(jefe_ci==1 & ri_univ==1, `var_ri', .))
+
+	*******************
+	*welfare_income_ch*
+	*******************
+	bysort idh_ch: egen double welfare_income_ch = total(cond(miembros_ci==1, ytot_ci, .)), missing
+	replace welfare_income_ch = welfare_income_ch + ynivhog
+	replace welfare_income_ch = . if flag_ref_ch==1
+	replace renta_imp_ch = 0.10 * welfare_income_ch if missing(renta_imp_ch) & ri_univ==1 & !missing(welfare_income_ch) & flag_renta_imp == 0 
+	replace welfare_income_ch = (welfare_income_ch + cond(missing(renta_imp_ch), 0, renta_imp_ch)) * cond(zona_c==0, 1.15, 1)
+	replace welfare_income_ch = welfare_income_ch/ ((365/12) * cpi * icp)
+	
+	***********************
+	*welfare_income_ci*
+	***********************
+	gen double welfare_income_ci = welfare_income_ch / nmiembros_ch
+	replace    welfare_income_ci = . if nmiembros_ch == 0 | missing(nmiembros_ch)
+	replace    welfare_income_ci = . if welfare_income_ci < 0
+	
+	***********
+	*pobre_umi*
+	***********
+	gen byte pobre_umi = (welfare_income_ci < 8.3) if !missing(welfare_income_ci)
+
+	***********
+	*pobre_lmi*
+	***********
+	gen byte pobre_lmi = (welfare_income_ci < 4.2) if !missing(welfare_income_ci)
+
 do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&ExternalVars_Harmonized_DataBank.do"
 
 *_____________________________________________________________________________________________________*
 
-*  Pobres extremos, pobres moderados, vulnerables y no pobres 
+/*  Pobres extremos, pobres moderados, vulnerables y no pobres 
 * con base en ingreso neto (Sin transferencias)
 * y líneas de pobreza internacionales
 gen     grupo_int = 1 if (y_pc_net<lp31_ci)
@@ -1506,7 +1683,7 @@ gen ptmc_ingneto4 = 0
 replace ptmc_ingneto4 = 1 if ptmc_ch == 1 & gpo_ingneto4 == 1
 
 lab def grupo_int 1 "Pobre extremo" 2 "Pobre moderado" 3 "Vulnerable" 4 "No pobre"
-lab val grupo_int grupo_int
+lab val grupo_int grupo_int */
 
 
 /*_____________________________________________________________________________________________________*/
@@ -1522,7 +1699,9 @@ tiempoparc_ci categopri_ci categosec_ci rama_ci spublico_ci tamemp_ci cotizando_
 formal_ci tipocontrato_ci ocupa_ci horaspri_ci horastot_ci	pensionsub_ci pension_ci tipopen_ci instpen_ci	ylmpri_ci nrylmpri_ci ///
 tcylmpri_ci ylnmpri_ci ylmsec_ci ylnmsec_ci	ylmotros_ci	ylnmotros_ci ylm_ci	ylnm_ci	ynlm_ci	ynlnm_ci ylm_ch	ylnm_ch	ylmnr_ch  ///
 ynlm_ch	ynlnm_ch ylmhopri_ci ylmho_ci rentaimp_ch autocons_ci autocons_ch nrylmpri_ch tcylmpri_ch remesas_ci remesas_ch	ypen_ci	ypensub_ci ///
-salmm_ci tc_c ipc_c lp19_c lp31_c lp5_c lp_ci lpe_ci aedu_ci eduno_ci edupi_ci edupc_ci	edusi_ci edusc_ci eduui_ci eduuc_ci	edus1i_ci ///
+ptmc_ci pnc_ci potrot_ci ptmc_ch pnc_ch potrot_ch pcasht_ch yptmc_ci ypnc_ci yotrot_ci yptmc_ch ypnc_ch yotrot_ch ytransf_ci ytransf_ch ytot_ch ynet_ci ynet_ch ynet_ch_pc /// Proteccion social
+top_edu_ocp ynivhog renta_imp_ch welfare_income_ch welfare_income_ci flag_ref_ch pobre_umi pobre_lmi yl_pri yl_sec yl_ci ynl_ci ytot_ci /// Pobreza
+salmm_ci lp_ci lpe_ci aedu_ci eduno_ci edupi_ci edupc_ci	edusi_ci edusc_ci eduui_ci eduuc_ci	edus1i_ci ///
 edus1c_ci edus2i_ci edus2c_ci edupre_ci eduac_ci asiste_ci pqnoasis_ci pqnoasis1_ci	repite_ci repiteult_ci edupub_ci ///
 aguared_ch aguadist_ch aguamala_ch aguamide_ch luz_ch luzmide_ch combust_ch	bano_ch banoex_ch des1_ch des2_ch piso_ch aguamejorada_ch banomejorado_ch  ///
 pared_ch techo_ch resid_ch dorm_ch cuartos_ch cocina_ch telef_ch refrig_ch freez_ch auto_ch compu_ch internet_ch cel_ch ///
@@ -1536,8 +1715,14 @@ rename  rama2d_r4 codindustria
 rename  oficio codocupa
 compress
 
-compress
 
+local PAIS COL
+local ENCUESTA GEIH
+local ANO "2020"
+local ronda t3 
+local log_file = "$ruta\harmonized\\`PAIS'\\`ENCUESTA'\log\\`PAIS'_`ANO'`ronda'_variablesBID.log"
+local base_in  = "$ruta\survey\\`PAIS'\\`ENCUESTA'\\`ANO'\\`ronda'\data_merge\\`PAIS'_`ANO'`ronda'.dta"
+local base_out = "$ruta\harmonized\\`PAIS'\\`ENCUESTA'\data_arm\\`PAIS'_`ANO'`ronda'_BID.dta"
 
 save "$ruta\harmonized\\COL\\GEIH\data_arm\COL_2020t3_BID.dta", replace
 

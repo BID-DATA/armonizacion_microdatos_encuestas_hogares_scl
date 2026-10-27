@@ -31,9 +31,66 @@ Encuesta: ENAHO
 Round: a
 
 ****************************************************************************/
-****************************************************************************/
+****************************************************************************
 
-use `base_in', clear
+use `base_in', clear 
+*/
+
+
+*==============================================================================
+* CLEANUP: drop every variable created by PER_2021a_variablesBID.do
+* Run AFTER saveold (or in a session where you want the raw survey vars back).
+* Uses capture so missing / already-dropped variables never stop the run.
+*==============================================================================
+
+* Note: p536_alt, p543_alt, aux_* etc. are already dropped in the main file;
+* capture makes that harmless.
+
+foreach v in region_c ine01 region_BID_c factor_ch factlab idh_ch idp_ci zona_c pais_c anio_c mes_c relacion_ci factor_ci ///
+    upm_ci estrato_ci sexo_ci edad_ci civil_ci jefe_ci nconyuges_ch nhijos_ch notropari_ch notronopari_ch ///
+    nempdom_ch clasehog_ch nmiembros_ch nmayor21_ch nmenor21_ch nmayor65_ch nmenor6_ch nmenor1_ch miembros_ci ///
+    afro_ci ind_ci noafroind_ci afro_jefe afro_ch ind_jefe ind_ch noafroind_jefe noafroind_ch afroind_ci ///
+    afroind_jefe afroind_ch dis_ci disWG_ci PER_dis_ci dis_ch afroind_ano_c condocup_ci tipopen_ci instcot_ci ///
+    tamemp_ci categoinac_ci pension_ci instpen_ci pensionsub_ci cesante_ci lp_ci lpe_ci salmm_ci emp_ci desemp_ci ///
+    pea_ci desalent_ci afiliado_ci afiliado_ci1 cotizando_ci cotizando_ci1 cotizapri_ci cotizasec_ci formal_ci ///
+    formal_1 horaspri_ci horastot_ci subemp_ci tiempoparc_ci categopri_ci categosec_ci tipocontrato_ci ///
+    nempleos_ci spublico_ci ocupa_ci rama_ci durades_ci anios_ant meses_ant antiguedad_ci yprijbi ylmpri_ci ///
+    nrylmpri_ci ylnmprid ylnmprii ylnmpri_ci ysecbd ysecjbi ylmsec_ci ylnmsecd ylnmseci ylnmsec_ci ingext ylm_ci ///
+    ylnm_ci transltot transetot ynlm_ci ynlnm_ci ytot_ci remesas_ci nrylmpri_ch ylm_ch ylmnr_ch ylnm_ch ///
+    remesas_ch ynlm_ch ynlnm_ch   autocons_ci autocons_ch rentaimp_ch ylmhopri_ci ylmho_ci ///
+    ylmotros_ci ylnmotros_ci tcylmpri_ci tcylmpri_ch ypridbd pnc_ci juntos_ci beca_ci ptmc_ci gas_ci mequedo_ci ///
+    indep_ci rural_ci universal_ci ninouni_ci contigo_ci yanapay_ci bonoseis_ci potrot_ci ypnc_ci yjuntos_ci ///
+    ybeca_ci yptmc_ci ygas_ci ymequedo_ci yindep_ci yrural_ci yuniversal_ci yninouni_ci ycontigo_ci yyanapay_ci ///
+    ybonoseis_ci yotrot_ci ytransf_ci jubil_ci viudez_ci ypen_ci ypensub_ci divorcio pens_alim transf_hog ///
+    otras_pp otras_trans otras_e1 otras_e2 otras_e3 bono_elect bono_onp aux_ext rem1 otrans_ext d557t_1 d558t_1 ///
+    rtasot yl_pri yl_sec yl_ci ynl_ci aux_ytransf_ci ynet_ci pnc_ch ptmc_ch potrot_ch pcasht_ch ypnc_ch yptmc_ch ///
+    yotrot_ch ytransf_ch ing_nm ytot_ch aux_ytransf_ch ynet_ch ynet_ch_pc vivialqimp aedu_ci eduui_ci eduuc_ci ///
+    eduac_ci edupre_ci asispre_ci asiste_ci pqnoasis1_ci edupub_ci aguadist_ch aguafconsumo_ch aguafuente_ch ///
+    aguadisp1_ch aguadisp2_ch bano_ch sinbano_ch aguatrat_ch aguamala_ch aguamejorada_ch banomejorado_ch ///
+    aguared_ch banoex_ch aguamide_ch luz_ch luzmide_ch combust_ch des1_ch des2_ch piso_ch pared_ch techo_ch ///
+    resid_ch dorm_ch cuartos_ch cocina_ch telef_ch refrig_ch freez_ch auto_ch compu_ch internet_ch cel_ch ///
+    vivi1_ch vivi2_ch viviprop_ch vivitit_ch vivialq_ch vivialqimp_ch benefdes_ci ybenefdes_ci cobsalud_ci ///
+    tipocobsalud_ci probsalud_ci distancia_ci costo_ci atencion_ci migrante_ci migantiguo5_ci migrantelac_ci ///
+    migrantiguo5_ci miglac_ci grupo_int ptmc_ingneto1 ptmc_ingneto2 ptmc_ingneto3 ptmc_ingneto4 tipo_bienestar ///
+    pobre_ine_ci pobre_ine_ext_ci bienestar_agregado max_edu_ocp top_edu_ocp rank jefe_ocup_ch _jefe_inv ///
+    _topedu_ok flag_ref_ch ynivhog renta_imp_ch welfare_income_ch welfare_income_ci pobre_umi pobre_lmi codocupa ///
+    codindustria cpi icp flag_renta_imp gpo_ingneto1 gpo_ingneto2 gpo_ingneto3 gpo_ingneto4 {
+    capture drop `v'
+}
+
+
+* Also drop loop-generated variables from the deprecated (commented) blocks, if any exist
+capture drop especie* especiesec* transl? transe?
+
+* Variables created by the external do-file "Labels&ExternalVars_Harmonized_DataBank.do"
+* (lp*_2011, lp*_2017, tc_c, cpi_c, cpi2011, cpi2017, ratio_cpi*, ppp_*, ln_ci, ...)
+capture drop lp19_2011 lp31_2011 lp5_2011 lp365_2017 lp685_2017 lp14_2017 lp81_2017 ///
+    tc_c cpi_c cpi2011 cpi2017 ratio_cpi2011 ratio_cpi2017 ppp_c ppp_2011 ppp_2017 ln_ci
+
+	
+label drop _all
+
+drop lp19_2011 lp31_2011 lp5_2011 lp365_2017 lp685_2017 lp14_2017 lp81_2017 tc_c cpi_c cpi2011 cpi2017 ratio_cpi2011 ratio_cpi2017 ppp_c ppp_2011 ppp_2017
 
 ***************
 ***region_c ***
@@ -192,7 +249,10 @@ label define relacion_ci 6 "Empleado/a domestico/a", add
 
 label value relacion_ci relacion_ci
 
-
+	*****************************************
+	*CPI, IPC, Flag si tiene renta imputada*
+	****************************************
+	merge m:1 pais_c anio_c using "$datalibweb_IDB\SUPPORT\support_0926.dta", keepusing(cpi icp flag_renta_imp) keep(3) nogen
 
 ****************************
 ***VARIABLES DEMOGRAFICAS***
@@ -578,14 +638,12 @@ label var cesante_ci "Desocupado - definicion oficial del pais"
 *********
 *lp_ci***
 *********
-gen lp_ci =linea
-label var lp_ci "Linea de pobreza oficial del pais"
+gen ln_ci =linea
 
 *********
 *li_ci***
 *********
 gen lpe_ci =linpe
-label var lpe_ci "Linea de indigencia oficial del pais"
 
 /************************************************************************************************************
 * 3. Creación de nuevas variables de SS and LMK a incorporar en Armonizadas
@@ -1476,16 +1534,38 @@ label var rtasot "Rentas y otros"
 *** ynlnm_ci *** (información a nivel hogar)
 ****************
 
-gen ynlnm_ci = .
-
+	gen ynlnm_ci = (ig06hd+ig08hd+sig24+sig26+gru13hd1+gru13hd2+gru13hd3+gru23hd1+gru23hd2+gru23hd3+gru24hd+gru33hd1+gru33hd2+gru33hd3+(gru34hd-ga04hd)+gru43hd1+gru43hd2+gru43hd3+gru44hd+gru53hd1+gru53hd2+gru53hd3+gru54hd+gru63hd1+gru63hd2+gru63hd3+gru64hd+gru73hd1+gru73hd2+gru73hd3+gru74hd+gru83hd1+gru83hd2+gru83hd3+gru84hd+gru14hd3+gru14hd4+gru14hd5+sg42d+sg42d1+sg42d2+sg42d3) /(12 * nmiembros_ch)
 
 *** INGRESO TOTAL LABORAL Y NO LABORAL (MONETARIO Y NO MONETARIO) ***
 
-**************
-***ytot_ci***
-**************
-egen double ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci), mi
+	
+	*********
+	*ytot_ci*
+	********
+	foreach v in ylmpri_ci ylnmpri_ci ylmsec_ci ylnmsec_ci ylmotros_ci ylnmotros_ci {
+		capture confirm variable `v'
+		if _rc gen double `v' = .
+		replace `v' = . if emp_ci != 1
+		replace `v' = . if `v' < 0
+		replace `v' = 0 if categopri_ci == 4 & emp_ci == 1 & missing(`v')
+	}
 
+	* Ingreso laboral primario (monetario + no monetario)
+	egen double yl_pri = rowtotal(ylmpri_ci ylnmpri_ci), missing
+	replace yl_pri = . if yl_pri < 0
+	* Ingreso laboral secundario y laboral otro (monetario + no monetario)
+	egen double yl_sec = rowtotal(ylmsec_ci ylnmsec_ci ylmotros_ci ylnmotros_ci), missing
+	replace yl_sec = . if yl_sec < 0
+	* Ingreso laboral total (primario + secundario)
+	egen double yl_ci = rowtotal(yl_pri yl_sec), missing
+	replace yl_ci = . if missing(yl_pri)
+	* Ingreso no Laboral total (monetario + no monetario)
+	egen double ynl_ci = rowtotal(ynlm_ci ynlnm_ci), missing
+	replace ynl_ci = . if ynl_ci < 0
+	* Ingreso total
+	egen double ytot_ci = rowtotal(yl_ci ynl_ci), missing
+	replace ytot_ci = . if condocup_ci == 1 & (missing(yl_pri) | (yl_pri <= 0 & categopri_ci != 4))
+	replace ytot_ci = . if condocup_ci != 1 & (missing(ynl_ci) | ynl_ci <= 0)
 
 *** INGRESO NETO INDIVIDUAL > INGRESO PRIMARIO + TRANSFERENCIAS PRIVADAS ***
 
@@ -2411,7 +2491,88 @@ replace ptmc_ingneto4 = 1 if ptmc_ch == 1 & gpo_ingneto4 == 1
 lab def grupo_int 1 "Pobre extremo" 2 "Pobre moderado" 3 "Vulnerable" 4 "No pobre"
 lab val grupo_int grupo_int
 
+	
+	****************************
+	*** VARIABLES DE POBREZA ***
+	****************************
+	
+	****************
+	 *tipo_bienestar*
+	****************	
+	gen byte tipo_bienestar = 2 
 
+	****************
+	 * pobre_ine _ci*
+	****************	
+	gen byte pobre_ine_ci = .
+	
+	****************
+	 * pobre_ine_ext_ci*
+	****************	
+	gen byte pobre_ine_ext_ci = .
+
+	****************
+	 * bienestar_agregado *
+	****************	
+	gen bienestar_agregado = . 
+	
+	*************
+	*top_edu_ocp*
+	*************
+	bysort idh_ch: egen max_edu_ocp = max(cond(condocup_ci==1 & miembros_ci==1, aedu_ci, .))
+	gen byte top_edu_ocp = condocup_ci==1 & miembros_ci==1 & aedu_ci==max_edu_ocp
+	bysort idh_ch top_edu_ocp (idp_ci): gen rank = _n
+	replace top_edu_ocp = 0 if rank > 1
+	drop max_edu_ocp rank
+
+	bysort idh_ch: egen byte jefe_ocup_ch = max(jefe_ci==1 & condocup_ci==1)
+	* Ingreso invalido = missing o <= 0
+	bysort idh_ch: egen byte _jefe_inv  = max(jefe_ci==1 & (missing(ytot_ci) | ytot_ci<=0))
+	bysort idh_ch: egen byte _topedu_ok = max(top_edu_ocp==1 & !missing(ytot_ci) & ytot_ci>0)
+	* Jefe ocupado: el hogar sigue la regla del jefe
+	* Jefe no ocupado: manda top_edu_ocp; si no tiene ingreso valido (o no hay ocupados), vuelve a la regla del jefe
+	gen byte flag_ref_ch = cond(jefe_ocup_ch==1, _jefe_inv, _jefe_inv & !_topedu_ok)
+	
+	*********
+	*ynivhog*
+	*********
+	gen ynivhog = 0 // replace if var exists
+
+	*************
+	*rentaimp_ch*
+	*************
+	local var_ri  p106
+	capture confirm numeric variable `var_ri'
+	if _rc & "`var_ri'" != "" di as err "`var_ri' no existe: renta imputada = 10% del ITF"
+	if _rc local var_ri "."
+	bysort idh_ch: egen double renta_imp_ch = max(cond(jefe_ci==1 & inlist(viviprop_ch,1,2,4), `var_ri', .))
+
+	*******************
+	*welfare_income_ch*
+	*******************
+	bysort idh_ch: egen double welfare_income_ch = total(cond(miembros_ci==1, ytot_ci, .)), missing
+	replace welfare_income_ch = welfare_income_ch + ynivhog
+	replace welfare_income_ch = . if flag_ref_ch==1
+	replace renta_imp_ch = 0.10 * welfare_income_ch if missing(renta_imp_ch) & inlist(viviprop_ch,1,2,4) & !missing(welfare_income_ch) & flag_renta_imp == 0 
+	replace welfare_income_ch = (welfare_income_ch + cond(missing(renta_imp_ch), 0, renta_imp_ch)) * cond(zona_c==0, 1.15, 1)
+	replace welfare_income_ch = welfare_income_ch/ ((365/12) * cpi * icp)
+	
+	***********************
+	*welfare_income_ci*
+	***********************
+	gen double welfare_income_ci = welfare_income_ch / nmiembros_ch
+	replace    welfare_income_ci = . if nmiembros_ch == 0 | missing(nmiembros_ch)
+	replace    welfare_income_ci = . if welfare_income_ci < 0
+	
+	***********
+	*pobre_umi*
+	***********
+	gen byte pobre_umi = (welfare_income_ci < 8.3) if !missing(welfare_income_ci)
+
+	***********
+	*pobre_lmi*
+	***********
+	gen byte pobre_lmi = (welfare_income_ci < 4.2) if !missing(welfare_income_ci)
 
 /*_____________________________________________________________________________________________________*/
 * Verificación de que se encuentren todas las variables armonizadas 
@@ -2435,11 +2596,13 @@ lab val grupo_int grupo_int
   aguared_ch aguafconsumo_ch aguafuente_ch aguadist_ch aguadisp1_ch aguadisp2_ch /// Agua y saneamineto
   aguatrat_ch aguamala_ch aguamejorada_ch aguamide_ch bano_ch banoex_ch banomejorado_ch sinbano_ch  /// Agua y saneamineto
   migrante_ci migrantiguo5_ci miglac_ci /// Migración
-  salmm_ci lp19_2011 lp31_2011 lp5_2011 lp_ci lpe_ci lp365_2017 lp685_2017 lp14_2017 lp81_2017 tc_c cpi_c cpi2011 cpi2017 ratio_cpi2011 ratio_cpi2017 /// Fuente externa
-  ppp_c ppp_2011 ppp_2017 , first /// Fuente externa 
-  /// the order was created by regex functions, sph variables are excluded /// Fuente externa 
-  /// the order was created by regex functions, sph variables are excluded
-
+  salmm_ci lp19_2011 lp31_2011 lp5_2011  lp365_2017 lp685_2017 lp14_2017 lp81_2017 tc_c cpi_c cpi2011 cpi2017 ratio_cpi2011 ratio_cpi2017 /// Fuente externa
+  ppp_c ppp_2011 ppp_2017 /// Fuente externa 
+  top_edu_ocp ynivhog renta_imp_ch welfare_income_ch welfare_income_ci /// Ingresos 
+  tipo_bienestar bienestar_agregado ln_ci lpe_ci  pobre_ine_ci pobre_ine_ext_ci pobre_umi pobre_lmi, first /// Pobreza  
+ 
+  
+	
 /*Homologar nombre del identificador de ocupaciones (isco, ciuo, etc.) y de industrias y dejarlo en base armonizada 
 para análisis de trends (en el marco de estudios sobre el futuro del trabajo)*/
 clonevar codocupa = p505r4

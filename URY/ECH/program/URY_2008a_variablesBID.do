@@ -1,7 +1,5 @@
-
-
 * (Versión Stata 12)
-clear
+clear all
 set more off
 *________________________________________________________________________________________________________________*
 
@@ -11,7 +9,7 @@ set more off
  * Se tiene acceso al servidor únicamente al interior del BID.
  * El servidor contiene las bases de datos MECOVI.
  *________________________________________________________________________________________________________________*
- global ruta = "${surveysFolder}"
+global ruta = "${surveysFolder}"
 
 local PAIS URY
 local ENCUESTA ECH
@@ -1221,7 +1219,8 @@ gen `i'm = `i'/12
 }
 
 
-egen ylmpri_ci=rsum(g129_1	g129_2 g129_3 g129_4 g129_5 g129_6 g129_7 g137_3 g147 g148m g150m g151m g152m) if emp_ci==1, missing
+*egen ylmpri_ci=rsum(g129_1	g129_2 g129_3 g129_4 g129_5 g129_6 g129_7 g137_3 g147 g148m g150m g151m g152m) if emp_ci==1, missing 
+egen ylmpri_ci=rsum(g129_1	g129_2 g129_3 g129_4 g129_5 g137_3 g147 g148m g150m g151m g152m) if emp_ci==1, missing // FUSION
 
 * Nota Marcela G. Rubio - Abril 2014
 * Se filtra ingreso sólo para las personas ocupadas emp_ci==1
@@ -1450,7 +1449,8 @@ bys idh_ch: egen numper = sum(miembros_ci)
 bys idh_ch: egen npermax = max(numper)
 drop numper
 * Los ingresos a nivel de hogar se dividen para los miembros del hogar y se obtiene un per capita.
-egen inghog1 = rsum(h158_2 h162_2m h162_3m h165_1m h165_2m h166m h167m h168m h170_1m h170_2m h172_1m h172_2m h173_2m h174_2m h175_2m), missing
+*egen inghog1 = rsum(h158_2 h162_2m h162_3m h165_1m h165_2m h166m h167m h168m h170_1m h170_2m h172_1m h172_2m h173_2m h174_2m h175_2m), missing // FUSION
+egen inghog1 = rsum(h158_2 h162_2m h162_3m h165_1m h165_2m h166m h167m h168m h170_1m h170_2m h172_1m h172_2m h174_2m), missing // FUSION
 gen inghog= inghog1/npermax
 
 *Transferencias de programas sociales
@@ -1535,7 +1535,8 @@ egen transf= rsum(canasta tdesay talmue tsolalmue tsoldesay tsoldesalm tsoldealm
 
 gen asigfam = g155_4 if g155_3 ==2
 
-egen ynlm_ci=rsum(inghog transf asigfam g153_1 g153_2 g153_3 g153_4 g153_5 g153_6 g153_7 g153_8 g153_9 g153_10 g153_11 g153_12 g153_13 g153_14 g153_15 g153_16 g153_17 g153_18 g153_19 g153_20 g153_21 g153_22 g153_23 g153_24 g153_25 g153_26 g156_2 g156_3 g157_2), missing
+*egen ynlm_ci=rsum(inghog transf asigfam g153_1 g153_2 g153_3 g153_4 g153_5 g153_6 g153_7 g153_8 g153_9 g153_10 g153_11 g153_12 g153_13 g153_14 g153_15 g153_16 g153_17 g153_18 g153_19 g153_20 g153_21 g153_22 g153_23 g153_24 g153_25 g153_26 g156_2 g156_3 g157_2), missing // FUSION
+egen ynlm_ci=rsum(inghog asigfam g153_1 g153_2 g153_3 g153_4 g153_5 g153_6 g153_7 g153_8 g153_9 g153_10 g153_11 g153_12 g153_13 g153_14 g153_15 g153_16 g153_17 g153_18 g153_19 g153_20 g153_21 g153_22 g153_23 g153_24 g153_25 g153_26 g156_2 g156_3 g157_2), missing // FUSION
 label var ynlm_ci "Ingreso no laboral monetario"  
 
 
@@ -1547,7 +1548,7 @@ label var ynlm_ci "Ingreso no laboral monetario"
 	
 	gen ynlnm_ci= (h159_2/npermax)
 	label var ynlnm_ci "Ingreso no laboral no monetario" 
-egen ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci)
+*egen ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci) 
 
 
 	****************
@@ -1925,6 +1926,123 @@ replace edupub_ci = 1 if (asiste_ci == 1 & e54 == 1)
 	label var miglac_ci "=1 si es migrante proveniente de un pais LAC"
 
 
+	****************************
+	*** VARIABLES DE POBREZA ***
+	****************************
+	*********
+	*ytot_ci*
+	********
+	foreach v in ylmpri_ci ylnmpri_ci ylmsec_ci ylnmsec_ci ylmotros_ci ylnmotros_ci {
+		capture confirm variable `v'
+		if _rc gen double `v' = .
+		replace `v' = . if emp_ci != 1
+		replace `v' = . if `v' < 0
+		replace `v' = 0 if categopri_ci == 4 & emp_ci == 1 & missing(`v')
+	}
+
+	* Ingreso laboral primario (monetario + no monetario)
+	egen double yl_pri = rowtotal(ylmpri_ci ylnmpri_ci), missing
+	replace yl_pri = . if yl_pri < 0
+	* Ingreso laboral secundario y laboral otro (monetario + no monetario)
+	egen double yl_sec = rowtotal(ylmsec_ci ylnmsec_ci), missing
+	replace yl_sec = . if yl_sec < 0
+	* Ingreso laboral total (primario + secundario)
+	egen double yl_ci = rowtotal(yl_pri yl_sec), missing
+	replace yl_ci = . if missing(yl_pri)
+	* Ingreso no Laboral total (monetario + no monetario)
+	egen double ynl_ci = rowtotal(ynlm_ci ynlnm_ci), missing
+	replace ynl_ci = . if ynl_ci < 0
+	* Ingreso total
+	egen double ytot_ci = rowtotal(yl_ci ynl_ci), missing
+	replace ytot_ci = . if condocup_ci == 1 & (missing(yl_pri) | (yl_pri <= 0 & categopri_ci != 4))
+	replace ytot_ci = . if condocup_ci != 1 & (missing(ynl_ci) | ynl_ci <= 0)
+	
+	
+	*****************************************
+	*CPI, IPC, Flag si tiene renta imputada*
+	****************************************
+	merge m:1 pais_c anio_c using "$datalibweb_IDB\SUPPORT\support_0926.dta", keepusing(cpi icp flag_renta_imp) keep(3) nogen
+	
+	
+	****************
+	 *tipo_bienestar*
+	****************	
+	gen byte tipo_bienestar = 1 
+
+	****************
+	 * pobre_ine _ci*
+	****************	
+	gen byte pobre_ine_ci = .
+	gen byte pobre_ine_ext_ci = .
+
+
+	****************
+	 * bienestar_agregado *
+	****************	
+	gen bienestar_agregado = . 
+	
+	*************
+	*top_edu_ocp*
+	*************
+	bysort idh_ch: egen max_edu_ocp = max(cond(condocup_ci==1 & miembros_ci==1, aedu_ci, .))
+	gen byte top_edu_ocp = condocup_ci==1 & miembros_ci==1 & aedu_ci==max_edu_ocp
+	bysort idh_ch top_edu_ocp (idp_ci): gen rank = _n
+	replace top_edu_ocp = 0 if rank > 1
+	drop max_edu_ocp rank
+
+	bysort idh_ch: egen byte jefe_ocup_ch = max(jefe_ci==1 & condocup_ci==1)
+	* Ingreso invalido = missing o <= 0
+	bysort idh_ch: egen byte _jefe_inv  = max(jefe_ci==1 & (missing(ytot_ci) | ytot_ci<=0))
+	bysort idh_ch: egen byte _topedu_ok = max(top_edu_ocp==1 & !missing(ytot_ci) & ytot_ci>0)
+	* Jefe ocupado: el hogar sigue la regla del jefe
+	* Jefe no ocupado: manda top_edu_ocp; si no tiene ingreso valido (o no hay ocupados), vuelve a la regla del jefe
+	gen byte flag_ref_ch = cond(jefe_ocup_ch==1, _jefe_inv, _jefe_inv & !_topedu_ok)
+	
+	*********
+	*ynivhog*
+	*********
+	gen ynivhog = 0 // replace if var exists
+
+	*************
+	*rentaimp_ch*
+	*************
+	local var_ri ht13
+	capture confirm numeric variable `var_ri'
+	if _rc & "`var_ri'" != "" di as err "`var_ri' no existe: renta imputada = 10% del ITF"
+	if _rc local var_ri "."
+
+	bysort idh_ch: egen double renta_imp_ch = max(cond(jefe_ci==1 & inlist(viviprop_ch,1,2,3), `var_ri', .))
+
+	*******************
+	*welfare_income_ch*
+	*******************
+	bysort idh_ch: egen double welfare_income_ch = total(cond(miembros_ci==1, ytot_ci, .)), missing
+	replace welfare_income_ch = welfare_income_ch + ynivhog
+	replace welfare_income_ch = . if flag_ref_ch==1
+	replace renta_imp_ch = 0.10 * welfare_income_ch if missing(renta_imp_ch) & inlist(viviprop_ch,1,2,3) & !missing(welfare_income_ch) & flag_renta_imp == 0
+	replace welfare_income_ch = (welfare_income_ch + cond(missing(renta_imp_ch), 0, renta_imp_ch)) * cond(zona_c==0, 1.15, 1)
+	replace welfare_income_ch = welfare_income_ch/ ((365/12) * cpi * icp)
+	
+	***********************
+	*welfare_income_ci*
+	***********************
+	gen double welfare_income_ci = welfare_income_ch / nmiembros_ch
+	replace    welfare_income_ci = . if nmiembros_ch == 0 | missing(nmiembros_ch)
+	replace    welfare_income_ci = . if welfare_income_ci < 0
+	
+	***********
+	*pobre_umi*
+	***********
+	gen byte pobre_umi = (welfare_income_ci < 8.3) if !missing(welfare_income_ci)
+
+	***********
+	*pobre_lmi*
+	***********
+	gen byte pobre_lmi = (welfare_income_ci < 4.2) if !missing(welfare_income_ci)
+	
+  
+
+
 /*_____________________________________________________________________________________________________*/
 * Asignación de etiquetas e inserción de variables externas: tipo de cambio, Indice de Precios al 
 * Consumidor (2011=100), líneas de pobreza
@@ -1956,8 +2074,6 @@ do "$gitFolder\armonizacion_microdatos_encuestas_hogares_scl\_DOCS\\Labels&Exter
   migrante_ci migrantiguo5_ci miglac_ci /// Migración
   salmm_ci lp19_2011 lp31_2011 lp5_2011 lp_ci lpe_ci lp365_2017 lp685_2017 lp14_2017 lp81_2017 tc_c cpi_c cpi2011 cpi2017 ratio_cpi2011 ratio_cpi2017 /// Fuente externa
   ppp_c ppp_2011 ppp_2017 , first /// Fuente externa 
-  /// the order was created by regex functions, sph variables are excluded /// Fuente externa 
-  /// the order was created by regex functions, sph variables are excluded
 
 rename f74_2 codindustria 
 rename f73_2 codocupa 
@@ -1967,3 +2083,4 @@ saveold "`base_out'",  replace
 
 
 log close
+

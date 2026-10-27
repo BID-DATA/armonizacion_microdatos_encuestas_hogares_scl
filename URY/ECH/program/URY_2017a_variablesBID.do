@@ -1,5 +1,5 @@
 * (Versión Stata 12)
-clear
+clear all
 set more off
 *________________________________________________________________________________________________________________*
 
@@ -40,7 +40,7 @@ Detalle de procesamientos o modificaciones anteriores:
 ****************************************************************************/
 
 use `base_in', clear
-
+*/
 /************************************************************************/
 /*				VARIABLES DEL HOGAR			*/
 /************************************************************************/
@@ -102,9 +102,11 @@ A partir de 2006 se incluye una muestra rural, sin embargo en 2006-2009 sólo se
  Por lo tanto, para hacer comparables los datos se genera la variable zona considerando a las zonas de
  menos de 5000 habitantes como rural. Es decir, zona rural=interior con menos de 5000 habitantes y rural.*/
  
-gen zona_c=.
+/*gen zona_c=.
 replace zona_c=1 if region_4 == 1 | region_4 == 2
-replace zona_c=0 if region_4 == 3 | region_4 == 4
+replace zona_c=0 if region_4 == 3 | region_4 == 4 */
+
+	gen byte zona_c = (region_4 != 4)
 
 label variable zona_c "Zona del pais"
 label define zona_c 1 "Urbana" 0 "Rural"
@@ -775,12 +777,19 @@ f73	1	Asalariado/a privado/a
 	8	Trabajador/a de un programa social de empleo
 
 */
-
+/*
 gen categopri_ci=1 	if f73==4
 replace categopri_ci=2 	if f73==5 | f73==6 | f73==3
 replace categopri_ci=3 	if f73==1 | f73==2 | f73==8
 replace categopri_ci=4 	if f73==7 
-replace categopri_ci=. 	if emp_ci!=1
+replace categopri_ci=. 	if emp_ci!=1 */
+
+	gen categopri_ci = .                            // f73 (Categoría de la ocupación)
+	replace categopri_ci = 1 if f73 == 4                // patrón/a
+	replace categopri_ci = 2 if inlist(f73,5,6)         // cuenta propia sin/con local o inversión
+	replace categopri_ci = 3 if inlist(f73,1,2,3)       // asalariado privado/público + miembro cooperativa
+	replace categopri_ci = 4 if inlist(f73,7,8) 
+	
 /*
 *Modificación MLO
 replace categopri_ci=0 if f73==8 & condocup_ci==1
@@ -961,8 +970,20 @@ gen g145_ = g145/12
 gen g146_ = g146/12
 gen g147_ = g147/12
 
-egen ylmpri_ci=rsum(g126_1 g126_2  g126_3  g126_4  g126_5  g126_6  g126_7  g142 g143_ g145_ g146_ g147_ g133_2) if emp_ci==1 , missing
-replace ylmpri_ci=. if (g126_1==. & g126_2==. & g126_3==. &  g126_4==. &  g126_5==. &  g126_6==. &  g126_7==. &  g143_==. & g145_==. & g146_==. & g147_==.)
+*egen ylmpri_ci=rsum(g126_1 g126_2  g126_3  g126_4  g126_5  g126_6  g126_7  g142 g143_ g145_ g146_ g147_ g133_2) if emp_ci==1 , missing
+*replace ylmpri_ci=. if (g126_1==. & g126_2==. & g126_3==. &  g126_4==. &  g126_5==. &  g126_6==. &  g126_7==. &  g143_==. & g145_==. & g146_==. & g147_==.)
+
+egen double _ylmpri_asal = rowtotal(g126_1 g126_2 g126_3 g126_4 g126_5 ///
+                                     g126_6 g126_7 g126_8), missing
+* g_itnd_1 / g_itnd_2 (gates de 2018) no existen en la base 2017: sin gate
+gen double _g142_gated = g142
+gen double _g143_mes   = (g143 / 12)
+egen double _ylmpri_indep = rowtotal(_g142_gated _g143_mes), missing
+drop _g142_gated _g143_mes
+
+gen double ylmpri_ci = .
+replace    ylmpri_ci = _ylmpri_asal  if categopri_ci == 3
+replace    ylmpri_ci = _ylmpri_indep if inlist(categopri_ci,1,2)
 
 * Nota Marcela G. Rubio - Abril 2014
 * Se filtra ingreso sólo para las personas ocupadas emp_ci==1
@@ -1016,7 +1037,32 @@ gen caballo = (g132_3*mto_caball)
 
 *No costa la variable disse en el formulario.
 
-egen ylnmpri_ci= rsum( desay almue vacas oveja caballo g126_8 g127_3  g128_1 g129_2 g130_1 g131_1 g133_1 g144_1 g144_2_1 g144_2_2 g144_2_3 g144_2_4 g144_2_5 ) if emp_ci==1, missing
+*egen ylnmpri_ci= rsum( desay almue vacas oveja caballo g126_8 g127_3  g128_1 g129_2 g130_1 g131_1 g133_1 g144_1 g144_2_1 g144_2_2 g144_2_3 g144_2_4 g144_2_5 ) if emp_ci==1, missing
+gen double _desay_val = g127_1 * mto_desay
+gen double _almue_val = g127_2 * mto_almue
+egen double _esp_alim_pri2 = rowtotal(_desay_val _almue_val g127_3), missing
+drop _desay_val _almue_val
+
+* Pastoreo agropecuario: cabezas x precio unitario (mto_vacas/mto_oveja/mto_caball).
+gen double _vacas_val   = g132_1 * mto_vacas
+gen double _oveja_val   = g132_2 * mto_oveja
+gen double _caballo_val = g132_3 * mto_caball
+egen double _esp_past_pri = rowtotal(_vacas_val _oveja_val _caballo_val), missing
+drop _vacas_val _oveja_val _caballo_val
+
+* Asalariados en especie: alimentos, tiques (g128_1), vivienda (g129_2), otra especie
+* (g130_1), complemento del empleador (g131_1), pastoreo, autoconsumo (g133_1)
+egen double _ylnmpri_asal  = rowtotal(_esp_alim_pri2 g128_1 g129_2 g130_1 g131_1 ///
+                                       _esp_past_pri g133_1), missing
+
+* Independientes en especie: retiro de productos para consumo propio (g144_1, g144_2_1..5)
+egen double _ylnmpri_indep = rowtotal(g144_1 g144_2_1 g144_2_2 g144_2_3 ///
+                                       g144_2_4 g144_2_5), missing
+
+gen double ylnmpri_ci = .
+replace    ylnmpri_ci = _ylnmpri_asal  if categopri_ci == 3
+replace    ylnmpri_ci = _ylnmpri_indep if inlist(categopri_ci,1,2)
+drop _esp_alim_pri _esp_alim_pri2 _esp_past_pri _ylnmpri_asal _ylnmpri_indep
 
 * Nota Marcela G. Rubio - Abril 2014
 * Se filtra ingreso sólo para las personas ocupadas emp_ci==1
@@ -1032,7 +1078,9 @@ SALARIO VACACIONAL	g134_6
 PAGOS ATRASADOS	g134_7	
 DERECHO A CULTIVO PARA CONSUMO PROPIO g141_2	$	Monto percibido por la venta de esos productos
 */
-egen ylmsec_ci=rsum(g134_1 g134_2  g134_3  g134_4  g134_5  g134_6  g134_7 g141_2) if emp_ci == 1, missing 
+*egen ylmsec_ci=rsum(g134_1 g134_2  g134_3  g134_4  g134_5  g134_6  g134_7 g141_2) if emp_ci == 1, missing
+egen double ylmsec_ci = rowtotal(g134_1 g134_2 g134_3 g134_4 g134_5 ///
+                                  g134_6 g134_7 g134_8 g136_1 g141_2), missing
 
 * Nota Marcela G. Rubio - Abril 2014
 * Se filtra ingreso sólo para las personas ocupadas emp_ci==1
@@ -1064,7 +1112,21 @@ gen vacassec = (g140_1*mto_vacas)
 gen ovejasec = (g140_2*mto_oveja)
 gen caballosec = (g140_3*mto_caball)
 
-egen ylnmsec_ci=rsum(desaysec almuesec vacassec ovejasec caballosec g134_8 g135_3 g136_1 g137_2 g138_1 g139_1 g141_1) if emp_ci ==1, missing
+*egen ylnmsec_ci=rsum(desaysec almuesec vacassec ovejasec caballosec g134_8 g135_3 g136_1 g137_2 g138_1 g139_1 g141_1) if emp_ci ==1, missing
+
+gen double _desaysec_val   = g135_1 * mto_desay
+gen double _almuesec_val   = g135_2 * mto_almue
+egen double _esp_alim_sec  = rowtotal(_desaysec_val _almuesec_val), missing
+drop _desaysec_val _almuesec_val
+
+gen double _vacassec_val   = g140_1 * mto_vacas
+gen double _ovejasec_val   = g140_2 * mto_oveja
+gen double _caballosec_val = g140_3 * mto_caball
+egen double _esp_past_sec  = rowtotal(_vacassec_val _ovejasec_val _caballosec_val), missing
+drop _vacassec_val _ovejasec_val _caballosec_val
+
+egen double ylnmsec_ci = rowtotal(g135_3 g137_2 g138_1 g139_1 g141_1 ///
+                                   _esp_alim_sec _esp_past_sec), missing
 
 * Nota Marcela G. Rubio - Abril 2014
 * Se filtra ingreso sólo para las personas ocupadas emp_ci==1
@@ -1241,13 +1303,60 @@ g148_2_11 = g148_2_c pensiones recibido de otro pais
 g148_2_12 = g148_2_a pensiones recibido de AFAP
 */
 
-egen ynlm_ci=rsum(inghog transf g148_1_1 g148_1_2  g148_1_3 g148_1_4  g148_1_5  g148_1_6  g148_1_7  g148_1_8  g148_1_9  g148_1_12 g148_1_10 g148_1_11 g148_2_1 g148_2_2 g148_2_3 g148_2_4 g148_2_5 g148_2_6 g148_2_7 g148_2_8 g148_2_9 g148_2_12 g148_2_10 g148_2_11 g148_3 g148_4 g148_5_1 g148_5_2 g153_1 g153_2 g154_1 )
+*egen ynlm_ci=rsum(inghog transf g148_1_1 g148_1_2  g148_1_3 g148_1_4  g148_1_5  g148_1_6  g148_1_7  g148_1_8  g148_1_9  g148_1_12 g148_1_10 g148_1_11 g148_2_1 g148_2_2 g148_2_3 g148_2_4 g148_2_5 g148_2_6 g148_2_7 g148_2_8 g148_2_9 g148_2_12 g148_2_10 g148_2_11 g148_3 g148_4 g148_5_1 g148_5_2 g153_1 g153_2 g154_1 )
+gen double _h160_1_mes   = h160_1   / 12
+gen double _h163_1_mes   = h163_1   / 12
+gen double _h167_1_1_mes = h167_1_1 / 12
+gen double _h167_2_1_mes = h167_2_1 / 12
+gen double _h170_1_mes   = h170_1   / 12
+gen double _h171_1_mes   = h171_1   / 12
+gen double _h172_1_mes   = h172_1   / 12
+
+egen double _hhcap_raw = rowtotal(h155_1 _h160_1_mes _h163_1_mes _h167_1_1_mes ///
+                                   _h167_2_1_mes _h170_1_mes _h171_1_mes _h172_1_mes), missing
+gen double _hhcap_pc = _hhcap_raw / nmiembros_ch
+drop _h160_1_mes _h163_1_mes _h167_1_1_mes _h167_2_1_mes _h170_1_mes _h171_1_mes _h172_1_mes _hhcap_raw
+
+gen double ynlm_ci = 0
+foreach v of varlist g148_1_1 g148_1_2 g148_1_3 g148_1_4 g148_1_5 g148_1_6 g148_1_7 ///
+                     g148_1_8 g148_1_9 g148_1_10 g148_1_11 g148_1_12 {
+	replace ynlm_ci = ynlm_ci + `v' if !missing(`v')     // jubilaciones
+}
+foreach v of varlist g148_2_1 g148_2_2 g148_2_3 g148_2_4 g148_2_5 g148_2_6 g148_2_7 ///
+                     g148_2_8 g148_2_9 g148_2_10 g148_2_11 g148_2_12 {
+	replace ynlm_ci = ynlm_ci + `v' if !missing(`v')     // pensiones
+}
+replace ynlm_ci = ynlm_ci + g148_3   if !missing(g148_3)   // seguro de desempleo
+replace ynlm_ci = ynlm_ci + g148_4   if !missing(g148_4)   // compensaciones accidente/maternidad/enfermedad
+replace ynlm_ci = ynlm_ci + g148_5_1 if !missing(g148_5_1) // becas/subsidios (país)
+replace ynlm_ci = ynlm_ci + g148_5_2 if !missing(g148_5_2) // becas/subsidios (extranjero)
+replace ynlm_ci = ynlm_ci + g257     if !missing(g257)     // asignaciones familiares (AFAM)
+replace ynlm_ci = ynlm_ci + g153_1   if !missing(g153_1)   // pensión alimenticia (país)
+replace ynlm_ci = ynlm_ci + g153_2   if !missing(g153_2)   // pensión alimenticia (extranjero)
+replace ynlm_ci = ynlm_ci + g154_1   if !missing(g154_1)   // otro ingreso corriente
+gen double _fonasa_mes = g258_1 / 12
+replace ynlm_ci = ynlm_ci + _fonasa_mes if !missing(g258_1) // devolución FONASA (anual->/12)
+drop _fonasa_mes
+
+* Capital/transferencias del hogar: porción per cápita, asignada a CADA miembro
+replace ynlm_ci = ynlm_ci + _hhcap_pc if !missing(_hhcap_pc)
+
+* Missing condition: TODAS las sub-partidas de jubilaciones (12) y pensiones (12) deben estar missing
+egen byte _miss_jub = rowmiss(g148_1_1 g148_1_2 g148_1_3 g148_1_4 g148_1_5 g148_1_6 g148_1_7 ///
+                               g148_1_8 g148_1_9 g148_1_10 g148_1_11 g148_1_12)
+egen byte _miss_pen = rowmiss(g148_2_1 g148_2_2 g148_2_3 g148_2_4 g148_2_5 g148_2_6 g148_2_7 ///
+                               g148_2_8 g148_2_9 g148_2_10 g148_2_11 g148_2_12)
+replace ynlm_ci = . if _miss_jub == 12 & _miss_pen == 12 & ///
+                       missing(g148_3) & missing(g148_4) & ///
+                       missing(g148_5_1) & missing(g148_5_2) & ///
+                       missing(g153_1) & missing(g153_2) & missing(g154_1) & ///
+                       missing(g257) & missing(g258_1) & missing(_hhcap_pc)
 
 *40. Ingreso no laboral no monetario
 
-gen ynlnm_ci= (h156_1/npermax)
+gen double ynlnm_ci = h156_1 / nmiembros_ch
 label var ynlnm_ci "Ingreso no laboral no monetario" 
-egen ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci)
+*egen ytot_ci = rowtotal(ylm_ci ylnm_ci ynlm_ci ynlnm_ci)
 
 
 *41. Identificador de los hogares en donde alguno de los miembros no sabe/No responde el ingreso de
@@ -1735,12 +1844,19 @@ replace vivi1_ch=3 if c1==2 | c1==5
 gen vivi2_ch=1 if c1!=5
 replace vivi2=0 if vivi2==.
 *120. Propiedad de la vivienda
-
+/*
 gen viviprop_ch=.
 replace viviprop_ch=0 if  d8_1==5
 replace viviprop_ch=1 if d8_1==2 | d8_1==4
 replace viviprop_ch=2 if d8_1==1 | d8_1==3
-replace viviprop_ch=3 if d8_1>=6 & d8_1<=9
+replace viviprop_ch=3 if d8_1>=6 & d8_1<=9 
+*/
+gen viviprop_ch = .
+	replace viviprop_ch = 1 if inlist(d8_1,2,4)         // propietario, ya pagó (vivienda+terreno o solo vivienda)
+	replace viviprop_ch = 2 if inlist(d8_1,1,3)         // propietario, pagando cuota
+	replace viviprop_ch = 3 if d8_1 == 5                // inquilino/arrendatario
+	replace viviprop_ch = 4 if inlist(d8_1,6,7,8,9,10)  // ocupante (dependencia/gratuito/sin permiso) + cooperativa de vivienda
+	* TODO: FLAGGED (ver mapping revisada) — confirmar bucket SEDLAC para código 10 (cooperativa de vivienda)  // ? FLAG — not a driver of the too-high poverty finding (affects renta imputada eligibility bucket only, not income levels)
 
 
 *121. El hogar posee un título de propiedad
@@ -1862,6 +1978,121 @@ lab val ptmc_ch ptmc_ch
 lab def pnc_ci 1 "Beneficiario PNC" 0 "No beneficiario PNC"
 lab val pnc_ci pnc_ci
 
+	****************************
+	*** VARIABLES DE POBREZA ***
+	****************************
+	*********
+	*ytot_ci*
+	********
+	foreach v in ylmpri_ci ylnmpri_ci ylmsec_ci ylnmsec_ci ylmotros_ci ylnmotros_ci {
+		capture confirm variable `v'
+		if _rc gen double `v' = .
+		replace `v' = . if emp_ci != 1
+		replace `v' = . if `v' < 0
+		replace `v' = 0 if categopri_ci == 4 & emp_ci == 1 & missing(`v')
+	}
+
+	* Ingreso laboral primario (monetario + no monetario)
+	egen double yl_pri = rowtotal(ylmpri_ci ylnmpri_ci), missing
+	replace yl_pri = . if yl_pri < 0
+	* Ingreso laboral secundario y laboral otro (monetario + no monetario)
+	egen double yl_sec = rowtotal(ylmsec_ci ylnmsec_ci), missing
+	replace yl_sec = . if yl_sec < 0
+	* Ingreso laboral total (primario + secundario)
+	egen double yl_ci = rowtotal(yl_pri yl_sec), missing
+	replace yl_ci = . if missing(yl_pri)
+	* Ingreso no Laboral total (monetario + no monetario)
+	egen double ynl_ci = rowtotal(ynlm_ci ynlnm_ci), missing
+	replace ynl_ci = . if ynl_ci < 0
+	* Ingreso total
+	egen double ytot_ci = rowtotal(yl_ci ynl_ci), missing
+	replace ytot_ci = . if condocup_ci == 1 & (missing(yl_pri) | (yl_pri <= 0 & categopri_ci != 4))
+	replace ytot_ci = . if condocup_ci != 1 & (missing(ynl_ci) | ynl_ci <= 0)
+	
+	
+	*****************************************
+	*CPI, IPC, Flag si tiene renta imputada*
+	****************************************
+	merge m:1 pais_c anio_c using "$datalibweb_IDB\SUPPORT\support_0926.dta", keepusing(cpi icp flag_renta_imp) keep(3) nogen
+	
+	
+	****************
+	 *tipo_bienestar*
+	****************	
+	gen byte tipo_bienestar = 1 
+
+	****************
+	 * pobre_ine _ci*
+	****************	
+	gen byte pobre_ine_ci = .
+	gen byte pobre_ine_ext_ci = .
+
+
+	****************
+	 * bienestar_agregado *
+	****************	
+	gen bienestar_agregado = . 
+	
+	*************
+	*top_edu_ocp*
+	*************
+	bysort idh_ch: egen max_edu_ocp = max(cond(condocup_ci==1 & miembros_ci==1, aedu_ci, .))
+	gen byte top_edu_ocp = condocup_ci==1 & miembros_ci==1 & aedu_ci==max_edu_ocp
+	bysort idh_ch top_edu_ocp (idp_ci): gen rank = _n
+	replace top_edu_ocp = 0 if rank > 1
+	drop max_edu_ocp rank
+
+	bysort idh_ch: egen byte jefe_ocup_ch = max(jefe_ci==1 & condocup_ci==1)
+	* Ingreso invalido = missing o <= 0
+	bysort idh_ch: egen byte _jefe_inv  = max(jefe_ci==1 & (missing(ytot_ci) | ytot_ci<=0))
+	bysort idh_ch: egen byte _topedu_ok = max(top_edu_ocp==1 & !missing(ytot_ci) & ytot_ci>0)
+	* Jefe ocupado: el hogar sigue la regla del jefe
+	* Jefe no ocupado: manda top_edu_ocp; si no tiene ingreso valido (o no hay ocupados), vuelve a la regla del jefe
+	gen byte flag_ref_ch = cond(jefe_ocup_ch==1, _jefe_inv, _jefe_inv & !_topedu_ok)
+	
+	*********
+	*ynivhog*
+	*********
+	gen ynivhog = 0 // replace if var exists
+
+	*************
+	*rentaimp_ch*
+	*************
+	local var_ri ht13
+	capture confirm numeric variable `var_ri'
+	if _rc & "`var_ri'" != "" di as err "`var_ri' no existe: renta imputada = 10% del ITF"
+	if _rc local var_ri "."
+	* viviprop_ch (defined earlier) uses 1=propia paga / 2=propia pagando /
+	* 3=alquilada / 4=ocupante-otro, so "not renting" is inlist(viviprop_ch,1,2,4).
+	bysort idh_ch: egen double renta_imp_ch = max(cond(jefe_ci==1 & inlist(viviprop_ch,1,2,4), `var_ri', .))
+
+	*******************
+	*welfare_income_ch*
+	*******************
+	bysort idh_ch: egen double welfare_income_ch = total(cond(miembros_ci==1, ytot_ci, .)), missing
+	replace welfare_income_ch = welfare_income_ch + ynivhog
+	replace welfare_income_ch = . if flag_ref_ch==1
+	replace renta_imp_ch = 0.10 * welfare_income_ch if missing(renta_imp_ch) & inlist(viviprop_ch,1,2,4) & !missing(welfare_income_ch) & flag_renta_imp == 0
+	replace welfare_income_ch = (welfare_income_ch + cond(missing(renta_imp_ch), 0, renta_imp_ch)) * cond(zona_c==0, 1.15, 1)
+	replace welfare_income_ch = welfare_income_ch/ ((365/12) * cpi * icp)
+	
+	***********************
+	*welfare_income_ci*
+	***********************
+	gen double welfare_income_ci = welfare_income_ch / nmiembros_ch
+	replace    welfare_income_ci = . if nmiembros_ch == 0 | missing(nmiembros_ch)
+	replace    welfare_income_ci = . if welfare_income_ci < 0
+	
+	***********
+	*pobre_umi*
+	***********
+	gen byte pobre_umi = (welfare_income_ci < 8.3) if !missing(welfare_income_ci)
+
+	***********
+	*pobre_lmi*
+	***********
+	gen byte pobre_lmi = (welfare_income_ci < 4.2) if !missing(welfare_income_ci)
+	
 
 /*_____________________________________________________________________________________________________*/
 * Asignación de etiquetas e inserción de variables externas: tipo de cambio, Indice de Precios al 
