@@ -1084,13 +1084,13 @@ use "`base_in'", clear
 ****************************
 ***VARIABLES DE MIGRACIÓN***
 ****************************		
-
+* La pregunta para este año viene mal. Solo permite ver nacidos en Belice y Honduras, exlcuye el resto
 	*****************
     *migrante_ci****
     ****************
 	gen byte migrante_ci= .
-	replace migrante_ci=0 if hl7new==1
-	replace migrante_ci=1 if hl7new==3
+	*replace migrante_ci=0 if hl7new==1
+	*replace migrante_ci=1 if hl7new==3
 	
 	****************
 	 *migrantiguo5_ci*
