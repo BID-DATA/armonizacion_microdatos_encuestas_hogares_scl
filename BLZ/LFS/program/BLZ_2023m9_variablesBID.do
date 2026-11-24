@@ -1085,6 +1085,7 @@ use "`base_in'", clear
 ***VARIABLES DE MIGRACIÓN***
 ****************************		
 * La pregunta para este año viene mal. Solo permite ver nacidos en Belice y Honduras, exlcuye el resto
+
 	*****************
     *migrante_ci****
     ****************
